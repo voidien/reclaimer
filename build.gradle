@@ -36,6 +36,11 @@ repositories {
         url = 'https://maven.blamejared.com/'
         content { includeGroup('mezz.jei') }
     }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup('maven.modrinth') }
+    }
 }
 
 neoForge {
@@ -96,6 +101,12 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Performance mods we stay compatible with. Dev runs only, never published.
+    localRuntime "maven.modrinth:sodium:${sodium_version}"
+    localRuntime "maven.modrinth:modernfix:${modernfix_version}"
+    localRuntime "maven.modrinth:ferrite-core:${ferritecore_version}"
+    localRuntime "maven.modrinth:immediatelyfast:${immediatelyfast_version}"
 }
 
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).

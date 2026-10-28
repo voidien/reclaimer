@@ -5,6 +5,7 @@
 - ModDevGradle build (`build.gradle`, `settings.gradle`, `gradle.properties`, Gradle 9.2.1 wrapper).
 - `neoforge.mods.toml` template: requires NeoForge 21.1.265+, Minecraft 1.21.1, GeckoLib 4.9.3+; JEI optional.
 - Minimal `@Mod` entry class `com.voidreclaimer.VoidReclaimer`.
+- Sodium, ModernFix, FerriteCore, and ImmediatelyFast added as dev-run-only (`localRuntime`) dependencies; compatibility rules in `CLAUDE.md`.
 - `./gradlew build` passes.
 
 ## Phases

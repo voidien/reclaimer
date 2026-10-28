@@ -56,10 +56,22 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 | GeckoLib | 4.9.3 (`geckolib-neoforge-1.21.1`) | dl.cloudsmith.io/public/geckolib3 |
 | JEI | 19.70.0.464 (`jei-1.21.1-*`) | maven.blamejared.com |
 | Gradle wrapper | 9.2.1 | matches official NeoForge 1.21.1 MDK |
+| Sodium (dev run only) | mc1.21.1-0.8.13-neoforge | api.modrinth.com/maven |
+| ModernFix (dev run only) | 5.27.27+mc1.21.1 | api.modrinth.com/maven |
+| FerriteCore (dev run only) | 7.0.3-neoforge | api.modrinth.com/maven |
+| ImmediatelyFast (dev run only) | 1.6.15+1.21.1-neoforge | api.modrinth.com/maven |
 
 All versions live in `gradle.properties`. `neoforge.mods.toml` is generated from `src/main/templates/` via the `generateModMetadata` task.
 
 Commands: `./gradlew build`, `./gradlew runClient`, `./gradlew runData` (writes to `src/generated/resources`).
+
+## Performance-mod compatibility
+The mod must work alongside **Sodium, ModernFix, FerriteCore, and ImmediatelyFast**. They are `localRuntime` dependencies, so `./gradlew runClient` always launches with them. They are never declared in `neoforge.mods.toml` and never published. Iris is intentionally not supported or tested. Rules:
+- **Sodium:** never mixin into or replace chunk/level rendering. Custom skies go through `DimensionSpecialEffects` / NeoForge render events. World content (asteroids, stations) is ordinary blocks and block entities. Biome changes resend chunks with the normal packets so Sodium rebuilds them.
+- **ImmediatelyFast:** draw all HUD and screens through `GuiGraphics` and NeoForge GUI layers (`RegisterGuiLayersEvent`). No raw `Tesselator` drawing in the HUD, and restore any render state you change.
+- **ModernFix:** don't cache baked models or resources at startup outside the normal reload listeners. Don't depend on class-loading or registry-event order beyond what NeoForge guarantees.
+- **FerriteCore:** treat `BlockState`s, their property maps, and baked model quads as immutable and shared.
+- Every phase's in-game test checklist is run with these four mods loaded.
 
 ## Package & folder structure
 Base package `com.voidreclaimer`. Packages are created only when a phase needs them (no empty stubs).
