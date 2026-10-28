@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.voidreclaimer.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "FallingBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

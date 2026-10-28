@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:deep_space",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "void_reclaimer:deep_space",
+      "layers": [],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

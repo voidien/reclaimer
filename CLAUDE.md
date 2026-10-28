@@ -85,7 +85,10 @@ src/main/java/com/voidreclaimer/
 │                                 ModEntities, ModAttachments, ModDataComponents, ModMenus,
 │                                 ModRecipeTypes, ModRecipeSerializers, ModCreativeTabs
 ├── network/                      CustomPacketPayload records + ModPayloads registrar
-├── space/                        Phase 1: dimension keys, spawn/respawn redirection, zero-G rules
+├── space/                        Phase 1: dimension keys, spawn/respawn, dimension lock, zero-G, void boundary
+├── energy/                       Phase 1: per-player energy (replaces hunger), sunlight charging
+├── command/                      /void_reclaimer debug commands
+├── mixin/                        Mixins (only where no NeoForge event exists); config: void_reclaimer.mixins.json
 ├── flight/                       Phase 2: thrust model, server validation (shared + server logic)
 ├── dust/                         Phase 3: DustNoise sampler, cloud queries, accumulation
 ├── replicator/                   Phase 4: recipe type, menu, virtual inventory
@@ -116,6 +119,21 @@ src/main/resources/
 src/main/templates/META-INF/neoforge.mods.toml
 src/generated/resources/                    datagen output (committed)
 ```
+
+## Settled design decisions
+**Phase 1**
+- Deep space is an empty void (flat generator, no layers). Height is the vanilla maximum, Y -2032..2031. A soft push-back starts 96 blocks from either limit (config), so nothing reaches void damage.
+- The Overworld, Nether, and End are locked for good. Endgame travel goes to `ruined_earth`. Creative and spectator players may bypass the lock (ops can switch modes). Nether portals can't be lit in deep space.
+- Light: real darkness, with sky light from a fixed, dim, distant sun (`fixed_time` 12800 gives effective sky light 10/15). Vanilla sky light only travels downward, so the sun is drawn near the zenith. Undersides and enclosed spaces stay dark.
+- Zero-G covers everything: players and mobs via a `generic.gravity` modifier, other entities via NoGravity plus a tag, and falling blocks via a mixin. Fluids still flow. Thrown or hit things keep vanilla's light drag. Gravity generators (later) hook into `ZeroGravity.isZeroG(level, pos)`.
+- No fall damage in zero-G. Beds and respawn anchors do nothing in deep space and show a lore message (no explosions).
+- Respawn always goes to the deep space spawn until the **Backup Core** (built in Phase 4, Replicator recipe) provides a deep space respawn point.
+- **Energy** replaces hunger. Vanilla food is pinned full and hidden, and the energy bar takes its HUD slot.
+  - Drain: slow idle drain above a 10% reserve, plus thrust (Phase 2), drilling, and the Replicator.
+  - Charge: sunlight, proportional to effective sky light (about 2/3 rate in deep space), plus batteries and chargers later. Dust clouds never give energy.
+  - Below the reserve, idle drain stops and an always-on emergency trickle charges, even in darkness.
+  - At 0: low power mode (thrusters, tools, and the Replicator offline; no damage) until energy recovers to 5%.
+- Player data that only the owner needs uses Data Attachments with NeoForge's built-in attachment sync (available in 21.1.265). Custom `CustomPacketPayload`s are for client-to-server input (Phase 2+).
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.
