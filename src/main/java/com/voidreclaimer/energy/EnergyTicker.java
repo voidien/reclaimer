@@ -3,9 +3,7 @@ package com.voidreclaimer.energy;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModAttachments;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.food.FoodData;
@@ -36,25 +34,12 @@ public final class EnergyTicker {
             return;
         }
         pinHunger(player.getFoodData());
-        if (player.isCreative() || player.isSpectator()) {
+        if (Energy.isExempt(player)) {
             return;
         }
 
-        EnergyData old = player.getData(ModAttachments.ENERGY);
-        EnergyData updated = simulate(old, sunExposure(player));
-        player.setData(ModAttachments.ENERGY, updated);
-
-        if (updated.lowPower() != old.lowPower()) {
-            player.displayClientMessage(updated.lowPower()
-                    ? Component.translatable("message.void_reclaimer.low_power").withStyle(ChatFormatting.RED)
-                    : Component.translatable("message.void_reclaimer.power_restored").withStyle(ChatFormatting.AQUA), true);
-        }
-        if (updated.lowPower() != old.lowPower()
-                || updated.halfIcons() != old.halfIcons()
-                || updated.capacity() != old.capacity()
-                || player.tickCount % PERIODIC_SYNC_TICKS == 0) {
-            player.syncData(ModAttachments.ENERGY);
-        }
+        EnergyData updated = simulate(player.getData(ModAttachments.ENERGY), sunExposure(player));
+        Energy.update(player, updated, player.tickCount % PERIODIC_SYNC_TICKS == 0);
     }
 
     /** One tick of energy simulation. */

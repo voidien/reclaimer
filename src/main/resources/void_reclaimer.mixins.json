@@ -4,7 +4,8 @@
   "package": "com.voidreclaimer.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "FallingBlockMixin"
+    "FallingBlockMixin",
+    "LivingEntityTravelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

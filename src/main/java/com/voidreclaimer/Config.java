@@ -22,6 +22,14 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue ENERGY_RESERVE_FRACTION;
     public static final ModConfigSpec.DoubleValue ENERGY_RESTART_FRACTION;
 
+    public static final ModConfigSpec.DoubleValue STARTER_MASS;
+    public static final ModConfigSpec.DoubleValue STARTER_THRUST;
+    public static final ModConfigSpec.DoubleValue STARTER_BRAKE_THRUST;
+    public static final ModConfigSpec.DoubleValue STARTER_MAX_SPEED;
+    public static final ModConfigSpec.DoubleValue THRUST_ENERGY_COST;
+    public static final ModConfigSpec.DoubleValue BRAKE_ENERGY_COST;
+    public static final ModConfigSpec.DoubleValue SPEED_CHECK_TOLERANCE;
+
     static {
         BUILDER.comment("Where new and respawning players appear in void_reclaimer:deep_space.").push("spawn");
         SPAWN_X = BUILDER.defineInRange("x", 0, -29_000_000, 29_000_000);
@@ -55,6 +63,21 @@ public final class Config {
         ENERGY_RESTART_FRACTION = BUILDER
                 .comment("Fraction of capacity needed to leave low power mode after hitting zero.")
                 .defineInRange("restartFraction", 0.05, 0.0, 1.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Thruster flight. Acceleration is thrust / mass, in blocks per tick per tick.",
+                "Phase 5's modular body replaces these starter drone stats with values from its parts.").push("flight");
+        STARTER_MASS = BUILDER.comment("Starter drone mass.").defineInRange("starterMass", 1.0, 0.01, 10_000.0);
+        STARTER_THRUST = BUILDER.comment("Starter drone thruster force.").defineInRange("starterThrust", 0.03, 0.0, 10.0);
+        STARTER_BRAKE_THRUST = BUILDER
+                .comment("Starter drone inertial dampener force (braking when no thrust key is held).")
+                .defineInRange("starterBrakeThrust", 0.04, 0.0, 10.0);
+        STARTER_MAX_SPEED = BUILDER.comment("Starter drone top speed in blocks per second.").defineInRange("starterMaxSpeed", 10.0, 0.1, 100.0);
+        THRUST_ENERGY_COST = BUILDER.comment("Energy per second while any thruster fires.").defineInRange("thrustEnergyCost", 2.0, 0.0, 1000.0);
+        BRAKE_ENERGY_COST = BUILDER.comment("Energy per second while the dampener is braking.").defineInRange("brakeEnergyCost", 1.0, 0.0, 1000.0);
+        SPEED_CHECK_TOLERANCE = BUILDER
+                .comment("Server speed check: movement over one second may exceed top speed by this factor before it is corrected.")
+                .defineInRange("speedCheckTolerance", 1.5, 1.0, 10.0);
         BUILDER.pop();
     }
 

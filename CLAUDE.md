@@ -89,7 +89,7 @@ src/main/java/com/voidreclaimer/
 ├── energy/                       Phase 1: per-player energy (replaces hunger), sunlight charging
 ├── command/                      /void_reclaimer debug commands
 ├── mixin/                        Mixins (only where no NeoForge event exists); config: void_reclaimer.mixins.json
-├── flight/                       Phase 2: thrust model, server validation (shared + server logic)
+├── flight/                       Phase 2: ThrusterFlight physics (shared), stats, input, settings, server checks
 ├── dust/                         Phase 3: DustNoise sampler, cloud queries, accumulation
 ├── replicator/                   Phase 4: recipe type, menu, virtual inventory
 ├── body/                         Phase 5: SizeClass, Frame/Part definitions, BodyData attachment,
@@ -133,6 +133,13 @@ src/generated/resources/                    datagen output (committed)
   - Charge: sunlight, proportional to effective sky light (about 2/3 rate in deep space), plus batteries and chargers later. Dust clouds never give energy.
   - Below the reserve, idle drain stops and an always-on emergency trickle charges, even in darkness.
   - At 0: low power mode (thrusters, tools, and the Replicator offline; no damage) until energy recovers to 5%.
+**Phase 2**
+- Thrust is relative to the view. W/S thrust along the look vector, A/D strafe along the view's right vector, and Space/Shift thrust along the view's up vector. No roll; a roll/6-DOF camera may come later (e.g. the Ship size class).
+- No drag in thruster flight. The **inertial dampener** (toggle, default key Z, on by default) brakes to a stop when no thrust key is held. With it off you drift indefinitely.
+- Hard top speed from `FlightStats`. Acceleration is thrust / mass. Phase 2 uses config "starter drone" stats; Phase 5 replaces `FlightStats.of(player)` with stats from the body.
+- Energy: thrust 2/s, dampener braking 1/s (config). In low power mode the thrusters and dampener are offline and you drift.
+- Creative uses vanilla flight; key V switches creative to thruster flight (same handling, no energy cost, no speed check).
+- The client simulates movement (`LivingEntityTravelMixin` → `ThrusterFlight.travel`) and sends held keys (`ThrustInputPayload`) on change. The server charges energy and checks displacement over a 1 s window against top speed × tolerance; violations are pulled back to the start of the window.
 - Player data that only the owner needs uses Data Attachments with NeoForge's built-in attachment sync (available in 21.1.265). Custom `CustomPacketPayload`s are for client-to-server input (Phase 2+).
 
 ## Conventions

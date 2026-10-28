@@ -1,6 +1,7 @@
 package com.voidreclaimer;
 
 import com.mojang.logging.LogUtils;
+import com.voidreclaimer.network.ModPayloads;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -17,6 +18,7 @@ public final class VoidReclaimer {
     public VoidReclaimer(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
+        modBus.addListener(ModPayloads::register);
     }
 
     public static ResourceLocation id(String path) {

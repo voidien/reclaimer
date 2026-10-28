@@ -3,6 +3,7 @@ package com.voidreclaimer.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.commands.CommandSourceStack;
@@ -51,8 +52,7 @@ public final class ModCommands {
     private static int setEnergy(CommandSourceStack source, ServerPlayer player, float amount) {
         EnergyData old = player.getData(ModAttachments.ENERGY);
         float energy = Math.min(amount, old.capacity());
-        player.setData(ModAttachments.ENERGY, new EnergyData(energy, old.capacity(), energy <= 0f || old.lowPower()));
-        player.syncData(ModAttachments.ENERGY);
+        Energy.update(player, new EnergyData(energy, old.capacity(), energy <= 0f || old.lowPower()), true);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.energy.set",
                 player.getDisplayName(), format(energy)), true);
         return Mth.floor(energy);

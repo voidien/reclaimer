@@ -23,9 +23,30 @@
 - `assets/void_reclaimer/textures/gui/sprites/hud/energy_empty.png`, `energy_empty_warning.png`, `energy_half.png`, `energy_full.png` (9x9 programmer art).
 - The sun reuses vanilla `textures/environment/sun.png`.
 
+## Phase 2: Zero-G Flight: done
+- `ThrusterFlight` (shared): view-relative thrust (W/S look vector, A/D strafe, Space/Shift view-up), no drag, inertial dampener braking, hard speed cap. Active in zero-G for survival and adventure, and for creative when toggled.
+- `LivingEntityTravelMixin`: replaces vanilla travel (and its air drag) for the local player under thruster flight.
+- `ClientFlightController`: captures movement keys as `FlightInput`, clears vanilla walk/jump/crouch/sprint input, and sends changes with `ThrustInputPayload`. Handles the key bindings.
+- Key bindings (Controls → Void Reclaimer): Toggle Inertial Dampener (Z), Toggle Thruster Flight (Creative) (V); `ToggleFlightSettingPayload`, with the server owning `FlightSettings` (attachment, synced).
+- `ServerFlightHandler`: energy cost for thrust (2/s) and braking (1/s), and a 1-second-window speed check with teleport and `EntityTeleportEvent` resets.
+- `FlightStats`: starter drone stats from config (mass 1, thrust 0.03, brake 0.04, top speed 10 m/s).
+- `Energy` helper (consume / canPowerSystems / update) shared by energy ticking, flight, and commands.
+- `FlightHudLayer`: speed and dampener/offline readout right of the hotbar.
+- Verified in a real client (Xvfb, all compat mods loaded):
+  - Thrust caps at 10.0 m/s.
+  - The dampener stops you; with it off you drift about 10 m/s indefinitely.
+  - Space/Shift move up and down.
+  - At zero energy thrust does nothing, and the HUD shows THRUSTERS OFFLINE.
+  - Energy drains while thrusting.
+  - The creative V toggle switches between vanilla flight and thrusters.
+  - No speed-check corrections during legitimate flight.
+
+### Placeholder assets
+- None new. The flight HUD is text only.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
-- [ ] 2. Zero-G Flight
+- [x] 2. Zero-G Flight
 - [ ] 3. Cosmic Dust
 - [ ] 4. Replicator (includes the Backup Core respawn block)
 - [ ] 5. Modular Body
@@ -38,6 +59,7 @@
 ## Known issues
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning once, because the mod adds a datapack dimension. NeoForge suppresses it after the first confirmation. It's harmless; it could be removed with a mixin if wanted.
 - A cross-dimension `/tp` that the lock cancels still prints vanilla's "Teleported ..." chat line. The player does not move, and the lock message shows on the action bar.
-- Until Phase 2 thrusters exist, a survival player in open void can only drift slowly using vanilla's mid-air control; use creative flight to explore.
+- The server speed check has only been verified for no false positives (legitimate flight at top speed and drift). A real violation needs a modified client to reproduce, so the correction path is untested in-game.
+- The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly. It will be revisited when Phase 5 replaces the player model.
 - Pointed dripstone (and modded falling blocks that don't extend `FallingBlock`) still detach. Their falling entity floats in zero-G and drops as an item after vanilla's 30-second timeout.
 - Gravity is set when an entity joins a level. When gravity generators arrive, this has to become position-based.
