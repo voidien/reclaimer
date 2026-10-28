@@ -8,6 +8,11 @@ import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightSettings;
 import com.voidreclaimer.flight.FlightTracker;
+import com.voidreclaimer.replicator.ReplicatorData;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -61,6 +66,31 @@ public final class ModAttachments {
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());
+
+    /** Per-player Replicator queue, output buffer and milestones. Persisted, kept on death, synced to the owner. */
+    public static final Supplier<AttachmentType<ReplicatorData>> REPLICATOR = ATTACHMENT_TYPES.register("replicator",
+            () -> AttachmentType.builder(() -> ReplicatorData.EMPTY)
+                    .serialize(ReplicatorData.CODEC)
+                    .copyOnDeath()
+                    .sync(new AttachmentSyncHandler<ReplicatorData>() {
+                        @Override
+                        public boolean sendToPlayer(IAttachmentHolder holder, ServerPlayer to) {
+                            return holder == to;
+                        }
+
+                        @Override
+                        public void write(RegistryFriendlyByteBuf buf, ReplicatorData data, boolean initialSync) {
+                            ReplicatorData.STREAM_CODEC.encode(buf, data);
+                        }
+
+                        @Override
+                        public ReplicatorData read(IAttachmentHolder holder, RegistryFriendlyByteBuf buf, ReplicatorData previous) {
+                            ReplicatorData data = ReplicatorData.STREAM_CODEC.decode(buf);
+                            ReplicatorData.clientSyncListener.accept(previous, data);
+                            return data;
+                        }
+                    })
+                    .build());
 
     private ModAttachments() {}
 }

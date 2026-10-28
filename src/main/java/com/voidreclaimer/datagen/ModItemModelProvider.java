@@ -14,5 +14,6 @@ public final class ModItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         basicItem(ModItems.DUST_SENSOR.get());
+        basicItem(ModItems.SALVAGE_TOOL.get());
     }
 }

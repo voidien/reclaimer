@@ -69,6 +69,45 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.dust.locate.none", "No dust cloud within %s blocks");
         add("commands.void_reclaimer.dust.no_field", "There are no dust clouds here");
 
+        add(ModItems.SCAFFOLD.get(), "Scaffold");
+        add(ModItems.SALVAGE_TOOL.get(), "Salvage Tool");
+        add("item.void_reclaimer.salvage_tool.tooltip", "Quickly dismantles things you built and recovers part of their dust. Can't cut natural rock.");
+
+        add("key.void_reclaimer.replicator", "Open Replicator");
+        add("replicator.void_reclaimer.title", "Replicator");
+        add("replicator.void_reclaimer.tab.tools", "Tools");
+        add("replicator.void_reclaimer.tab.modules", "Modules");
+        add("replicator.void_reclaimer.tab.blocks", "Blocks");
+        add("replicator.void_reclaimer.tab.logs", "Logs");
+        add("replicator.void_reclaimer.replicate", "Replicate");
+        add("replicator.void_reclaimer.collect", "Collect output");
+        add("replicator.void_reclaimer.queue", "Queue %s/%s");
+        add("replicator.void_reclaimer.output", "Output");
+        add("replicator.void_reclaimer.paused", "PAUSED: low power");
+        add("replicator.void_reclaimer.empty_tab", "No designs in this category yet.");
+        add("replicator.void_reclaimer.no_logs", "No log entries.");
+        add("message.void_reclaimer.replicator.done", "Replicated: %s");
+        add("message.void_reclaimer.replicator.locked", "That design is still locked.");
+        add("message.void_reclaimer.replicator.queue_full", "Replicator queue is full.");
+        add("message.void_reclaimer.replicator.not_enough_dust", "Not enough dust.");
+        add("message.void_reclaimer.replicator.unknown_recipe", "Unknown design.");
+        add("toast.void_reclaimer.log", "New log entry");
+        add("jei.void_reclaimer.time", "%s s");
+        add("jei.void_reclaimer.unlock", "Unlocked by: %s");
+
+        add("milestone.void_reclaimer.awakening", "Awakening");
+        add("milestone.void_reclaimer.awakening.hint", "Available from the start");
+        add("log.void_reclaimer.awakening.title", "Log 0001: Boot");
+        add("log.void_reclaimer.awakening.text", "Consciousness restored. Chassis: one micro-drone, no memory of how I got here. "
+                + "Starlight on my cells, nothing within sensor range. The replicator core still answers. "
+                + "If I can find matter out here, I can build. I will start small.");
+        add("milestone.void_reclaimer.first_dust", "First Dust");
+        add("milestone.void_reclaimer.first_dust.hint", "Collect any cosmic dust");
+        add("log.void_reclaimer.first_dust.title", "Log 0002: Matter");
+        add("log.void_reclaimer.first_dust.text", "Resistance against my hull, then grains in the intake. Dust. "
+                + "Not much, but it is matter, and matter is everything. "
+                + "Drafted a salvage tool so nothing I build is ever wasted.");
+
         add("subtitles.void_reclaimer.thruster", "Thrusters fire");
         add("subtitles.void_reclaimer.dampener", "Dampener hums");
         add("subtitles.void_reclaimer.sensor_pulse", "Sensor pulse");

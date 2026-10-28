@@ -14,7 +14,11 @@ public final class ModCreativeTabs {
     public static final Supplier<CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.void_reclaimer"))
             .icon(() -> ModItems.DUST_SENSOR.get().getDefaultInstance())
-            .displayItems((parameters, output) -> output.accept(ModItems.DUST_SENSOR.get()))
+            .displayItems((parameters, output) -> {
+                output.accept(ModItems.DUST_SENSOR.get());
+                output.accept(ModItems.SCAFFOLD.get());
+                output.accept(ModItems.SALVAGE_TOOL.get());
+            })
             .build());
 
     private ModCreativeTabs() {}
