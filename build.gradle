@@ -111,8 +111,8 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
-    // Create: required dependency (decided after Phase 4b). Runtime only until code compiles against it.
-    localRuntime "maven.modrinth:create:${create_version}"
+    // Create: required dependency. The Modrinth release jar bundles Flywheel, Ponder and Registrate.
+    implementation "maven.modrinth:create:${create_version}"
 
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"
@@ -138,6 +138,7 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             loader_version_range   : loader_version_range,
             geckolib_version_range : geckolib_version_range,
             jei_version_range      : jei_version_range,
+            create_version_range   : create_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
