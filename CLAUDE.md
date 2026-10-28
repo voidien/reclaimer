@@ -161,6 +161,23 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Energy: thrust 2/s, dampener braking 1/s (config). In low power mode the thrusters and dampener are offline and you drift.
 - Creative uses vanilla flight; key V switches creative to thruster flight (same handling, no energy cost, no speed check).
 - The client simulates movement (`LivingEntityTravelMixin` → `ThrusterFlight.travel`) and sends held keys (`ThrustInputPayload`) on change. The server charges energy and checks displacement over a 1 s window against top speed × tolerance; violations are pulled back to the start of the window.
+**Phase 3**
+- Sense of motion (client, cosmetic):
+  - Space specks on a fixed world lattice give parallax and streak at speed. They are identical everywhere and never hint at clouds.
+  - Optional camera sway, off by default.
+  - Thruster and dampener loop sounds.
+- Clouds are large and rare: 1024-block cells, 32% chance of a cloud each, radius 150–400.
+  - Each cloud has one kind: Metallic, Silicate, Ice, or Carbon.
+  - Density follows a smooth falloff times noise.
+  - Generation is fixed by `DustField` constants (not config) so client and server always agree.
+  - The client gets a one-way-derived seed via the synced `DustFieldSeed` level attachment.
+- Drag scales with density: up to 4% velocity loss per tick, and up to 60% lower top speed in the core. It applies with the dampener off and in low power too. Thrust can't exceed the cloud top speed; arriving faster bleeds off smoothly.
+- Dust is an internal reserve per kind (`DustData` attachment). Gain is density × (trickle + scoop × blocks moved), so flying through a cloud collects far more than sitting still. Capacity is 200 per kind from config; Phase 5a storage parts raise it. Dust never gives energy.
+- **Dust Sensor** is an item that works from anywhere in the inventory (creative tab until the Phase 4 Replicator recipe; body module in Phase 5a). It provides:
+  - Inside a cloud: kind and density readout, plus screen-edge CORE/EDGE markers with distances.
+  - Pulse (key B, 5 energy, 10 s cooldown): after a distance-based delay, a fuzzy echo (6–30° error) gives a rough heading and a FAINT, ECHO, or STRONG strength. No exact distance (not radar).
+  - Hum: within 512 blocks outside a cloud, a tone and signal bar grow the more directly you face the nearest cloud.
+- Server-to-client payloads are registered in common code with a handler that forwards to a client hook (`SensorEchoPayload.clientHandler`), so common classes never reference client classes.
 - Player data that only the owner needs uses Data Attachments with NeoForge's built-in attachment sync (available in 21.1.265). Custom `CustomPacketPayload`s are for client-to-server input (Phase 2+).
 
 ## Conventions

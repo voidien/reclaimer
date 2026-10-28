@@ -49,6 +49,7 @@ public final class ServerFlightHandler {
             stepDistance = 0.0;
         }
 
+        tracker.setLastSpeed(stepDistance);
         chargeEnergy(player, stepDistance);
         if (!Energy.isExempt(player) && checkSpeed(player, tracker, position)) {
             return;

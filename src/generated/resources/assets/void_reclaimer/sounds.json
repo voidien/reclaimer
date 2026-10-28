@@ -1,0 +1,53 @@
+{
+  "dampener": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.beacon.ambient",
+        "pitch": 0.6
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.dampener"
+  },
+  "sensor_echo": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.amethyst_block.chime",
+        "volume": 1.5
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.sensor_echo"
+  },
+  "sensor_hum": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.note_block.bit"
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.sensor_hum"
+  },
+  "sensor_pulse": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.beacon.power_select",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.sensor_pulse"
+  },
+  "thruster": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.elytra.flying",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.thruster"
+  }
+}

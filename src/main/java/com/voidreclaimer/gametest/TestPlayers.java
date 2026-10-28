@@ -1,6 +1,7 @@
 package com.voidreclaimer.gametest;
 
 import com.mojang.authlib.GameProfile;
+import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.space.ModDimensions;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
@@ -37,6 +38,7 @@ final class TestPlayers {
         // The fake connection skips NeoForge's channel negotiation; declare the payloads the mod sends to clients
         // (internal NeoForge API, used only by tests).
         ChannelAttributes.getOrCreateAdHocChannels(connection).add(SyncAttachmentsPayload.TYPE.id());
+        ChannelAttributes.getOrCreateAdHocChannels(connection).add(SensorEchoPayload.TYPE.id());
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         return player;
     }
