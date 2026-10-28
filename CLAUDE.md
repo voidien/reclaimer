@@ -17,7 +17,7 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 
 ## Technical constraints (follow exactly)
 - Namespace `void_reclaimer`. NeoForge 21.1.x, Java 21, **ModDevGradle** with Parchment mappings.
-- Dependencies: **GeckoLib** for body, part, and helper-drone models/animations. **JEI** for recipe categories for the replicator and machines. Look up current compatible versions; don't guess.
+- Dependencies: **Create** (required) for kinetics, machines and the art style; **GeckoLib** for body, part, and helper-drone models/animations. **JEI** for recipe categories for the replicator and machines. Look up current compatible versions; don't guess.
 - Modern 1.21.1 APIs: **Data Attachments** for per-player body/part/dust data, **Data Components** for item data, **block entities**, `CustomPacketPayload` networking, datagen for recipes, loot tables, tags, lang, and models.
 - Body scale uses the vanilla `generic.scale` attribute — no custom hitbox hacks.
 - Flight: player movement is client-side, so thrust and drag run on the client. A payload syncs input to the server, which validates speed against body stats and handles dust gain. Keep the logical client/server split correct even though the mod is singleplayer.
@@ -59,6 +59,7 @@ Build order after Phase 4: 5a → 6 → 7 → 5b → 8 → 9 → 10.
 | Parchment | 1.21.1 / 2024.11.17 | maven.parchmentmc.org |
 | GeckoLib | 4.9.3 (`geckolib-neoforge-1.21.1`) | dl.cloudsmith.io/public/geckolib3 |
 | JEI | 19.70.0.464 (`jei-1.21.1-*`) | maven.blamejared.com |
+| Create (required) | 6.0.10 (`maven.modrinth:create:6.0.10+mc1.21.1`, range `[6.0.10,6.1)`) | api.modrinth.com/maven; bundles Flywheel 1.0.x, Ponder, Registrate |
 | Gradle wrapper | 9.2.1 | matches official NeoForge 1.21.1 MDK |
 | Sodium (dev run only) | mc1.21.1-0.8.13-neoforge | api.modrinth.com/maven |
 | ModernFix (dev run only) | 5.27.27+mc1.21.1 | api.modrinth.com/maven |
@@ -205,6 +206,12 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - **Milestones:** First Structure (10 blocks placed) unlocks the Tether Anchor; Diversified (3 dust kinds) unlocks the Backup Core.
 - **Starter nebula:** an opt-in `voidReclaimerStarterNebula` game rule (off by default), locked when the world is created; its center reaches the client through `DustFieldSeed`.
 - **Saved data:** attachment codecs always give defaults (`optionalFieldOf`), and use `lenientOptionalFieldOf` for lists and complex values, so old or partly broken saves load.
+
+**Create (decided after 4b)**
+- Create is a required dependency. Bodies, cosmetics, machines and stations use Create's look: andesite/brass/copper casings, cogwheels and shafts. Our models may reference Create's textures (`create:block/...`) from the player's installed Create; never copy Create's assets into our jar (its `assets/` are All Rights Reserved; its code is MIT).
+- Gear animation in Create style: cogs spin with thrust and speed, with module work (Replicator, drill, nanites), with energy level (low power winds down), and idle slowly.
+- Body colors: a casing material (Andesite, Brass, Copper, later unlocks) plus a free accent tint.
+- Phases 7–8 build on Create's machines and logistics instead of duplicating them. Create Aeronautics (with Sable) is under evaluation; not a dependency.
 
 **Phase order (decided after 4b):** 5a Body data → 6 Asteroids → 7 Machines → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
 

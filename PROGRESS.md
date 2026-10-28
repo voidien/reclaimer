@@ -168,6 +168,12 @@
 ## Fix: stuck tutorial hint
 - Vanilla's "Move with WASD" tutorial toast never cleared, because thruster flight replaces walking input. `ClientFlightController` now ends the vanilla tutorial once thruster flight is active.
 
+## Create is now required
+- Create 6.0.10 is a required dependency (`neoforge.mods.toml` range `[6.0.10,6.1)`, compiled against the Modrinth release jar).
+- Verified: build, all 40 GameTests, and the client with Sodium, ModernFix, FerriteCore, ImmediatelyFast and JEI. A creative motor spins cogwheels in deep space, with no errors.
+- `TestPlayers` declares every registered play payload on its fake connection, because Create sends its own packets on login.
+- Known: on software OpenGL (the headless test client) Flywheel logs a GLSL 4.60 error and falls back; on real GPUs this shouldn't appear.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
