@@ -1,0 +1,23 @@
+{
+  "biome.void_reclaimer.deep_space": "Deep Space",
+  "commands.void_reclaimer.energy.get": "%s: %s / %s energy (%s)",
+  "commands.void_reclaimer.energy.low_power": "low power",
+  "commands.void_reclaimer.energy.online": "online",
+  "commands.void_reclaimer.energy.set": "Set energy of %s to %s",
+  "hud.void_reclaimer.dampener_off": "Dampener OFF",
+  "hud.void_reclaimer.dampener_on": "Dampener ON",
+  "hud.void_reclaimer.speed": "%s m/s",
+  "hud.void_reclaimer.thrusters_offline": "THRUSTERS OFFLINE",
+  "key.categories.void_reclaimer": "Void Reclaimer",
+  "key.void_reclaimer.toggle_creative_thrusters": "Toggle Thruster Flight (Creative)",
+  "key.void_reclaimer.toggle_dampener": "Toggle Inertial Dampener",
+  "message.void_reclaimer.creative_only": "Thruster flight mode can only be toggled in creative mode.",
+  "message.void_reclaimer.creative_thrusters_off": "Creative: vanilla flight",
+  "message.void_reclaimer.creative_thrusters_on": "Creative: thruster flight",
+  "message.void_reclaimer.dampener_off": "Inertial dampener: OFF. Momentum will carry you.",
+  "message.void_reclaimer.dampener_on": "Inertial dampener: ON",
+  "message.void_reclaimer.dimension_locked": "Navigation error: no viable route to that destination.",
+  "message.void_reclaimer.low_power": "LOW POWER: thrusters, tools and replicator offline.",
+  "message.void_reclaimer.no_planetary_anchor": "No planetary anchor detected. This device needs gravity to function.",
+  "message.void_reclaimer.power_restored": "Power restored. Systems online."
+}

@@ -34,7 +34,15 @@ repositories {
     maven {
         name = 'Jared (JEI)'
         url = 'https://maven.blamejared.com/'
-        content { includeGroup('mezz.jei') }
+        content {
+            includeGroup('mezz.jei')
+            includeGroup('net.mezzdev.config')
+        }
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup('maven.modrinth') }
     }
 }
 
@@ -81,6 +89,12 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    // JUnit tests run with the game's classes loaded (FML JUnit launcher).
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 // Dev-only runtime mods (e.g. full JEI), not published as dependencies.
@@ -96,6 +110,19 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Performance mods we stay compatible with. Dev runs only, never published.
+    localRuntime "maven.modrinth:sodium:${sodium_version}"
+    localRuntime "maven.modrinth:modernfix:${modernfix_version}"
+    localRuntime "maven.modrinth:ferrite-core:${ferritecore_version}"
+    localRuntime "maven.modrinth:immediatelyfast:${immediatelyfast_version}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).
