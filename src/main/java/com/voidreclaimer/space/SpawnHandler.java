@@ -2,6 +2,7 @@ package com.voidreclaimer.space;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.core.BackupCores;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,8 +21,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerRespawnPositionEvent;
  *   <li>Login: anyone who isn't allowed in their current (locked) dimension is moved to the deep space spawn. This
  *       covers brand new players, who vanilla always places in the Overworld first.</li>
  *   <li>Switching from creative/spectator to survival/adventure inside a locked dimension does the same.</li>
- *   <li>Respawn: always the deep space spawn, unless the player has a valid respawn point inside deep space (the
- *       Backup Core, Phase 4). Vanilla beds and anchors can't be set there, see {@link SpawnDeviceBlocker}.</li>
+ *   <li>Respawn: at the Backup Core picked on the death screen if it still holds a charge, otherwise the deep space
+ *       spawn. Vanilla beds and anchors can't be set in deep space, see {@link SpawnDeviceBlocker}.</li>
  * </ul>
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
@@ -59,6 +60,11 @@ public final class SpawnHandler {
     @SubscribeEvent
     static void onRespawnPosition(PlayerRespawnPositionEvent event) {
         ServerPlayer player = (ServerPlayer) event.getEntity();
+        DimensionTransition core = BackupCores.respawnAtSelectedCore(player);
+        if (core != null) {
+            event.setDimensionTransition(core);
+            return;
+        }
         DimensionTransition original = event.getDimensionTransition();
         boolean validDeepSpaceRespawn = original.newLevel().dimension() == ModDimensions.DEEP_SPACE
                 && player.getRespawnPosition() != null

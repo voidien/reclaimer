@@ -1,15 +1,20 @@
 package com.voidreclaimer;
 
+import com.voidreclaimer.client.hud.DeathMarkerLayer;
 import com.voidreclaimer.client.hud.DustMeterLayer;
 import com.voidreclaimer.client.hud.DustSensorLayer;
 import com.voidreclaimer.client.hud.EnergyBarLayer;
 import com.voidreclaimer.client.hud.FlightHudLayer;
+import com.voidreclaimer.client.hud.TetherHudLayer;
 import com.voidreclaimer.client.input.ClientReplicatorController;
 import com.voidreclaimer.client.input.ClientSensorController;
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.client.render.DeepSpaceEffects;
+import com.voidreclaimer.client.screen.BackupCoreScreen;
+import com.voidreclaimer.core.BackupCoreBlock;
 import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.replicator.ReplicatorData;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -28,6 +33,7 @@ public final class VoidReclaimerClient {
         modBus.addListener(ModKeyMappings::register);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
+        BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
     }
 
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
@@ -37,6 +43,8 @@ public final class VoidReclaimerClient {
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, EnergyBarLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_meter"), DustMeterLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_sensor"), DustSensorLayer::render);
     }

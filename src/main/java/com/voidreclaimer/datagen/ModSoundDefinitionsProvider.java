@@ -30,6 +30,9 @@ public final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider 
         add(ModSounds.SENSOR_HUM, definition()
                 .subtitle("subtitles.void_reclaimer.sensor_hum")
                 .with(vanilla("block.note_block.bit")));
+        add(ModSounds.NANITE_BUILD, definition()
+                .subtitle("subtitles.void_reclaimer.nanite_build")
+                .with(vanilla("block.amethyst_cluster.place").pitch(1.5).volume(0.7)));
     }
 
     private static SoundDefinition.Sound vanilla(String event) {

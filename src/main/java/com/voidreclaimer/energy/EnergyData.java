@@ -15,11 +15,15 @@ import net.minecraft.network.codec.StreamCodec;
  * @param lowPower true after energy hit zero, until it recovers to the restart threshold
  */
 public record EnergyData(float energy, float capacity, boolean lowPower) {
+    /** Missing fields load as a full charge at the configured capacity. */
     public static final Codec<EnergyData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.FLOAT.fieldOf("energy").forGetter(EnergyData::energy),
-            Codec.FLOAT.fieldOf("capacity").forGetter(EnergyData::capacity),
-            Codec.BOOL.fieldOf("low_power").forGetter(EnergyData::lowPower)
-    ).apply(instance, EnergyData::new));
+            Codec.FLOAT.optionalFieldOf("energy").forGetter(data -> java.util.Optional.of(data.energy())),
+            Codec.FLOAT.optionalFieldOf("capacity").forGetter(data -> java.util.Optional.of(data.capacity())),
+            Codec.BOOL.optionalFieldOf("low_power", false).forGetter(EnergyData::lowPower)
+    ).apply(instance, (energy, capacity, lowPower) -> {
+        float cap = capacity.orElseGet(() -> Config.ENERGY_CAPACITY.get().floatValue());
+        return new EnergyData(energy.orElse(cap), cap, lowPower);
+    }));
 
     public static final StreamCodec<ByteBuf, EnergyData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.FLOAT, EnergyData::energy,

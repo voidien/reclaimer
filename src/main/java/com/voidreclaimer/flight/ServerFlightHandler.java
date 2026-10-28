@@ -4,6 +4,7 @@ import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.tether.Tether;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +52,10 @@ public final class ServerFlightHandler {
 
         tracker.setLastSpeed(stepDistance);
         chargeEnergy(player, stepDistance);
-        if (!Energy.isExempt(player) && checkSpeed(player, tracker, position)) {
+        if (Tether.isRecalling(player)) {
+            // The server itself started the winch, which is faster than top speed: restart the window after it.
+            tracker.clear();
+        } else if (!Energy.isExempt(player) && checkSpeed(player, tracker, position)) {
             return;
         }
         tracker.record(position, WINDOW_TICKS);

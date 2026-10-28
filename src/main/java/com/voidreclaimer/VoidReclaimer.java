@@ -2,7 +2,10 @@ package com.voidreclaimer;
 
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.network.ModPayloads;
+import com.voidreclaimer.dust.StarterNebula;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.registry.ModDataComponents;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModCreativeTabs;
 import com.voidreclaimer.registry.ModItems;
@@ -27,10 +30,13 @@ public final class VoidReclaimer {
         ModSounds.SOUND_EVENTS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modBus);
+        ModDataComponents.COMPONENTS.register(modBus);
         ModRecipeTypes.RECIPE_TYPES.register(modBus);
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modBus);
         modBus.addListener(ModPayloads::register);
+        StarterNebula.init();
     }
 
     public static ResourceLocation id(String path) {

@@ -5,6 +5,10 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.core.BackupCores;
+import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Replicator;
+import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
@@ -33,6 +37,9 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer energy get|set <player> [amount]}</li>
  *   <li>{@code /void_reclaimer dust get <player>}, {@code dust set <player> <kind> <amount>}</li>
  *   <li>{@code /void_reclaimer dust locate [range]}: nearest cloud from the command position</li>
+ *   <li>{@code /void_reclaimer milestone grant|revoke <player> <milestone>} (a revoked milestone whose condition
+ *       still holds is granted again at the next check)</li>
+ *   <li>{@code /void_reclaimer core charge <player>}: fill every Backup Core the player owns</li>
  * </ul>
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
@@ -74,7 +81,43 @@ public final class ModCommands {
                         .then(Commands.literal("locate")
                                 .executes(ctx -> locate(ctx.getSource(), DEFAULT_LOCATE_RANGE))
                                 .then(Commands.argument("range", IntegerArgumentType.integer(1, 100_000))
-                                        .executes(ctx -> locate(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "range")))))));
+                                        .executes(ctx -> locate(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "range"))))))
+                .then(Commands.literal("milestone")
+                        .then(milestoneAction("grant", true))
+                        .then(milestoneAction("revoke", false)))
+                .then(Commands.literal("core")
+                        .then(Commands.literal("charge")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> chargeCores(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))));
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> milestoneAction(String name, boolean grant) {
+        return Commands.literal(name)
+                .then(Commands.argument("player", EntityArgument.player())
+                        .then(Commands.argument("milestone", StringArgumentType.word())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                        Arrays.stream(Milestone.values()).map(Milestone::getSerializedName), builder))
+                                .executes(ctx -> setMilestone(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
+                                        StringArgumentType.getString(ctx, "milestone"), grant))));
+    }
+
+    private static int setMilestone(CommandSourceStack source, ServerPlayer player, String name, boolean grant) {
+        Milestone milestone = Arrays.stream(Milestone.values()).filter(m -> m.getSerializedName().equals(name)).findFirst().orElse(null);
+        if (milestone == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.milestone.unknown", name));
+            return 0;
+        }
+        ReplicatorData data = Replicator.data(player);
+        Replicator.store(player, grant ? data.withUnlocked(milestone) : data.withoutUnlocked(milestone));
+        source.sendSuccess(() -> Component.translatable(grant ? "commands.void_reclaimer.milestone.granted"
+                : "commands.void_reclaimer.milestone.revoked", milestone.title(), player.getDisplayName()), true);
+        return 1;
+    }
+
+    private static int chargeCores(CommandSourceStack source, ServerPlayer player) {
+        int count = BackupCores.fillAll(player);
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.core.charged", count, player.getDisplayName()), true);
+        return count;
     }
 
     private static final int DEFAULT_LOCATE_RANGE = 4096;

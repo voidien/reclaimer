@@ -1,5 +1,7 @@
 {
   "values": [
-    "void_reclaimer:scaffold"
+    "void_reclaimer:scaffold",
+    "void_reclaimer:tether_anchor",
+    "void_reclaimer:backup_core"
   ]
 }

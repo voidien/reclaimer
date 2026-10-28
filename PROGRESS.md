@@ -111,12 +111,66 @@
 - `textures/block/scaffold.png`, `textures/item/salvage_tool.png` (16x16 programmer art).
 - Milestone toast reuses vanilla's `toast/advancement` sprite. The Replicator screen is drawn with flat fills.
 
+## Phase 4b: Nanite Swarm, Tether Anchor, Backup Core: done
+- **Nanite Swarm** (`nanite/`: `NaniteSwarmItem`, `Nanites`, `NaniteTargeting`; `ClientNaniteController`):
+  - Right-click builds the offhand block, or Scaffold from the inventory, in empty space 2–6 blocks ahead. The distance is stored in the item's `nanite_range` component; sneak + scroll changes it.
+  - Looking at a block within reach builds against its face instead.
+  - A white outline shows where the block will go.
+  - Costs 1 energy per block (config) with a 0.5 s cooldown. Offline in low power.
+  - Unlocked by First Dust (M20 S10 C10, 40 s).
+- **Tether Anchor** (`tether/`: `TetherAnchorBlock`, `Tether`, `TetherData`, `TetherPhysics`; `ClientTetherController`, `TetherHudLayer`):
+  - Right-click to clip on or off. While clipped, a leash stops you drifting past 16 blocks (config) and gently pulls you back.
+  - Hold G to recall to the last anchor:
+    - within 256 blocks, a 1 s hold starts a pull at 2× top speed costing 3 energy/s;
+    - farther away, a 3 s hold teleports you for 25 energy, with a 60 s cooldown.
+  - Recall works in the same dimension only and not in low power. While the pull runs, the server speed check steps aside.
+  - The HUD shows "TETHER 12/16m" (orange when taut), the hold progress, and "RECALLING".
+  - Breaking the anchor clears the tether.
+  - Unlocked by First Structure (M15 S5, 20 s).
+- **Backup Core** (`core/`: `BackupCoreBlock`, `BackupCoreBlockEntity`, `BackupCores`, `BackupCoreList`, `CoreCharging`; `BackupCoreScreen`, `DeathScreenCores`):
+  - Up to 3 per player, each holding 0–3 charges.
+  - Core UI: rename, charge instantly for Metallic 10 + Silicate 10, and a sunlight progress bar. Sunlight adds one charge per 12,000 lit ticks; deep space's sun gives 2/3 of that rate.
+  - The death screen lists charged cores plus "Deep space spawn (free)". The chosen core spends a charge on respawn; if it's gone or empty, you go to the free spawn.
+  - Unlocked by Diversified (M30 S20 I10 C10, 60 s).
+- **Death marker** (`DeathMarker`, `DeathMarkerLayer`): "DROPS 123m" marker to where you died (when items drop), cleared within 8 blocks.
+- **Milestones**:
+  - First Structure: place 10 blocks, by hand or with nanites.
+  - Diversified: hold 3 dust kinds.
+  - Each adds a new AI log.
+  - Criteria now take a `MilestoneContext`, and `ReplicatorData` counts placed blocks.
+- **Starter nebula** (`StarterNebula`):
+  - The `voidReclaimerStarterNebula` game rule (off by default) is read once when deep space first loads, saved on the level, and never re-read.
+  - When on, four small pockets, one per dust kind, sit 450 blocks from spawn. The center reaches clients in `DustFieldSeed`.
+- **Commands:** `/void_reclaimer milestone grant|revoke <player> <milestone>` and `/void_reclaimer core charge <player>`.
+- **Save-data safety:** every saved attachment field has a default. Lists use lenient decoding, so one bad entry resets that field instead of failing the load.
+- **Salvage:** Tether Anchor and Backup Core are salvageable.
+- **Tests:**
+  - 52 unit tests (+11): nanite targeting, leash and winch physics, core charging and core list, nebula placement, new milestones, and lenient decoding.
+  - 40 GameTests (+12): nanite build, offhand, material and power; First Structure; clip, leash, winch energy and arrival, teleport and cooldown; core limit, ownership, sunlight, dust charging, rename distance, respawn at a core and fallback; death marker; nebula lock.
+  - Mutation-checked: disabling core respawn, nanite energy, or the leash each fails the matching test.
+  - The fake test client now acknowledges dimension changes (`hasChangedDimension`), so test players can take damage.
+- Verified in a real client (all compat mods loaded):
+  - The nanite outline shows, and building in empty space works (Scaffold 16 → 15).
+  - Clipping an anchor shows "TETHER 1/16m". Thrusting away with the dampener off stops at 16/16m (orange).
+  - Holding G shows "RECALL 60%", then pulls back to 1m with no speed-check corrections.
+  - The core UI renames ("Home") and charges (M50/S34 → M40/S24).
+  - After /kill, the death screen lists "Home (1)". Choosing it respawns at the core, and "DROPS 9m" points back.
+  - Revoking a milestone shows the toast again.
+- Bugs found in the client and fixed:
+  - Right-clicking an anchor or core while holding a block toggled the block's own action instead of placing against it. Building tools now skip it.
+  - A milestone reached while offline was granted before the client's first data sync, so no toast appeared. Milestone checks now wait 2 s after login.
+
+### Placeholder assets
+- `textures/item/nanite_swarm.png`, `textures/block/tether_anchor.png`, `textures/block/backup_core.png` (16x16 programmer art). Tether Anchor and Backup Core are plain cubes (`cube_all`).
+- Sound: `nanite_build` → `block.amethyst_cluster.place`.
+- The core screen and the death screen list are drawn with flat fills and vanilla buttons.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
 - [x] 3. Cosmic Dust
 - [x] 4a. Replicator (queue, milestones and logs, JEI, Scaffold, Salvage Tool)
-- [ ] 4b. Nanite Swarm, Tether Anchor, Backup Core
+- [x] 4b. Nanite Swarm, Tether Anchor, Backup Core (plus death marker and starter nebula)
 - [ ] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 6. Asteroids
@@ -133,5 +187,8 @@
 - The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly. It will be revisited when Phase 5 replaces the player model.
 - Pointed dripstone (and modded falling blocks that don't extend `FallingBlock`) still detach. Their falling entity floats in zero-G and drops as an item after vanilla's 30-second timeout.
 - Gravity is set when an entity joins a level. When gravity generators arrive, this has to become position-based.
-- Scaffold can't be placed in empty space yet, because vanilla placement needs an adjacent block. The Phase 4b Nanite Swarm fixes this.
+- Without the starter nebula (the default), a world can spawn far from any Silicate cloud. You can't make Scaffold without silicate, so the start may mean a long flight. Revisit after play-testing.
+- Sneak + scroll for the Nanite range also thrusts down while Shift is held (Shift is the "down" thruster key). With the dampener on the drift is small.
+- The death screen list shows core charges as of the moment of death; sunlight charges gained while the screen is open appear only after respawn.
+- Respawn at a core always uses the spot above the core (or the first free side). It doesn't check whether that spot is dark or enclosed.
 - The milestone toast was not caught in a screenshot (it fires on first login, during "Loading terrain"). Its trigger is covered by tests.

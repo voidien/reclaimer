@@ -33,6 +33,8 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 6. Keep `PROGRESS.md` updated with what was finished and any known issues.
 
 ## Phases
+Build order after Phase 4: 5a → 6 → 7 → 5b → 8 → 9 → 10.
+
 1. **Deep Space & Spawn:** `deep_space` dimension (datapack JSON), forced spawn/respawn, no gravity, hunger, or fall damage.
 2. **Zero-G Flight:** WASD/Space/Shift thrust, momentum, dampening, mass-scaled handling, thrust payload with server validation.
 3. **Cosmic Dust:** noise sampler, invisible clouds, drag, dust accumulation, basic dust meter, Dust Sensor HUD module.
@@ -110,6 +112,9 @@ src/main/java/com/voidreclaimer/
 ├── dust/                         Phase 3: DustNoise sampler, cloud queries, accumulation
 ├── replicator/                   Phase 4: recipe type, DustCost, milestones, queue logic, ReplicatorData
 ├── salvage/                      Phase 4: Salvage Tool and dust refunds
+├── nanite/                       Phase 4: Nanite Swarm (build in empty space)
+├── tether/                       Phase 4: Tether Anchor leash and recall
+├── core/                         Phase 4: Backup Cores, respawn choice, death marker
 ├── body/                         Phase 5: SizeClass, Frame/Part definitions, BodyData attachment,
 │   ├── part/                     part types & stats
 │   └── assembly/                 assembly menu/logic
@@ -186,7 +191,22 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Recipes unlock through `Milestone`s. Each milestone adds an AI log entry (toast + Logs tab). New milestones are enum entries with an `isReached` check plus lang keys for their title, hint, and log.
 - The recipe type `void_reclaimer:replicator` is datagen-only (`ModRecipeProvider`, ids `replicator/<name>`) and `isSpecial()`, so it stays out of the vanilla recipe book. JEI shows it.
 - The Salvage Tool refunds 50% (config) of the cheapest per-item recipe cost for blocks in `#void_reclaimer:salvageable`, with no drop.
-- Phase 4b (next): the Nanite Swarm builds the offhand block (Scaffold by default) in empty space ahead of you. Then the Tether Anchor. Then Backup Cores: several per player, chosen on the death screen, up to 3 charges refilled by dust (instant) and sunlight (trickle), renamed in the core UI. The deep space spawn is always free.
+**Phase 4b**
+- **Nanite Swarm** builds the offhand block (Scaffold from the inventory if the offhand is empty) in empty space 2–6 blocks ahead (sneak + scroll, `nanite_range` component). It costs 1 energy per block, uses vanilla `BlockItem#place`, and places against a looked-at block if there is one. The outline is a plain white box.
+- **Tether Anchor**:
+  - Leash: clip on with right-click; you drift up to 16 blocks, then get pulled back gently. Client physics in `ThrusterFlight`.
+  - Recall (hold G): within 256 blocks a 1 s hold starts a pull at 2× top speed for 3 energy/s, stopped by releasing G. Farther away, a 3 s hold teleports you for 25 energy with a 60 s cooldown. Same dimension only.
+  - HUD: text only, "TETHER x/16m".
+- **Backup Core**:
+  - Up to 3 per player, each with 0–3 charges. A charge costs Metallic 10 + Silicate 10, or sunlight refills it slowly.
+  - The core UI renames it. On death the death screen lists charged cores; picking one spends a charge on respawn, with the deep space spawn as the free default.
+  - Items drop and float at the death spot; the HUD death marker points there.
+- Logic for nanites and the tether lives in plain classes (`Nanites`, `Tether`) so Phase 5a can run them from body modules.
+- **Milestones:** First Structure (10 blocks placed) unlocks the Tether Anchor; Diversified (3 dust kinds) unlocks the Backup Core.
+- **Starter nebula:** an opt-in `voidReclaimerStarterNebula` game rule (off by default), locked when the world is created; its center reaches the client through `DustFieldSeed`.
+- **Saved data:** attachment codecs always give defaults (`optionalFieldOf`), and use `lenientOptionalFieldOf` for lists and complex values, so old or partly broken saves load.
+
+**Phase order (decided after 4b):** 5a Body data → 6 Asteroids → 7 Machines → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.

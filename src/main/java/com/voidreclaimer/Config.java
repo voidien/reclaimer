@@ -42,6 +42,16 @@ public final class Config {
 
     public static final ModConfigSpec.DoubleValue REPLICATOR_ENERGY;
     public static final ModConfigSpec.DoubleValue SALVAGE_REFUND;
+    public static final ModConfigSpec.DoubleValue NANITE_ENERGY;
+
+    public static final ModConfigSpec.DoubleValue TETHER_LENGTH;
+    public static final ModConfigSpec.DoubleValue RECALL_SPEED_FACTOR;
+    public static final ModConfigSpec.DoubleValue RECALL_PULL_RANGE;
+    public static final ModConfigSpec.DoubleValue RECALL_PULL_ENERGY;
+    public static final ModConfigSpec.DoubleValue RECALL_TELEPORT_ENERGY;
+    public static final ModConfigSpec.IntValue RECALL_TELEPORT_COOLDOWN;
+
+    public static final ModConfigSpec.IntValue CORE_SUN_TICKS;
 
     static {
         BUILDER.comment("Where new and respawning players appear in void_reclaimer:deep_space.").push("spawn");
@@ -121,6 +131,26 @@ public final class Config {
         SALVAGE_REFUND = BUILDER
                 .comment("Fraction of a block's Replicator dust cost refunded when the Salvage Tool dismantles it.")
                 .defineInRange("salvageRefund", 0.5, 0.0, 1.0);
+        NANITE_ENERGY = BUILDER.comment("Energy per block built by the Nanite Swarm.").defineInRange("naniteEnergy", 1.0, 0.0, 1000.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Tether Anchor: leash and recall.").push("tether");
+        TETHER_LENGTH = BUILDER.comment("How far you can drift from a clipped anchor, in blocks.").defineInRange("length", 16.0, 2.0, 256.0);
+        RECALL_SPEED_FACTOR = BUILDER
+                .comment("Recall pull speed as a multiple of top speed.")
+                .defineInRange("recallSpeedFactor", 2.0, 1.0, 10.0);
+        RECALL_PULL_RANGE = BUILDER
+                .comment("Within this distance recall pulls you in; farther away it teleports.")
+                .defineInRange("recallPullRange", 256.0, 8.0, 100_000.0);
+        RECALL_PULL_ENERGY = BUILDER.comment("Energy per second while the recall pulls.").defineInRange("recallPullEnergy", 3.0, 0.0, 1000.0);
+        RECALL_TELEPORT_ENERGY = BUILDER.comment("Energy for a long-range recall teleport.").defineInRange("recallTeleportEnergy", 25.0, 0.0, 1000.0);
+        RECALL_TELEPORT_COOLDOWN = BUILDER.comment("Seconds between recall teleports.").defineInRange("recallTeleportCooldown", 60, 0, 3600);
+        BUILDER.pop();
+
+        BUILDER.comment("Backup Cores.").push("backupCore");
+        CORE_SUN_TICKS = BUILDER
+                .comment("Ticks of full sunlight per respawn charge (deep space's distant sun is about 2/3 as fast).")
+                .defineInRange("sunTicksPerCharge", 12_000, 20, 1_000_000);
         BUILDER.pop();
     }
 
