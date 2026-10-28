@@ -4,11 +4,17 @@ import com.mojang.authlib.GameProfile;
 import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.space.ModDimensions;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
+import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +22,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.network.payload.SyncAttachmentsPayload;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 /**
  * Real {@link ServerPlayer}s on a fake connection for GameTests. Unlike vanilla's mock player they use the real game
@@ -35,12 +42,26 @@ final class TestPlayers {
         ServerPlayer player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
-        // The fake connection skips NeoForge's channel negotiation; declare the payloads the mod sends to clients
-        // (internal NeoForge API, used only by tests).
-        ChannelAttributes.getOrCreateAdHocChannels(connection).add(SyncAttachmentsPayload.TYPE.id());
-        ChannelAttributes.getOrCreateAdHocChannels(connection).add(SensorEchoPayload.TYPE.id());
+        // The fake connection skips NeoForge's channel negotiation; declare every registered play payload, ours and
+        // other mods' (Create sends its own on login). Internal NeoForge API, used only by tests.
+        ChannelAttributes.getOrCreateAdHocChannels(connection).addAll(playPayloadIds());
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
         return player;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Set<ResourceLocation> playPayloadIds() {
+        try {
+            Field field = NetworkRegistry.class.getDeclaredField("PAYLOAD_REGISTRATIONS");
+            field.setAccessible(true);
+            Map<ConnectionProtocol, Map<ResourceLocation, ?>> registrations = (Map<ConnectionProtocol, Map<ResourceLocation, ?>>) field.get(null);
+            Set<ResourceLocation> ids = new HashSet<>(registrations.getOrDefault(ConnectionProtocol.PLAY, Map.of()).keySet());
+            ids.add(SyncAttachmentsPayload.TYPE.id());
+            ids.add(SensorEchoPayload.TYPE.id());
+            return ids;
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Can't read NeoForge payload registrations", e);
+        }
     }
 
     /** A survival player floating in deep space at the given position. */
