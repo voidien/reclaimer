@@ -165,6 +165,9 @@
 - Sound: `nanite_build` → `block.amethyst_cluster.place`.
 - The core screen and the death screen list are drawn with flat fills and vanilla buttons.
 
+## Fix: stuck tutorial hint
+- Vanilla's "Move with WASD" tutorial toast never cleared, because thruster flight replaces walking input. `ClientFlightController` now ends the vanilla tutorial once thruster flight is active.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
