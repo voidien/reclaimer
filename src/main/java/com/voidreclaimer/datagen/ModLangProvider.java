@@ -51,6 +51,9 @@ public final class ModLangProvider extends LanguageProvider {
         }
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
+        add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
+        add("message.void_reclaimer.scanner_on", "Cloud scanner: ON");
+        add("message.void_reclaimer.scanner_off", "Cloud scanner: OFF");
         add("hud.void_reclaimer.sensor.cloud", "%s cloud: %s%% density");
         add("hud.void_reclaimer.sensor.core", "CORE %sm");
         add("hud.void_reclaimer.sensor.edge", "EDGE %sm");

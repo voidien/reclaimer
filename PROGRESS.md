@@ -174,6 +174,17 @@
 - `TestPlayers` declares every registered play payload on its fake connection, because Create sends its own packets on login.
 - Known: on software OpenGL (the headless test client) Flywheel logs a GLSL 4.60 error and falls back; on real GPUs this shouldn't appear.
 
+## Cloud scanner: done
+- `CloudShape` (pure): the true cloud edge on a 16×32 latitude/longitude ray grid, at density 0.05, refined by bisection.
+- `CloudScannerRenderer`: with a Dust Sensor, key N toggles a wire mesh with a faint tint in the kind's color for clouds within 512 blocks. Meshes are computed in the background and cached. Drawn unfogged; fog state is restored afterwards.
+- Client config `cloudScanner` (default on) is saved when toggled.
+- Tests: 54 unit tests (+2, `CloudShapeTest`: no dust beyond the edge, dust at the edge, lumpy, deterministic, closed seam). Mutation-checked: returning the outer bisection bound fails the test.
+- Verified in a real client: an Ice cloud seen from inside (grid around you) and from outside (lumpy globe); N turns it off and on, and the setting persists.
+
+## Create Aeronautics spike (not adopted)
+- Sable + Aeronautics load with Create and the performance mods, and all 40 GameTests pass locally. Paused sub-levels draw with Sodium.
+- Blocker: in `deep_space`, sub-levels are flung away or removed ("extreme Y coordinate range") on their first physics tick, with or without a zero-gravity `dimension_physics` file. Flight next to a moving ship couldn't be tested. Revisit before Phase 8.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight

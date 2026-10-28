@@ -1,5 +1,6 @@
 package com.voidreclaimer.client.input;
 
+import com.voidreclaimer.ClientConfig;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustCloud;
@@ -11,9 +12,11 @@ import com.voidreclaimer.network.SensorPulsePayload;
 import com.voidreclaimer.registry.ModSounds;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -82,6 +85,13 @@ public final class ClientSensorController {
             humTarget = null;
             signal = 0f;
             return;
+        }
+        while (ModKeyMappings.CLOUD_SCANNER.consumeClick()) {
+            boolean on = !ClientConfig.CLOUD_SCANNER.get();
+            ClientConfig.CLOUD_SCANNER.set(on);
+            ClientConfig.CLOUD_SCANNER.save();
+            player.displayClientMessage(Component.translatable(on ? "message.void_reclaimer.scanner_on" : "message.void_reclaimer.scanner_off")
+                    .withStyle(ChatFormatting.AQUA), true);
         }
         tick++;
         while (ModKeyMappings.SENSOR_PULSE.consumeClick()) {
