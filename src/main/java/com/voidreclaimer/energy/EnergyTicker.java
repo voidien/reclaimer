@@ -1,6 +1,5 @@
 package com.voidreclaimer.energy;
 
-import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.core.BlockPos;
@@ -23,7 +22,6 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class EnergyTicker {
-    private static final int TICKS_PER_SECOND = 20;
     private static final int PERIODIC_SYNC_TICKS = 20;
 
     private EnergyTicker() {}
@@ -38,28 +36,27 @@ public final class EnergyTicker {
             return;
         }
 
-        EnergyData updated = simulate(player.getData(ModAttachments.ENERGY), sunExposure(player));
+        EnergyData updated = simulate(player.getData(ModAttachments.ENERGY), sunExposure(player), EnergyRules.fromConfig());
         Energy.update(player, updated, player.tickCount % PERIODIC_SYNC_TICKS == 0);
     }
 
     /** One tick of energy simulation. */
-    static EnergyData simulate(EnergyData data, float sunExposure) {
-        float capacity = Config.ENERGY_CAPACITY.get().floatValue();
-        float reserve = capacity * Config.ENERGY_RESERVE_FRACTION.get().floatValue();
+    public static EnergyData simulate(EnergyData data, float sunExposure, EnergyRules rules) {
+        float capacity = rules.capacity();
         float energy = Math.min(data.energy(), capacity);
 
-        energy += sunExposure * perTick(Config.ENERGY_SUN_CHARGE.get());
-        if (energy > reserve) {
-            energy -= perTick(Config.ENERGY_IDLE_DRAIN.get());
+        energy += sunExposure * rules.sunChargePerTick();
+        if (energy > capacity * rules.reserveFraction()) {
+            energy -= rules.idleDrainPerTick();
         } else {
-            energy += perTick(Config.ENERGY_EMERGENCY_CHARGE.get());
+            energy += rules.emergencyChargePerTick();
         }
         energy = Mth.clamp(energy, 0f, capacity);
 
         boolean lowPower = data.lowPower();
         if (energy <= 0f) {
             lowPower = true;
-        } else if (lowPower && energy >= capacity * Config.ENERGY_RESTART_FRACTION.get().floatValue()) {
+        } else if (lowPower && energy >= capacity * rules.restartFraction()) {
             lowPower = false;
         }
         return new EnergyData(energy, capacity, lowPower);
@@ -86,9 +83,5 @@ public final class EnergyTicker {
         }
         food.setSaturation(0f);
         food.setExhaustion(0f);
-    }
-
-    private static float perTick(double perSecond) {
-        return (float) (perSecond / TICKS_PER_SECOND);
     }
 }

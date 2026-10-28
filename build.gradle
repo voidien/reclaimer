@@ -89,6 +89,12 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    // JUnit tests run with the game's classes loaded (FML JUnit launcher).
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 // Dev-only runtime mods (e.g. full JEI), not published as dependencies.
@@ -110,6 +116,13 @@ dependencies {
     localRuntime "maven.modrinth:modernfix:${modernfix_version}"
     localRuntime "maven.modrinth:ferrite-core:${ferritecore_version}"
     localRuntime "maven.modrinth:immediatelyfast:${immediatelyfast_version}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).

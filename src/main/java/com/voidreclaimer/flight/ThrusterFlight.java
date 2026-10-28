@@ -41,43 +41,18 @@ public final class ThrusterFlight {
         player.calculateEntityAnimation(true);
     }
 
-    /** One tick of thruster physics: returns the new velocity. */
+    /** One tick of thruster physics for this player: returns the new velocity. */
     public static Vec3 step(Player player, Vec3 velocity, FlightInput input) {
-        FlightStats stats = FlightStats.of(player);
-        if (Energy.canPowerSystems(player)) {
-            Vec3 direction = thrustDirection(player, input);
-            if (direction.lengthSqr() > 1.0E-6) {
-                velocity = velocity.add(direction.normalize().scale(stats.acceleration()));
-            } else if (player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
-                velocity = brake(velocity, stats.brakeDeceleration());
-            }
-        }
-        double max = stats.maxSpeed();
-        if (velocity.lengthSqr() > max * max) {
-            velocity = velocity.normalize().scale(max);
-        }
-        return velocity;
+        return FlightPhysics.step(
+                velocity,
+                FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input),
+                Energy.canPowerSystems(player),
+                player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
+                FlightStats.of(player));
     }
 
     /** Whether the dampener is braking this tick (for energy cost). */
     public static boolean isBraking(Player player, FlightInput input, double speed) {
         return !input.isThrusting() && speed > 1.0E-3 && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener();
-    }
-
-    static Vec3 thrustDirection(Player player, FlightInput input) {
-        Vec3 forward = player.calculateViewVector(player.getXRot(), player.getYRot());
-        Vec3 up = player.calculateViewVector(player.getXRot() - 90f, player.getYRot());
-        Vec3 right = forward.cross(up);
-        return forward.scale(input.forwardAxis())
-                .add(right.scale(input.strafeAxis()))
-                .add(up.scale(input.verticalAxis()));
-    }
-
-    private static Vec3 brake(Vec3 velocity, double deceleration) {
-        double speed = velocity.length();
-        if (speed <= deceleration) {
-            return Vec3.ZERO;
-        }
-        return velocity.scale((speed - deceleration) / speed);
     }
 }

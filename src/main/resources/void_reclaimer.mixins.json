@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "FallingBlockMixin",
-    "LivingEntityTravelMixin"
+    "LivingEntityTravelMixin",
+    "GameTestServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -88,11 +88,13 @@ public final class ServerFlightHandler {
         }
         // The oldest entry was recorded `ticks` ticks before the current position.
         Vec3 start = tracker.oldest();
-        double allowed = FlightStats.of(player).maxSpeed() * ticks * Config.SPEED_CHECK_TOLERANCE.get() + SLACK_BLOCKS;
-        double moved = start.distanceTo(position);
-        if (moved <= allowed) {
+        double maxSpeed = FlightStats.of(player).maxSpeed();
+        double tolerance = Config.SPEED_CHECK_TOLERANCE.get();
+        if (!FlightPhysics.exceedsSpeedLimit(start, position, ticks, maxSpeed, tolerance, SLACK_BLOCKS)) {
             return false;
         }
+        double moved = start.distanceTo(position);
+        double allowed = maxSpeed * ticks * tolerance + SLACK_BLOCKS;
         VoidReclaimer.LOGGER.warn("{} moved {} blocks in {} ticks under thruster flight (allowed {}); correcting",
                 player.getName().getString(), String.format("%.2f", moved), ticks, String.format("%.2f", allowed));
         tracker.clear();

@@ -37,7 +37,9 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 2. **Zero-G Flight:** WASD/Space/Shift thrust, momentum, dampening, mass-scaled handling, thrust payload with server validation.
 3. **Cosmic Dust:** noise sampler, invisible clouds, drag, dust accumulation, basic dust meter, Dust Sensor HUD module.
 4. **Replicator:** keybind GUI, custom recipe type with datagen, JEI category.
-5. **Modular Body:** part/frame data model, size classes, `generic.scale`, GeckoLib rendering replacing the vanilla player model (incl. first person), assembly UI.
+5. **Modular Body**, split in two:
+   - **5a. Body data:** part/frame data model, size classes, `generic.scale`, body stats driving flight (`FlightStats`), storage capacity, and sensor/tool module slots.
+   - **5b. Body rendering & assembly:** GeckoLib rendering replacing the vanilla player model (incl. first person), and the assembly UI.
 6. **Asteroids:** floating rock/ice worldgen, drill-gated mining.
 7. **Machines:** single-block processing machines and item transport between them.
 8. **Stations & Helpers:** multiblock structures and helper drone entities that ferry items.
@@ -63,7 +65,22 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 
 All versions live in `gradle.properties`. `neoforge.mods.toml` is generated from `src/main/templates/` via the `generateModMetadata` task.
 
-Commands: `./gradlew build`, `./gradlew runClient`, `./gradlew runData` (writes to `src/generated/resources`).
+Commands: `./gradlew build` (includes unit tests), `./gradlew runGameTestServer`, `./gradlew runClient`, `./gradlew runData` (writes to `src/generated/resources`).
+
+## Testing
+- **Unit tests** (`src/test/java`, JUnit 5 through MDG's `unitTest`, game classes on the classpath): pure logic only. Keep simulation math in config-free functions (`FlightPhysics`, `EnergyTicker.simulate` with `EnergyRules`) so it can be tested here.
+- **GameTests** (`com.voidreclaimer.gametest`, `@GameTestHolder(MOD_ID)`, template `void_reclaimer:empty`): run in a real headless server with `./gradlew runGameTestServer`.
+  - `GameTestServerMixin` makes the GameTest server load datapack dimensions, so tests can use `deep_space`.
+  - `TestPlayers` creates real survival `ServerPlayer`s on a fake connection. Call `doTick()` to run player ticks.
+  - The GameTest world persists between local runs: clear your test area first, and give each test its own coordinates.
+  - Wait a few ticks after force-loading a chunk before placing blocks; scheduled ticks set earlier are dropped.
+- Every phase adds unit tests and GameTests for its logic.
+- Verify new tests can fail: break the feature and check that the test catches it.
+- In-game client checks still happen for visuals, input, and HUD.
+- **CI:** `.github/workflows/build.yml` runs build + unit tests, GameTests, and a datagen up-to-date check on every push and PR.
+
+## Branches
+- `main` is the stable line. Each phase (or pair of small phases) is developed on its own branch and merged by pull request.
 
 ## Performance-mod compatibility
 The mod must work alongside **Sodium, ModernFix, FerriteCore, and ImmediatelyFast**. They are `localRuntime` dependencies, so `./gradlew runClient` always launches with them. They are never declared in `neoforge.mods.toml` and never published. Iris is intentionally not supported or tested. Rules:
@@ -119,6 +136,9 @@ src/main/resources/
 src/main/templates/META-INF/neoforge.mods.toml
 src/generated/resources/                    datagen output (committed)
 ```
+
+## Art & audio
+Programmer art for now: simple placeholder textures and models, and vanilla sounds as stand-ins behind our own sound events. Every placeholder is listed in `PROGRESS.md` so real assets can replace it without code changes.
 
 ## Settled design decisions
 **Phase 1**

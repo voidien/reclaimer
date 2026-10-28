@@ -44,12 +44,24 @@
 ### Placeholder assets
 - None new. The flight HUD is text only.
 
+## Test & CI infrastructure: done
+- JUnit 5 unit tests (19): `FlightPhysicsTest`, `FlightInputTest`, `EnergySimulationTest`. Pure logic was extracted into `FlightPhysics` and `EnergyRules` (behavior unchanged).
+- GameTests (13), all passing, in `SpaceGameTests` and `FlightGameTests`:
+  - zero-G entities and blocks; overworld gravity unaffected; void boundary push;
+  - survival login, gamemode-switch, and respawn redirection; creative stays put; dimension lock;
+  - sunlight charge, darkness drain, thrust cost, low power;
+  - legal flight never corrected; speed hack pulled back. This closes the old "correction path untested" issue.
+- Mutation-checked: disabling the falling-block mixin or the speed check makes the matching GameTest fail.
+- `GameTestServerMixin`: the GameTest server now loads datapack dimensions (test-only effect).
+- GitHub Actions `build.yml` runs build, unit tests, GameTests, and a datagen up-to-date check. Dependabot keeps the actions current.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
 - [ ] 3. Cosmic Dust
 - [ ] 4. Replicator (includes the Backup Core respawn block)
-- [ ] 5. Modular Body
+- [ ] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
+- [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 6. Asteroids
 - [ ] 7. Machines
 - [ ] 8. Stations & Helpers
@@ -59,7 +71,6 @@
 ## Known issues
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning once, because the mod adds a datapack dimension. NeoForge suppresses it after the first confirmation. It's harmless; it could be removed with a mixin if wanted.
 - A cross-dimension `/tp` that the lock cancels still prints vanilla's "Teleported ..." chat line. The player does not move, and the lock message shows on the action bar.
-- The server speed check has only been verified for no false positives (legitimate flight at top speed and drift). A real violation needs a modified client to reproduce, so the correction path is untested in-game.
 - The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly. It will be revisited when Phase 5 replaces the player model.
 - Pointed dripstone (and modded falling blocks that don't extend `FallingBlock`) still detach. Their falling entity floats in zero-G and drops as an item after vanilla's 30-second timeout.
 - Gravity is set when an entity joins a level. When gravity generators arrive, this has to become position-based.
