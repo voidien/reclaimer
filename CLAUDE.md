@@ -124,6 +124,7 @@ src/main/java/com/voidreclaimer/
 │   ├── screen/                   replicator, assembly, machine screens
 │   └── render/                   GeckoLib body/part/drone renderers, player model replacement
 ├── compat/jei/                   @JeiPlugin + categories (only loaded when JEI present)
+├── gametest/                     GameTests (./gradlew runGameTestServer) + TestPlayers helper
 └── datagen/                      GatherDataEvent providers (recipes, loot, tags, lang, models)
 
 src/main/resources/
