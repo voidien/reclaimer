@@ -1,0 +1,38 @@
+package com.voidreclaimer.datagen;
+
+import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.registry.ModSounds;
+import net.minecraft.data.PackOutput;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.SoundDefinition;
+import net.neoforged.neoforge.common.data.SoundDefinitionsProvider;
+
+/** Placeholder audio: each of our sound events plays a vanilla sound event until custom audio exists. */
+public final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider {
+    public ModSoundDefinitionsProvider(PackOutput output, ExistingFileHelper helper) {
+        super(output, VoidReclaimer.MOD_ID, helper);
+    }
+
+    @Override
+    public void registerSounds() {
+        add(ModSounds.THRUSTER, definition()
+                .subtitle("subtitles.void_reclaimer.thruster")
+                .with(vanilla("item.elytra.flying").pitch(1.6).volume(0.5)));
+        add(ModSounds.DAMPENER, definition()
+                .subtitle("subtitles.void_reclaimer.dampener")
+                .with(vanilla("block.beacon.ambient").pitch(0.6)));
+        add(ModSounds.SENSOR_PULSE, definition()
+                .subtitle("subtitles.void_reclaimer.sensor_pulse")
+                .with(vanilla("block.beacon.power_select").pitch(1.4).volume(0.6)));
+        add(ModSounds.SENSOR_ECHO, definition()
+                .subtitle("subtitles.void_reclaimer.sensor_echo")
+                .with(vanilla("block.amethyst_block.chime").volume(1.5)));
+        add(ModSounds.SENSOR_HUM, definition()
+                .subtitle("subtitles.void_reclaimer.sensor_hum")
+                .with(vanilla("block.note_block.bit")));
+    }
+
+    private static SoundDefinition.Sound vanilla(String event) {
+        return sound("minecraft:" + event, SoundDefinition.SoundType.EVENT);
+    }
+}

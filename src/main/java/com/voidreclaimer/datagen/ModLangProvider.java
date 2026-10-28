@@ -33,6 +33,12 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.dampener_off", "Dampener OFF");
         add("hud.void_reclaimer.thrusters_offline", "THRUSTERS OFFLINE");
 
+        add("subtitles.void_reclaimer.thruster", "Thrusters fire");
+        add("subtitles.void_reclaimer.dampener", "Dampener hums");
+        add("subtitles.void_reclaimer.sensor_pulse", "Sensor pulse");
+        add("subtitles.void_reclaimer.sensor_echo", "Sensor echo");
+        add("subtitles.void_reclaimer.sensor_hum", "Sensor tone");
+
         add("commands.void_reclaimer.energy.get", "%s: %s / %s energy (%s)");
         add("commands.void_reclaimer.energy.set", "Set energy of %s to %s");
         add("commands.void_reclaimer.energy.low_power", "low power");

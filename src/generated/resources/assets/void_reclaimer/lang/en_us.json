@@ -19,5 +19,10 @@
   "message.void_reclaimer.dimension_locked": "Navigation error: no viable route to that destination.",
   "message.void_reclaimer.low_power": "LOW POWER: thrusters, tools and replicator offline.",
   "message.void_reclaimer.no_planetary_anchor": "No planetary anchor detected. This device needs gravity to function.",
-  "message.void_reclaimer.power_restored": "Power restored. Systems online."
+  "message.void_reclaimer.power_restored": "Power restored. Systems online.",
+  "subtitles.void_reclaimer.dampener": "Dampener hums",
+  "subtitles.void_reclaimer.sensor_echo": "Sensor echo",
+  "subtitles.void_reclaimer.sensor_hum": "Sensor tone",
+  "subtitles.void_reclaimer.sensor_pulse": "Sensor pulse",
+  "subtitles.void_reclaimer.thruster": "Thrusters fire"
 }
