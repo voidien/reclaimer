@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "blocks",
+  "cost": {
+    "silicate": 8.0
+  },
+  "milestone": "awakening",
+  "result": {
+    "count": 8,
+    "id": "void_reclaimer:scaffold"
+  },
+  "ticks": 100
+}

@@ -40,6 +40,9 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue PULSE_RANGE;
     public static final ModConfigSpec.DoubleValue HUM_RANGE;
 
+    public static final ModConfigSpec.DoubleValue REPLICATOR_ENERGY;
+    public static final ModConfigSpec.DoubleValue SALVAGE_REFUND;
+
     static {
         BUILDER.comment("Where new and respawning players appear in void_reclaimer:deep_space.").push("spawn");
         SPAWN_X = BUILDER.defineInRange("x", 0, -29_000_000, 29_000_000);
@@ -111,6 +114,13 @@ public final class Config {
         PULSE_COOLDOWN_SECONDS = BUILDER.comment("Seconds between pulses.").defineInRange("pulseCooldown", 10, 0, 600);
         PULSE_RANGE = BUILDER.comment("How far a pulse can detect a cloud, in blocks.").defineInRange("pulseRange", 2048.0, 64.0, 16384.0);
         HUM_RANGE = BUILDER.comment("Range of the directional hum, in blocks from a cloud's edge.").defineInRange("humRange", 512.0, 16.0, 4096.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Replicator and tools. Recipe costs and times are data-driven (datapack recipes).").push("replicator");
+        REPLICATOR_ENERGY = BUILDER.comment("Energy per second while the Replicator is working.").defineInRange("energy", 1.5, 0.0, 1000.0);
+        SALVAGE_REFUND = BUILDER
+                .comment("Fraction of a block's Replicator dust cost refunded when the Salvage Tool dismantles it.")
+                .defineInRange("salvageRefund", 0.5, 0.0, 1.0);
         BUILDER.pop();
     }
 

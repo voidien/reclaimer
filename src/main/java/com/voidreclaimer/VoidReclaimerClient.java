@@ -4,10 +4,12 @@ import com.voidreclaimer.client.hud.DustMeterLayer;
 import com.voidreclaimer.client.hud.DustSensorLayer;
 import com.voidreclaimer.client.hud.EnergyBarLayer;
 import com.voidreclaimer.client.hud.FlightHudLayer;
+import com.voidreclaimer.client.input.ClientReplicatorController;
 import com.voidreclaimer.client.input.ClientSensorController;
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.client.render.DeepSpaceEffects;
 import com.voidreclaimer.network.SensorEchoPayload;
+import com.voidreclaimer.replicator.ReplicatorData;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -25,6 +27,7 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
         modBus.addListener(ModKeyMappings::register);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
+        ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
     }
 
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {

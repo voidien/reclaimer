@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "tools",
+  "cost": {
+    "metallic": 15.0,
+    "silicate": 5.0
+  },
+  "milestone": "first_dust",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:salvage_tool"
+  },
+  "ticks": 600
+}

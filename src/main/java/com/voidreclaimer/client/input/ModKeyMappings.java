@@ -17,11 +17,15 @@ public final class ModKeyMappings {
     public static final KeyMapping SENSOR_PULSE = new KeyMapping("key.void_reclaimer.sensor_pulse",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY);
 
+    public static final KeyMapping REPLICATOR = new KeyMapping("key.void_reclaimer.replicator",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);
+
     private ModKeyMappings() {}
 
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(TOGGLE_DAMPENER);
         event.register(TOGGLE_CREATIVE_THRUSTERS);
         event.register(SENSOR_PULSE);
+        event.register(REPLICATOR);
     }
 }

@@ -108,7 +108,8 @@ src/main/java/com/voidreclaimer/
 ├── mixin/                        Mixins (only where no NeoForge event exists); config: void_reclaimer.mixins.json
 ├── flight/                       Phase 2: ThrusterFlight physics (shared), stats, input, settings, server checks
 ├── dust/                         Phase 3: DustNoise sampler, cloud queries, accumulation
-├── replicator/                   Phase 4: recipe type, menu, virtual inventory
+├── replicator/                   Phase 4: recipe type, DustCost, milestones, queue logic, ReplicatorData
+├── salvage/                      Phase 4: Salvage Tool and dust refunds
 ├── body/                         Phase 5: SizeClass, Frame/Part definitions, BodyData attachment,
 │   ├── part/                     part types & stats
 │   └── assembly/                 assembly menu/logic
@@ -179,6 +180,13 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
   - Hum: within 512 blocks outside a cloud, a tone and signal bar grow the more directly you face the nearest cloud.
 - Server-to-client payloads are registered in common code with a handler that forwards to a client hook (`SensorEchoPayload.clientHandler`), so common classes never reference client classes.
 - Player data that only the owner needs uses Data Attachments with NeoForge's built-in attachment sync (available in 21.1.265). Custom `CustomPacketPayload`s are for client-to-server input (Phase 2+).
+
+**Phase 4a**
+- The Replicator is a timed queue (key R). It holds 5 jobs. Dust is paid when a job is queued and refunded on cancel. It uses 1.5 energy/s while working and pauses in low power. Output goes to the inventory, with a 9-slot overflow buffer. The screen never pauses the game.
+- Recipes unlock through `Milestone`s. Each milestone adds an AI log entry (toast + Logs tab). New milestones are enum entries with an `isReached` check plus lang keys for their title, hint, and log.
+- The recipe type `void_reclaimer:replicator` is datagen-only (`ModRecipeProvider`, ids `replicator/<name>`) and `isSpecial()`, so it stays out of the vanilla recipe book. JEI shows it.
+- The Salvage Tool refunds 50% (config) of the cheapest per-item recipe cost for blocks in `#void_reclaimer:salvageable`, with no drop.
+- Phase 4b (next): the Nanite Swarm builds the offhand block (Scaffold by default) in empty space ahead of you. Then the Tether Anchor. Then Backup Cores: several per player, chosen on the death screen, up to 3 charges refilled by dust (instant) and sunlight (trickle), renamed in the core UI. The deep space spawn is always free.
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.
