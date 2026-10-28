@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
@@ -28,6 +29,11 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class Replicator {
     private static final int MILESTONE_CHECK_TICKS = 20;
+    /**
+     * No checks right after login or respawn: the client must have its initial copy of the data first, or a
+     * milestone reached while offline (e.g. one added by an update) would arrive in that copy and never be toasted.
+     */
+    private static final int MILESTONE_GRACE_TICKS = 40;
 
     private Replicator() {}
 
@@ -84,7 +90,7 @@ public final class Replicator {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()) {
             return;
         }
-        if (player.tickCount % MILESTONE_CHECK_TICKS == 0) {
+        if (player.tickCount >= MILESTONE_GRACE_TICKS && player.tickCount % MILESTONE_CHECK_TICKS == 0) {
             checkMilestones(player);
         }
         ReplicatorData data = data(player);
@@ -112,10 +118,10 @@ public final class Replicator {
 
     public static void checkMilestones(ServerPlayer player) {
         ReplicatorData data = data(player);
-        DustData dust = player.getData(ModAttachments.DUST);
+        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced());
         ReplicatorData updated = data;
         for (Milestone milestone : Milestone.values()) {
-            if (!updated.isUnlocked(milestone) && milestone.isReached(dust)) {
+            if (!updated.isUnlocked(milestone) && milestone.isReached(context)) {
                 updated = updated.withUnlocked(milestone);
             }
         }
@@ -124,11 +130,26 @@ public final class Replicator {
         }
     }
 
+    /** Counts a block the player placed, for {@link Milestone#FIRST_STRUCTURE}. Stops counting once it's reached. */
+    public static void countBlockPlaced(ServerPlayer player) {
+        ReplicatorData data = data(player);
+        if (data.blocksPlaced() < Milestone.STRUCTURE_BLOCKS) {
+            store(player, data.withBlocksPlaced(data.blocksPlaced() + 1));
+        }
+    }
+
+    @SubscribeEvent
+    static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            countBlockPlaced(player);
+        }
+    }
+
     public static ReplicatorData data(ServerPlayer player) {
         return player.getData(ModAttachments.REPLICATOR);
     }
 
-    static void store(ServerPlayer player, ReplicatorData data) {
+    public static void store(ServerPlayer player, ReplicatorData data) {
         player.setData(ModAttachments.REPLICATOR, data);
         player.syncData(ModAttachments.REPLICATOR);
     }

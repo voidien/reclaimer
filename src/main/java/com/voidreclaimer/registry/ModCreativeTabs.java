@@ -18,6 +18,9 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.DUST_SENSOR.get());
                 output.accept(ModItems.SCAFFOLD.get());
                 output.accept(ModItems.SALVAGE_TOOL.get());
+                output.accept(ModItems.NANITE_SWARM.get());
+                output.accept(ModItems.TETHER_ANCHOR.get());
+                output.accept(ModItems.BACKUP_CORE.get());
             })
             .build());
 

@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "blocks",
+  "cost": {
+    "metallic": 15.0,
+    "silicate": 5.0
+  },
+  "milestone": "first_structure",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:tether_anchor"
+  },
+  "ticks": 400
+}

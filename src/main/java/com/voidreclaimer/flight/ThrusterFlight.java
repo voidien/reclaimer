@@ -5,6 +5,9 @@ import com.voidreclaimer.dust.DustField;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.space.ZeroGravity;
+import com.voidreclaimer.tether.Tether;
+import com.voidreclaimer.tether.TetherData;
+import com.voidreclaimer.tether.TetherPhysics;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -16,7 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * (always horizontal, since there is no roll), up/down along the view's up vector. With the inertial dampener on,
  * the body brakes to a stop whenever no thrust key is held. There is no drag otherwise, so with the dampener off
  * the body drifts until it thrusts the other way. Speed is hard-capped by {@link FlightStats#maxSpeed()}. In low
- * power mode thrusters and dampener are offline and the body drifts.
+ * power mode thrusters and dampener are offline and the body drifts. A clipped Tether Anchor leashes the body, and
+ * the tether recall winch pulls it toward the anchor faster than top speed.
  *
  * <p>The local client simulates the movement (via {@code LivingEntityTravelMixin}); the server checks the result
  * in {@link ServerFlightHandler}.
@@ -43,15 +47,36 @@ public final class ThrusterFlight {
         player.calculateEntityAnimation(true);
     }
 
-    /** One tick of thruster physics for this player: returns the new velocity. */
+    /** One tick of thruster physics for this player, plus the tether: returns the new velocity. */
     public static Vec3 step(Player player, Vec3 velocity, FlightInput input) {
-        return FlightPhysics.step(
+        FlightStats stats = FlightStats.of(player);
+        Vec3 next = FlightPhysics.step(
                 velocity,
                 FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input),
                 Energy.canPowerSystems(player),
                 player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
-                FlightStats.of(player),
+                stats,
                 cloudDrag(player));
+        return tether(player, next, stats);
+    }
+
+    /** The recall winch overrides thrust; otherwise a clipped tether acts as a leash. */
+    private static Vec3 tether(Player player, Vec3 velocity, FlightStats stats) {
+        Vec3 anchor = Tether.anchorPoint(player);
+        if (anchor == null) {
+            return velocity;
+        }
+        TetherData data = Tether.data(player);
+        Vec3 center = player.getBoundingBox().getCenter();
+        if (data.recalling()) {
+            return TetherPhysics.recall(velocity, anchor.subtract(center), Tether.recallSpeed(player),
+                    stats.acceleration() * Config.RECALL_SPEED_FACTOR.get());
+        }
+        if (data.clipped()) {
+            return FlightPhysics.capSpeed(TetherPhysics.leash(velocity, center.subtract(anchor), Config.TETHER_LENGTH.get()),
+                    stats.maxSpeed());
+        }
+        return velocity;
     }
 
     /** Drag from the dust cloud around the player; the same on client and server (shared seed). */

@@ -22,9 +22,9 @@ public record ReplicatorJob(ResourceLocation recipe, ItemStack result, DustCost 
     public static final Codec<ReplicatorJob> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("recipe").forGetter(ReplicatorJob::recipe),
             ItemStack.CODEC.fieldOf("result").forGetter(ReplicatorJob::result),
-            DustCost.CODEC.fieldOf("paid").forGetter(ReplicatorJob::paid),
-            Codec.INT.fieldOf("progress").forGetter(ReplicatorJob::progress),
-            Codec.INT.fieldOf("total").forGetter(ReplicatorJob::total)
+            DustCost.CODEC.optionalFieldOf("paid", DustCost.NONE).forGetter(ReplicatorJob::paid),
+            Codec.INT.optionalFieldOf("progress", 0).forGetter(ReplicatorJob::progress),
+            Codec.INT.optionalFieldOf("total", 1).forGetter(ReplicatorJob::total)
     ).apply(instance, ReplicatorJob::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorJob> STREAM_CODEC = StreamCodec.composite(

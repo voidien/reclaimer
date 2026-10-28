@@ -18,6 +18,7 @@ public final class ModSounds {
     public static final Supplier<SoundEvent> SENSOR_PULSE = register("sensor_pulse");
     public static final Supplier<SoundEvent> SENSOR_ECHO = register("sensor_echo");
     public static final Supplier<SoundEvent> SENSOR_HUM = register("sensor_hum");
+    public static final Supplier<SoundEvent> NANITE_BUILD = register("nanite_build");
 
     private ModSounds() {}
 

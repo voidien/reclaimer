@@ -47,6 +47,8 @@ final class TestPlayers {
     static ServerPlayer survivalInDeepSpace(GameTestHelper helper, double x, double y, double z) {
         ServerPlayer player = join(helper);
         player.teleportTo(deepSpace(helper), x, y, z, 0f, 0f);
+        // A real client acknowledges the dimension change; until then the player can't be hurt.
+        player.hasChangedDimension();
         // Bypass the game mode event so nothing else reacts; the player is already where the test wants it.
         player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         return player;

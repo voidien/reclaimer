@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "blocks",
+  "cost": {
+    "carbon": 10.0,
+    "ice": 10.0,
+    "metallic": 30.0,
+    "silicate": 20.0
+  },
+  "milestone": "diversified",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:backup_core"
+  },
+  "ticks": 1200
+}

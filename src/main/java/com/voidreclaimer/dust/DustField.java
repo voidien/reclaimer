@@ -19,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * with a random center inside the cell, a radius of {@link #MIN_RADIUS}..{@link #MAX_RADIUS} and a dominant kind.
  * Because a cloud never reaches further than one cell from its own, a lookup only checks the 27 surrounding cells.
  *
+ * <p>Worlds created with the starter nebula also get {@link StarterNebula#pockets} near spawn.
+ *
  * <p>Generation constants are deliberately not configurable: client (drag prediction, sensor HUD) and server (dust
  * gain, drag) must agree exactly. The client gets the seed through the synced {@link DustFieldSeed} level attachment.
  */
@@ -35,10 +37,20 @@ public final class DustField {
 
     private final long seed;
     private final SimplexNoise noise;
+    @Nullable
+    private final Vec3 nebulaCenter;
+    private final List<DustCloud> nebula;
 
     public DustField(long seed) {
+        this(seed, null);
+    }
+
+    /** @param nebulaCenter center of the {@link StarterNebula}, or null if the world has none */
+    public DustField(long seed, @Nullable Vec3 nebulaCenter) {
         this.seed = seed;
         this.noise = new SimplexNoise(RandomSource.create(seed ^ NOISE_SALT));
+        this.nebulaCenter = nebulaCenter;
+        this.nebula = nebulaCenter == null ? List.of() : StarterNebula.pockets(nebulaCenter);
     }
 
     /** The field of a deep space level, or null anywhere else (or before the seed has been synced). */
@@ -52,8 +64,9 @@ public final class DustField {
             return null;
         }
         DustField field = cached;
-        if (field == null || field.seed != fieldSeed.seed()) {
-            field = new DustField(fieldSeed.seed());
+        Vec3 nebula = fieldSeed.nebula().orElse(null);
+        if (field == null || field.seed != fieldSeed.seed() || !java.util.Objects.equals(field.nebulaCenter, nebula)) {
+            field = new DustField(fieldSeed.seed(), nebula);
             cached = field;
         }
         return field;
@@ -93,6 +106,9 @@ public final class DustField {
                     cloudInCell(x, y, z).ifPresent(clouds::add);
                 }
             }
+        }
+        if (nebulaCenter != null && pos.distanceTo(nebulaCenter) <= reach + StarterNebula.POCKET_SPREAD) {
+            clouds.addAll(nebula);
         }
         return clouds;
     }

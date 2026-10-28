@@ -13,11 +13,12 @@ import net.minecraft.network.codec.StreamCodec;
  * @param creativeThrusters creative mode only: use thruster flight instead of vanilla creative flight
  */
 public record FlightSettings(boolean dampener, boolean creativeThrusters) {
-    public static final FlightSettings DEFAULT = new FlightSettings(true, false);
+    private static final boolean DEFAULT_DAMPENER = true;
+    public static final FlightSettings DEFAULT = new FlightSettings(DEFAULT_DAMPENER, false);
 
     public static final Codec<FlightSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.BOOL.fieldOf("dampener").forGetter(FlightSettings::dampener),
-            Codec.BOOL.fieldOf("creative_thrusters").forGetter(FlightSettings::creativeThrusters)
+            Codec.BOOL.optionalFieldOf("dampener", DEFAULT_DAMPENER).forGetter(FlightSettings::dampener),
+            Codec.BOOL.optionalFieldOf("creative_thrusters", false).forGetter(FlightSettings::creativeThrusters)
     ).apply(instance, FlightSettings::new));
 
     public static final StreamCodec<ByteBuf, FlightSettings> STREAM_CODEC = StreamCodec.composite(

@@ -15,5 +15,6 @@ public final class ModItemModelProvider extends ItemModelProvider {
     protected void registerModels() {
         basicItem(ModItems.DUST_SENSOR.get());
         basicItem(ModItems.SALVAGE_TOOL.get());
+        basicItem(ModItems.NANITE_SWARM.get());
     }
 }

@@ -1,9 +1,14 @@
 package com.voidreclaimer.registry;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.core.BackupCoreList;
+import com.voidreclaimer.core.DeathMarker;
+import com.voidreclaimer.tether.RecallState;
+import com.voidreclaimer.tether.TetherData;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustFieldSeed;
 import com.voidreclaimer.dust.SensorState;
+import com.voidreclaimer.dust.StarterNebula;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightSettings;
@@ -63,6 +68,12 @@ public final class ModAttachments {
                     .sync(DustFieldSeed.STREAM_CODEC)
                     .build());
 
+    /** Deep space level only: whether this world has the starter nebula, fixed on first load. Saved, server-only. */
+    public static final Supplier<AttachmentType<StarterNebula.Locked>> STARTER_NEBULA = ATTACHMENT_TYPES.register("starter_nebula",
+            () -> AttachmentType.builder(() -> new StarterNebula.Locked(false))
+                    .serialize(StarterNebula.Locked.CODEC)
+                    .build());
+
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());
@@ -90,6 +101,34 @@ public final class ModAttachments {
                             return data;
                         }
                     })
+                    .build());
+
+    /** Per-player tether: anchor, clip and recall state. Persisted, kept on death, synced to the owner. */
+    public static final Supplier<AttachmentType<TetherData>> TETHER = ATTACHMENT_TYPES.register("tether",
+            () -> AttachmentType.builder(() -> TetherData.NONE)
+                    .serialize(TetherData.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, TetherData.STREAM_CODEC)
+                    .build());
+
+    /** Server-only, transient: recall key hold. */
+    public static final Supplier<AttachmentType<RecallState>> RECALL_STATE = ATTACHMENT_TYPES.register("recall_state",
+            () -> AttachmentType.builder(RecallState::new).build());
+
+    /** Per-player Backup Cores and the death screen choice. Persisted, kept on death, synced to the owner. */
+    public static final Supplier<AttachmentType<BackupCoreList>> BACKUP_CORES = ATTACHMENT_TYPES.register("backup_cores",
+            () -> AttachmentType.builder(() -> BackupCoreList.EMPTY)
+                    .serialize(BackupCoreList.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, BackupCoreList.STREAM_CODEC)
+                    .build());
+
+    /** Per-player last death position, for the HUD marker. Persisted, kept on death, synced to the owner. */
+    public static final Supplier<AttachmentType<DeathMarker>> DEATH_MARKER = ATTACHMENT_TYPES.register("death_marker",
+            () -> AttachmentType.builder(() -> DeathMarker.NONE)
+                    .serialize(DeathMarker.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, DeathMarker.STREAM_CODEC)
                     .build());
 
     private ModAttachments() {}

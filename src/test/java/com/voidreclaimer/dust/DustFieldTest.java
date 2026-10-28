@@ -151,6 +151,27 @@ class DustFieldTest {
         assertEquals(DustKind.ICE, DustKind.byName("ice"));
     }
 
+    @Test
+    void starterNebulaHasEveryKindNearSpawn() {
+        Vec3 spawn = new Vec3(0.5, 64, 0.5);
+        Vec3 center = StarterNebula.center(1234L, spawn);
+        assertEquals(StarterNebula.DISTANCE, center.distanceTo(spawn), 1.0E-6);
+        assertEquals(center, StarterNebula.center(1234L, spawn), "same seed, same place");
+        assertNotEquals(center, StarterNebula.center(99L, spawn), "direction depends on the seed");
+
+        DustField withNebula = new DustField(1234L, center);
+        for (DustKind kind : DustKind.values()) {
+            DustCloud pocket = StarterNebula.pockets(center).stream().filter(c -> c.kind() == kind).findFirst().orElseThrow();
+            DustField.Sample sample = withNebula.sample(pocket.center());
+            assertTrue(sample.inCloud() && sample.density() > 0.3, kind + " pocket too thin: " + sample.density());
+            // Reachable: every pocket's edge is well within the sensor hum range of spawn.
+            assertTrue(pocket.surfaceDistance(spawn) < 400, kind + " pocket too far: " + pocket.surfaceDistance(spawn));
+        }
+        assertTrue(withNebula.nearest(spawn, 512, false).isPresent());
+        // Without the rule the same seed has no nebula there.
+        assertFalse(FIELD.cloudsAround(center, 0).stream().anyMatch(c -> c.radius() == StarterNebula.POCKET_RADIUS));
+    }
+
     static DustCloud anyCloud() {
         for (int x = 0; x < 50; x++) {
             Optional<DustCloud> cloud = FIELD.cloudInCell(x, 0, 0);

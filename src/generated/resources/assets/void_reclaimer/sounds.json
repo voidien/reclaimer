@@ -9,6 +9,17 @@
     ],
     "subtitle": "subtitles.void_reclaimer.dampener"
   },
+  "nanite_build": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.amethyst_cluster.place",
+        "pitch": 1.5,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.nanite_build"
+  },
   "sensor_echo": {
     "sounds": [
       {

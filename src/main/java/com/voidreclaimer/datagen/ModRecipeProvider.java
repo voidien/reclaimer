@@ -27,6 +27,12 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorRecipe.Category.BLOCKS, Milestone.AWAKENING);
         replicator(output, "salvage_tool", ModItems.SALVAGE_TOOL.get(), 1, new DustCost(15, 5, 0, 0), 30,
                 ReplicatorRecipe.Category.TOOLS, Milestone.FIRST_DUST);
+        replicator(output, "nanite_swarm", ModItems.NANITE_SWARM.get(), 1, new DustCost(20, 10, 0, 10), 40,
+                ReplicatorRecipe.Category.TOOLS, Milestone.FIRST_DUST);
+        replicator(output, "tether_anchor", ModItems.TETHER_ANCHOR.get(), 1, new DustCost(15, 5, 0, 0), 20,
+                ReplicatorRecipe.Category.BLOCKS, Milestone.FIRST_STRUCTURE);
+        replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, new DustCost(30, 20, 10, 10), 60,
+                ReplicatorRecipe.Category.BLOCKS, Milestone.DIVERSIFIED);
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,

@@ -110,9 +110,14 @@ class ReplicatorLogicTest {
 
     @Test
     void milestonesAndUnlockDiff() {
-        assertTrue(Milestone.AWAKENING.isReached(DustData.EMPTY));
-        assertFalse(Milestone.FIRST_DUST.isReached(DustData.EMPTY));
-        assertTrue(Milestone.FIRST_DUST.isReached(new DustData(0, 0, 0.01f, 0)));
+        assertTrue(Milestone.AWAKENING.isReached(MilestoneContext.of(DustData.EMPTY)));
+        assertFalse(Milestone.FIRST_DUST.isReached(MilestoneContext.of(DustData.EMPTY)));
+        assertTrue(Milestone.FIRST_DUST.isReached(MilestoneContext.of(new DustData(0, 0, 0.01f, 0))));
+
+        assertFalse(Milestone.FIRST_STRUCTURE.isReached(new MilestoneContext(DustData.EMPTY, Milestone.STRUCTURE_BLOCKS - 1)));
+        assertTrue(Milestone.FIRST_STRUCTURE.isReached(new MilestoneContext(DustData.EMPTY, Milestone.STRUCTURE_BLOCKS)));
+        assertFalse(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(new DustData(5, 5, 0, 0))));
+        assertTrue(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(new DustData(5, 5, 0, 0.1f))));
 
         ReplicatorData before = UNLOCKED;
         ReplicatorData after = before.withUnlocked(Milestone.FIRST_DUST);
@@ -129,6 +134,22 @@ class ReplicatorLogicTest {
         assertEquals(new DustData(1, 0, 3, 0), cost.takeFrom(new DustData(5, 2, 3, 1)));
         assertEquals(new DustCost(2, 1, 0, 0.5f), cost.scale(0.5f));
         assertTrue(DustCost.NONE.isFree());
+    }
+
+    @Test
+    void savedDataToleratesMissingAndBrokenFields() {
+        // Old saves without newer fields load with defaults.
+        ReplicatorData old = ReplicatorData.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(
+                "{\"unlocked\": [\"awakening\"]}")).getOrThrow();
+        assertEquals(List.of(Milestone.AWAKENING), old.unlocked());
+        assertEquals(0, old.blocksPlaced());
+        // A field that no longer parses resets alone instead of failing the whole attachment.
+        ReplicatorData broken = ReplicatorData.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(
+                "{\"unlocked\": [\"no_such_milestone\"], \"blocks_placed\": 7}")).getOrThrow();
+        assertTrue(broken.unlocked().isEmpty());
+        assertEquals(7, broken.blocksPlaced());
+        assertEquals(com.voidreclaimer.flight.FlightSettings.DEFAULT,
+                com.voidreclaimer.flight.FlightSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow());
     }
 
     @Test
