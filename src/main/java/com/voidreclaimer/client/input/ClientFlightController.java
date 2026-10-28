@@ -7,6 +7,7 @@ import com.voidreclaimer.network.ThrustInputPayload;
 import com.voidreclaimer.network.ToggleFlightSettingPayload;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
@@ -54,6 +55,11 @@ public final class ClientFlightController {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
+        }
+        // Vanilla's "Move with WASD" tutorial waits for walking input, which thruster flight replaces, so it would
+        // never finish. Its later steps (punch a tree, craft planks) don't fit the mod either: end it.
+        if (mc.options.tutorialStep != TutorialSteps.NONE && ThrusterFlight.isActive(mc.player)) {
+            mc.getTutorial().setStep(TutorialSteps.NONE);
         }
         while (ModKeyMappings.TOGGLE_DAMPENER.consumeClick()) {
             PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.DAMPENER));
