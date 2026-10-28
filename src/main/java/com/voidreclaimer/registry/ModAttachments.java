@@ -1,6 +1,9 @@
 package com.voidreclaimer.registry;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.dust.DustData;
+import com.voidreclaimer.dust.DustFieldSeed;
+import com.voidreclaimer.dust.SensorState;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightSettings;
@@ -40,6 +43,24 @@ public final class ModAttachments {
     /** Server-only, transient: recent positions for the speed check. */
     public static final Supplier<AttachmentType<FlightTracker>> FLIGHT_TRACKER = ATTACHMENT_TYPES.register("flight_tracker",
             () -> AttachmentType.builder(FlightTracker::new).build());
+
+    /** Per-player dust reserve. Persisted, kept on death, synced to the owning player. */
+    public static final Supplier<AttachmentType<DustData>> DUST = ATTACHMENT_TYPES.register("dust",
+            () -> AttachmentType.builder(() -> DustData.EMPTY)
+                    .serialize(DustData.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, DustData.STREAM_CODEC)
+                    .build());
+
+    /** Deep space level only: the dust field seed, synced to every client in that level. Recomputed on load. */
+    public static final Supplier<AttachmentType<DustFieldSeed>> DUST_FIELD_SEED = ATTACHMENT_TYPES.register("dust_field_seed",
+            () -> AttachmentType.builder(() -> new DustFieldSeed(0L))
+                    .sync(DustFieldSeed.STREAM_CODEC)
+                    .build());
+
+    /** Server-only, transient: sensor pulse cooldown and the pending echo. */
+    public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
+            () -> AttachmentType.builder(SensorState::new).build());
 
     private ModAttachments() {}
 }

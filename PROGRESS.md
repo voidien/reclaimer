@@ -55,10 +55,37 @@
 - `GameTestServerMixin`: the GameTest server now loads datapack dimensions (test-only effect).
 - GitHub Actions `build.yml` runs build, unit tests, GameTests, and a datagen up-to-date check. Dependabot keeps the actions current.
 
+## Phase 3: Cosmic Dust: done
+- Sense of motion: `SpaceSpecksRenderer` (specks and speed streaks), `CameraSway` (off by default), `FlightSounds` and `ThrusterSoundInstance` (thruster and dampener loops), `ClientConfig`.
+- `DustField` (deterministic cells, clouds, density, nearest-cloud search), `DustCloud`, `DustKind`, `DustFieldSeed` (synced level attachment, derived from the world seed).
+- Cloud drag in `FlightPhysics` (`CloudDrag`), applied in `ThrusterFlight` on both sides.
+- Dust collection: `DustTicker`, the `DustData` attachment (synced), and `FlightTracker.lastSpeed` from the server flight handler.
+- Dust Sensor: the `DustSensorItem` item and creative tab; `DustSensorLayer` with readout, core and edge markers, signal bar, and echo; `DustMeterLayer`; `ClientSensorController` for pulse key B, echo, and hum; `SensorPulse` server logic; `SensorPulsePayload` and `SensorEchoPayload`.
+- Commands: `/void_reclaimer dust get|set|locate`.
+- Datagen: lang, `sounds.json` (vanilla placeholders), and the sensor item model.
+- Tests:
+  - 32 unit tests (+13): field determinism, rarity and size, density falloff, sampling, nearest search, echo accuracy and strength, blur bound, gain formula, capacity, drag, and the cloud top speed.
+  - 21 GameTests (+8): seed derivation (the world seed doesn't leak), collecting the right kind, scoop beating trickle, no gain outside clouds, the capacity clamp, and pulse sensor, cost, cooldown, low-power refusal, and echo delivery.
+  - Mutation-checked: removing scooping or the pulse cooldown fails the matching tests.
+  - A unit test found that thrust could hold speed above the cloud's top speed; fixed.
+- Verified in a real client:
+  - Specks and streaks give clear parallax while thrusting.
+  - The dust meter works.
+  - The hum signal appears only when facing the cloud.
+  - A pulse gives a "strong echo" marker toward a cloud 343 blocks away.
+  - Inside an Ice cloud the readout shows 42% density with CORE and EDGE markers.
+  - Speed held at 7.6 m/s in the cloud (expected about 7.5).
+  - Ice dust collected and persisted across a restart.
+  - No errors and no speed-check corrections.
+
+### Placeholder assets
+- `textures/item/dust_sensor.png` (16x16 programmer art).
+- Sounds: `thruster` → `item.elytra.flying`, `dampener` → `block.beacon.ambient`, `sensor_pulse` → `block.beacon.power_select`, `sensor_echo` → `block.amethyst_block.chime`, `sensor_hum` → `block.note_block.bit` (vanilla events in `sounds.json`).
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
-- [ ] 3. Cosmic Dust
+- [x] 3. Cosmic Dust
 - [ ] 4. Replicator (includes the Backup Core respawn block)
 - [ ] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
@@ -69,7 +96,9 @@
 - [ ] 10. Terraforming
 
 ## Known issues
-- Opening a world shows vanilla's "Worlds using Experimental Settings" warning once, because the mod adds a datapack dimension. NeoForge suppresses it after the first confirmation. It's harmless; it could be removed with a mixin if wanted.
+- Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.
+- Sounds were not heard during testing (the headless test client has no audio device). The sound events, `sounds.json`, and the triggering logic are in place, but volume and pitch need a listen on a real machine.
+- Dust Sensor markers use the FOV setting, not the dynamic FOV (sprint or speed effects), so markers can be slightly off-position while the FOV is changing.
 - A cross-dimension `/tp` that the lock cancels still prints vanilla's "Teleported ..." chat line. The player does not move, and the lock message shows on the action bar.
 - The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly. It will be revisited when Phase 5 replaces the player model.
 - Pointed dripstone (and modded falling blocks that don't extend `FallingBlock`) still detach. Their falling entity floats in zero-G and drops as an item after vanilla's 30-second timeout.

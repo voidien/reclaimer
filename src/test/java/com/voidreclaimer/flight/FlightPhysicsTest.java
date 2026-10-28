@@ -108,6 +108,38 @@ class FlightPhysicsTest {
         assertTrue(FlightPhysics.exceedsSpeedLimit(start, new Vec3(16.5, 0, 0), 20, 0.5, 1.5, 1.0));
     }
 
+    @Test
+    void cloudDragSlowsDriftEvenWithDampenerOff() {
+        FlightPhysics.CloudDrag dense = new FlightPhysics.CloudDrag(1.0, 0.04, 0.6);
+        Vec3 v = new Vec3(0, 0, 0.1);
+        Vec3 next = FlightPhysics.step(v, Vec3.ZERO, true, false, STARTER, dense);
+        assertEquals(0.096, next.z, EPS);
+        Vec3 unpowered = FlightPhysics.step(v, Vec3.ZERO, false, false, STARTER, dense);
+        assertEquals(0.096, unpowered.z, EPS);
+    }
+
+    @Test
+    void cloudLowersTopSpeedSmoothly() {
+        FlightPhysics.CloudDrag dense = new FlightPhysics.CloudDrag(1.0, 0.04, 0.6);
+        // Entering the core at full speed bleeds off at most 8% per tick on top of drag, never snapping.
+        Vec3 entering = FlightPhysics.step(new Vec3(0, 0, 0.5), Vec3.ZERO, true, false, STARTER, dense);
+        assertTrue(entering.z < 0.5 && entering.z > 0.5 * 0.96 * 0.92 - EPS, "z=" + entering.z);
+
+        Vec3 v = Vec3.ZERO;
+        for (int i = 0; i < 400; i++) {
+            v = FlightPhysics.step(v, FORWARD, true, true, STARTER, dense);
+        }
+        // Top speed in the densest core is at most 40% of the normal 0.5 blocks/tick.
+        assertTrue(v.length() <= 0.2 + EPS, "core top speed " + v.length());
+        assertTrue(v.length() > 0.1, "thrusters still make headway: " + v.length());
+    }
+
+    @Test
+    void noCloudMeansNoDrag() {
+        Vec3 v = new Vec3(0.3, 0, 0);
+        assertEquals(v, FlightPhysics.step(v, Vec3.ZERO, true, false, STARTER, FlightPhysics.CloudDrag.NONE));
+    }
+
     private static void assertVec(Vec3 expected, Vec3 actual) {
         assertEquals(expected.x, actual.x, EPS, "x");
         assertEquals(expected.y, actual.y, EPS, "y");

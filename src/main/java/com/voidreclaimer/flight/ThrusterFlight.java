@@ -1,5 +1,7 @@
 package com.voidreclaimer.flight;
 
+import com.voidreclaimer.Config;
+import com.voidreclaimer.dust.DustField;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.space.ZeroGravity;
@@ -48,7 +50,21 @@ public final class ThrusterFlight {
                 FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input),
                 Energy.canPowerSystems(player),
                 player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
-                FlightStats.of(player));
+                FlightStats.of(player),
+                cloudDrag(player));
+    }
+
+    /** Drag from the dust cloud around the player; the same on client and server (shared seed). */
+    static FlightPhysics.CloudDrag cloudDrag(Player player) {
+        DustField field = DustField.of(player.level());
+        if (field == null) {
+            return FlightPhysics.CloudDrag.NONE;
+        }
+        double density = field.sample(player.getBoundingBox().getCenter()).density();
+        if (density <= 0.0) {
+            return FlightPhysics.CloudDrag.NONE;
+        }
+        return new FlightPhysics.CloudDrag(density, Config.CLOUD_DRAG.get(), Config.CLOUD_SPEED_PENALTY.get());
     }
 
     /** Whether the dampener is braking this tick (for energy cost). */

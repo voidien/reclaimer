@@ -3,6 +3,8 @@ package com.voidreclaimer;
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.network.ModPayloads;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.registry.ModCreativeTabs;
+import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -20,6 +22,8 @@ public final class VoidReclaimer {
         container.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
+        ModItems.ITEMS.register(modBus);
+        ModCreativeTabs.CREATIVE_MODE_TABS.register(modBus);
         modBus.addListener(ModPayloads::register);
     }
 

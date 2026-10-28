@@ -14,10 +14,14 @@ public final class ModKeyMappings {
     public static final KeyMapping TOGGLE_CREATIVE_THRUSTERS = new KeyMapping("key.void_reclaimer.toggle_creative_thrusters",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
 
+    public static final KeyMapping SENSOR_PULSE = new KeyMapping("key.void_reclaimer.sensor_pulse",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY);
+
     private ModKeyMappings() {}
 
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(TOGGLE_DAMPENER);
         event.register(TOGGLE_CREATIVE_THRUSTERS);
+        event.register(SENSOR_PULSE);
     }
 }

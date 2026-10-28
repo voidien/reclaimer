@@ -30,6 +30,16 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue BRAKE_ENERGY_COST;
     public static final ModConfigSpec.DoubleValue SPEED_CHECK_TOLERANCE;
 
+    public static final ModConfigSpec.DoubleValue DUST_CAPACITY;
+    public static final ModConfigSpec.DoubleValue DUST_TRICKLE;
+    public static final ModConfigSpec.DoubleValue DUST_SCOOP;
+    public static final ModConfigSpec.DoubleValue CLOUD_DRAG;
+    public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
+    public static final ModConfigSpec.DoubleValue PULSE_ENERGY_COST;
+    public static final ModConfigSpec.IntValue PULSE_COOLDOWN_SECONDS;
+    public static final ModConfigSpec.DoubleValue PULSE_RANGE;
+    public static final ModConfigSpec.DoubleValue HUM_RANGE;
+
     static {
         BUILDER.comment("Where new and respawning players appear in void_reclaimer:deep_space.").push("spawn");
         SPAWN_X = BUILDER.defineInRange("x", 0, -29_000_000, 29_000_000);
@@ -78,6 +88,29 @@ public final class Config {
         SPEED_CHECK_TOLERANCE = BUILDER
                 .comment("Server speed check: movement over one second may exceed top speed by this factor before it is corrected.")
                 .defineInRange("speedCheckTolerance", 1.5, 1.0, 10.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Cosmic dust. Cloud placement and shape are fixed by the world seed and not configurable.").push("dust");
+        DUST_CAPACITY = BUILDER.comment("Starter storage per dust kind.").defineInRange("capacity", 200.0, 1.0, 1_000_000.0);
+        DUST_TRICKLE = BUILDER
+                .comment("Dust per second collected at full density while not moving.")
+                .defineInRange("trickle", 0.1, 0.0, 1000.0);
+        DUST_SCOOP = BUILDER
+                .comment("Dust per block travelled at full density (flying through a cloud scoops dust).")
+                .defineInRange("scoop", 0.1, 0.0, 1000.0);
+        CLOUD_DRAG = BUILDER
+                .comment("Fraction of velocity lost per tick at full density (applies with the dampener off too).")
+                .defineInRange("drag", 0.04, 0.0, 1.0);
+        CLOUD_SPEED_PENALTY = BUILDER
+                .comment("Top speed reduction at full density (0.6 = 60% slower in the densest core).")
+                .defineInRange("speedPenalty", 0.6, 0.0, 0.95);
+        BUILDER.pop();
+
+        BUILDER.comment("Dust Sensor.").push("sensor");
+        PULSE_ENERGY_COST = BUILDER.comment("Energy per sensor pulse.").defineInRange("pulseEnergyCost", 5.0, 0.0, 1000.0);
+        PULSE_COOLDOWN_SECONDS = BUILDER.comment("Seconds between pulses.").defineInRange("pulseCooldown", 10, 0, 600);
+        PULSE_RANGE = BUILDER.comment("How far a pulse can detect a cloud, in blocks.").defineInRange("pulseRange", 2048.0, 64.0, 16384.0);
+        HUM_RANGE = BUILDER.comment("Range of the directional hum, in blocks from a cloud's edge.").defineInRange("humRange", 512.0, 16.0, 4096.0);
         BUILDER.pop();
     }
 

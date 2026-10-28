@@ -1,6 +1,8 @@
 package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.registry.ModItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -32,6 +34,40 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.dampener_on", "Dampener ON");
         add("hud.void_reclaimer.dampener_off", "Dampener OFF");
         add("hud.void_reclaimer.thrusters_offline", "THRUSTERS OFFLINE");
+
+        add("itemGroup.void_reclaimer", "Void Reclaimer");
+        add(ModItems.DUST_SENSOR.get(), "Dust Sensor");
+        add("item.void_reclaimer.dust_sensor.tooltip", "Reads cosmic dust density and shows the current cloud's core and edge.");
+        add("item.void_reclaimer.dust_sensor.tooltip.pulse", "Pulse (B) for a rough heading to the nearest cloud; listen for the hum.");
+        for (DustKind kind : DustKind.values()) {
+            add("dust.void_reclaimer." + kind.getSerializedName(), switch (kind) {
+                case METALLIC -> "Metallic";
+                case SILICATE -> "Silicate";
+                case ICE -> "Ice";
+                case CARBON -> "Carbon";
+            });
+        }
+
+        add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
+        add("hud.void_reclaimer.sensor.cloud", "%s cloud: %s%% density");
+        add("hud.void_reclaimer.sensor.core", "CORE %sm");
+        add("hud.void_reclaimer.sensor.edge", "EDGE %sm");
+        add("hud.void_reclaimer.sensor.clear", "No dust detected");
+        add("hud.void_reclaimer.sensor.signal", "Signal");
+        add("hud.void_reclaimer.sensor.echo.none", "Pulse: no echo");
+        add("hud.void_reclaimer.sensor.echo.faint", "~ faint echo");
+        add("hud.void_reclaimer.sensor.echo.moderate", "~ echo");
+        add("hud.void_reclaimer.sensor.echo.strong", "~ strong echo");
+        add("message.void_reclaimer.sensor_missing", "No Dust Sensor installed.");
+        add("message.void_reclaimer.sensor_cooldown", "Sensor recharging.");
+        add("message.void_reclaimer.sensor_low_power", "Not enough power for a sensor pulse.");
+
+        add("commands.void_reclaimer.dust.get", "%s dust: metallic %s, silicate %s, ice %s, carbon %s");
+        add("commands.void_reclaimer.dust.set", "Set %s's %s dust to %s");
+        add("commands.void_reclaimer.dust.unknown_kind", "Unknown dust kind: %s");
+        add("commands.void_reclaimer.dust.locate", "Nearest %s cloud: center %s, radius %s, edge %s blocks away");
+        add("commands.void_reclaimer.dust.locate.none", "No dust cloud within %s blocks");
+        add("commands.void_reclaimer.dust.no_field", "There are no dust clouds here");
 
         add("subtitles.void_reclaimer.thruster", "Thrusters fire");
         add("subtitles.void_reclaimer.dampener", "Dampener hums");

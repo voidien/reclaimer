@@ -1,0 +1,174 @@
+package com.voidreclaimer.dust;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
+
+class DustFieldTest {
+    private static final DustField FIELD = new DustField(1234L);
+
+    @Test
+    void generationIsDeterministicPerSeed() {
+        DustField again = new DustField(1234L);
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -3; z <= 3; z++) {
+                assertEquals(FIELD.cloudInCell(x, 0, z), again.cloudInCell(x, 0, z));
+            }
+        }
+        // A different seed gives a different layout.
+        DustField other = new DustField(99L);
+        boolean anyDifferent = false;
+        for (int x = -3; x <= 3 && !anyDifferent; x++) {
+            anyDifferent = !FIELD.cloudInCell(x, 0, 0).equals(other.cloudInCell(x, 0, 0));
+        }
+        assertTrue(anyDifferent);
+    }
+
+    @Test
+    void cloudsAreLargeRareAndInsideTheirCell() {
+        int cells = 0;
+        int clouds = 0;
+        for (int x = -10; x < 10; x++) {
+            for (int y = -2; y < 2; y++) {
+                for (int z = -10; z < 10; z++) {
+                    cells++;
+                    Optional<DustCloud> cloud = FIELD.cloudInCell(x, y, z);
+                    if (cloud.isPresent()) {
+                        clouds++;
+                        DustCloud c = cloud.get();
+                        assertTrue(c.radius() >= DustField.MIN_RADIUS && c.radius() <= DustField.MAX_RADIUS);
+                        assertEquals(x, Math.floorDiv((int) Math.floor(c.center().x), DustField.CELL));
+                        assertEquals(z, Math.floorDiv((int) Math.floor(c.center().z), DustField.CELL));
+                    }
+                }
+            }
+        }
+        double rate = clouds / (double) cells;
+        assertTrue(Math.abs(rate - DustField.CLOUD_CHANCE) < 0.05, "cloud rate " + rate);
+    }
+
+    @Test
+    void densityIsZeroOutsideAndHighestTowardTheCore() {
+        DustCloud cloud = anyCloud();
+        Vec3 c = cloud.center();
+        assertEquals(0.0, FIELD.density(cloud, c.add(cloud.radius() + 1, 0, 0)));
+        assertEquals(0.0, FIELD.density(cloud, c.add(0, 0, cloud.radius())));
+        double core = FIELD.density(cloud, c);
+        double mid = FIELD.density(cloud, c.add(cloud.radius() * 0.5, 0, 0));
+        double rim = FIELD.density(cloud, c.add(cloud.radius() * 0.95, 0, 0));
+        assertTrue(core > 0.15, "core density " + core);
+        assertTrue(core > rim, "core " + core + " should exceed rim " + rim);
+        assertTrue(mid > rim, "mid " + mid + " should exceed rim " + rim);
+        assertTrue(core <= 1.0);
+    }
+
+    @Test
+    void sampleFindsTheCloudAndNothingFarAway() {
+        DustCloud cloud = anyCloud();
+        DustField.Sample inside = FIELD.sample(cloud.center());
+        assertTrue(inside.inCloud());
+        assertEquals(cloud, inside.cloud());
+        assertFalse(FIELD.sample(farFromClouds()).inCloud());
+    }
+
+    @Test
+    void nearestFindsTheClosestSurfaceAndCanSkipTheContainingCloud() {
+        DustCloud cloud = anyCloud();
+        Vec3 outside = cloud.center().add(cloud.radius() + 50, 0, 0);
+        Optional<DustCloud> nearest = FIELD.nearest(outside, 60, false);
+        assertTrue(nearest.isPresent());
+        assertTrue(nearest.get().surfaceDistance(outside) <= 60);
+        assertTrue(FIELD.nearest(outside, 10, false).map(c -> c.surfaceDistance(outside) <= 10).orElse(true));
+
+        Optional<DustCloud> fromInside = FIELD.nearest(cloud.center(), 5000, true);
+        fromInside.ifPresent(other -> assertNotEquals(cloud, other));
+    }
+
+    @Test
+    void echoPointsRoughlyAtTheCloudAndWeakensWithDistance() {
+        DustCloud cloud = anyCloud();
+        RandomSource random = RandomSource.create(7);
+        Vec3 near = cloud.center().add(cloud.radius() + 100, 0, 0);
+        Vec3 far = cloud.center().add(cloud.radius() + 1800, 0, 0);
+        for (int i = 0; i < 50; i++) {
+            SensorPulse.Echo echo = SensorPulse.computeEcho(FIELD, near, 2048, random);
+            if (echo.strength() == SensorPulse.Strength.NONE) {
+                continue;
+            }
+            Vec3 exact = FIELD.nearest(near, 2048, true).orElseThrow().center().subtract(near).normalize();
+            double angle = Math.toDegrees(Math.acos(Math.min(1.0, echo.direction().dot(exact))));
+            assertTrue(angle <= 30.0 + 1e-6, "echo error " + angle);
+            assertEquals(1.0, echo.direction().length(), 1e-6);
+        }
+        assertEquals(SensorPulse.Strength.STRONG, SensorPulse.Strength.forDistance(100, 2048));
+        assertEquals(SensorPulse.Strength.MODERATE, SensorPulse.Strength.forDistance(1000, 2048));
+        assertEquals(SensorPulse.Strength.FAINT, SensorPulse.Strength.forDistance(1800, 2048));
+        assertTrue(SensorPulse.delayFor(1800) > SensorPulse.delayFor(100));
+        assertTrue(SensorPulse.computeEcho(FIELD, far, 2048, random).delayTicks() >= SensorPulse.delayFor(0));
+    }
+
+    @Test
+    void blurNeverExceedsTheMaximumError() {
+        RandomSource random = RandomSource.create(3);
+        Vec3 dir = new Vec3(0.3, -0.5, 0.8).normalize();
+        double max = Math.toRadians(20);
+        for (int i = 0; i < 500; i++) {
+            Vec3 blurred = SensorPulse.blur(dir, max, random);
+            assertTrue(Math.acos(Math.min(1.0, blurred.dot(dir))) <= max + 1e-5);
+        }
+    }
+
+    @Test
+    void dustGainScalesWithDensityAndSpeed() {
+        float still = DustTicker.gainPerTick(1.0, 0.0, 0.1, 0.1);
+        float flying = DustTicker.gainPerTick(1.0, 0.5, 0.1, 0.1);
+        float edge = DustTicker.gainPerTick(0.2, 0.5, 0.1, 0.1);
+        assertEquals(0.005f, still, 1e-6f);
+        assertEquals(0.055f, flying, 1e-6f);
+        assertEquals(0.011f, edge, 1e-6f);
+        assertEquals(0f, DustTicker.gainPerTick(0.0, 0.5, 0.1, 0.1));
+    }
+
+    @Test
+    void dustDataRespectsCapacityPerKind() {
+        DustData data = DustData.EMPTY.add(DustKind.ICE, 150f, 200f).add(DustKind.ICE, 100f, 200f);
+        assertEquals(200f, data.ice());
+        assertEquals(0f, data.metallic());
+        assertEquals(5f, data.add(DustKind.CARBON, 5f, 200f).get(DustKind.CARBON));
+    }
+
+    @Test
+    void kindWeightsCoverTheUnitInterval() {
+        assertEquals(DustKind.METALLIC, DustKind.pick(0.0));
+        assertEquals(DustKind.CARBON, DustKind.pick(0.999));
+        assertEquals(DustKind.ICE, DustKind.byName("ice"));
+    }
+
+    static DustCloud anyCloud() {
+        for (int x = 0; x < 50; x++) {
+            Optional<DustCloud> cloud = FIELD.cloudInCell(x, 0, 0);
+            if (cloud.isPresent()) {
+                return cloud.get();
+            }
+        }
+        throw new AssertionError("no cloud in 50 cells");
+    }
+
+    static Vec3 farFromClouds() {
+        for (int x = 0; x < 200; x++) {
+            Vec3 pos = new Vec3(x * 97.0, 0, x * 31.0);
+            List<DustCloud> around = FIELD.cloudsAround(pos, 0);
+            if (around.stream().noneMatch(c -> c.contains(pos))) {
+                return pos;
+            }
+        }
+        throw new AssertionError("no empty point found");
+    }
+}
