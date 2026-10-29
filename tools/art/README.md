@@ -127,7 +127,7 @@ python3 tools/art/rd_generate.py --balance
 Everything goes to `art/rd/`, which is gitignored:
 - `art/rd/<asset>/v1.png`... are the ready-size variants; the originals are in `raw/`.
 - `state.json` remembers jobs, RD asset ids and costs.
-- `index.html` is a contact sheet: each asset's current texture next to the new variants and model renders.
+- `index.html` is a contact sheet: each asset's current texture next to the new variants and model renders. The images are embedded in the page, so it is one self-contained file that opens anywhere (a phone, a file preview) and can be sent on. `--index` rebuilds it from what is staged, without sending anything.
 
 ## Promoting
 **Images:** `--promote asset=n` copies variant n into the mod after checking its size. Assets without a single target file yet (future blocks named with `*` or `{...}`) are copied by hand once their block exists.

@@ -705,10 +705,32 @@ def export_model(folder, asset_id, key):
 # ---------------------------------------------------------------------------------------------------------------------
 # Contact sheet and promotion
 
+MEDIA_TYPES = ((b'\x89PNG', 'image/png'), (b'GIF8', 'image/gif'), (b'\xff\xd8', 'image/jpeg'), (b'RIFF', 'image/webp'))
+
+
+def embedded(path):
+    """A file as a data: URI, so the contact sheet is one self-contained file: it opens anywhere (a phone, a file
+    preview, a browser that blocks local files) and can be sent on. The type comes from the bytes, not the name."""
+    with open(path, 'rb') as f:
+        data = f.read()
+    kind = next((t for magic, t in MEDIA_TYPES if data.startswith(magic)), None)
+    if kind is None and data[4:8] == b'ftyp':
+        kind = 'video/mp4'  # a turntable may come as a video
+    return kind or 'application/octet-stream', 'data:%s;base64,%s' % (kind or 'application/octet-stream',
+                                                                       base64.b64encode(data).decode())
+
+
+def media_tag(path, title, size):
+    kind, uri = embedded(path)
+    if kind.startswith('video/'):
+        return '<video src="%s" %s autoplay loop muted playsinline title="%s"></video>' % (uri, size, html.escape(title))
+    return '<img src="%s" %s title="%s">' % (uri, size, html.escape(title))
+
+
 def write_index(state):
     parts = ['<!doctype html><meta charset="utf-8"><title>RD staging</title><style>'
              'body{font:14px system-ui;background:#1b1d22;color:#ddd;margin:16px}'
-             'img{image-rendering:pixelated;background:repeating-conic-gradient(#333 0 25%,#444 0 50%) 0 0/16px 16px;'
+             'img,video{image-rendering:pixelated;background:repeating-conic-gradient(#333 0 25%,#444 0 50%) 0 0/16px 16px;'
              'margin:4px;vertical-align:top}.a{border-top:1px solid #333;padding:8px 0}code{color:#9fe2ff}'
              '.f{color:#f88}</style><h1>Retro Diffusion staging</h1>'
              '<p>Promote a variant with <code>python3 tools/art/rd_generate.py --promote &lt;asset&gt;=&lt;n&gt;</code>.</p>']
@@ -718,12 +740,12 @@ def write_index(state):
         parts.append('<div class="a"><b>%s</b> <small>%s</small><br>' % (html.escape(akey), html.escape(a['group'])))
         current = os.path.join(REPO, a['file']) if a.get('file') else ''
         if current and os.path.exists(current):
-            parts.append('<img src="%s" width="96" title="current">' % html.escape(os.path.relpath(current, STAGING)))
+            parts.append(media_tag(current, 'current', 'width="96"'))
         for f in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
             if f.startswith('v') and f.endswith('.png'):
-                parts.append('<img src="%s/%s" width="96" title="%s">' % (html.escape(akey), f, f))
+                parts.append(media_tag(os.path.join(folder, f), f, 'width="96"'))
             elif f in ('render.png', 'turntable.png'):
-                parts.append('<img src="%s/%s" height="160" title="%s">' % (html.escape(akey), f, f))
+                parts.append(media_tag(os.path.join(folder, f), f, 'height="160"'))
             elif f == 'model.bbmodel':
                 parts.append('<a href="%s/%s">model.bbmodel</a> ' % (html.escape(akey), f))
         for j in a['jobs']:

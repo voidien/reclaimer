@@ -7,6 +7,7 @@ import csv
 import http.server
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -209,6 +210,9 @@ class RdGenerateTest(unittest.TestCase):
         self.assertTrue(all(len(rd.subject(r['prompt'])) <= 250 for r in rows.values()))
 
     def test_images_priced_asked_generated_downscaled_and_promoted(self):
+        current = os.path.join(self.tmp, rd.TEXTURES, 'block', 'asteroid_ice.png')
+        os.makedirs(os.path.dirname(current))
+        shutil.copy(os.path.join(REAL_REPO, rd.TEXTURES, 'block', 'asteroid_ice.png'), current)
         with mock.patch('builtins.input', return_value='y'):
             rd.main(['--asset', 'quartz_wafer', '--asset', 'asteroid_ice'])
         posts = [c for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/inferences']
@@ -223,9 +227,30 @@ class RdGenerateTest(unittest.TestCase):
         for n in range(1, 5):
             px = rd.png_read(self.read(self.staged('quartz_wafer', 'v%d.png' % n)))
             self.assertEqual((len(px[0]), len(px)), (16, 16))
-        self.assertTrue(os.path.exists(self.staged('index.html')))
+        page = self.read(self.staged('index.html')).decode()
+        sources = re.findall(r'src="([^"]+)"', page)
+        self.assertEqual(len(sources), 8 + 1, 'four variants each and the current asteroid_ice texture')
+        for src in sources:
+            self.assertTrue(src.startswith('data:image/png;base64,'), 'the contact sheet embeds its images: ' + src[:40])
+        embedded = [base64.b64decode(s.split(',', 1)[1]) for s in sources]
+        self.assertIn(self.read(self.staged('quartz_wafer', 'v2.png')), embedded)
+        self.assertIn(self.read(current), embedded, 'the current texture is shown next to the variants')
         rd.main(['--promote', 'quartz_wafer=3'])
         self.assertTrue(os.path.exists(os.path.join(self.tmp, rd.TEXTURES, 'item', 'quartz_wafer.png')))
+
+    def test_contact_sheet_embeds_renders_by_their_real_type(self):
+        folder = self.staged('box_model')
+        os.makedirs(folder)
+        gif, mp4 = b'GIF89a' + b'\0' * 20, b'\0\0\0\x18ftypmp42' + b'\0' * 20
+        for name, data in (('render.png', gif), ('turntable.png', mp4)):
+            with open(os.path.join(folder, name), 'wb') as f:
+                f.write(data)
+        rd.write_index({'assets': {'box_model': {'group': 'Models', 'jobs': []}}})
+        page = self.read(self.staged('index.html')).decode()
+        self.assertIn('<img src="data:image/gif;base64,%s"' % base64.b64encode(gif).decode(), page)
+        self.assertIn('<video src="data:video/mp4;base64,%s"' % base64.b64encode(mp4).decode(), page,
+                      'a turntable that is really a video still plays')
+        self.assertNotIn('src="box_model/', page, 'no links to files next to the page')
 
     def test_no_spend_when_declined_or_over_balance(self):
         with mock.patch('builtins.input', return_value='n'):
