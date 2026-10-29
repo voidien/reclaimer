@@ -767,9 +767,10 @@ def promote_model(row, args):
     if not model_rel.endswith('.geo.json'):
         sys.exit('%s has no model file yet (%s): its block or entity is not built, so copy it by hand later'
                  % (akey, model_rel))
-    src = os.path.join(STAGING, akey, 'model.bbmodel')
+    src = args.source or os.path.join(STAGING, akey, 'model.bbmodel')
     if not os.path.exists(src):
-        sys.exit('no staged model for %s (expected %s); generate it first' % (akey, os.path.relpath(src, REPO)))
+        sys.exit('no model for %s (expected %s); generate it first, or name one with --source'
+                 % (akey, os.path.relpath(src, REPO)))
     part = os.path.basename(model_rel)[:-len('.geo.json')]
     folder = os.path.basename(os.path.dirname(model_rel))
     tex_name = ('first_person_' if folder == 'first_person' else '') + part
@@ -788,14 +789,18 @@ def promote_model(row, args):
         bone_map[rd_group] = bone
     with open(src, 'rb') as f:
         data = f.read()
-    atlas = os.path.join(STAGING, akey, 'atlas.png')
+    atlas = os.path.join(os.path.dirname(src), 'atlas.png')
     fallback = None
     if os.path.exists(atlas):
         with open(atlas, 'rb') as f:
             fallback = f.read()
+    scale_factor = args.scale
+    if args.scale_like and not scale_factor:
+        scale_factor = whole_model_scale(data, args.scale_like)
     try:
         geo, png, report = bbgeo.convert(data, part, old_geo, bone_map, fit=args.fit, scale=not args.no_fit,
-                                         identifier='geometry.void_reclaimer.%s.%s' % (folder, part), texture=fallback)
+                                         identifier='geometry.void_reclaimer.%s.%s' % (folder, part), texture=fallback,
+                                         groups=args.from_group, scale_factor=scale_factor)
     except (bbgeo.ConvertError, ValueError, KeyError) as e:
         sys.exit('%s: cannot convert %s: %s' % (akey, os.path.relpath(src, REPO), e))
     if png is None:
@@ -841,6 +846,77 @@ def promote_model(row, args):
     print('  The game draws these from Phase 5b (body rendering) on.')
 
 
+def whole_model_scale(data, like):
+    """The scale that makes the whole .bbmodel as long (on its longest side) as one of our models, e.g. body/ship,
+    so that every part cut out of it with --from-group keeps the same proportions."""
+    import bbgeo
+    path = os.path.join(REPO, 'src/main/resources/assets/void_reclaimer/geo/%s.geo.json' % like)
+    if not os.path.exists(path):
+        sys.exit('--scale-like %s: no model at %s' % (like, os.path.relpath(path, REPO)))
+    with open(path) as f:
+        ours = bbgeo.cubes_bbox(json.load(f)['minecraft:geometry'][0]['bones'])
+    whole, _, _ = bbgeo.convert(data, 'whole', standalone=True, scale=False, texture=png_write([[(0, 0, 0, 0)]]))
+    theirs = bbgeo.cubes_bbox(whole['minecraft:geometry'][0]['bones'])
+    s = max(ours[1][i] - ours[0][i] for i in range(3)) / max(theirs[1][i] - theirs[0][i] for i in range(3))
+    print('  scale %.3f: the whole model sized like %s' % (s, like))
+    return s
+
+
+def promote_as(target, args):
+    """Converts a whole .bbmodel into a standalone GeckoLib model with its animations, for an entity or a block
+    (`entity/NAME` or `block/NAME`): RD's group names become the bones, and nothing is fitted unless --fit/--scale is
+    given. Writes geo/<target>.geo.json, animations/<target>.animation.json (when there are animations) and
+    textures/<target>.png, backing up what it replaces next to the source."""
+    import bbgeo
+    folder, _, name = target.partition('/')
+    if folder not in ('entity', 'block') or not name or slug(name) != name:
+        sys.exit('--promote-as takes entity/NAME or block/NAME with a lowercase name, got %r' % target)
+    if not args.source or not os.path.exists(args.source):
+        sys.exit('--promote-as needs --source FILE.bbmodel')
+    with open(args.source, 'rb') as f:
+        data = f.read()
+    atlas = os.path.join(os.path.dirname(args.source), 'atlas.png')
+    fallback = None
+    if os.path.exists(atlas):
+        with open(atlas, 'rb') as f:
+            fallback = f.read()
+    info = {}
+    try:
+        geo, png, report = bbgeo.convert(data, name, None, fit=args.fit, scale=bool(args.fit_given),
+                                         identifier='geometry.void_reclaimer.%s.%s' % (folder, name), texture=fallback,
+                                         groups=args.from_group, scale_factor=args.scale, standalone=True, out=info)
+        anims, anim_report = bbgeo.convert_animations(data, info['bones_by_uuid'], info['scale'],
+                                                      'animation.void_reclaimer.%s' % name)
+    except (bbgeo.ConvertError, ValueError, KeyError) as e:
+        sys.exit('%s: cannot convert %s: %s' % (target, args.source, e))
+    if png is None:
+        sys.exit('%s: the .bbmodel has no embedded texture and there is no atlas.png next to it' % target)
+    assets = 'src/main/resources/assets/void_reclaimer/'
+    files = {assets + 'geo/%s.geo.json' % target: json.dumps(geo, indent='\t') + '\n',
+             TEXTURES + '%s.png' % target: png}
+    if anims['animations']:
+        files[assets + 'animations/%s.animation.json' % target] = json.dumps(anims, indent='\t') + '\n'
+    backup = os.path.join(os.path.dirname(os.path.abspath(args.source)), 'replaced')
+    for rel, content in files.items():
+        path = os.path.join(REPO, rel)
+        if os.path.exists(path):
+            os.makedirs(backup, exist_ok=True)
+            shutil.copyfile(path, os.path.join(backup, os.path.basename(rel)))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        write_file(path, content if isinstance(content, bytes) else content.encode())
+    preview = os.path.join(os.path.dirname(os.path.abspath(args.source)), name + '_preview.png')
+    write_file(preview, bbgeo.preview_png(geo, png, zoom=4))
+    print('promoted %s as %s:' % (args.source, target))
+    for rel in files:
+        print('  -> %s' % rel)
+    for line in report + anim_report:
+        print('  ' + line)
+    print('  preview: %s' % preview)
+    names = list(info['bones_by_uuid'].values())
+    print('  Bones keep RD\'s group names (%s%s); the entity or block that draws them comes in its own phase.'
+          % (', '.join(names[:8]), ', ...' if len(names) > 8 else ''))
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 POLL_SECONDS = float(os.environ.get('RD_POLL_SECONDS', '12'))
@@ -878,11 +954,27 @@ def main(argv=None):
     p.add_argument('--fit', type=float, default=4.0,
                    help='model promote, new modules: longest side in pixels (default 4, like the thrusters)')
     p.add_argument('--no-fit', action='store_true', help="model promote: keep RD's size and position")
+    p.add_argument('--source', help='model promote: the .bbmodel to use instead of the staged one')
+    p.add_argument('--from-group', action='append', metavar='RD_GROUP',
+                   help='model promote: use only this RD group (and what is inside it), e.g. to cut a Ship section '
+                        'out of a whole-ship model; repeatable')
+    p.add_argument('--scale', type=float,
+                   help='model promote: a fixed scale instead of fitting, e.g. the same for every part of one ship')
+    p.add_argument('--scale-like', metavar='FOLDER/MODEL',
+                   help='model promote: scale so the WHOLE source model is as long as this model of ours '
+                        '(e.g. body/ship); every part cut from it then shares one scale')
+    p.add_argument('--promote-as', metavar='entity/NAME',
+                   help='convert --source into a standalone GeckoLib model with its animations (entity/NAME or '
+                        'block/NAME), keeping RD\'s group names as bones')
     p.add_argument('--balance', action='store_true', help='show the account balance')
     p.add_argument('--index', action='store_true', help='rewrite art/rd/index.html')
     args = ARGS = p.parse_args(argv)
     rows = load_rows()
 
+    args.fit_given = any(a == '--fit' or a.startswith('--fit=') for a in (argv if argv is not None else sys.argv[1:]))
+    if args.promote_as:
+        promote_as(args.promote_as, args)
+        return 0
     if args.promote:
         for spec in args.promote:
             promote(spec, rows)

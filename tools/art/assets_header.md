@@ -27,7 +27,7 @@ Costs from RD's API page: about $0.25–3.00 per model, $0.20–1.50 per revisio
 ## 3D workflow (GeckoLib parts and rigs)
 The body is built in code from separate part models. Each part attaches to its parent by bone name, so a model only works if it keeps the **socket contract**. The art drop already meets it; a regenerated part must too.
 
-**Automatic:** `python3 tools/art/rd_generate.py --promote <asset>` does steps 2–4 and 6 for a part. It keeps our bones and positions, puts RD's boxes into the part's frame, scales the model to the old one's size, bakes rotated face UVs, and writes the model and texture with an empty accent mask. Details are in `tools/art/README.md`. The manual steps below are for animations, body rigs and anything the tool can't map.
+**Automatic:** `python3 tools/art/rd_generate.py --promote <asset>` does steps 2–4 and 6 for a part. It keeps our bones and positions, puts RD's boxes into the part's frame, scales the model to the old one's size, bakes rotated face UVs, and writes the model and texture with an empty accent mask. Details are in `tools/art/README.md`. It can also cut sections out of one whole model (`--from-group`, `--scale-like body/ship`), and `--promote-as entity/NAME` turns a whole model and its animations into a standalone GeckoLib model. The manual steps below are for body animations, body rigs and anything the tool can't map.
 
 **By hand in Blockbench:**
 1. **Generate** in RD 3D, blocky style, with the row's prompt. Up to 4 reference images help: the current item icon, or the old model's turntable.

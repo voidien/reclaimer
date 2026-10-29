@@ -147,5 +147,28 @@ python3 tools/art/rd_generate.py --promote rotor_arm_section --bone blade=rotor_
   - an empty `<part>_accent.png`. The old mask matched the old texture, so paint a new one in Blockbench to get the accent tint back.
   - The files it replaces are backed up to `art/rd/<asset>/replaced/`.
 - **Check it:** `art/rd/<asset>/promoted_preview.png` shows the converted model from the front, right, back, left and top, to compare with RD's `render.png`. The Gradle unit test `GeoModelLoadTest` loads every model in the mod through GeckoLib's own loader (CI runs it), so a model GeckoLib can't read fails the build.
-- **Not converted:** animations (RD's rig is not ours; keyframe them in Blockbench) and models for blocks that don't exist yet. Body rigs (`drone (body)`, ...) convert, but RD's groups land in the core section's frame unless you map them with `--bone`.
+- **Not converted for body parts:** animations. The body's animations belong to the chassis rigs and use our bone names, so keyframe them in Blockbench. Standalone models (below) do get their animations. Body rigs (`drone (body)`, ...) convert, but RD's groups land in the core section's frame unless you map them with `--bone`.
+
+**Cutting Ship sections out of one whole-ship model:**
+```
+python3 tools/art/rd_generate.py --promote ship_bow_section --source art/rd/starship/model.bbmodel --from-group nose --scale-like body/ship
+```
+- `--source` is any `.bbmodel`, for example one made in RD's app.
+- `--from-group` takes one RD group and everything inside it. Repeat it to combine groups, e.g. a nacelle plus its flame: `--from-group nacelle_l --from-group fx_thrust_l`.
+- `--scale-like body/ship` sizes the *whole* source model like our Ship rig and uses that one scale for every part, so the sections keep the ship's proportions. `--scale N` sets the factor directly.
+- The section's skeleton is kept as with any promote. The output says which groups exist and which old bones are now empty.
+- Example mapping for the RD "Create style starship": `nose` → `ship_bow_section`, `cockpit` → `ship_bridge_section`, `rear` → `ship_keel_section`, `nacelle_l` + `fx_thrust_l` → `ship_engine_nacelle_section`, `wing_l` → `ship_wing_section`, `fin` → `ship_dorsal_spine_section`, `antenna` → `ship_sensor_mast_section`, `crate` → `ship_cargo_bay_section`, `plate_l` → `ship_hull_segment_section`. Its landing legs and hatch have no section yet.
+
+**Standalone models with animations** (entities and blocks such as a drop pod, a helper drone, a docked starship):
+```
+python3 tools/art/rd_generate.py --promote-as entity/starship --source art/rd/starship/model.bbmodel
+```
+- **Written:** `geo/entity/starship.geo.json`, `textures/entity/starship.png` and `animations/entity/starship.animation.json`. Also `entity/` or `block/`.
+- **Bones** keep RD's group names (`nose`, `wing_l`, ...) under a root bone named after the model.
+- **Size:** RD's size is kept unless you pass `--fit` or `--scale`.
+- **Animations** are converted the way Blockbench's own Bedrock export does it: rotation X/Y and position X negated, positions scaled with the model. Step keys are held until the next key, because GeckoLib reads only a keyframe's `post` value. Loop modes map to GeckoLib's (`loop`, `hold_on_last_frame`, play once).
+- **Checks:** `GeoModelLoadTest` loads every animation through GeckoLib and checks that each moved bone exists in its model. For body animations, that means the rig or any section or module.
+- The entity or block that shows the model is built in its own phase.
+
+**RD's Minecraft (Java) export isn't used:** it tilts boxes freely, which needs Minecraft 1.21.11+. Always promote from the `.bbmodel`.
 - The game draws these models from Phase 5b (body rendering) on.

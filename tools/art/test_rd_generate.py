@@ -403,6 +403,93 @@ class RdGenerateTest(unittest.TestCase):
                     got = baked[int(bv1 + (bv2 - bv1) * t)][int(bu1 + (bu2 - bu1) * s)]
                     self.assertEqual(got, want, 'uv %s rotation %d at (%.1f, %.1f)' % (uv, r, s, t))
 
+    def anim_model(self):
+        model = json.loads(bbmodel(groups_v5=True))
+        def key(channel, t, x, y, z, interp='linear'):
+            return {'channel': channel, 'time': t, 'interpolation': interp, 'data_points': [{'x': x, 'y': y, 'z': z}]}
+        model['animations'] = [
+            {'name': 'Spin Up', 'loop': 'loop', 'length': 1.0, 'animators': {
+                'g2': {'name': 'blade', 'type': 'bone', 'keyframes': [
+                    key('rotation', 0.0, 10, 20, 30), key('rotation', 1.0, 0, 360, 0),
+                    key('position', 0.0, 2, 3, 4),
+                    key('scale', 0.0, 1, 1, 1)]},          # never moves: dropped
+                'g1': {'name': 'body', 'type': 'bone', 'keyframes': [
+                    key('scale', 0.0, 0, 0, 0, 'step'), key('scale', 0.5, 1, 1, 1)]},
+                'gone': {'name': 'deleted_group', 'type': 'bone', 'keyframes': [key('rotation', 0, 5, 0, 0)]},
+                'fx': {'name': 'effects', 'type': 'effect', 'keyframes': []}}},
+            {'name': 'once', 'loop': 'once', 'length': 2.0, 'animators': {}},
+            {'name': 'held', 'loop': 'hold', 'length': 2.0, 'animators': {}}]
+        return json.dumps(model)
+
+    def test_animations_follow_blockbench_bedrock_export(self):
+        import bbgeo
+        info = {}
+        data = self.anim_model()
+        bbgeo.convert(data, 'ship', standalone=True, scale=False, scale_factor=2.0, out=info)
+        anims, report = bbgeo.convert_animations(data, info['bones_by_uuid'], info['scale'], 'animation.void_reclaimer.ship')
+        a = anims['animations']
+        spin = a['animation.void_reclaimer.ship.spin_up']
+        self.assertEqual(spin['loop'], True)
+        self.assertEqual(spin['animation_length'], 1.0)
+        blade = spin['bones']['blade']
+        self.assertEqual(blade['rotation']['0.0']['vector'], [-10.0, -20.0, 30.0], 'rotation X and Y negated')
+        self.assertEqual(blade['rotation']['1']['vector'], [0.0, -360.0, 0.0])
+        self.assertEqual(blade['position']['0.0']['vector'], [-4.0, 6.0, 8.0], 'position X negated, scaled with the model')
+        self.assertNotIn('scale', blade, 'a channel that never moves is left out')
+        body = spin['bones']['body']['scale']
+        self.assertEqual(body['0.0']['vector'], [0.0, 0.0, 0.0])
+        self.assertEqual(body['0.4999']['vector'], [0.0, 0.0, 0.0], 'a step key holds until just before the next')
+        self.assertEqual(body['0.5']['vector'], [1.0, 1.0, 1.0])
+        self.assertEqual(set(spin['bones']), {'blade', 'body'}, 'animators for missing groups and effects are skipped')
+        self.assertNotIn('loop', a['animation.void_reclaimer.ship.once'])
+        self.assertEqual(a['animation.void_reclaimer.ship.held']['loop'], 'hold_on_last_frame')
+
+    def test_cut_one_group_out_of_a_whole_model(self):
+        import bbgeo
+        geo, _, _ = bbgeo.convert(bbmodel(), 'part', groups=['blade'], scale=False, scale_factor=0.5)
+        bones = {b['name']: b for b in geo['minecraft:geometry'][0]['bones']}
+        self.assertEqual(set(bones), {'part', 'part_mount', 'part_blade'}, 'only the chosen group and the skeleton')
+        self.assertEqual(sum(len(b.get('cubes', [])) for b in bones.values()), 1, 'only the boxes inside it')
+        self.assertEqual(bones['part_blade']['cubes'][0]['size'], [1.0, 4.0, 1.0], 'fixed scale 0.5')
+        with self.assertRaises(bbgeo.ConvertError):
+            bbgeo.convert(bbmodel(), 'part', groups=['wing'])
+
+    def test_promote_as_entity_writes_model_texture_and_animations(self):
+        src = os.path.join(self.tmp, 'art', 'ship', 'ship.bbmodel')
+        os.makedirs(os.path.dirname(src))
+        with open(src, 'w') as f:
+            f.write(self.anim_model())
+        with mock.patch('sys.stdout'):
+            rd.main(['--promote-as', 'entity/test_ship', '--source', src])
+        assets = os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer')
+        geo = self.geo('entity/test_ship.geo.json')
+        self.assertEqual(geo['bones'][0]['name'], 'test_ship')
+        self.assertIn('blade', [b['name'] for b in geo['bones']], "RD's group names are kept")
+        with open(os.path.join(assets, 'animations/entity/test_ship.animation.json')) as f:
+            anims = json.load(f)
+        self.assertIn('animation.void_reclaimer.test_ship.spin_up', anims['animations'])
+        self.assertTrue(os.path.exists(os.path.join(assets, 'textures/entity/test_ship.png')))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp, 'art', 'ship', 'test_ship_preview.png')))
+        for bad in (['--promote-as', 'item/x', '--source', src], ['--promote-as', 'entity/Bad Name', '--source', src],
+                    ['--promote-as', 'entity/x']):
+            with self.assertRaises(SystemExit):
+                rd.main(bad)
+
+    def test_scale_like_sizes_the_whole_model_like_ours(self):
+        import bbgeo
+        geo_dir = os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo/body')
+        os.makedirs(geo_dir)
+        with open(os.path.join(geo_dir, 'test.geo.json'), 'w') as f:
+            json.dump({'format_version': '1.12.0', 'minecraft:geometry': [{'description': {}, 'bones': [
+                {'name': 'root', 'pivot': [0, 0, 0], 'cubes': [{'origin': [0, 0, 0], 'size': [4, 32, 4]}]}]}]}, f)
+        whole, _, _ = bbgeo.convert(bbmodel(), 'w', standalone=True, scale=False)
+        lo, hi = bbgeo.cubes_bbox(whole['minecraft:geometry'][0]['bones'])
+        with mock.patch('sys.stdout'):
+            s = rd.whole_model_scale(bbmodel(), 'body/test')
+        self.assertAlmostEqual(s, 32 / max(h - l for l, h in zip(lo, hi)))
+        with self.assertRaises(SystemExit), mock.patch('sys.stdout'):
+            rd.whole_model_scale(bbmodel(), 'body/missing')
+
     def test_model_promote_refuses_what_it_cannot_convert(self):
         mesh = {'uuid': 'm', 'name': 'm', 'type': 'mesh', 'vertices': {}, 'faces': {}}
         for text in (bbmodel(extra_elements=[mesh]), bbmodel(textures=2)):
