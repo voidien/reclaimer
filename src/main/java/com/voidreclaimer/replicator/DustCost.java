@@ -1,43 +1,46 @@
 package com.voidreclaimer.replicator;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.voidreclaimer.dust.DustData;
-import com.voidreclaimer.dust.DustKind;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
-/** An amount of each dust kind, used for recipe costs and refunds. */
-public record DustCost(float metallic, float silicate, float ice, float carbon) {
-    public static final DustCost NONE = new DustCost(0f, 0f, 0f, 0f);
+/**
+ * An amount per dust kind id, used for recipe costs and refunds. In recipe JSON it is a plain object,
+ * {@code {"void_reclaimer:metallic": 10}}; bare names ({@code "metallic"}) mean the built-in kinds.
+ */
+public record DustCost(Map<ResourceLocation, Float> amounts) {
+    public static final DustCost NONE = new DustCost(Map.of());
 
-    public static final Codec<DustCost> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.FLOAT.optionalFieldOf("metallic", 0f).forGetter(DustCost::metallic),
-            Codec.FLOAT.optionalFieldOf("silicate", 0f).forGetter(DustCost::silicate),
-            Codec.FLOAT.optionalFieldOf("ice", 0f).forGetter(DustCost::ice),
-            Codec.FLOAT.optionalFieldOf("carbon", 0f).forGetter(DustCost::carbon)
-    ).apply(instance, DustCost::new));
+    public static final Codec<DustCost> CODEC =
+            DustData.CODEC.xmap(data -> new DustCost(data.amounts()), cost -> new DustData(cost.amounts()));
+    public static final StreamCodec<ByteBuf, DustCost> STREAM_CODEC =
+            DustData.STREAM_CODEC.map(data -> new DustCost(data.amounts()), cost -> new DustData(cost.amounts()));
 
-    public static final StreamCodec<ByteBuf, DustCost> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, DustCost::metallic,
-            ByteBufCodecs.FLOAT, DustCost::silicate,
-            ByteBufCodecs.FLOAT, DustCost::ice,
-            ByteBufCodecs.FLOAT, DustCost::carbon,
-            DustCost::new);
+    public DustCost {
+        amounts = new DustData(amounts).amounts();
+    }
 
-    public float get(DustKind kind) {
-        return switch (kind) {
-            case METALLIC -> metallic;
-            case SILICATE -> silicate;
-            case ICE -> ice;
-            case CARBON -> carbon;
-        };
+    /** Shorthand for the four built-in kinds. */
+    public static DustCost of(float metallic, float silicate, float ice, float carbon) {
+        return new DustCost(DustData.of(metallic, silicate, ice, carbon).amounts());
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public float get(ResourceLocation kind) {
+        return amounts.getOrDefault(kind, 0f);
     }
 
     public boolean canAfford(DustData dust) {
-        for (DustKind kind : DustKind.values()) {
-            if (dust.get(kind) + 1.0E-4f < get(kind)) {
+        for (Map.Entry<ResourceLocation, Float> entry : amounts.entrySet()) {
+            if (dust.get(entry.getKey()) + 1.0E-4f < entry.getValue()) {
                 return false;
             }
         }
@@ -47,8 +50,8 @@ public record DustCost(float metallic, float silicate, float ice, float carbon) 
     /** {@code dust} minus this cost (clamped at zero). */
     public DustData takeFrom(DustData dust) {
         DustData result = dust;
-        for (DustKind kind : DustKind.values()) {
-            result = result.with(kind, Math.max(0f, dust.get(kind) - get(kind)));
+        for (Map.Entry<ResourceLocation, Float> entry : amounts.entrySet()) {
+            result = result.with(entry.getKey(), Math.max(0f, dust.get(entry.getKey()) - entry.getValue()));
         }
         return result;
     }
@@ -56,17 +59,41 @@ public record DustCost(float metallic, float silicate, float ice, float carbon) 
     /** {@code dust} plus this cost, never exceeding {@code capacity} per kind. */
     public DustData giveTo(DustData dust, float capacity) {
         DustData result = dust;
-        for (DustKind kind : DustKind.values()) {
-            result = result.add(kind, get(kind), capacity);
+        for (Map.Entry<ResourceLocation, Float> entry : amounts.entrySet()) {
+            result = result.add(entry.getKey(), entry.getValue(), capacity);
         }
         return result;
     }
 
     public DustCost scale(float factor) {
-        return new DustCost(metallic * factor, silicate * factor, ice * factor, carbon * factor);
+        Map<ResourceLocation, Float> scaled = new HashMap<>();
+        amounts.forEach((kind, amount) -> scaled.put(kind, amount * factor));
+        return new DustCost(scaled);
+    }
+
+    public float total() {
+        float total = 0f;
+        for (float amount : amounts.values()) {
+            total += amount;
+        }
+        return total;
     }
 
     public boolean isFree() {
-        return metallic <= 0f && silicate <= 0f && ice <= 0f && carbon <= 0f;
+        return amounts.isEmpty();
+    }
+
+    /** Builds a cost one kind at a time, e.g. {@code DustCost.builder().add(DustKinds.METALLIC, 10).build()}. */
+    public static final class Builder {
+        private final Map<ResourceLocation, Float> amounts = new LinkedHashMap<>();
+
+        public Builder add(ResourceLocation kind, float amount) {
+            amounts.merge(kind, amount, Float::sum);
+            return this;
+        }
+
+        public DustCost build() {
+            return new DustCost(amounts);
+        }
     }
 }

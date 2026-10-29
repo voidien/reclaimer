@@ -1,10 +1,9 @@
 package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.dust.DustKind;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -40,14 +39,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("itemGroup.void_reclaimer", "Void Reclaimer");
         add(ModItems.DUST_SENSOR.get(), "Dust Sensor");
         add("item.void_reclaimer.dust_sensor.tooltip", "Sensor module: cloud readout, pulse (B), hum and scanner view (N). Install it in a sensor slot.");
-        for (DustKind kind : DustKind.values()) {
-            add("dust.void_reclaimer." + kind.getSerializedName(), switch (kind) {
-                case METALLIC -> "Metallic";
-                case SILICATE -> "Silicate";
-                case ICE -> "Ice";
-                case CARBON -> "Carbon";
-            });
-        }
+        add("dust.void_reclaimer.metallic", "Metallic");
+        add("dust.void_reclaimer.silicate", "Silicate");
+        add("dust.void_reclaimer.ice", "Ice");
+        add("dust.void_reclaimer.carbon", "Carbon");
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
@@ -66,7 +61,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.sensor_cooldown", "Sensor recharging.");
         add("message.void_reclaimer.sensor_low_power", "Not enough power for a sensor pulse.");
 
-        add("commands.void_reclaimer.dust.get", "%s dust: metallic %s, silicate %s, ice %s, carbon %s");
+        add("commands.void_reclaimer.dust.get", "%s dust: %s");
+        add("commands.void_reclaimer.dust.amount", "%s %s");
         add("commands.void_reclaimer.dust.set", "Set %s's %s dust to %s");
         add("commands.void_reclaimer.dust.unknown_kind", "Unknown dust kind: %s");
         add("commands.void_reclaimer.dust.locate", "Nearest %s cloud: center %s, radius %s, edge %s blocks away");
@@ -130,6 +126,8 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("key.void_reclaimer.replicator", "Open Replicator");
         add("replicator.void_reclaimer.title", "Replicator");
+        add("recipe.void_reclaimer.drone_kit", "Drone Kit");
+        add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
         add("replicator.void_reclaimer.tab.tools", "Tools");
         add("replicator.void_reclaimer.tab.modules", "Modules");
         add("replicator.void_reclaimer.tab.blocks", "Blocks");
@@ -163,7 +161,7 @@ public final class ModLangProvider extends LanguageProvider {
                 + "Not much, but it is matter, and matter is everything. "
                 + "Drafted a salvage tool so nothing I build is ever wasted, and a nanite swarm to build where nothing stands.");
         add("milestone.void_reclaimer.first_structure", "First Structure");
-        add("milestone.void_reclaimer.first_structure.hint", "Place " + Milestone.STRUCTURE_BLOCKS + " blocks");
+        add("milestone.void_reclaimer.first_structure.hint", "Place " + Milestones.STRUCTURE_BLOCKS + " blocks");
         add("log.void_reclaimer.first_structure.title", "Log 0003: Foothold");
         add("log.void_reclaimer.first_structure.text", "Ten blocks, bolted to nothing. It is the first thing out here that did not drift. "
                 + "I could tie myself to it. A tether would let me work without losing my way back.");
@@ -181,9 +179,7 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("replicator.void_reclaimer.tab.parts", "Parts");
         add("replicator.void_reclaimer.tab.body", "Body");
-        add(ModItems.DRONE_FRAME.get(), "Drone Frame");
-        add(ModItems.MECH_FRAME.get(), "Mech Frame");
-        add(ModItems.SHIP_FRAME.get(), "Ship Frame");
+        // ---- modules ----
         add(ModItems.CORE_MK1.get(), "Core Mk I");
         add(ModItems.CORE_MK2.get(), "Core Mk II");
         add(ModItems.THRUSTER_MK1.get(), "Thruster Mk I");
@@ -192,26 +188,115 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.STORAGE_MK2.get(), "Storage Pod Mk II");
         add(ModItems.BRASS_TRIM.get(), "Brass Trim");
         add(ModItems.COGWHEEL_CROWN.get(), "Cogwheel Crown");
-        add("item.void_reclaimer.ship_frame.tooltip", "Too large to assemble yet: needs materials from beyond the dust clouds.");
         add("item.void_reclaimer.brass_trim.tooltip", "Cosmetic. Shown on the body once body models arrive.");
         add("item.void_reclaimer.cogwheel_crown.tooltip", "Cosmetic. Shown on the body once body models arrive.");
-        add("tooltip.void_reclaimer.part", "%s · Tier %s · Mass %s");
-        add("tooltip.void_reclaimer.part.frame", "%s · budget %s · %s hearts");
-        add("tooltip.void_reclaimer.part.slots", "Slots: %s thruster, %s storage, %s sensor, %s tool, %s cosmetic");
-        add("tooltip.void_reclaimer.part.core", "Energy %s · solar ×%s");
-        add("tooltip.void_reclaimer.part.thruster", "Thrust %s · top speed %s m/s");
-        add("tooltip.void_reclaimer.part.storage", "+%s inventory rows · +%s dust per kind");
-        add("tooltip.void_reclaimer.part.min_size", "Needs a %s frame or larger");
-        for (com.voidreclaimer.body.PartKind kind : com.voidreclaimer.body.PartKind.values()) {
-            add("body.void_reclaimer.kind." + kind.getSerializedName(), switch (kind) {
-                case FRAME -> "Frame";
-                case CORE -> "Core";
-                case THRUSTER -> "Thrusters";
-                case STORAGE -> "Storage";
-                case SENSOR -> "Sensors";
-                case TOOL -> "Tools";
-                case COSMETIC -> "Cosmetic";
-            });
+        add("tooltip.void_reclaimer.module", "%s module · Tier %s · Mass %s");
+        add("tooltip.void_reclaimer.module.core", "Energy %s · solar ×%s");
+        add("tooltip.void_reclaimer.module.thruster", "Thrust %s · top speed %s m/s");
+        add("tooltip.void_reclaimer.module.storage", "+%s inventory rows · +%s dust per kind");
+        add("tooltip.void_reclaimer.module.min_size", "Needs a %s body or larger");
+        add("body.void_reclaimer.kind.core", "Core");
+        add("body.void_reclaimer.kind.thruster", "Thruster");
+        add("body.void_reclaimer.kind.storage", "Storage");
+        add("body.void_reclaimer.kind.sensor", "Sensor");
+        add("body.void_reclaimer.kind.tool", "Tool");
+        add("body.void_reclaimer.kind.cosmetic", "Cosmetic");
+
+        // ---- sections ----
+        add(ModItems.DRONE_HULL.get(), "Drone Hull");
+        add(ModItems.SENSOR_DOME.get(), "Sensor Dome");
+        add(ModItems.ROTOR_ARM.get(), "Rotor Arm");
+        add(ModItems.ROTOR_ARM_MK2.get(), "Rotor Arm Mk II");
+        add(ModItems.TOOL_CLAW.get(), "Tool Claw");
+        add(ModItems.MECH_TORSO.get(), "Mech Torso");
+        add(ModItems.MECH_PELVIS.get(), "Mech Pelvis");
+        add(ModItems.MECH_HEAD.get(), "Mech Head");
+        add(ModItems.MECH_UPPER_ARM.get(), "Mech Upper Arm");
+        add(ModItems.MECH_FOREARM.get(), "Mech Forearm");
+        add(ModItems.MECH_FOREARM_MK2.get(), "Mech Forearm Mk II");
+        add(ModItems.MECH_HAND.get(), "Mech Hand");
+        add(ModItems.MECH_THIGH.get(), "Mech Thigh");
+        add(ModItems.MECH_SHIN.get(), "Mech Shin");
+        add(ModItems.MECH_SHIN_MK2.get(), "Mech Shin Mk II");
+        add(ModItems.MECH_FOOT.get(), "Mech Foot");
+        add(ModItems.SHIP_KEEL.get(), "Ship Keel");
+        add(ModItems.SHIP_BOW.get(), "Ship Bow");
+        add(ModItems.SHIP_BRIDGE.get(), "Ship Bridge");
+        add(ModItems.SHIP_HULL_SEGMENT.get(), "Hull Segment");
+        add(ModItems.SHIP_HULL_SEGMENT_MK2.get(), "Hull Segment Mk II");
+        add(ModItems.SHIP_WING.get(), "Ship Wing");
+        add(ModItems.SHIP_ENGINE_NACELLE.get(), "Engine Nacelle");
+        add(ModItems.SHIP_ENGINE_NACELLE_MK2.get(), "Engine Nacelle Mk II");
+        add(ModItems.SHIP_HARDPOINT.get(), "Hardpoint");
+        add(ModItems.SHIP_CARGO_BAY.get(), "Cargo Bay");
+        add(ModItems.SHIP_SENSOR_MAST.get(), "Sensor Mast");
+        add(ModItems.SHIP_RCS_CLUSTER.get(), "RCS Cluster");
+        add(ModItems.SHIP_DORSAL_SPINE.get(), "Dorsal Spine");
+        add(ModItems.SHIP_VENTRAL_FIN.get(), "Ventral Fin");
+        add("item.void_reclaimer.drone_hull.tooltip", "Core section: installing it makes the body a Drone.");
+        add("item.void_reclaimer.mech_torso.tooltip", "Core section: installing it makes the body a Mech.");
+        add("item.void_reclaimer.ship_keel.tooltip", "Core section of a Ship. Too large to assemble yet: needs materials from beyond the dust clouds.");
+        add("tooltip.void_reclaimer.section", "%s section · Tier %s · Mass %s");
+        add("tooltip.void_reclaimer.section.core", "%s (core section) · Tier %s · Mass %s");
+        add("tooltip.void_reclaimer.section.budget", "budget +%s");
+        add("tooltip.void_reclaimer.section.health", "+%s hearts");
+        add("tooltip.void_reclaimer.section.reach", "reach +%s");
+        add("tooltip.void_reclaimer.section.intake", "intake +%s");
+        add("tooltip.void_reclaimer.section.rows", "+%s rows");
+        add("tooltip.void_reclaimer.section.stability", "stability +%s");
+        add("tooltip.void_reclaimer.section.turn", "turn +%s");
+        add("tooltip.void_reclaimer.section.wear", "wear resistance %s");
+        add("tooltip.void_reclaimer.section.mounts", "Mounts:");
+        add("tooltip.void_reclaimer.section.mount", "%s %s");
+        for (var type : java.util.Map.ofEntries(
+                java.util.Map.entry("drone_hull", "Drone hull"), java.util.Map.entry("sensor_dome", "Sensor dome"),
+                java.util.Map.entry("rotor_arm", "Rotor arm"), java.util.Map.entry("tool_claw", "Tool claw"),
+                java.util.Map.entry("mech_torso", "Mech torso"), java.util.Map.entry("pelvis", "Pelvis"), java.util.Map.entry("head", "Head"),
+                java.util.Map.entry("upper_arm", "Upper arm"), java.util.Map.entry("forearm", "Forearm"), java.util.Map.entry("hand", "Hand"),
+                java.util.Map.entry("thigh", "Thigh"), java.util.Map.entry("shin", "Shin"), java.util.Map.entry("foot", "Foot"),
+                java.util.Map.entry("ship_keel", "Ship keel"), java.util.Map.entry("bow", "Bow"), java.util.Map.entry("bridge", "Bridge"),
+                java.util.Map.entry("hull_segment", "Hull segment"), java.util.Map.entry("wing", "Wing"),
+                java.util.Map.entry("engine_nacelle", "Engine nacelle"), java.util.Map.entry("hardpoint", "Hardpoint"),
+                java.util.Map.entry("cargo_bay", "Cargo bay"), java.util.Map.entry("sensor_mast", "Sensor mast"),
+                java.util.Map.entry("rcs_cluster", "RCS cluster"), java.util.Map.entry("dorsal_spine", "Dorsal spine"),
+                java.util.Map.entry("ventral_fin", "Ventral fin")).entrySet()) {
+            add("socket.void_reclaimer." + type.getKey(), type.getValue());
+        }
+        add("body.void_reclaimer.chassis.drone", "Drone");
+        add("body.void_reclaimer.chassis.mech", "Mech");
+        add("body.void_reclaimer.chassis.ship", "Ship");
+        add("body.void_reclaimer.area.all", "All");
+        add("body.void_reclaimer.area.core", "Core");
+        add("body.void_reclaimer.area.sensors", "Sensors");
+        add("body.void_reclaimer.area.propulsion", "Propulsion");
+        add("body.void_reclaimer.area.tools", "Tools");
+        add("body.void_reclaimer.area.head", "Head");
+        add("body.void_reclaimer.area.back", "Back");
+        add("body.void_reclaimer.area.arms", "Arms");
+        add("body.void_reclaimer.area.legs", "Legs");
+        add("body.void_reclaimer.area.hull", "Hull");
+        add("body.void_reclaimer.area.control", "Control");
+        add("body.void_reclaimer.area.weapons", "Hardpoints");
+        add("body.void_reclaimer.area.cargo", "Cargo");
+        for (String socket : java.util.List.of("hull", "sensor_dome", "tool_claw", "torso", "head", "pelvis", "back", "keel", "bow",
+                "bridge", "wing_port", "wing_starboard", "mast_port", "mast_starboard", "rcs_fore", "rcs_aft", "dorsal_spine", "ventral_fin")) {
+            add("body.void_reclaimer.socket." + socket, readable(socket));
+        }
+        for (String corner : java.util.List.of("front_left", "front_right", "back_left", "back_right")) {
+            add("body.void_reclaimer.socket.rotor_" + corner, "Rotor, " + readable(corner).toLowerCase(java.util.Locale.ROOT));
+        }
+        for (String side : java.util.List.of("left", "right")) {
+            for (String limb : java.util.List.of("upper_arm", "forearm", "hand", "thigh", "shin", "foot")) {
+                add("body.void_reclaimer.socket." + side + "_" + limb, readable(side) + " " + readable(limb).toLowerCase(java.util.Locale.ROOT));
+            }
+        }
+        for (int i = 1; i <= 6; i++) {
+            add("body.void_reclaimer.socket.hull_" + i, "Hull segment " + i);
+            add("body.void_reclaimer.socket.hardpoint_" + i, "Hardpoint " + i);
+        }
+        for (int i = 1; i <= 4; i++) {
+            add("body.void_reclaimer.socket.nacelle_" + i, "Engine nacelle " + i);
+            add("body.void_reclaimer.socket.cargo_" + i, "Cargo bay " + i);
         }
         add("body.void_reclaimer.size.drone", "Drone");
         add("body.void_reclaimer.size.mech", "Mech");
@@ -237,19 +322,49 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.stat.inventory", "Inventory %s/36");
         add("body.void_reclaimer.stat.tier", "Core tier %s");
         add("body.void_reclaimer.overloaded", "Over the mass budget: slower and hungrier.");
-        add("body.void_reclaimer.empty_slot", "Empty");
+        add("body.void_reclaimer.empty_socket", "No section installed");
+        add("body.void_reclaimer.empty_mount", "%s: empty");
         add("body.void_reclaimer.remove", "[Remove]");
-        add("body.void_reclaimer.install", "Install:");
-        add("body.void_reclaimer.no_parts", "No matching parts in your inventory.");
+        add("body.void_reclaimer.remove_module", "[Remove module]");
+        add("body.void_reclaimer.install_section", "Install section:%s");
+        add("body.void_reclaimer.install_module", "Install %s module:");
+        add("body.void_reclaimer.no_parts", "Nothing matching in your inventory.");
         add("body.void_reclaimer.click_install", "Click to install");
-        add("message.void_reclaimer.body.not_a_part", "That isn't a body part.");
-        add("message.void_reclaimer.body.wrong_slot", "That part goes in a different slot.");
+        add("body.void_reclaimer.missing", "%s sections missing");
+        add("body.void_reclaimer.complete", "All sections installed");
+        add("message.void_reclaimer.body.not_a_section", "That isn't a body section.");
+        add("message.void_reclaimer.body.not_a_module", "That isn't a module.");
+        add("message.void_reclaimer.body.no_such_socket", "This body has no such socket.");
+        add("message.void_reclaimer.body.wrong_socket", "That section doesn't fit this socket.");
+        add("message.void_reclaimer.body.no_section", "Install a section there first.");
+        add("message.void_reclaimer.body.no_such_mount", "That section has no such mount.");
+        add("message.void_reclaimer.body.wrong_mount", "That module goes on a different mount.");
         add("message.void_reclaimer.body.tier_too_high", "The core can't run a part of that tier.");
-        add("message.void_reclaimer.body.frame_too_small", "That part needs a bigger frame.");
-        add("message.void_reclaimer.body.bad_slot", "Nothing to do there.");
+        add("message.void_reclaimer.body.too_small", "That module needs a bigger body.");
         add("message.void_reclaimer.body.core_too_low", "A weaker core couldn't run the installed parts.");
-        add("message.void_reclaimer.body.required", "Frame and core can only be replaced, not removed.");
-        add("message.void_reclaimer.body.inventory_full", "No free inventory slot for the removed parts.");
+        add("message.void_reclaimer.body.required", "The core section and core module can only be replaced, not removed.");
+        add("message.void_reclaimer.body.empty", "Nothing there.");
+        add("message.void_reclaimer.body.unknown_chassis", "That core section's layout isn't loaded.");
+        add("message.void_reclaimer.body.inventory_full", "No free inventory slot for the parts that would come off.");
+        add("message.void_reclaimer.body.returned", "Parts that no longer fit your body were returned to your inventory.");
+        add("body.void_reclaimer.condition", "Condition %s%%");
+        add("body.void_reclaimer.repair", "[Repair: %s]");
+        add("body.void_reclaimer.paint", "Casing: %s");
+        add("body.void_reclaimer.paint.default", "Body default");
+        add("body.void_reclaimer.blueprint.save", "Save");
+        add("body.void_reclaimer.blueprint.apply", "Apply");
+        add("body.void_reclaimer.blueprint.queue", "Queue");
+        add("message.void_reclaimer.body.not_worn", "That section isn't worn.");
+        add("message.void_reclaimer.body.repair_dust", "Not enough dust to repair it.");
+        add(ModItems.BODY_BLUEPRINT.get(), "Body Blueprint");
+        add("item.void_reclaimer.body_blueprint.empty", "Empty. Use it to save your current body.");
+        add("item.void_reclaimer.body_blueprint.saved", "%s design · %s sections · %s modules");
+        add("item.void_reclaimer.body_blueprint.usage", "Use to build it from your inventory; sneak-use to save over it.");
+        add("message.void_reclaimer.blueprint.saved", "Body saved to the blueprint.");
+        add("message.void_reclaimer.blueprint.applied", "Blueprint built: nothing missing.");
+        add("message.void_reclaimer.blueprint.missing", "Blueprint built where possible. Missing: %s");
+        add("message.void_reclaimer.blueprint.count", "%s× %s");
+        add("message.void_reclaimer.blueprint.queued", "Queued %s Replicator jobs for missing parts.");
         add("key.void_reclaimer.module_wheel", "Module Wheel (hold)");
         add("screen.void_reclaimer.module_wheel", "Tool modules");
 
@@ -263,5 +378,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.energy.set", "Set energy of %s to %s");
         add("commands.void_reclaimer.energy.low_power", "low power");
         add("commands.void_reclaimer.energy.online", "online");
+    }
+
+    private static String readable(String id) {
+        String text = id.replace('_', ' ');
+        return Character.toUpperCase(text.charAt(0)) + text.substring(1);
     }
 }

@@ -2,9 +2,11 @@ package com.voidreclaimer.client.input;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.body.Cosmetics;
+import com.voidreclaimer.registry.OrderedRegistry;
 import com.voidreclaimer.body.InventoryLock;
-import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.client.screen.ModuleWheelScreen;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightPhysics;
@@ -40,7 +42,7 @@ public final class ClientBodyController {
             return;
         }
         while (ModKeyMappings.MODULE_WHEEL.consumeClick()) {
-            if (mc.screen == null && Bodies.data(player).slots(PartKind.TOOL) > 0) {
+            if (mc.screen == null && com.voidreclaimer.body.Modules.hasToolMounts(player)) {
                 mc.setScreen(new ModuleWheelScreen());
             }
         }
@@ -53,14 +55,15 @@ public final class ClientBodyController {
     private static void spawnTrail(LocalPlayer player) {
         Cosmetics cosmetics = Bodies.data(player).cosmetics();
         FlightInput input = player.getData(ModAttachments.FLIGHT_INPUT);
-        if (cosmetics.trail() == Cosmetics.Trail.NONE || !input.isThrusting() || !ThrusterFlight.isActive(player)) {
+        Trail trail = OrderedRegistry.get(player.registryAccess(), VoidReclaimerRegistries.TRAIL, cosmetics.trail());
+        if (trail == null || !trail.particles() || !input.isThrusting() || !ThrusterFlight.isActive(player)) {
             return;
         }
         Vec3 thrust = FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input);
         if (thrust.lengthSqr() < 1.0E-6) {
             return;
         }
-        int rgb = cosmetics.trail().color(cosmetics.accent());
+        int rgb = trail.color(cosmetics.accent());
         Vector3f color = new Vector3f((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f);
         Vec3 exhaust = thrust.normalize().scale(-1);
         double scale = player.getScale();

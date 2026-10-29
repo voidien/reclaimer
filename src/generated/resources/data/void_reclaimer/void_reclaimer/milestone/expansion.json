@@ -1,0 +1,6 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:dust_full"
+  },
+  "order": 4
+}

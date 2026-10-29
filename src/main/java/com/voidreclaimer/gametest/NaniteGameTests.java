@@ -6,7 +6,7 @@ import com.voidreclaimer.nanite.Nanites;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -96,16 +96,16 @@ public final class NaniteGameTests {
     public static void tenPlacedBlocksReachFirstStructure(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 52_000.5, 80, 0.5);
         try {
-            for (int i = 0; i < Milestone.STRUCTURE_BLOCKS - 1; i++) {
+            for (int i = 0; i < Milestones.STRUCTURE_BLOCKS - 1; i++) {
                 Replicator.countBlockPlaced(player);
             }
             Replicator.checkMilestones(player);
-            helper.assertFalse(Replicator.data(player).isUnlocked(Milestone.FIRST_STRUCTURE), "unlocked one block early");
+            helper.assertFalse(Replicator.data(player).isUnlocked(Milestones.FIRST_STRUCTURE), "unlocked one block early");
             Replicator.countBlockPlaced(player);
             Replicator.countBlockPlaced(player);
             Replicator.checkMilestones(player);
-            helper.assertTrue(Replicator.data(player).isUnlocked(Milestone.FIRST_STRUCTURE), "not unlocked");
-            helper.assertTrue(Replicator.data(player).blocksPlaced() == Milestone.STRUCTURE_BLOCKS, "kept counting past the goal");
+            helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.FIRST_STRUCTURE), "not unlocked");
+            helper.assertTrue(Replicator.data(player).blocksPlaced() == Milestones.STRUCTURE_BLOCKS, "kept counting past the goal");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

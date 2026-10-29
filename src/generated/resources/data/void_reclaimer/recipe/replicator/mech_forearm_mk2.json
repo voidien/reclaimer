@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 6.0,
+    "void_reclaimer:ice": 4.0,
+    "void_reclaimer:metallic": 12.0,
+    "void_reclaimer:silicate": 8.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:mech_forearm_mk2"
+  },
+  "ticks": 1200
+}

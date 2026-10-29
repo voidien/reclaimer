@@ -6,7 +6,7 @@ import com.voidreclaimer.replicator.DustCost;
 public final class CoreCharging {
     public static final int MAX_CHARGES = 3;
     /** Dust for one instant charge. */
-    public static final DustCost CHARGE_COST = new DustCost(10, 10, 0, 0);
+    public static final DustCost CHARGE_COST = DustCost.of(10, 10, 0, 0);
 
     private CoreCharging() {}
 

@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:metallic": 2.0,
+    "void_reclaimer:silicate": 3.0
+  },
+  "milestone": "void_reclaimer:first_dust",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:body_blueprint"
+  },
+  "ticks": 200
+}

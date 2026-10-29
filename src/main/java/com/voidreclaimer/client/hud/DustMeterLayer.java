@@ -1,7 +1,7 @@
 package com.voidreclaimer.client.hud;
 
 import com.voidreclaimer.dust.DustData;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.space.ModDimensions;
 import net.minecraft.client.DeltaTracker;
@@ -30,9 +30,9 @@ public final class DustMeterLayer {
         }
         float capacity = DustData.capacity(player);
         int y = Y;
-        for (DustKind kind : DustKind.values()) {
-            float amount = dust.get(kind);
-            int color = 0xFF000000 | kind.color();
+        for (DustKinds.Entry entry : DustKinds.all(player.registryAccess())) {
+            float amount = dust.get(entry.id());
+            int color = 0xFF000000 | entry.kind().color();
             graphics.fill(X, y + 1, X + 6, y + 7, color);
             int barX = X + 9;
             graphics.fill(barX, y + 2, barX + BAR_WIDTH, y + 6, 0x90202028);

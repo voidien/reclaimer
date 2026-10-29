@@ -1,0 +1,7 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:dust_kinds_held",
+    "count": 1
+  },
+  "order": 1
+}

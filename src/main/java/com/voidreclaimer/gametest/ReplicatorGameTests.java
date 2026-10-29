@@ -1,16 +1,21 @@
 package com.voidreclaimer.gametest;
 
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
+import com.voidreclaimer.replicator.ReplicatorJob;
 import com.voidreclaimer.replicator.ReplicatorLogic;
+import com.voidreclaimer.replicator.DustCost;
+import com.voidreclaimer.salvage.Salvage;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -32,6 +37,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class ReplicatorGameTests {
     private static final ResourceLocation SCAFFOLD = VoidReclaimer.id("replicator/scaffold");
     private static final ResourceLocation SALVAGE_TOOL = VoidReclaimer.id("replicator/salvage_tool");
+    private static final ResourceLocation DRONE_KIT = VoidReclaimer.id("replicator/drone_kit");
     /** Scaffold recipe: 5 s build. */
     private static final int SCAFFOLD_TICKS = 100;
 
@@ -43,8 +49,8 @@ public final class ReplicatorGameTests {
         try {
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.LOCKED, "scaffold unlocked before awakening");
             Replicator.checkMilestones(player);
-            helper.assertTrue(Replicator.data(player).isUnlocked(Milestone.AWAKENING), "awakening not granted");
-            helper.assertFalse(Replicator.data(player).isUnlocked(Milestone.FIRST_DUST), "first dust granted without dust");
+            helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.AWAKENING), "awakening not granted");
+            helper.assertFalse(Replicator.data(player).isUnlocked(Milestones.FIRST_DUST), "first dust granted without dust");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);
@@ -56,7 +62,7 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 41_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(50, 50, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(50, 50, 0, 0));
             // Dust alone doesn't unlock until the milestone check runs.
             helper.assertTrue(Replicator.queue(player, SALVAGE_TOOL) == ReplicatorLogic.QueueResult.LOCKED, "salvage tool unlocked too early");
             Replicator.checkMilestones(player);
@@ -72,9 +78,9 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 42_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 10, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 10, 0, 0));
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.QUEUED, "queue failed");
-            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 2f) < 1e-4, "dust not taken on queue");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 2f) < 1e-4, "dust not taken on queue");
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST, "queued without enough dust");
 
             for (int i = 0; i < SCAFFOLD_TICKS - 1; i++) {
@@ -96,7 +102,7 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 43_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             EnergyData energy = player.getData(ModAttachments.ENERGY);
             player.setData(ModAttachments.ENERGY, new EnergyData(0.01f, energy.capacity(), true));
@@ -115,10 +121,10 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 44_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             helper.assertTrue(Replicator.cancel(player, 0), "cancel failed");
-            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 8f) < 1e-4, "dust not refunded");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 8f) < 1e-4, "dust not refunded");
             helper.assertFalse(Replicator.cancel(player, 0), "cancelled a job that doesn't exist");
             helper.succeed();
         } finally {
@@ -134,7 +140,7 @@ public final class ReplicatorGameTests {
             for (int i = 0; i < player.getInventory().items.size(); i++) {
                 player.getInventory().items.set(i, new ItemStack(Items.STONE, 64));
             }
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             for (int i = 0; i < SCAFFOLD_TICKS + 1; i++) {
                 player.doTick();
@@ -164,23 +170,23 @@ public final class ReplicatorGameTests {
                 space.setBlock(pos, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.east(), ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
-                TestPlayers.installModule(player, PartKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
+                TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
 
                 player.gameMode.destroyBlock(pos);
                 helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");
-                float refund = player.getData(ModAttachments.DUST).silicate();
+                float refund = player.getData(ModAttachments.DUST).get(DustKinds.SILICATE);
                 // 8 silicate per 8 scaffold, 50% refund: 0.5 per block.
                 helper.assertTrue(Math.abs(refund - 0.5f) < 1e-4, "expected 0.5 silicate refund, got " + refund);
 
                 // With something in hand the module is idle: the block drops itself and refunds nothing.
                 player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
                 player.gameMode.destroyBlock(pos.east());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "refund without the tool");
+                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "refund without the tool");
 
                 // Natural blocks aren't salvageable: no refund.
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.gameMode.destroyBlock(pos.west());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "stone gave a refund");
+                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "stone gave a refund");
             } finally {
                 TestPlayers.remove(player);
             }
@@ -193,6 +199,35 @@ public final class ReplicatorGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    @GameTest(template = "empty")
+    public static void kitsDeliverEveryPartAndKeepSalvagePrices(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 47_000.5, 80, 0.5);
+        try {
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.AWAKENING).withUnlocked(Milestones.FIRST_DUST));
+            player.setData(ModAttachments.DUST, DustData.of(40, 20, 0, 0));
+            helper.assertTrue(Replicator.queue(player, DRONE_KIT) == ReplicatorLogic.QueueResult.QUEUED, "kit not queued");
+            // Skip to the last tick of the 80 s job.
+            ReplicatorData data = Replicator.data(player);
+            ReplicatorJob job = data.jobs().get(0);
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(),
+                    job.total() - 1, job.total()))));
+            player.doTick();
+            player.doTick();
+            helper.assertTrue(countOf(player, ModItems.DRONE_HULL.get().getDefaultInstance()) == 1, "hull not delivered");
+            helper.assertTrue(countOf(player, ModItems.SENSOR_DOME.get().getDefaultInstance()) == 1, "dome not delivered");
+            helper.assertTrue(countOf(player, ModItems.TOOL_CLAW.get().getDefaultInstance()) == 1, "claw not delivered");
+            helper.assertTrue(countOf(player, ModItems.ROTOR_ARM.get().getDefaultInstance()) == 4, "4 rotor arms not delivered");
+
+            // Salvage prices a hull by its own recipe (20/10), not by a seventh of the kit.
+            DustCost hull = Salvage.refundFor(player.server.getRecipeManager(), ModItems.DRONE_HULL.get(), 1f);
+            helper.assertTrue(Math.abs(hull.get(DustKinds.METALLIC) - 20f) < 1e-4, "hull refund " + hull);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
     }
 
     private static int countOf(ServerPlayer player, ItemStack target) {

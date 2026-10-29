@@ -1,56 +1,97 @@
 package com.voidreclaimer.dust;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.voidreclaimer.Config;
 import io.netty.buffer.ByteBuf;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
-/** The AI's internal dust reserve, one amount per kind. Spent by the Replicator (Phase 4). */
-public record DustData(float metallic, float silicate, float ice, float carbon) {
-    public static final DustData EMPTY = new DustData(0f, 0f, 0f, 0f);
+/**
+ * The AI's internal dust reserve: an amount per dust kind id. Spent by the Replicator.
+ *
+ * <p>Saved as {@code {"void_reclaimer:metallic": 12.5, ...}}. Older saves wrote bare names ({@code "metallic"}),
+ * which {@link DustKinds#ID_CODEC} still reads. Kinds that are no longer registered are kept, not dropped.
+ */
+public record DustData(Map<ResourceLocation, Float> amounts) {
+    public static final DustData EMPTY = new DustData(Map.of());
 
-    public static final Codec<DustData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.FLOAT.optionalFieldOf("metallic", 0f).forGetter(DustData::metallic),
-            Codec.FLOAT.optionalFieldOf("silicate", 0f).forGetter(DustData::silicate),
-            Codec.FLOAT.optionalFieldOf("ice", 0f).forGetter(DustData::ice),
-            Codec.FLOAT.optionalFieldOf("carbon", 0f).forGetter(DustData::carbon)
-    ).apply(instance, DustData::new));
+    public static final Codec<DustData> CODEC = amountsCodec().xmap(DustData::new, DustData::amounts);
+    public static final StreamCodec<ByteBuf, DustData> STREAM_CODEC = amountsStreamCodec().map(DustData::new, DustData::amounts);
 
-    public static final StreamCodec<ByteBuf, DustData> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, DustData::metallic,
-            ByteBufCodecs.FLOAT, DustData::silicate,
-            ByteBufCodecs.FLOAT, DustData::ice,
-            ByteBufCodecs.FLOAT, DustData::carbon,
-            DustData::new);
+    public DustData {
+        amounts = normalize(amounts);
+    }
+
+    /** Shorthand for the four built-in kinds. */
+    public static DustData of(float metallic, float silicate, float ice, float carbon) {
+        return new DustData(java.util.Map.of(DustKinds.METALLIC, metallic, DustKinds.SILICATE, silicate,
+                DustKinds.ICE, ice, DustKinds.CARBON, carbon));
+    }
 
     /** Storage per kind: the config base plus the body's storage parts. */
     public static float capacity(Player player) {
         return Config.DUST_CAPACITY.get().floatValue() + com.voidreclaimer.body.Bodies.stats(player).dustCapacity();
     }
 
-    public float get(DustKind kind) {
-        return switch (kind) {
-            case METALLIC -> metallic;
-            case SILICATE -> silicate;
-            case ICE -> ice;
-            case CARBON -> carbon;
-        };
+    public float get(ResourceLocation kind) {
+        return amounts.getOrDefault(kind, 0f);
     }
 
-    public DustData with(DustKind kind, float amount) {
-        return switch (kind) {
-            case METALLIC -> new DustData(amount, silicate, ice, carbon);
-            case SILICATE -> new DustData(metallic, amount, ice, carbon);
-            case ICE -> new DustData(metallic, silicate, amount, carbon);
-            case CARBON -> new DustData(metallic, silicate, ice, amount);
-        };
+    public DustData with(ResourceLocation kind, float amount) {
+        Map<ResourceLocation, Float> copy = new HashMap<>(amounts);
+        copy.put(kind, amount);
+        return new DustData(copy);
     }
 
     /** Adds dust of one kind, never exceeding {@code capacity}. */
-    public DustData add(DustKind kind, float amount, float capacity) {
+    public DustData add(ResourceLocation kind, float amount, float capacity) {
         return with(kind, Math.min(capacity, get(kind) + amount));
+    }
+
+    /** How many kinds the reserve holds any of. */
+    public int kindsHeld() {
+        return amounts.size();
+    }
+
+    /** Whether any one kind is at {@code capacity}. */
+    public boolean anyKindFull(float capacity) {
+        for (float amount : amounts.values()) {
+            if (amount >= capacity - 1.0E-3f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public float total() {
+        float total = 0f;
+        for (float amount : amounts.values()) {
+            total += amount;
+        }
+        return total;
+    }
+
+    /** Unmodifiable, sorted by id, without empty kinds. */
+    static Map<ResourceLocation, Float> normalize(Map<ResourceLocation, Float> amounts) {
+        Map<ResourceLocation, Float> sorted = new TreeMap<>();
+        amounts.forEach((kind, amount) -> {
+            if (amount != null && amount > 0f) {
+                sorted.put(kind, amount);
+            }
+        });
+        return java.util.Collections.unmodifiableMap(sorted);
+    }
+
+    static Codec<Map<ResourceLocation, Float>> amountsCodec() {
+        return Codec.unboundedMap(DustKinds.ID_CODEC, Codec.FLOAT);
+    }
+
+    static StreamCodec<ByteBuf, Map<ResourceLocation, Float>> amountsStreamCodec() {
+        return ByteBufCodecs.map(HashMap::new, ResourceLocation.STREAM_CODEC, ByteBufCodecs.FLOAT);
     }
 }

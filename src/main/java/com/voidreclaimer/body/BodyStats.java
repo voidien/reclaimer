@@ -1,86 +1,127 @@
 package com.voidreclaimer.body;
 
+import com.voidreclaimer.api.body.ModuleStats;
+import com.voidreclaimer.api.body.SectionStats;
+import com.voidreclaimer.api.body.SizeClass;
 import com.voidreclaimer.flight.FlightStats;
 import java.util.List;
-import javax.annotation.Nullable;
+import net.minecraft.resources.ResourceKey;
 
 /**
- * Everything the body's parts add up to. Pure: computed from part stats only, so it can be unit tested.
+ * Everything the body's sections and modules add up to. Pure: computed from their stats and the size class only, so it
+ * can be unit tested.
  *
- * <p>Mass is a soft limit: over the frame's budget, acceleration, braking and top speed drop and energy use rises,
- * the more the further over the budget the body is.
+ * <p>Sections add mass, mass budget, health, reach, dust intake, inventory rows, stability and turn rate. Modules add
+ * mass, and by kind: the core sets energy and the tier limit, thrusters add up (the best one sets top speed), storage
+ * adds rows and dust capacity.
  *
- * @param size           size class (scale)
- * @param mass           total mass of frame and parts
- * @param massBudget     the frame's budget
- * @param coreTier       highest part tier the core allows
+ * <p>Mass is a soft limit: over the budget, acceleration, braking and top speed drop and energy use rises, the more
+ * the further over the budget the body is.
+ *
+ * @param size           size class id
+ * @param scale          body scale ({@code generic.scale})
+ * @param sizeRank       size class rank, for modules with a minimum size
+ * @param mass           total mass of sections and modules
+ * @param massBudget     summed section budgets
+ * @param coreTier       highest tier the core module allows (0 without a core)
  * @param flight         handling after the overload penalty
  * @param energyUse      multiplier on thruster and dampener energy costs
  * @param energyCapacity energy capacity from the core
  * @param solarRate      sunlight charge multiplier from the core
- * @param maxHealth      max health (half-hearts) from the frame
- * @param reach          extra interaction range from the frame
- * @param dustIntake     dust collection multiplier from the frame
+ * @param maxHealth      max health (half-hearts)
+ * @param reach          extra interaction range
+ * @param dustIntake     dust collection multiplier
  * @param rows           main-inventory rows available (0..3, beyond the hotbar)
- * @param dustCapacity   extra dust storage per kind from storage parts
+ * @param dustCapacity   extra dust storage per kind from storage modules
+ * @param stability      footing on solid ground
+ * @param turnRate       rotation help
  */
-public record BodyStats(SizeClass size, float mass, float massBudget, int coreTier, FlightStats flight, float energyUse,
-                        float energyCapacity, float solarRate, float maxHealth, float reach, float dustIntake, int rows,
-                        float dustCapacity) {
+public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank, float mass, float massBudget, int coreTier,
+                        FlightStats flight, float energyUse, float energyCapacity, float solarRate, float maxHealth,
+                        float reach, float dustIntake, int rows, float dustCapacity, float stability, float turnRate) {
     public static final int MAX_ROWS = 3;
     /** Handling lost per unit of overload (mass/budget - 1). */
     static final double HANDLING_PENALTY = 2.0;
     static final double SPEED_PENALTY = 1.0;
     static final double ENERGY_PENALTY = 2.0;
+    /** Fallbacks when data is broken (no core module, no sections); never happens in normal play. */
+    static final float NO_CORE_CAPACITY = 100f;
+    static final float MIN_HEALTH = 2f;
+    static final float MIN_BUDGET = 0.1f;
 
-    /** Fallbacks for a body with no frame or core (never happens in play; keeps the game running if data is broken). */
-    private static final PartStats.Frame NO_FRAME = new PartStats.Frame(SizeClass.DRONE, 1f, 20f, 0f, 1f, 1, java.util.Map.of());
-    private static final float NO_CORE_CAPACITY = 100f;
+    /** Stats of an installed section or module with its effectiveness (1, or less for a worn section, see {@link Wear}). */
+    public record Installed<T>(T stats, float efficiency) {}
 
-    public static BodyStats compute(@Nullable PartStats frame, List<PartStats> parts) {
-        PartStats.Frame frameSpec = frame == null ? NO_FRAME : frame.frame().orElse(NO_FRAME);
-        float mass = frame == null ? 0f : frame.mass();
+    /** All parts at full effectiveness. */
+    public static BodyStats compute(ResourceKey<SizeClass> sizeKey, SizeClass size, List<SectionStats> sections,
+                                    List<ModuleStats> modules) {
+        return computeWorn(sizeKey, size, sections.stream().map(s -> new Installed<>(s, 1f)).toList(),
+                modules.stream().map(m -> new Installed<>(m, 1f)).toList());
+    }
+
+    /**
+     * Sections' contributions (except mass and rows) scale with their effectiveness; so do the thrusters mounted on
+     * them (a module's effectiveness is its section's).
+     */
+    public static BodyStats computeWorn(ResourceKey<SizeClass> sizeKey, SizeClass size, List<Installed<SectionStats>> sections,
+                                        List<Installed<ModuleStats>> modules) {
+        float mass = 0f;
+        float budget = 0f;
+        float health = 0f;
+        float reach = 0f;
+        float intake = 0f;
+        int rows = 0;
+        float stability = 0f;
+        float turnRate = 0f;
+        for (Installed<SectionStats> installed : sections) {
+            SectionStats section = installed.stats();
+            float e = installed.efficiency();
+            mass += section.mass();
+            budget += section.massBudget() * e;
+            health += section.maxHealth() * e;
+            reach += section.reach() * e;
+            intake += section.dustIntake() * e;
+            rows += section.baseRows();
+            stability += section.stability() * e;
+            turnRate += section.turnRate() * e;
+        }
         float thrust = 0f;
         float brake = 0f;
         float topSpeed = 0f;
-        float energyCapacity = 0f;
-        float solarRate = 0f;
+        float energyCapacity = NO_CORE_CAPACITY;
+        float solarRate = 1f;
         int coreTier = 0;
-        boolean hasCore = false;
-        int rows = frameSpec.baseRows();
         float dustCapacity = 0f;
-        for (PartStats part : parts) {
-            mass += part.mass();
-            if (part.thruster().isPresent()) {
-                PartStats.Thruster t = part.thruster().get();
-                thrust += t.thrust();
-                brake += t.brake();
-                topSpeed = Math.max(topSpeed, t.topSpeed());
+        for (Installed<ModuleStats> installed : modules) {
+            ModuleStats module = installed.stats();
+            float e = installed.efficiency();
+            mass += module.mass();
+            if (module.thruster().isPresent()) {
+                ModuleStats.Thruster t = module.thruster().get();
+                thrust += t.thrust() * e;
+                brake += t.brake() * e;
+                topSpeed = Math.max(topSpeed, t.topSpeed() * e);
             }
-            if (part.core().isPresent()) {
-                hasCore = true;
-                energyCapacity = part.core().get().energyCapacity();
-                solarRate = part.core().get().solarRate();
-                coreTier = part.tier();
+            if (module.core().isPresent()) {
+                energyCapacity = module.core().get().energyCapacity();
+                solarRate = module.core().get().solarRate();
+                coreTier = module.tier();
             }
-            if (part.storage().isPresent()) {
-                rows += part.storage().get().rows();
-                dustCapacity += part.storage().get().dustCapacity();
+            if (module.storage().isPresent()) {
+                rows += module.storage().get().rows();
+                dustCapacity += module.storage().get().dustCapacity();
             }
-        }
-        if (!hasCore) {
-            energyCapacity = NO_CORE_CAPACITY;
-            solarRate = 1f;
         }
         mass = Math.max(mass, 0.01f);
-        double overload = overload(mass, frameSpec.massBudget());
+        budget = Math.max(budget, MIN_BUDGET);
+        double overload = overload(mass, budget);
         double handling = 1.0 / (1.0 + HANDLING_PENALTY * overload);
         double speedFactor = 1.0 / (1.0 + SPEED_PENALTY * overload);
         FlightStats flight = new FlightStats(mass, thrust * handling, brake * handling,
                 topSpeed * speedFactor / FlightStats.TICKS_PER_SECOND);
-        return new BodyStats(frameSpec.size(), mass, frameSpec.massBudget(), coreTier, flight,
-                (float) (1.0 + ENERGY_PENALTY * overload), energyCapacity, solarRate, frameSpec.maxHealth(), frameSpec.reach(),
-                frameSpec.dustIntake(), Math.min(MAX_ROWS, rows), dustCapacity);
+        return new BodyStats(sizeKey, size.scale(), size.rank(), mass, budget, coreTier, flight,
+                (float) (1.0 + ENERGY_PENALTY * overload), energyCapacity, solarRate, Math.max(MIN_HEALTH, health), reach,
+                intake, Math.min(MAX_ROWS, rows), dustCapacity, stability, turnRate);
     }
 
     /** How far over the budget: 0 within budget, 0.5 at 150% of it. */
@@ -92,7 +133,7 @@ public record BodyStats(SizeClass size, float mass, float massBudget, int coreTi
         return mass > massBudget;
     }
 
-    /** Main-inventory slots usable, hotbar included (18..36). */
+    /** Main-inventory slots usable, hotbar included (9..36). */
     public int inventorySlots() {
         return 9 + 9 * rows;
     }

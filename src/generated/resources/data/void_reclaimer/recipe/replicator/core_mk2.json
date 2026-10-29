@@ -1,13 +1,13 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "parts",
+  "category": "void_reclaimer:parts",
   "cost": {
-    "carbon": 20.0,
-    "ice": 10.0,
-    "metallic": 40.0,
-    "silicate": 30.0
+    "void_reclaimer:carbon": 20.0,
+    "void_reclaimer:ice": 10.0,
+    "void_reclaimer:metallic": 40.0,
+    "void_reclaimer:silicate": 30.0
   },
-  "milestone": "expansion",
+  "milestone": "void_reclaimer:expansion",
   "result": {
     "count": 1,
     "id": "void_reclaimer:core_mk2"

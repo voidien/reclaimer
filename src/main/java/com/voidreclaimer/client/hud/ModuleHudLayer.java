@@ -1,6 +1,6 @@
 package com.voidreclaimer.client.hud;
 
-import com.voidreclaimer.body.Modules;
+import com.voidreclaimer.body.Bodies;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,7 +16,7 @@ public final class ModuleHudLayer {
         if (mc.options.hideGui || !(mc.getCameraEntity() instanceof Player player)) {
             return;
         }
-        ItemStack tool = Modules.activeTool(player);
+        ItemStack tool = Bodies.activeTool(player);
         if (tool.isEmpty()) {
             return;
         }

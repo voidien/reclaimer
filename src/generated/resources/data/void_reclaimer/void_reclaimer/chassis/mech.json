@@ -1,0 +1,204 @@
+{
+  "core_socket": "torso",
+  "size_class": "void_reclaimer:mech",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:mech_torso"
+      ],
+      "area": "core",
+      "id": "torso",
+      "required": true
+    },
+    {
+      "parent": "torso",
+      "accepts": [
+        "void_reclaimer:head"
+      ],
+      "area": "head",
+      "id": "head",
+      "pivot": [
+        0.0,
+        12.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "torso",
+      "accepts": [
+        "void_reclaimer:pelvis"
+      ],
+      "area": "core",
+      "id": "pelvis"
+    },
+    {
+      "parent": "torso",
+      "accepts": [
+        "void_reclaimer:rotor_arm"
+      ],
+      "area": "back",
+      "id": "back",
+      "pivot": [
+        0.0,
+        8.0,
+        3.0
+      ]
+    },
+    {
+      "parent": "torso",
+      "accepts": [
+        "void_reclaimer:upper_arm"
+      ],
+      "area": "arms",
+      "id": "left_upper_arm",
+      "pivot": [
+        5.0,
+        10.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "left_upper_arm",
+      "accepts": [
+        "void_reclaimer:forearm"
+      ],
+      "area": "arms",
+      "id": "left_forearm",
+      "pivot": [
+        0.0,
+        -5.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "left_forearm",
+      "accepts": [
+        "void_reclaimer:hand"
+      ],
+      "area": "arms",
+      "id": "left_hand",
+      "pivot": [
+        0.0,
+        -5.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "torso",
+      "accepts": [
+        "void_reclaimer:upper_arm"
+      ],
+      "area": "arms",
+      "id": "right_upper_arm",
+      "pivot": [
+        -5.0,
+        10.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "right_upper_arm",
+      "accepts": [
+        "void_reclaimer:forearm"
+      ],
+      "area": "arms",
+      "id": "right_forearm",
+      "pivot": [
+        0.0,
+        -5.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "right_forearm",
+      "accepts": [
+        "void_reclaimer:hand"
+      ],
+      "area": "arms",
+      "id": "right_hand",
+      "pivot": [
+        0.0,
+        -5.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "pelvis",
+      "accepts": [
+        "void_reclaimer:thigh"
+      ],
+      "area": "legs",
+      "id": "left_thigh",
+      "pivot": [
+        2.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "left_thigh",
+      "accepts": [
+        "void_reclaimer:shin"
+      ],
+      "area": "legs",
+      "id": "left_shin",
+      "pivot": [
+        0.0,
+        -6.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "left_shin",
+      "accepts": [
+        "void_reclaimer:foot"
+      ],
+      "area": "legs",
+      "id": "left_foot",
+      "pivot": [
+        0.0,
+        -6.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "pelvis",
+      "accepts": [
+        "void_reclaimer:thigh"
+      ],
+      "area": "legs",
+      "id": "right_thigh",
+      "pivot": [
+        -2.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "right_thigh",
+      "accepts": [
+        "void_reclaimer:shin"
+      ],
+      "area": "legs",
+      "id": "right_shin",
+      "pivot": [
+        0.0,
+        -6.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "right_shin",
+      "accepts": [
+        "void_reclaimer:foot"
+      ],
+      "area": "legs",
+      "id": "right_foot",
+      "pivot": [
+        0.0,
+        -6.0,
+        0.0
+      ]
+    }
+  ]
+}

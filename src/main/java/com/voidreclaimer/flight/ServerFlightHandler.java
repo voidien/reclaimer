@@ -77,6 +77,7 @@ public final class ServerFlightHandler {
         double perTick;
         if (input.isThrusting()) {
             perTick = Config.THRUST_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
+            com.voidreclaimer.body.Wear.onThrustTick(player);
         } else if (ThrusterFlight.isBraking(player, input, speed)) {
             perTick = Config.BRAKE_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
         } else {

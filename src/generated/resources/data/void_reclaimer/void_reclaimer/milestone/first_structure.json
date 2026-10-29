@@ -1,0 +1,7 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:blocks_placed",
+    "count": 10
+  },
+  "order": 2
+}

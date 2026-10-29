@@ -2,6 +2,7 @@ package com.voidreclaimer.dust;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +51,7 @@ public final class StarterNebula {
     public static List<DustCloud> pockets(Vec3 center) {
         double d = POCKET_SPREAD / Math.sqrt(3);
         Vec3[] offsets = {new Vec3(d, d, d), new Vec3(d, -d, -d), new Vec3(-d, d, -d), new Vec3(-d, -d, d)};
-        DustKind[] kinds = DustKind.values();
+        ResourceLocation[] kinds = {DustKinds.METALLIC, DustKinds.SILICATE, DustKinds.ICE, DustKinds.CARBON};
         DustCloud[] clouds = new DustCloud[kinds.length];
         for (int i = 0; i < kinds.length; i++) {
             Vec3 noiseOffset = new Vec3(1_000 + 1_000 * i, 2_000 + 1_000 * i, 3_000 + 1_000 * i);

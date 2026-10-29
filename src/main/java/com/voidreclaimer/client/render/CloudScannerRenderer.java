@@ -8,6 +8,7 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.CloudShape;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustField;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.dust.DustSensor;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +74,7 @@ public final class CloudScannerRenderer {
             if (shape == null) {
                 continue;
             }
-            int rgb = cloud.kind().color();
+            int rgb = DustKinds.color(mc.level.registryAccess(), cloud.kind());
             drawShell(buffers.getBuffer(RenderType.debugQuads()), pose, shape, cam, rgb);
             drawWires(buffers.getBuffer(RenderType.lines()), poseStack.last(), shape, cam, rgb);
             drewAny = true;

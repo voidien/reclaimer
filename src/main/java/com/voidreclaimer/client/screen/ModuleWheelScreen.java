@@ -3,7 +3,7 @@ package com.voidreclaimer.client.screen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyData;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.network.BodyActionPayload;
 import net.minecraft.client.Minecraft;
@@ -35,7 +35,7 @@ public final class ModuleWheelScreen extends Screen {
     }
 
     private static int slots(LocalPlayer player) {
-        return Bodies.data(player).slots(PartKind.TOOL);
+        return Bodies.view(player).toolMounts().size();
     }
 
     @Override
@@ -72,8 +72,9 @@ public final class ModuleWheelScreen extends Screen {
         if (player == null) {
             return;
         }
-        BodyData body = Bodies.data(player);
-        int count = body.slots(PartKind.TOOL);
+        BodyView view = Bodies.view(player);
+        java.util.List<BodyData.Mount> tools = view.toolMounts();
+        int count = tools.size();
         int cx = width / 2;
         int cy = height / 2;
         double dx = mouseX - cx;
@@ -88,16 +89,16 @@ public final class ModuleWheelScreen extends Screen {
             double a = -Math.PI / 2 + i * Mth.TWO_PI / count;
             int ix = cx + (int) Math.round(Math.cos(a) * RADIUS);
             int iy = cy + (int) Math.round(Math.sin(a) * RADIUS);
-            boolean active = i == body.activeTool();
+            boolean active = i == view.data().activeTool();
             int bg = i == hovered ? 0xE02E4A5E : 0xC0101418;
             graphics.fill(ix - 13, iy - 13, ix + 13, iy + 13, bg);
             graphics.renderOutline(ix - 13, iy - 13, 26, 26, active ? 0xFF7FD4FF : 0xFF3A4A5A);
-            ItemStack tool = body.get(PartKind.TOOL, i);
+            ItemStack tool = view.data().module(tools.get(i));
             if (!tool.isEmpty()) {
                 graphics.renderItem(tool, ix - 8, iy - 8);
             }
             if (i == hovered) {
-                Component name = tool.isEmpty() ? Component.translatable("body.void_reclaimer.empty_slot") : tool.getHoverName();
+                Component name = tool.isEmpty() ? Component.translatable("body.void_reclaimer.empty_mount", BodyPanel.socketName(tools.get(i).socket())) : tool.getHoverName();
                 graphics.drawCenteredString(font, name, cx, cy + RADIUS + 22, 0xFFDDE6EE);
             }
         }

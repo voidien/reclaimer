@@ -3,10 +3,16 @@ package com.voidreclaimer.dust;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import com.voidreclaimer.api.dust.DustKind;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
@@ -138,17 +144,57 @@ class DustFieldTest {
 
     @Test
     void dustDataRespectsCapacityPerKind() {
-        DustData data = DustData.EMPTY.add(DustKind.ICE, 150f, 200f).add(DustKind.ICE, 100f, 200f);
-        assertEquals(200f, data.ice());
-        assertEquals(0f, data.metallic());
-        assertEquals(5f, data.add(DustKind.CARBON, 5f, 200f).get(DustKind.CARBON));
+        DustData data = DustData.EMPTY.add(DustKinds.ICE, 150f, 200f).add(DustKinds.ICE, 100f, 200f);
+        assertEquals(200f, data.get(DustKinds.ICE));
+        assertEquals(0f, data.get(DustKinds.METALLIC));
+        assertEquals(5f, data.add(DustKinds.CARBON, 5f, 200f).get(DustKinds.CARBON));
+        assertEquals(1, data.kindsHeld());
     }
 
     @Test
-    void kindWeightsCoverTheUnitInterval() {
-        assertEquals(DustKind.METALLIC, DustKind.pick(0.0));
-        assertEquals(DustKind.CARBON, DustKind.pick(0.999));
-        assertEquals(DustKind.ICE, DustKind.byName("ice"));
+    void builtinKindsKeepThePhase3CloudRanges() {
+        // Cumulative weights 0.30 / 0.65 / 0.85 / 1.0 in metallic, silicate, ice, carbon order: existing worlds keep their clouds.
+        List<DustKinds.Entry> kinds = DustKinds.builtinEntries();
+        assertEquals(DustKinds.METALLIC, DustKinds.pick(kinds, 0.0));
+        assertEquals(DustKinds.METALLIC, DustKinds.pick(kinds, 0.29));
+        assertEquals(DustKinds.SILICATE, DustKinds.pick(kinds, 0.31));
+        assertEquals(DustKinds.ICE, DustKinds.pick(kinds, 0.66));
+        assertEquals(DustKinds.CARBON, DustKinds.pick(kinds, 0.999));
+    }
+
+    @Test
+    void addedKindsJoinTheWeightsAndZeroWeightKindsStayOut() {
+        ResourceLocation plasma = ResourceLocation.fromNamespaceAndPath("addon", "plasma");
+        List<DustKinds.Entry> kinds = new ArrayList<>(DustKinds.builtinEntries());
+        kinds.add(new DustKinds.Entry(plasma, new DustKind(0xFF00FF, 1.0, DustKind.DEFAULT_ORDER)));
+        kinds.add(new DustKinds.Entry(ResourceLocation.fromNamespaceAndPath("addon", "rare"), new DustKind(0xFFFFFF, 0.0, DustKind.DEFAULT_ORDER)));
+        kinds.sort(DustKinds.ORDER);
+        assertEquals(plasma, DustKinds.pick(kinds, 0.99));
+        assertEquals(DustKinds.METALLIC, DustKinds.pick(kinds, 0.0));
+        assertNull(DustKinds.pick(List.of(new DustKinds.Entry(plasma, new DustKind(0, 0.0, DustKind.DEFAULT_ORDER))), 0.5));
+    }
+
+    @Test
+    void oldSavesWithBareKindNamesStillLoad() {
+        JsonObject old = new JsonObject();
+        old.addProperty("metallic", 12.5f);
+        old.addProperty("silicate", 0f);
+        old.addProperty("ice", 3f);
+        old.addProperty("carbon", 0f);
+        DustData data = DustData.CODEC.parse(JsonOps.INSTANCE, old).getOrThrow();
+        assertEquals(12.5f, data.get(DustKinds.METALLIC));
+        assertEquals(3f, data.get(DustKinds.ICE));
+        assertEquals(2, data.kindsHeld(), "empty kinds are not stored");
+        DustData roundTrip = DustData.CODEC.parse(JsonOps.INSTANCE, DustData.CODEC.encodeStart(JsonOps.INSTANCE, data).getOrThrow()).getOrThrow();
+        assertEquals(data, roundTrip);
+    }
+
+    @Test
+    void unknownKindsAreKeptNotDropped() {
+        JsonObject json = new JsonObject();
+        json.addProperty("addon:plasma", 7f);
+        DustData data = DustData.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        assertEquals(7f, data.get(ResourceLocation.fromNamespaceAndPath("addon", "plasma")));
     }
 
     @Test
@@ -159,9 +205,9 @@ class DustFieldTest {
         assertEquals(center, StarterNebula.center(1234L, spawn), "same seed, same place");
         assertNotEquals(center, StarterNebula.center(99L, spawn), "direction depends on the seed");
 
-        DustField withNebula = new DustField(1234L, center);
-        for (DustKind kind : DustKind.values()) {
-            DustCloud pocket = StarterNebula.pockets(center).stream().filter(c -> c.kind() == kind).findFirst().orElseThrow();
+        DustField withNebula = new DustField(1234L, center, DustKinds.builtinEntries());
+        for (ResourceLocation kind : DustKinds.BUILTIN.keySet()) {
+            DustCloud pocket = StarterNebula.pockets(center).stream().filter(c -> c.kind().equals(kind)).findFirst().orElseThrow();
             DustField.Sample sample = withNebula.sample(pocket.center());
             assertTrue(sample.inCloud() && sample.density() > 0.3, kind + " pocket too thin: " + sample.density());
             // Reachable: every pocket's edge is well within the sensor hum range of spawn.

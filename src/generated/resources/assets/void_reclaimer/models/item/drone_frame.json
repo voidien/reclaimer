@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "void_reclaimer:item/drone_frame"
-  }
-}

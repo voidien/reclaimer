@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 5.0,
+    "void_reclaimer:ice": 5.0,
+    "void_reclaimer:metallic": 15.0,
+    "void_reclaimer:silicate": 5.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:rotor_arm_mk2"
+  },
+  "ticks": 800
+}

@@ -1,10 +1,10 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "blocks",
+  "category": "void_reclaimer:blocks",
   "cost": {
-    "silicate": 8.0
+    "void_reclaimer:silicate": 8.0
   },
-  "milestone": "awakening",
+  "milestone": "void_reclaimer:awakening",
   "result": {
     "count": 8,
     "id": "void_reclaimer:scaffold"

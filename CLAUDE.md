@@ -116,9 +116,11 @@ src/main/java/com/voidreclaimer/
 ├── nanite/                       Phase 4: Nanite Swarm (build in empty space)
 ├── tether/                       Phase 4: Tether Anchor leash and recall
 ├── core/                         Phase 4: Backup Cores, respawn choice, death marker
-├── body/                         Phase 5: SizeClass, PartKind, PartStats, BodyData attachment, BodyStats,
-│   │                             BodyRules, Bodies (server), InventoryLock, Modules
-│   ├── part/                     PartItem
+├── api/                          public API: registry keys, registry element types, extension interfaces, events
+├── body/                         Phase 5: BodyData attachment (sections per socket, modules per mount), BodyView,
+│   │                             BodyStats, BodyRules, BodyMigration, BuiltinBodies, Bodies (server),
+│   │                             ToolModules, Modules, InventoryLock, Cosmetics
+│   ├── part/                     SectionItem, ModuleItem
 │   └── assembly/                 (5b) 3D assembly view logic
 ├── asteroid/                     Phase 6: worldgen features, drill gating
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
@@ -213,7 +215,13 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Gear animation in Create style: cogs spin with thrust and speed, with module work (Replicator, drill, nanites), with energy level (low power winds down), and idle slowly.
 - Body colors: a casing material (Andesite, Brass, Copper, later unlocks) plus a free accent tint.
 - Phases 7–8 build on Create's machines and logistics instead of duplicating them.
-- **Create Aeronautics / Sable: not a dependency (spike, 2026-10-28).** Sable gravity can be zeroed per dimension (`data/<ns>/dimension_physics/*.json`: `base_gravity`, `base_pressure`, `universal_drag`), but in `deep_space` every sub-level was flung away or removed on its first physics tick (cause unknown; our tall dimension or zero-G systems are suspects). Revisit before Phase 8; branch `claude/aeronautics-spike` keeps the test setup.
+- **Create Aeronautics: optional support, Phase 7b (retest 2026-10-29, branch `claude/aeronautics-spike`, `AERONAUTICS_SPIKE.md`).**
+  - Sable works in `deep_space` with zero physics gravity via `data/<ns>/dimension_physics/*.json` (`base_gravity`, `base_pressure`, `universal_drag`). The first spike's "flung away" ships were falling: the zero-G file wasn't in effect. Height and f32 precision were not factors.
+  - Aeronautics propellers and balloons need air, so they give no thrust in vacuum. Our own **Space Thruster** block pushes ships through Sable's force API (Create rotation plus dust fuel).
+  - The Ship class stays the player's body; a **Helm** block lets the body pilot a block ship with WASD thrust controls. Block ships serve as mobile stations, cargo haulers, mining rigs, and can cross the Atmospheric Portal (air on Ruined Earth makes propellers work).
+  - Everything loads only when Aeronautics is installed; the mod plays fully without it.
+  - Upstream bug: an intermittent start-up deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (game, `runData`). Keep Aeronautics out of the CI datagen run.
+  - `sable64bit` (Chelovechic, AGPL, f64 Rapier) works with Sable 2.0.6 and keeps physics exact far from the origin; recommend it, don't depend on it.
 - **Ships and stations without Aeronautics:**
   - Drone, Mech and Ship are all the player's body (GeckoLib, Create style). The Ship is the 3.0-scale class: a mobile base with more storage, module slots and a faster Replicator; it docks at stations and is the class that survives the Atmospheric Portal (Phase 9).
   - Stations are fixed block structures: Create machines and belts inside, Create contraptions (bearings, pistons, gantries) for moving parts such as rotating rings, our controller blocks for multiblock bonuses (Phase 8). Between stations: helper drones and Create trains on tracks laid through space.
@@ -229,12 +237,61 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - **Cosmetics:** casing material + accent tint + thruster trail (drawn now as particles), plus cosmetic part slots (drawn in 5b).
 - **Mech frame and Mk II parts** unlock with the Expansion milestone (any dust kind at capacity). The Ship frame waits for Phase 6 materials.
 
+**Body sections (after 5a, replaces frames and part slots)**
+- A body is a tree of **sections** in **sockets**. The core section names a `chassis` (datapack) that lists the sockets: accepted socket types, `required`, `parent`, `pivot`, `area`. Only the core is required; a missing section empties its child sockets.
+- Sections offer **mounts** for modules (core, thruster, storage, sensor, tool, cosmetic). Size class, scale, health, reach and mass budget come from the chassis and its sections.
+- Kits for the starting set of a chassis (Drone Kit; Mech Core Kit = torso + pelvis + head); limbs are crafted singly. Mk II sections replace single sockets.
+- Old frame/part saves migrate on load; the body is kept on death. Body logic takes a `LivingEntity` where it can (entity-agnostic for helper drones later).
+- **Paint:** body default casing + accent, with optional per-section overrides.
+- **Wear:** light and repairable. Below 50% condition, efficiency drops up to 25%. Repair costs about 20% of the recipe dust. Never breaks; no wear in creative.
+- **Body Blueprint:** save the body, apply it from the inventory, queue Replicator jobs for missing parts.
+- **Replicator recipes** may have several `results` and a `title`; a job waits until the buffer fits all of its items. Salvage prices single-item recipes first.
+
 **Cloud scanner (after 4b)**
 - With a Dust Sensor, key N toggles (client config `cloudScanner`, default on) a wire mesh with a faint tint, in the kind's color, for every cloud whose edge is within 512 blocks.
 - The mesh follows the true lumpy edge (`CloudShape`): rays on a 16×32 latitude/longitude grid find the outermost point at density 0.05. Computed once per cloud on a background thread and cached.
 - Drawn unfogged (fog start restored afterwards) through `RenderLevelStageEvent`; this bends the Phase 3 "clouds are invisible" rule only for sensor owners who switch it on.
 
-**Phase order (decided after 4b):** 5a Body data → 6 Asteroids → 7 Machines → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+**Phase order (decided after 4b, 7b added 2026-10-29):** 5a Body data → extensibility + body sections → 6 Asteroids → 7 Machines → 7b Aeronautics support (optional) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+
+## Extensibility (strict)
+Void Reclaimer is built to be extended by datapack makers, addon developers and KubeJS (through datapacks and events). Every change keeps it that way:
+1. **Data first.** Content and tuning that a datapack could reasonably change lives in data files (datapack registries, recipes, tags), not code.
+2. **Registries, not enums, for open sets.** An enum is allowed only for a set that is fixed by design, and is listed under "Fixed sets" below.
+3. **Behaviour through registered interfaces.** Game logic never checks for specific items (`stack.is(ModItems.X)`); it asks a component, a tag or a registered type.
+4. **Events at key moments.** Fire a NeoForge event (in `com.voidreclaimer.api.event`) wherever an addon could reasonably want to react or change the outcome.
+5. **Public API package.** Registry keys, registry element types, extension interfaces and events live in `com.voidreclaimer.api`. Keep it small and documented.
+6. **Tags for groups, config for numbers.**
+7. **A GameTest per extension point**, using the GameTest-only datapack (`resources/gametest_pack`, namespace `void_reclaimer_test`, loaded by `GameTestPack` only on the GameTest server) and test listeners (`TestEventListeners`, acting only on tagged test players).
+8. **This list is kept current:** every new extension point is added below in the same change.
+9. **Saves and data stay loadable:** ids default to our namespace when bare (`ModCodecs.ID`), unknown ids are kept rather than dropped, and built-in values keep their meaning (e.g. dust kind order keeps cloud generation identical).
+
+### Extension points
+| Extension point | Kind | Notes |
+|---|---|---|
+| `void_reclaimer:dust_kind` | Synced datapack registry (`api.dust.DustKind`) | `color`, `cloud_weight` (0 = never in clouds), `name`, `order` (built-ins 0–3) |
+| `void_reclaimer:milestone` | Synced datapack registry (`api.milestone.Milestone`) | `criterion`, `order`, optional `title`/`hint`/`log_title`/`log_text` |
+| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held`, `blocks_placed`, `dust_full` |
+| `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
+| `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
+| `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
+| `void_reclaimer:replicator` recipes | Recipe type | `result` or `results` (kits), optional `title`; `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
+| `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name` |
+| `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`); socket id = GeckoLib bone (5b) |
+| `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
+| `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
+| `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
+| `#void_reclaimer:modules/dust_sensor` | Item tag | Items that work as a Dust Sensor in a sensor slot |
+| `#void_reclaimer:salvageable` | Block tag | Blocks the Salvage Tool refunds |
+| `DustGainEvent` | Event, modifiable + cancellable | Before cloud dust is added |
+| `MilestoneReachedEvent` | Event | After a milestone is reached in play |
+| `ReplicatorJobFinishedEvent` | Event, mutable outputs | Before a finished job's items are delivered |
+| `BodyStatsEvent` | Event, replace stats | When body stats are computed (cached until the body changes), both sides |
+| `BodyChangedEvent` | Event | After a body changed (sections, modules, looks), server side |
+| `ModuleUseEvent` | Event, cancellable | Before the active tool module is used |
+
+### Fixed sets (enums by design)
+- `ModuleKind` (`api.body`): the mount kinds sections offer (core, thruster, storage, sensor, tool, cosmetic). Each has its own rule in `BodyStats`; new behaviour comes from new modules of these kinds (tools: `ToolModuleType`). Sections themselves are open (socket types are free ids).
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.

@@ -8,13 +8,16 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.core.BackupCores;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.replicator.Milestones;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
@@ -22,7 +25,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -73,13 +79,13 @@ public final class ModCommands {
                                         .executes(ctx -> getDust(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
                         .then(Commands.literal("set")
                                 .then(Commands.argument("player", EntityArgument.player())
-                                        .then(Commands.argument("kind", StringArgumentType.word())
-                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                                        Arrays.stream(DustKind.values()).map(DustKind::getSerializedName), builder))
+                                        .then(Commands.argument("kind", ResourceLocationArgument.id())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
+                                                        DustKinds.all(ctx.getSource().registryAccess()).stream().map(DustKinds.Entry::id), builder))
                                                 .then(Commands.argument("amount", FloatArgumentType.floatArg(0f))
                                                         .executes(ctx -> setDust(ctx.getSource(),
                                                                 EntityArgument.getPlayer(ctx, "player"),
-                                                                StringArgumentType.getString(ctx, "kind"),
+                                                                ResourceLocationArgument.getId(ctx, "kind"),
                                                                 FloatArgumentType.getFloat(ctx, "amount")))))))
                         .then(Commands.literal("locate")
                                 .executes(ctx -> locate(ctx.getSource(), DEFAULT_LOCATE_RANGE))
@@ -104,23 +110,28 @@ public final class ModCommands {
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> milestoneAction(String name, boolean grant) {
         return Commands.literal(name)
                 .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.argument("milestone", StringArgumentType.word())
-                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                        Arrays.stream(Milestone.values()).map(Milestone::getSerializedName), builder))
+                        .then(Commands.argument("milestone", ResourceLocationArgument.id())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
+                                        Milestones.all(ctx.getSource().registryAccess()).stream().map(e -> e.key().location()), builder))
                                 .executes(ctx -> setMilestone(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
-                                        StringArgumentType.getString(ctx, "milestone"), grant))));
+                                        ResourceLocationArgument.getId(ctx, "milestone"), grant))));
     }
 
-    private static int setMilestone(CommandSourceStack source, ServerPlayer player, String name, boolean grant) {
-        Milestone milestone = Arrays.stream(Milestone.values()).filter(m -> m.getSerializedName().equals(name)).findFirst().orElse(null);
-        if (milestone == null) {
-            source.sendFailure(Component.translatable("commands.void_reclaimer.milestone.unknown", name));
+    private static int setMilestone(CommandSourceStack source, ServerPlayer player, ResourceLocation id, boolean grant) {
+        // "awakening" parses as minecraft:awakening; fall back to ours.
+        ResourceKey<Milestone> key = ResourceKey.create(VoidReclaimerRegistries.MILESTONE, id);
+        if (Milestones.get(source.registryAccess(), key) == null && id.getNamespace().equals("minecraft")) {
+            key = ResourceKey.create(VoidReclaimerRegistries.MILESTONE, VoidReclaimer.id(id.getPath()));
+        }
+        ResourceKey<Milestone> milestone = key;
+        if (Milestones.get(source.registryAccess(), milestone) == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.milestone.unknown", id.toString()));
             return 0;
         }
         ReplicatorData data = Replicator.data(player);
         Replicator.store(player, grant ? data.withUnlocked(milestone) : data.withoutUnlocked(milestone));
         source.sendSuccess(() -> Component.translatable(grant ? "commands.void_reclaimer.milestone.granted"
-                : "commands.void_reclaimer.milestone.revoked", milestone.title(), player.getDisplayName()), true);
+                : "commands.void_reclaimer.milestone.revoked", Milestones.title(source.registryAccess(), milestone), player.getDisplayName()), true);
         return 1;
     }
 
@@ -134,7 +145,8 @@ public final class ModCommands {
     private static int getBody(CommandSourceStack source, ServerPlayer player) {
         BodyStats stats = Bodies.stats(player);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.get", player.getDisplayName(),
-                stats.size().displayName(), format(stats.mass()), format(stats.massBudget()), stats.inventorySlots(),
+                Component.translatable("body." + stats.size().location().getNamespace() + ".size." + stats.size().location().getPath()),
+                format(stats.mass()), format(stats.massBudget()), stats.inventorySlots(),
                 format((float) (stats.flight().maxSpeed() * 20))), false);
         return stats.inventorySlots();
     }
@@ -149,22 +161,30 @@ public final class ModCommands {
 
     private static int getDust(CommandSourceStack source, ServerPlayer player) {
         DustData dust = player.getData(ModAttachments.DUST);
-        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.get", player.getDisplayName(),
-                format(dust.metallic()), format(dust.silicate()), format(dust.ice()), format(dust.carbon())), false);
-        return Mth.floor(dust.metallic() + dust.silicate() + dust.ice() + dust.carbon());
+        MutableComponent list = Component.empty();
+        for (DustKinds.Entry entry : DustKinds.all(source.registryAccess())) {
+            if (!list.getSiblings().isEmpty()) {
+                list.append(", ");
+            }
+            list.append(Component.translatable("commands.void_reclaimer.dust.amount",
+                    entry.kind().displayName(entry.id()), format(dust.get(entry.id()))));
+        }
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.get", player.getDisplayName(), list), false);
+        return Mth.floor(dust.total());
     }
 
-    private static int setDust(CommandSourceStack source, ServerPlayer player, String kindName, float amount) {
-        DustKind kind = DustKind.byName(kindName);
-        if (kind == null) {
-            source.sendFailure(Component.translatable("commands.void_reclaimer.dust.unknown_kind", kindName));
+    private static int setDust(CommandSourceStack source, ServerPlayer player, ResourceLocation kindId, float amount) {
+        ResourceLocation kind = kindId.getNamespace().equals("minecraft") && DustKinds.get(source.registryAccess(), kindId) == null
+                ? VoidReclaimer.id(kindId.getPath()) : kindId;
+        if (DustKinds.get(source.registryAccess(), kind) == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.dust.unknown_kind", kindId.toString()));
             return 0;
         }
         float clamped = Math.min(amount, DustData.capacity(player));
         player.setData(ModAttachments.DUST, player.getData(ModAttachments.DUST).with(kind, clamped));
         player.syncData(ModAttachments.DUST);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.set", player.getDisplayName(),
-                kind.displayName(), format(clamped)), true);
+                DustKinds.name(source.registryAccess(), kind), format(clamped)), true);
         return Mth.floor(clamped);
     }
 
@@ -183,7 +203,7 @@ public final class ModCommands {
         DustCloud c = cloud.get();
         Vec3 center = c.center();
         String centerText = String.format(Locale.ROOT, "%d %d %d", Mth.floor(center.x), Mth.floor(center.y), Mth.floor(center.z));
-        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.locate", c.kind().displayName(),
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.locate", DustKinds.name(source.registryAccess(), c.kind()),
                 centerText, Mth.floor(c.radius()), Mth.floor(Math.max(0, c.surfaceDistance(pos)))), false);
         return Mth.floor(Math.max(0, c.surfaceDistance(pos)));
     }

@@ -2,12 +2,19 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.dust.DustData;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
+import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.network.ReplicatorActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModRecipeTypes;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
+import com.voidreclaimer.registry.OrderedRegistry;
+import com.voidreclaimer.replicator.ReplicatorCategories;
+import com.voidreclaimer.replicator.Milestones;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.replicator.ReplicatorJob;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
@@ -47,10 +54,11 @@ public final class ReplicatorScreen extends Screen {
     private static final int TEXT = 0xFFDDE6EE;
     private static final int DIM = 0xFF7A8794;
 
-    /** Tabs: the recipe categories, then the log, then the body. */
-    private static final int CATEGORY_TABS = ReplicatorRecipe.Category.values().length;
-    private static final int LOGS_TAB = CATEGORY_TABS;
-    private static final int BODY_TAB = CATEGORY_TABS + 1;
+    /** Tabs: the registered recipe categories, then the log, then the body. Set in {@link #init()}. */
+    private List<OrderedRegistry.Entry<ReplicatorCategory>> categories = List.of();
+    private int categoryTabs;
+    private int logsTab;
+    private int bodyTab;
     private int tab;
     private BodyPanel bodyPanel;
     private int scroll;
@@ -75,13 +83,19 @@ public final class ReplicatorScreen extends Screen {
     protected void init() {
         left = (width - WIDTH) / 2;
         top = (height - HEIGHT) / 2;
+        categories = ReplicatorCategories.all(minecraft.level.registryAccess());
+        categoryTabs = categories.size();
+        logsTab = categoryTabs;
+        bodyTab = categoryTabs + 1;
+        // Six tabs fit at full width; datapacks may add more, which then share the row.
+        int tabWidth = Math.min(50, (WIDTH - 12) / (bodyTab + 1) - 2);
         int tabX = left + 6;
-        for (int i = 0; i <= BODY_TAB; i++) {
+        for (int i = 0; i <= bodyTab; i++) {
             int index = i;
-            Component label = i < CATEGORY_TABS ? ReplicatorRecipe.Category.values()[i].title()
-                    : Component.translatable(i == LOGS_TAB ? "replicator.void_reclaimer.tab.logs" : "replicator.void_reclaimer.tab.body");
-            addRenderableWidget(Button.builder(label, b -> selectTab(index)).bounds(tabX, top + 18, 50, 16).build());
-            tabX += 52;
+            Component label = i < categoryTabs ? ReplicatorCategories.title(categories.get(i))
+                    : Component.translatable(i == logsTab ? "replicator.void_reclaimer.tab.logs" : "replicator.void_reclaimer.tab.body");
+            addRenderableWidget(Button.builder(label, b -> selectTab(index)).bounds(tabX, top + 18, tabWidth, 16).build());
+            tabX += tabWidth + 2;
         }
         bodyPanel = new BodyPanel(font, left + 6, top + 38, WIDTH - 12);
         replicateButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.replicate"), b -> replicate())
@@ -111,9 +125,9 @@ public final class ReplicatorScreen extends Screen {
             return;
         }
         ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
-        boolean recipeTab = tab < CATEGORY_TABS;
+        boolean recipeTab = tab < categoryTabs;
         replicateButton.visible = recipeTab;
-        collectButton.visible = tab != BODY_TAB;
+        collectButton.visible = tab != bodyTab;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
                 && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST));
         collectButton.active = !data.buffer().isEmpty();
@@ -133,11 +147,11 @@ public final class ReplicatorScreen extends Screen {
         if (!Energy.canPowerSystems(player)) {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.paused"), left + 120, top + 6, 0xFFFF6060, false);
         }
-        if (tab == BODY_TAB) {
+        if (tab == bodyTab) {
             bodyPanel.render(graphics, player, mouseX, mouseY);
             return;
         }
-        if (tab < CATEGORY_TABS) {
+        if (tab < categoryTabs) {
             renderRecipes(graphics, player, data, mouseX, mouseY);
         } else {
             renderLogs(graphics, data);
@@ -150,8 +164,8 @@ public final class ReplicatorScreen extends Screen {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.fill(left, top, left + WIDTH, top + HEIGHT, PANEL);
         graphics.renderOutline(left, top, WIDTH, HEIGHT, 0xFF3A4A5A);
-        if (tab == BODY_TAB) {
-            graphics.fill(left + LIST_WIDTH + 12, top + 38, left + WIDTH - 6, top + HEIGHT - 6, PANEL_LIGHT);
+        if (tab == bodyTab) {
+            graphics.fill(left + 6 + BodyPanel.TREE_WIDTH + 4, top + 38, left + WIDTH - 6, top + HEIGHT - 6, PANEL_LIGHT);
             return;
         }
         graphics.fill(left + 6, top + 38, left + LIST_WIDTH + 6, top + 38 + VISIBLE_ROWS * ROW, PANEL_LIGHT);
@@ -179,11 +193,14 @@ public final class ReplicatorScreen extends Screen {
             if (unlocked) {
                 graphics.renderItem(recipe.result(), x + 3, rowY + 3);
                 graphics.renderItemDecorations(font, recipe.result(), x + 3, rowY + 3);
-                graphics.drawString(font, recipe.result().getHoverName(), x + 24, rowY + 2, TEXT, false);
+                Component name = recipe.results().size() > 1
+                        ? recipe.displayName().copy().append(Component.literal(" +" + (recipe.results().size() - 1)).withColor(DIM))
+                        : recipe.displayName();
+                graphics.drawString(font, name, x + 24, rowY + 2, TEXT, false);
                 graphics.drawString(font, costLine(recipe, dust), x + 24, rowY + 12, TEXT, false);
             } else {
-                graphics.drawString(font, "???", x + 8, rowY + 7, DIM, false);
-                graphics.drawString(font, recipe.milestone().hint(), x + 24, rowY + 7, DIM, false);
+                graphics.drawString(font, "???", x + 11 - font.width("???") / 2, rowY + 7, DIM, false);
+                graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
             }
         }
         if (recipes.size() > VISIBLE_ROWS) {
@@ -195,13 +212,12 @@ public final class ReplicatorScreen extends Screen {
     /** "M10 S15 C5 · 20s", each amount red when not affordable. */
     private Component costLine(ReplicatorRecipe recipe, DustData dust) {
         MutableComponent line = Component.empty();
-        for (DustKind kind : DustKind.values()) {
+        var access = minecraft.level.registryAccess();
+        for (ResourceLocation kind : DustKinds.ordered(access, recipe.cost().amounts().keySet())) {
             float amount = recipe.cost().get(kind);
-            if (amount <= 0f) {
-                continue;
-            }
-            int color = dust.get(kind) + 1.0E-4f >= amount ? kind.color() : 0xFF5050;
-            String label = kind.getSerializedName().substring(0, 1).toUpperCase(java.util.Locale.ROOT) + Mth.ceil(amount) + " ";
+            int color = dust.get(kind) + 1.0E-4f >= amount ? DustKinds.color(access, kind) : 0xFF5050;
+            String name = DustKinds.name(access, kind).getString();
+            String label = (name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(java.util.Locale.ROOT)) + Mth.ceil(amount) + " ";
             line.append(Component.literal(label).withColor(color));
         }
         line.append(Component.literal(String.format(java.util.Locale.ROOT, "· %ds", Mth.ceil(recipe.ticks() / 20f))).withColor(0x8899AA));
@@ -211,7 +227,8 @@ public final class ReplicatorScreen extends Screen {
     private void renderLogs(GuiGraphics graphics, ReplicatorData data) {
         int x = left + 6;
         int y = top + 38;
-        List<Milestone> logs = data.unlocked();
+        List<ResourceKey<Milestone>> logs = data.unlocked();
+        var access = minecraft.level.registryAccess();
         if (logs.isEmpty()) {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.no_logs"), x + 6, y + 6, DIM, false);
             return;
@@ -219,11 +236,11 @@ public final class ReplicatorScreen extends Screen {
         selectedLog = Mth.clamp(selectedLog, 0, logs.size() - 1);
         for (int i = 0; i < Math.min(logs.size(), VISIBLE_ROWS); i++) {
             int rowY = y + i * 12;
-            graphics.drawString(font, logs.get(i).logTitle(), x + 4, rowY + 3, i == selectedLog ? ACCENT : TEXT, false);
+            graphics.drawString(font, Milestones.logTitle(access, logs.get(i)), x + 4, rowY + 3, i == selectedLog ? ACCENT : TEXT, false);
         }
-        Milestone log = logs.get(selectedLog);
+        ResourceKey<Milestone> log = logs.get(selectedLog);
         int textY = y + Math.min(logs.size(), VISIBLE_ROWS) * 12 + 8;
-        for (FormattedCharSequence line : font.split(log.logText(), LIST_WIDTH - 8)) {
+        for (FormattedCharSequence line : font.split(Milestones.logText(access, log), LIST_WIDTH - 8)) {
             graphics.drawString(font, line, x + 4, textY, 0xFFB8C4CE, false);
             textY += 10;
         }
@@ -273,13 +290,13 @@ public final class ReplicatorScreen extends Screen {
         if (player == null) {
             return false;
         }
-        if (tab == BODY_TAB) {
+        if (tab == bodyTab) {
             return bodyPanel.mouseClicked(player, mouseX, mouseY);
         }
         ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
         int x = left + 6;
         int y = top + 38;
-        if (tab < CATEGORY_TABS) {
+        if (tab < categoryTabs) {
             List<RecipeHolder<ReplicatorRecipe>> recipes = recipesForTab(data);
             for (int i = scroll; i < Math.min(recipes.size(), scroll + VISIBLE_ROWS); i++) {
                 if (inside(mouseX, mouseY, x, y + (i - scroll) * ROW, LIST_WIDTH, ROW)) {
@@ -311,7 +328,10 @@ public final class ReplicatorScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && tab < CATEGORY_TABS) {
+        if (player != null && tab == bodyTab) {
+            return bodyPanel.mouseScrolled(player, scrollY);
+        }
+        if (player != null && tab < categoryTabs) {
             int max = Math.max(0, recipesForTab(player.getData(ModAttachments.REPLICATOR)).size() - VISIBLE_ROWS);
             scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, max);
             return true;
@@ -331,12 +351,12 @@ public final class ReplicatorScreen extends Screen {
     /** Recipes in the current tab: unlocked ones first (cheapest first), then locked ones. */
     private List<RecipeHolder<ReplicatorRecipe>> recipesForTab(ReplicatorData data) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || tab >= CATEGORY_TABS) {
+        if (mc.level == null || tab >= categoryTabs) {
             return List.of();
         }
-        ReplicatorRecipe.Category category = ReplicatorRecipe.Category.values()[tab];
+        ResourceKey<ReplicatorCategory> category = categories.get(tab).key();
         List<RecipeHolder<ReplicatorRecipe>> list = new ArrayList<>(mc.level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.REPLICATOR.get()));
-        list.removeIf(h -> h.value().category() != category);
+        list.removeIf(h -> !h.value().category().equals(category));
         list.sort(Comparator.<RecipeHolder<ReplicatorRecipe>, Boolean>comparing(h -> !data.isUnlocked(h.value().milestone()))
                 .thenComparing(h -> h.value().ticks())
                 .thenComparing(h -> h.id().toString()));

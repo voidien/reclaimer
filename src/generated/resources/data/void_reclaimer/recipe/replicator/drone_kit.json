@@ -1,0 +1,43 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:metallic": 40.0,
+    "void_reclaimer:silicate": 20.0
+  },
+  "milestone": "void_reclaimer:first_dust",
+  "results": [
+    {
+      "count": 1,
+      "id": "void_reclaimer:drone_hull"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:sensor_dome"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:tool_claw"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:rotor_arm"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:rotor_arm"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:rotor_arm"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:rotor_arm"
+    }
+  ],
+  "ticks": 1600,
+  "title": {
+    "translate": "recipe.void_reclaimer.drone_kit"
+  }
+}

@@ -1,5 +1,6 @@
 package com.voidreclaimer.gametest;
 
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.core.BackupCoreList;
@@ -86,13 +87,13 @@ public final class BackupCoreGameTests {
             try {
                 BlockPos pos = origin.offset(2, 0, 0);
                 place(player, pos);
-                player.setData(ModAttachments.DUST, new DustData(25, 25, 0, 0));
+                player.setData(ModAttachments.DUST, DustData.of(25, 25, 0, 0));
                 helper.assertTrue(BackupCores.charge(player, pos), "first charge failed");
                 helper.assertTrue(BackupCores.charge(player, pos), "second charge failed");
                 helper.assertFalse(BackupCores.charge(player, pos), "charged without enough dust");
                 helper.assertTrue(core(space, pos).charges() == 2, "charges: " + core(space, pos).charges());
                 DustData left = player.getData(ModAttachments.DUST);
-                helper.assertTrue(Math.abs(left.metallic() - 5) < 1e-3 && Math.abs(left.silicate() - 5) < 1e-3, "dust left: " + left);
+                helper.assertTrue(Math.abs(left.get(DustKinds.METALLIC) - 5) < 1e-3 && Math.abs(left.get(DustKinds.SILICATE) - 5) < 1e-3, "dust left: " + left);
                 helper.assertTrue(BackupCores.list(player).cores().get(0).charges() == 2, "core list not updated");
 
                 helper.assertTrue(BackupCores.rename(player, pos, "  Home  "), "rename failed");

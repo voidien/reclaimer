@@ -2,12 +2,12 @@ package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
 import com.voidreclaimer.dust.DustFieldSeed;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.dust.SensorPulse;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
@@ -50,10 +50,11 @@ public final class DustGameTests {
             moveAndTick(player, TICKS);
             DustData dust = player.getData(ModAttachments.DUST);
             float collected = dust.get(cloud.kind());
-            helper.assertTrue(collected > 0.05f, "collected only " + collected + " " + cloud.kind().getSerializedName());
-            for (DustKind other : DustKind.values()) {
-                if (other != cloud.kind()) {
-                    helper.assertTrue(dust.get(other) == 0f, "collected " + other.getSerializedName() + " in a " + cloud.kind().getSerializedName() + " cloud");
+            helper.assertTrue(collected > 0.05f, "collected only " + collected + " " + cloud.kind());
+            for (DustKinds.Entry entry : DustKinds.all(player.registryAccess())) {
+                net.minecraft.resources.ResourceLocation other = entry.id();
+                if (!other.equals(cloud.kind())) {
+                    helper.assertTrue(dust.get(other) == 0f, "collected " + other + " in a " + cloud.kind() + " cloud");
                 }
             }
             helper.succeed();
@@ -124,7 +125,7 @@ public final class DustGameTests {
             // A carried sensor does nothing: it has to be installed.
             player.getInventory().add(new ItemStack(ModItems.DUST_SENSOR.get()));
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.NO_SENSOR, "carried sensor worked");
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
             setEnergy(player, 50f, false);
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.SENT, "pulse with a sensor failed");
             float cost = 50f - player.getData(ModAttachments.ENERGY).energy();
@@ -143,7 +144,7 @@ public final class DustGameTests {
     public static void sensorPulseRefusedInLowPower(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 31_000.5, 80, 0.5);
         try {
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
             setEnergy(player, 1f, true);
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.LOW_POWER, "pulse allowed in low power");
             helper.succeed();
@@ -155,7 +156,7 @@ public final class DustGameTests {
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void echoIsDeliveredAfterItsDelay(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 32_000.5, 80, 0.5);
-        TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+        TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
         setEnergy(player, 50f, false);
         helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.SENT, "pulse failed");
         helper.succeedWhen(() -> {
@@ -166,7 +167,7 @@ public final class DustGameTests {
         });
     }
 
-    private static DustField field(GameTestHelper helper) {
+    static DustField field(GameTestHelper helper) {
         DustField field = DustField.of(TestPlayers.deepSpace(helper));
         if (field == null) {
             throw new IllegalStateException("no dust field in deep space");
@@ -175,7 +176,7 @@ public final class DustGameTests {
     }
 
     /** A cloud with its center comfortably inside the world height, searched outward from the origin. */
-    private static DustCloud findCloud(DustField field) {
+    static DustCloud findCloud(DustField field) {
         for (int r = 0; r < 40; r++) {
             for (int x = -r; x <= r; x++) {
                 for (int z = -r; z <= r; z++) {
@@ -207,7 +208,7 @@ public final class DustGameTests {
     }
 
     /** Moves the player in a straight line at a legal speed, one player tick per step. */
-    private static void moveAndTick(ServerPlayer player, int ticks) {
+    static void moveAndTick(ServerPlayer player, int ticks) {
         double x = player.getX();
         for (int i = 0; i < ticks; i++) {
             x += STEP;

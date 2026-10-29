@@ -1,0 +1,92 @@
+{
+  "core_socket": "hull",
+  "size_class": "void_reclaimer:drone",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:drone_hull"
+      ],
+      "area": "core",
+      "id": "hull",
+      "required": true
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:sensor_dome"
+      ],
+      "area": "sensors",
+      "id": "sensor_dome",
+      "pivot": [
+        0.0,
+        4.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:rotor_arm"
+      ],
+      "area": "propulsion",
+      "id": "rotor_front_left",
+      "pivot": [
+        -4.0,
+        1.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:rotor_arm"
+      ],
+      "area": "propulsion",
+      "id": "rotor_front_right",
+      "pivot": [
+        4.0,
+        1.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:rotor_arm"
+      ],
+      "area": "propulsion",
+      "id": "rotor_back_left",
+      "pivot": [
+        -4.0,
+        1.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:rotor_arm"
+      ],
+      "area": "propulsion",
+      "id": "rotor_back_right",
+      "pivot": [
+        4.0,
+        1.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "hull",
+      "accepts": [
+        "void_reclaimer:tool_claw"
+      ],
+      "area": "tools",
+      "id": "tool_claw",
+      "pivot": [
+        0.0,
+        -3.0,
+        -2.0
+      ]
+    }
+  ]
+}

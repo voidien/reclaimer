@@ -1,11 +1,11 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "tools",
+  "category": "void_reclaimer:tools",
   "cost": {
-    "metallic": 15.0,
-    "silicate": 5.0
+    "void_reclaimer:metallic": 15.0,
+    "void_reclaimer:silicate": 5.0
   },
-  "milestone": "first_dust",
+  "milestone": "void_reclaimer:first_dust",
   "result": {
     "count": 1,
     "id": "void_reclaimer:salvage_tool"
