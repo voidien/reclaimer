@@ -8,6 +8,9 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
+    /** On/off switches for whole features, by name. Recipes read them through {@code machine.ConfigCondition}. */
+    public static final java.util.Map<String, ModConfigSpec.BooleanValue> TOGGLES = new java.util.LinkedHashMap<>();
+
     public static final ModConfigSpec.IntValue SPAWN_X;
     public static final ModConfigSpec.IntValue SPAWN_Y;
     public static final ModConfigSpec.IntValue SPAWN_Z;
@@ -53,6 +56,23 @@ public final class Config {
     public static final ModConfigSpec.IntValue RECALL_TELEPORT_COOLDOWN;
 
     public static final ModConfigSpec.IntValue CORE_SUN_TICKS;
+
+    /** Whether a feature toggle is on. Before the config has loaded (or for an unknown name) the feature counts as on. */
+    public static boolean isEnabled(String key) {
+        ModConfigSpec.BooleanValue value = TOGGLES.get(key);
+        if (value == null) {
+            return true;
+        }
+        try {
+            return value.get();
+        } catch (IllegalStateException e) {
+            return value.getDefault();
+        }
+    }
+
+    private static void toggle(String key, String comment) {
+        TOGGLES.put(key, BUILDER.comment(comment, "Recipes read this when they load: restart or /reload after changing it.").define(key, true));
+    }
 
     public static final ModConfigSpec.DoubleValue DRILL_ENERGY;
     public static final ModConfigSpec.DoubleValue DRILL_DUST_YIELD;
@@ -163,6 +183,15 @@ public final class Config {
         CORE_SUN_TICKS = BUILDER
                 .comment("Ticks of full sunlight per respawn charge (deep space's distant sun is about 2/3 as fast).")
                 .defineInRange("sunTicksPerCharge", 12_000, 20, 1_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("Materials from the four nebulae and the Create chains that process them. Switch off what you don't want.").push("materials");
+        toggle("replicatorRawItems", "The Replicator can turn dust into the raw nebula items (Raw Ice Shards, Carbon Flakes, Silicon Grit, Metallic Grains).");
+        toggle("iceChain", "Create recipes of the Ice nebula chain (cryo-ice, purified water, propellant, coolant).");
+        toggle("carbonChain", "Create recipes of the Carbon nebula chain (powder, paste, composite plate, slurry, tiles, graphite).");
+        toggle("siliconChain", "Create recipes of the Silicon nebula chain (silicon dust, liquid silicon, doped ingot, solar cell, sensor unit).");
+        toggle("metallicChain", "Create recipes of the Metallic nebula chain (nodules, micro-alloy sheets).");
+        toggle("solarSail", "The High-Output Solar Sail Sequenced Assembly recipe.");
         BUILDER.pop();
 
         BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");

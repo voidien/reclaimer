@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:fine_carbon_powder"
+    },
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "void_reclaimer:liquid_silicon"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:silicon_carbide_slurry"
+    }
+  ]
+}

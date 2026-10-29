@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "metallicChain"
+    }
+  ],
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.1,
+  "ingredient": {
+    "item": "void_reclaimer:metallic_grains"
+  },
+  "result": {
+    "id": "void_reclaimer:refined_metal_nodule"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "siliconChain"
+    }
+  ],
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:quartz_wafer"
+    },
+    {
+      "item": "void_reclaimer:carbon_thread"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:high_efficiency_solar_cell"
+    }
+  ]
+}

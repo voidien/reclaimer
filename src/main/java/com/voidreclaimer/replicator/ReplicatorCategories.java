@@ -17,6 +17,7 @@ public final class ReplicatorCategories {
     public static final ResourceKey<ReplicatorCategory> MODULES = key("modules");
     public static final ResourceKey<ReplicatorCategory> PARTS = key("parts");
     public static final ResourceKey<ReplicatorCategory> BLOCKS = key("blocks");
+    public static final ResourceKey<ReplicatorCategory> MATERIALS = key("materials");
 
     public static final Map<ResourceKey<ReplicatorCategory>, ReplicatorCategory> BUILTIN = builtin();
 
@@ -41,6 +42,7 @@ public final class ReplicatorCategories {
         map.put(MODULES, new ReplicatorCategory(1));
         map.put(PARTS, new ReplicatorCategory(2));
         map.put(BLOCKS, new ReplicatorCategory(3));
+        map.put(MATERIALS, new ReplicatorCategory(4));
         return Map.copyOf(map);
     }
 }

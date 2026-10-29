@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "siliconChain"
+    }
+  ],
+  "type": "create:mixing",
+  "heat_requirement": "heated",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:pure_silicon_dust"
+    }
+  ],
+  "results": [
+    {
+      "amount": 250,
+      "id": "void_reclaimer:liquid_silicon"
+    }
+  ]
+}

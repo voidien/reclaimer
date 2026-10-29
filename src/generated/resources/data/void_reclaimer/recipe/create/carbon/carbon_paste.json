@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:fine_carbon_powder"
+    },
+    {
+      "type": "neoforge:single",
+      "amount": 125,
+      "fluid": "minecraft:water"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:carbon_paste"
+    }
+  ]
+}

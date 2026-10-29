@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:silicon_carbide_slurry"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:thermal_shielding_tile"
+    }
+  ]
+}

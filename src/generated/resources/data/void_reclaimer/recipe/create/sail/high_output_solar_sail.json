@@ -1,0 +1,86 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "solarSail"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:micro_alloy_sheet"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "void_reclaimer:high_output_solar_sail"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_high_output_solar_sail"
+        },
+        {
+          "item": "void_reclaimer:high_efficiency_solar_cell"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_high_output_solar_sail"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_high_output_solar_sail"
+        },
+        {
+          "item": "void_reclaimer:carbon_composite_plate"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_high_output_solar_sail"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_high_output_solar_sail"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "minecraft:water"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_high_output_solar_sail"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_high_output_solar_sail"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_high_output_solar_sail"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_high_output_solar_sail"
+  }
+}

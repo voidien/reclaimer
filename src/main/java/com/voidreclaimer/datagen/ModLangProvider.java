@@ -79,6 +79,15 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ASTEROID_ICE.get(), "Ice Asteroid Rock");
         add(ModItems.ASTEROID_CARBON.get(), "Carbon Asteroid Rock");
         add(ModItems.ASTEROID_METALLIC.get(), "Metallic Asteroid Rock");
+        add("replicator.void_reclaimer.tab.materials", "Raw");
+        for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
+            add(material.item().get(), material.name());
+        }
+        add(com.voidreclaimer.registry.ModMaterials.INCOMPLETE_SOLAR_SAIL.get(), "Incomplete High-Output Solar Sail");
+        for (var fluid : com.voidreclaimer.registry.ModFluids.ALL) {
+            add("fluid_type.void_reclaimer." + fluid.id(), fluid.name());
+            add(fluid.bucket().get(), fluid.name() + " Bucket");
+        }
         add("message.void_reclaimer.drill.needed", "This rock needs a powered Mechanical Drill or Matter Harvester.");
         add("item.void_reclaimer.nanite_swarm.tooltip", "Tool module: with an empty hand, right-click builds the offhand block (or Scaffold) in empty space; sneak + right-click builds against a block. Sneak + scroll: distance.");
         add("message.void_reclaimer.nanite.no_power", "Nanites offline: low power.");

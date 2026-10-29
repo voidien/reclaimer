@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "siliconChain"
+    }
+  ],
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:silicon_grit"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:pure_silicon_dust"
+    }
+  ]
+}

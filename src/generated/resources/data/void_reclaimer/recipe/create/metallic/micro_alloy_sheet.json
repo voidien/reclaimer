@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "metallicChain"
+    }
+  ],
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:refined_metal_nodule"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:micro_alloy_sheet"
+    }
+  ]
+}

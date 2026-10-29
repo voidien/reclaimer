@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "siliconChain"
+    }
+  ],
+  "type": "create:mixing",
+  "heat_requirement": "heated",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "void_reclaimer:liquid_silicon"
+    },
+    {
+      "item": "void_reclaimer:metallic_grains"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:doped_silicon_ingot"
+    }
+  ]
+}

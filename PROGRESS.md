@@ -304,6 +304,22 @@ From an outside audit, each checked against the code first (several claims were 
 ### Not done yet
 - Ship frame unlock (waits on the Starship upgrade order), ore veins inside asteroids, faster interior fill for giants.
 
+## Phase 7, part 1: nebula materials and Create chains: done
+- 22 items, six fluids with buckets, a "Raw" Replicator tab (8 dust of a kind to 4 raw items), and 20 Create recipes covering the design doc's Act I chains that need no new machine code: crushing, milling, mixing in basins, pressing, fan washing, fan blasting, deploying and the solar sail's Sequenced Assembly. See the "Machines, part 1" block in `CLAUDE.md` for the full list, the assumptions, and what the doc's open questions still block.
+- Config toggles (`materials`): `replicatorRawItems`, `iceChain`, `carbonChain`, `siliconChain`, `metallicChain`, `solarSail`, through the recipe condition `void_reclaimer:config`.
+- Phase 6 items (drill, harvester, asteroid blocks) were missing from the creative tab; added.
+- Tests: `MaterialsGameTests` (5: every chain recipe loads as its Create type, item results, fluids and buckets, toggles, Replicator raw items) and `ConfigConditionTest`. Mutation-checked: a corrupted recipe type, a wrong result item and a condition that ignores its toggle each fail their test.
+- Checked in a real client: the Raw tab lists the four recipes with icons.
+
+### Placeholder assets and numbers
+- Item textures for the 22 items and six buckets (small generated programmer art, one silhouette per kind of item); fluids reuse vanilla water textures with a tint.
+- Fluid amounts, times and the 8-dust-to-4-items Replicator ratio are placeholders.
+
+### Not done yet (part 2 and later)
+- Custom machines: Electrolyzer (water to oxygen and hydrogen), Spinner (graphite to carbon thread), Encased Fan freezing (packed ice), Spout casting onto a Depot (Quartz Wafer). Until then Quartz Wafer, Carbon Thread, Oxygen and Hydrogen can't be made, so the solar cell, the propellant and the solar sail recipes are present but not yet reachable.
+- Collector part for raw items out of a cloud (the second source of raw items, besides the Replicator).
+- Everything blocked on the doc's open questions (see `CLAUDE.md`).
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight

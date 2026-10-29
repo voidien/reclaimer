@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:fine_carbon_powder"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:high_purity_graphite"
+    }
+  ]
+}

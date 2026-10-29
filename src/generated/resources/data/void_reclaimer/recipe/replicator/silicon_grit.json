@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "replicatorRawItems"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:materials",
+  "cost": {
+    "void_reclaimer:silicate": 8.0
+  },
+  "milestone": "void_reclaimer:first_dust",
+  "result": {
+    "count": 4,
+    "id": "void_reclaimer:silicon_grit"
+  },
+  "ticks": 200
+}

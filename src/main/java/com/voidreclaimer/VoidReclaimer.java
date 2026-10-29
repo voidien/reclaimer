@@ -1,11 +1,14 @@
 package com.voidreclaimer;
 
 import com.mojang.logging.LogUtils;
+import com.voidreclaimer.machine.ConfigCondition;
 import com.voidreclaimer.network.ModPayloads;
 import com.voidreclaimer.dust.StarterNebula;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlockEntities;
 import com.voidreclaimer.registry.ModDataComponents;
+import com.voidreclaimer.registry.ModFluids;
+import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModChunkGenerators;
 import com.voidreclaimer.registry.ModCreativeTabs;
@@ -31,8 +34,12 @@ public final class VoidReclaimer {
         ModRegistries.register(modBus);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
+        ConfigCondition.CONDITIONS.register(modBus);
         ModChunkGenerators.CHUNK_GENERATORS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
+        ModMaterials.init();
+        ModFluids.FLUID_TYPES.register(modBus);
+        ModFluids.FLUIDS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModDataComponents.COMPONENTS.register(modBus);
