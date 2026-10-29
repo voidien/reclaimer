@@ -93,6 +93,11 @@ public final class ModCreateRecipeProvider implements DataProvider {
         // Silicon-Carbide Slurry -> Mechanical Press -> Thermal Shielding Tile
         save("carbon/thermal_shielding_tile", CARBON, processing("create:pressing", 0, null,
                 List.of(item("silicon_carbide_slurry")), List.of(result("thermal_shielding_tile"))));
+        // Silicon-Carbide Slurry + Carbon Composite Plate -> Basin, then Press (Create's basin compacting) -> 2 Silicon-Carbide Coating
+        JsonObject coating = processing("create:compacting", 0, null,
+                List.of(item("silicon_carbide_slurry"), item("carbon_composite_plate")), List.of(result("silicon_carbide_coating")));
+        coating.getAsJsonArray("results").get(0).getAsJsonObject().addProperty("count", 2);
+        save("carbon/silicon_carbide_coating", CARBON, coating);
         // Fine Carbon Powder -> Mechanical Press (the doc says high pressure; Create has one pressure) -> High-Purity Graphite
         save("carbon/high_purity_graphite", CARBON, processing("create:pressing", 0, null,
                 List.of(item("fine_carbon_powder")), List.of(result("high_purity_graphite"))));

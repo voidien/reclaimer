@@ -320,6 +320,11 @@ From an outside audit, each checked against the code first (several claims were 
 - Collector part for raw items out of a cloud (the second source of raw items, besides the Replicator).
 - Everything blocked on the doc's open questions (see `CLAUDE.md`).
 
+## Silicon-Carbide Coating and planning decisions: done
+- New item Silicon-Carbide Coating and a Create basin-compacting recipe (Silicon-Carbide Slurry + Carbon Composite Plate, makes 2), under the `carbonChain` toggle.
+- Interview decisions recorded in `CLAUDE.md` ("Decisions after Phase 7"): ships kept as extras, `ruined_earth` stays, one Spire per sector, and a revised phase plan around the design doc's Acts.
+- The extension-point table now lists the drill and harvester tool types, the freezing recipe and fan type, spout casting, the config condition, the asteroid generator and the asteroid tag.
+
 ## Phase 7, part 2: custom Create machines: done
 - **Electrolyzer** (water to oxygen and hydrogen) and **Spinner** (graphite to carbon thread): SU-driven kinetic blocks with a shaft axis, tanks and inventories that pipes, funnels and belts use, Replicator recipes (Blocks tab).
 - **Encased Fan freezing** (powder snow, Water Bucket to Packed Ice and an empty Bucket) and **spout casting** (Liquid Silicon into a Quartz Wafer on an empty Depot).
@@ -339,6 +344,7 @@ From an outside audit, each checked against the code first (several claims were 
 - Goggle tooltips, rotation animation, a JEI category for freezing, Ponder scenes, the collector part for raw items from a cloud, and the items blocked on the doc's open questions (see part 1).
 
 ## Phases
+Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
 - [x] 3. Cosmic Dust
@@ -346,14 +352,12 @@ From an outside audit, each checked against the code first (several claims were 
 - [x] 4b. Nanite Swarm, Tether Anchor, Backup Core (plus death marker and starter nebula)
 - [x] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
 - [x] Extensibility + body sections (datapack registries, events, chassis/sockets, paint, wear, blueprint, kits)
-- [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
-- [ ] 6. Asteroids
-- [ ] 7. Machines
 - [x] Foundations: Aeronautics required, Dyson counters and sky
+- [x] 6. Asteroids
+- [x] 7. Machines (part 1 materials and Create chains, part 2 custom machines)
+- [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 7b. Create Aeronautics ships (Space Thruster, Helm)
-- [ ] 8. Stations & Helpers
-- [ ] 9. Ruined Earth
-- [ ] 10. Terraforming
+- [ ] 8-14 (revised): Zero-G Frame and payloads, Mass Driver, Starship, Ruined Earth, Spire, Monolith and villagers, Restoration
 
 ## Known issues
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.

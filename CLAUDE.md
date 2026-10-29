@@ -286,6 +286,13 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
 | `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
 | `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
+| `void_reclaimer:tool_module_type` built-ins `drill`, `harvester` | Code registry entries | Mechanical Drill and Matter Harvester: `breakSpeed` on `#void_reclaimer:asteroid_blocks`; the break rules are in `asteroid.Drilling` |
+| `void_reclaimer:freezing` recipes | Recipe type (`machine.FreezingRecipe`) | `ingredient`, `results`; run by the Encased Fan type below |
+| `void_reclaimer:freezing` fan type | Create registry entry (`create:fan_processing_type`) | `machine.FreezingFanType`, priority 450, active in powder snow; registered through `MachineSetup.FAN_TYPES` |
+| Spout behaviors | Create `BlockSpoutingBehaviour.BY_BLOCK` | `machine.SpoutCasting` on the Depot; add more casting by registering for another block |
+| `void_reclaimer:config` recipe condition | NeoForge condition (`machine.ConfigCondition`) | `key` names a toggle in `Config.TOGGLES`; gates any recipe on a config switch |
+| `void_reclaimer:asteroids` | Chunk generator type (`asteroid.AsteroidChunkGenerator`) | A flat-generator subclass; a dimension can use it with the flat `settings` object |
+| `#void_reclaimer:asteroid_blocks` | Block tag | Blocks only the drill and harvester can break |
 | `#void_reclaimer:modules/dust_sensor` | Item tag | Items that work as a Dust Sensor in a sensor slot |
 | `#void_reclaimer:salvageable` | Block tag | Blocks the Salvage Tool refunds |
 | `DustGainEvent` | Event, modifiable + cancellable | Before cloud dust is added |
@@ -334,7 +341,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Recipes** are written by `ModCreateRecipeProvider` as plain JSON (20 recipes under `data/void_reclaimer/recipe/create/`): crushing, milling, mixing (basin, heated, superheated), pressing, splashing (fan washing), vanilla blasting (fan blasting), deploying, and the solar sail's Sequenced Assembly. The Replicator turns 8 dust of a kind into 4 raw items of that kind (tab "Raw").
 - **Toggles** (config `materials`): `replicatorRawItems`, `iceChain`, `carbonChain`, `siliconChain`, `metallicChain`, `solarSail`. Recipes carry the condition `void_reclaimer:config` (`machine.ConfigCondition`, key = toggle name), checked when recipes load, so a change needs a restart or `/reload`. New features should get a toggle the same way (`Config.toggle`).
 - **Assumptions the doc left open (all placeholders; change them in the provider):** fluid amounts (250 mB steps, 2:1 hydrogen to oxygen) and times; "Packed Ice Block" is vanilla Packed Ice; "Electron Tube" and "Precision Mechanism" are Create's items (`create:electron_tube`, `create:precision_mechanism`); "high pressure" pressing is a normal press (Create has one pressure); Silicon-Carbide Slurry is an item (it feeds a press); fan blasting uses vanilla `minecraft:blasting`, so a blast furnace also makes nodules.
-- **Blocked on open questions in the doc** (not implemented): everything on the Zero-G Precision Frame (RCS Thruster, Reaction Wheel Gyroscope, both Dyson payloads, Data Monolith; the frame's steps are open), the Silicon-Carbide Coating recipe, the Atmospheric Catalyst Core step order, and "standard Create crafting" of shafts and gears from Micro-Alloy Sheet (which recipes?). Collector part (b) for raw items from a cloud is also not built.
+- **Blocked on open questions in the doc** (not implemented): everything on the Zero-G Precision Frame (RCS Thruster, Reaction Wheel Gyroscope, both Dyson payloads, Data Monolith; the frame's steps are open), the Atmospheric Catalyst Core step order, and "standard Create crafting" of shafts and gears from Micro-Alloy Sheet (which recipes?). Collector part (b) for raw items from a cloud is also not built.
 
 **Machines, part 2: the custom Create machines (Phase 7, 2026-10-29)**
 - Built on Create 6's addon API (checked against the jar, not memory): `RotatedPillarKineticBlock` + `IBE` for blocks, `KineticBlockEntity` for block entities, `BlockStressValues.IMPACTS` for stress, `FanProcessingType` in `CreateBuiltInRegistries.FAN_PROCESSING_TYPE`, `BlockSpoutingBehaviour.BY_BLOCK`. Registration is plain NeoForge `DeferredRegister`s (no Registrate); `machine/MachineSetup` does the hooks that need Create's registries.
@@ -347,3 +354,26 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Toggles** (config `machines`): `electrolyzer`, `spinner`, `fanFreezing`, `spoutCasting`, plus `electrolyzerStress`, `spinnerStress`, `minRpm`, `cycleTicks`, `electrolyzerTank`, `electrolyzerWater`, `electrolyzerOxygen`, `electrolyzerHydrogen`, `spinnerThreads`, `castingAmount`. Machine behavior reads its toggle live; recipes read theirs when they load.
 - **Not built:** goggle tooltips, rotating animations (the blocks are static models), a JEI category for freezing, Ponder scenes.
 
+**Decisions after Phase 7 (interview, 2026-10-29)**
+- **Aeronautics:** keep block-built ships as extras (Phase 7b: Space Thruster, Helm; mobile stations, cargo haulers). The Starship stays the player's body (Ship size class). The doc never mentions Aeronautics.
+- **Act II setting:** the planet is `ruined_earth`; the Overworld, Nether and End stay locked. The Dyson Sphere work stays in `deep_space`.
+- **Sectors:** each of the 16 cells of the 4x4 grid is one Spire's area: 256x256 centered on its 128-block pulse, so 16 Spires cover the planet.
+- **Silicon-Carbide Coating:** Silicon-Carbide Slurry + Carbon Composite Plate in a Basin, then a Press (Create basin compacting) makes 2 coatings (`carbonChain` toggle).
+- **Still open (asked, not answered):** the Zero-G Precision Frame's Sequenced Assembly steps, which upgrades make the Starship, the truss counts for sky tiers 3 and 4, the Catalyst Core step order. Work that depends on them waits.
+
+**Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
+Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
+Act II, the Dyson Sphere (deep_space):
+- **8. Zero-G Frame and payloads:** Zero-G Precision Frame, Dyson Swarm Satellite Payload, Dyson Shell Truss Module, RCS Thruster, Reaction Wheel Gyroscope. *Blocked on the frame's steps.*
+- **9. Kinetic Mass Driver:** the 1x1x3 multiblock, its launch sequence and animations, the handoff to `Dyson.launchSatellites/launchTrusses`, the Sub-Light Quantum Receiver and the sky's power beams. Sky tier thresholds from the truss counts.
+- **10. The Starship:** the Ship class upgrades and what unlocks its frame. *Blocked on the upgrade answers.*
+Act III, Planetary Genesis (ruined_earth):
+- **11. Ruined Earth:** the dimension and its three-era sky, the Atmospheric Portal, the Planetary Grid HUD, the drop pod and Industrial Mech, Ashen Slag, smog, Acid Drizzle weather.
+- **12. Terraforming Spire:** the multiblock, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core (one per sector), the Genesis Pulse that rewrites biomes and blocks in 128 blocks.
+- **13. Data Monolith and villagers:** the Monolith recipe, villagers rebuilding on their own, tributes in its output drawer.
+- **14. Restoration:** per-sector tracking, the Planetary Restoration HUD, the 100% victory state and the climate shield.
+Parallel tracks, scheduled as they fit:
+- **5b. Body rendering and assembly UI** (GeckoLib, first person). Large and independent; a good break between the Acts.
+- **7b. Aeronautics ships** (Space Thruster, Helm).
+- **Stations and helper drones** (the old Phase 8): the sphere's logistics may need them; revisit after Phase 9.
+- **Polish:** goggle tooltips and rotation animation for the machines, a JEI category for freezing, Ponder scenes, the raw-item collector part (cloud to item), ore veins in asteroids, the "Starship" display name.
