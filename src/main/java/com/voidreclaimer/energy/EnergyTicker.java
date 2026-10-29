@@ -36,7 +36,7 @@ public final class EnergyTicker {
             return;
         }
 
-        EnergyData updated = simulate(player.getData(ModAttachments.ENERGY), sunExposure(player), EnergyRules.fromConfig());
+        EnergyData updated = simulate(player.getData(ModAttachments.ENERGY), sunExposure(player), EnergyRules.forBody(com.voidreclaimer.body.Bodies.stats(player)));
         Energy.update(player, updated, player.tickCount % PERIODIC_SYNC_TICKS == 0);
     }
 

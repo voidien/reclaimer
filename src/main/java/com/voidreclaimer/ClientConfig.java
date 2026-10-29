@@ -11,6 +11,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue SWAY_ENABLED;
     public static final ModConfigSpec.DoubleValue SWAY_STRENGTH;
     public static final ModConfigSpec.DoubleValue THRUSTER_VOLUME;
+    public static final ModConfigSpec.BooleanValue CLOUD_SCANNER;
 
     static {
         BUILDER.comment("Sense of motion in deep space.").push("motion");
@@ -22,6 +23,12 @@ public final class ClientConfig {
                 .comment("Slight camera tilt and lag when accelerating or braking. Some players find it uncomfortable.")
                 .define("cameraSway", false);
         SWAY_STRENGTH = BUILDER.comment("Camera sway strength multiplier.").defineInRange("cameraSwayStrength", 1.0, 0.0, 3.0);
+        BUILDER.pop();
+
+        BUILDER.push("sensor");
+        CLOUD_SCANNER = BUILDER
+                .comment("Dust Sensor scanner view: outline nearby dust clouds in the world (toggle in game with the scanner key).")
+                .define("cloudScanner", true);
         BUILDER.pop();
 
         BUILDER.push("sound");

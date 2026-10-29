@@ -174,13 +174,64 @@
 - `TestPlayers` declares every registered play payload on its fake connection, because Create sends its own packets on login.
 - Known: on software OpenGL (the headless test client) Flywheel logs a GLSL 4.60 error and falls back; on real GPUs this shouldn't appear.
 
+## Cloud scanner: done
+- `CloudShape` (pure): the true cloud edge on a 16×32 latitude/longitude ray grid, at density 0.05, refined by bisection.
+- `CloudScannerRenderer`: with a Dust Sensor, key N toggles a wire mesh with a faint tint in the kind's color for clouds within 512 blocks. Meshes are computed in the background and cached. Drawn unfogged; fog state is restored afterwards.
+- Client config `cloudScanner` (default on) is saved when toggled.
+- Tests: 54 unit tests (+2, `CloudShapeTest`: no dust beyond the edge, dust at the edge, lumpy, deterministic, closed seam). Mutation-checked: returning the outer bisection bound fails the test.
+- Verified in a real client: an Ice cloud seen from inside (grid around you) and from outside (lumpy globe); N turns it off and on, and the setting persists.
+
+## Create Aeronautics spike (not adopted)
+- Sable + Aeronautics load with Create and the performance mods, and all 40 GameTests pass locally. Paused sub-levels draw with Sodium.
+- Blocker: in `deep_space`, sub-levels are flung away or removed ("extreme Y coordinate range") on their first physics tick, with or without a zero-gravity `dimension_physics` file. Flight next to a moving ship couldn't be tested. Revisit before Phase 8.
+
+## Phase 5a: Body data: done
+- **Body model** (`body/`):
+  - `SizeClass` (Drone 0.4, Mech 1.2, Ship 3.0 via `generic.scale`) and `PartKind` (frame, core, thruster, storage, sensor, tool, cosmetic).
+  - `PartStats` is a default data component on part items. `BodyData` is the synced, persisted attachment and defaults to the starter drone.
+  - `BodyStats` holds the pure stat math; `BodyRules` holds the pure install rules.
+- **Stats from parts:**
+  - Flight (`FlightStats.of`), energy capacity and solar rate (core), max health, reach and dust intake (frame), inventory rows and dust capacity (storage).
+  - Scale, health and reach are applied as transient attribute modifiers on login, respawn and every change.
+  - The starter Drone (frame, Core Mk I, Thruster Mk I) has exactly the Phase 2 handling.
+- **Soft mass limit:** past the frame's budget, acceleration, braking and top speed fall and thruster energy use rises.
+- **Tier gate:** parts need a core of at least their tier; a weaker core is refused while higher-tier parts are installed; frames need the core tier too.
+- **Frame swap:** parts move into the new frame's slots in order; parts that don't fit (slot count or size class) and the old frame go to the inventory. Frame and core can only be replaced.
+- **Inventory rows** (`InventoryLock`, `InventoryLockMixin`, `SlotLockMixin`):
+  - The drone has the hotbar plus 1 row; frame base rows and storage parts unlock up to 36 slots.
+  - Locked slots never take new items (pickup, `/give`, menus, shift-click) but can still be emptied, so nothing is trapped.
+  - Creative and spectator are exempt. Locked slots are greyed out in container screens.
+- **Modules:**
+  - The Dust Sensor works only when installed in a sensor slot.
+  - The Nanite Swarm and Salvage Tool are tool modules, used with an empty main hand. Nanite: right-click in empty space; sneak + right-click on a block builds against it; sneak + scroll sets the range, stored on the installed module.
+  - Carried module items do nothing. The module wheel (hold Left Alt) picks the active tool; the HUD shows it above the flight readout.
+- **Body tab** (6th Replicator tab, `BodyPanel`): slots by kind, the stats panel, the selected slot's part with [Remove], installable parts from the inventory (invalid ones dimmed with the reason), casing material, thruster trail and accent swatches.
+- **Cosmetics:** casing (Andesite, Brass, Copper), accent tint and thruster trail are stored now; trails are drawn as dust particles while thrusting. Models come in 5b.
+- **Content:**
+  - Drone, Mech and Ship frames (Ship defined but not craftable until Phase 6); Core Mk I/II; Thruster Mk I/II (Mk II needs a Mech); Storage Pod Mk I/II; Brass Trim and Cogwheel Crown cosmetics.
+  - A new **Parts** recipe tab, and the **Expansion** milestone (any dust kind at capacity), which unlocks Mk II parts and the Mech frame.
+- **Command:** `/void_reclaimer body get|reset <player>`.
+- **Tests:**
+  - 60 unit tests (+6, `BodyStatsTest`).
+  - 46 GameTests (+6, `BodyGameTests`: starter stats on join, install/remove item movement and rules, Mk II core and Mech frame swap with transfer and scale, locked slots, Nanite module with an empty hand, Expansion). Sensor and salvage tests now install modules.
+  - Mutation-checked: disabling the lock or the tier gate fails the matching tests.
+- Verified in a real client:
+  - Drone body (6 hearts, scale 0.4); the Body tab shows the starter stats.
+  - Installed the Dust Sensor (HUD and scanner return) and the Nanite Swarm from the inventory.
+  - Empty-hand build in space (Scaffold 15 → 14); module HUD; locked rows greyed in the inventory; module wheel; thruster trail particles; no speed-check corrections.
+
+### Placeholder assets
+- Item textures: `drone_frame`, `mech_frame`, `ship_frame`, `core_mk1`, `core_mk2`, `thruster_mk1`, `thruster_mk2`, `storage_mk1`, `storage_mk2`, `brass_trim`, `cogwheel_crown` (16x16 programmer art in Create-like colors).
+- The body itself is still the vanilla player model, scaled. Casing, accent and cosmetic parts aren't visible until 5b.
+- Thruster trails use vanilla dust particles.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
 - [x] 3. Cosmic Dust
 - [x] 4a. Replicator (queue, milestones and logs, JEI, Scaffold, Salvage Tool)
 - [x] 4b. Nanite Swarm, Tether Anchor, Backup Core (plus death marker and starter nebula)
-- [ ] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
+- [x] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 6. Asteroids
 - [ ] 7. Machines
@@ -198,6 +249,9 @@
 - Gravity is set when an entity joins a level. When gravity generators arrive, this has to become position-based.
 - Without the starter nebula (the default), a world can spawn far from any Silicate cloud. You can't make Scaffold without silicate, so the start may mean a long flight. Revisit after play-testing.
 - Sneak + scroll for the Nanite range also thrusts down while Shift is held (Shift is the "down" thruster key). With the dampener on the drift is small.
+- Every player is now a 0.4-scale drone, so the vanilla player model looks tiny until 5b replaces it.
+- With an active Nanite module, a plain right-click on a block uses the block; sneak + right-click builds against it.
+- Thruster trails are only drawn for the local player.
 - The death screen list shows core charges as of the moment of death; sunlight charges gained while the screen is open appear only after respawn.
 - Respawn at a core always uses the spot above the core (or the first free side). It doesn't check whether that spot is dark or enclosed.
 - The milestone toast was not caught in a screenshot (it fires on first login, during "Loading terrain"). Its trigger is covered by tests.

@@ -1,17 +1,15 @@
 package com.voidreclaimer.network;
 
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.nanite.NaniteSwarmItem;
-import com.voidreclaimer.nanite.NaniteTargeting;
-import com.voidreclaimer.registry.ModDataComponents;
+import com.voidreclaimer.body.Modules;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Client to server: set the build distance of the Nanite Swarm in the main hand (sneak + scroll). */
+/** Client to server: set the build distance of the active Nanite Swarm module (sneak + scroll). */
 public record NaniteRangePayload(int range) implements CustomPacketPayload {
     public static final Type<NaniteRangePayload> TYPE = new Type<>(VoidReclaimer.id("nanite_range"));
     public static final StreamCodec<ByteBuf, NaniteRangePayload> STREAM_CODEC =
@@ -23,9 +21,8 @@ public record NaniteRangePayload(int range) implements CustomPacketPayload {
     }
 
     static void handle(NaniteRangePayload payload, IPayloadContext context) {
-        ItemStack stack = context.player().getMainHandItem();
-        if (stack.getItem() instanceof NaniteSwarmItem) {
-            stack.set(ModDataComponents.NANITE_RANGE.get(), NaniteTargeting.clampRange(payload.range()));
+        if (context.player() instanceof ServerPlayer player) {
+            Modules.setNaniteRange(player, payload.range());
         }
     }
 }

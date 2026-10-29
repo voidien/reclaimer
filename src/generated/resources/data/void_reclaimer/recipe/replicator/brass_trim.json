@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "metallic": 5.0
+  },
+  "milestone": "first_structure",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:brass_trim"
+  },
+  "ticks": 200
+}

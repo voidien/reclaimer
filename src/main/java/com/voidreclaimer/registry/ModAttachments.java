@@ -1,6 +1,8 @@
 package com.voidreclaimer.registry;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.core.BackupCoreList;
 import com.voidreclaimer.core.DeathMarker;
 import com.voidreclaimer.tether.RecallState;
@@ -129,6 +131,14 @@ public final class ModAttachments {
                     .serialize(DeathMarker.CODEC)
                     .copyOnDeath()
                     .sync((holder, to) -> holder == to, DeathMarker.STREAM_CODEC)
+                    .build());
+
+    /** Per-player modular body. Persisted, kept on death, synced to the owner. Defaults to the starter drone. */
+    public static final Supplier<AttachmentType<BodyData>> BODY = ATTACHMENT_TYPES.register("body",
+            () -> AttachmentType.builder(Bodies::starter)
+                    .serialize(BodyData.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, BodyData.STREAM_CODEC)
                     .build());
 
     private ModAttachments() {}

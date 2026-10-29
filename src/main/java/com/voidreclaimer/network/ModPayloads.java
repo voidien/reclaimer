@@ -19,6 +19,7 @@ public final class ModPayloads {
         registrar.playToServer(TetherRecallPayload.TYPE, TetherRecallPayload.STREAM_CODEC, TetherRecallPayload::handle);
         registrar.playToServer(CoreActionPayload.TYPE, CoreActionPayload.STREAM_CODEC, CoreActionPayload::handle);
         registrar.playToServer(RespawnChoicePayload.TYPE, RespawnChoicePayload.STREAM_CODEC, RespawnChoicePayload::handle);
+        registrar.playToServer(BodyActionPayload.TYPE, BodyActionPayload.STREAM_CODEC, BodyActionPayload::handle);
         registrar.playToClient(SensorEchoPayload.TYPE, SensorEchoPayload.STREAM_CODEC, SensorEchoPayload::handle);
     }
 }

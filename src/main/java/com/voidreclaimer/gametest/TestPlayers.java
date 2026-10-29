@@ -1,6 +1,8 @@
 package com.voidreclaimer.gametest;
 
 import com.mojang.authlib.GameProfile;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.space.ModDimensions;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -19,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.network.payload.SyncAttachmentsPayload;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
@@ -73,6 +76,11 @@ final class TestPlayers {
         // Bypass the game mode event so nothing else reacts; the player is already where the test wants it.
         player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         return player;
+    }
+
+    /** Installs a module straight into the body (bypassing the inventory), e.g. a Dust Sensor or a tool. */
+    static void installModule(ServerPlayer player, PartKind kind, int index, ItemStack module) {
+        Bodies.store(player, Bodies.data(player).with(kind, index, module));
     }
 
     static ServerLevel deepSpace(GameTestHelper helper) {

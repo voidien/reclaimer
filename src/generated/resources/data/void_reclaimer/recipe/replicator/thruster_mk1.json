@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "metallic": 10.0,
+    "silicate": 5.0
+  },
+  "milestone": "awakening",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:thruster_mk1"
+  },
+  "ticks": 600
+}

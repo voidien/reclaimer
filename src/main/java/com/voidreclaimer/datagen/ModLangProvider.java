@@ -39,8 +39,7 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("itemGroup.void_reclaimer", "Void Reclaimer");
         add(ModItems.DUST_SENSOR.get(), "Dust Sensor");
-        add("item.void_reclaimer.dust_sensor.tooltip", "Reads cosmic dust density and shows the current cloud's core and edge.");
-        add("item.void_reclaimer.dust_sensor.tooltip.pulse", "Pulse (B) for a rough heading to the nearest cloud; listen for the hum.");
+        add("item.void_reclaimer.dust_sensor.tooltip", "Sensor module: cloud readout, pulse (B), hum and scanner view (N). Install it in a sensor slot.");
         for (DustKind kind : DustKind.values()) {
             add("dust.void_reclaimer." + kind.getSerializedName(), switch (kind) {
                 case METALLIC -> "Metallic";
@@ -51,6 +50,9 @@ public final class ModLangProvider extends LanguageProvider {
         }
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
+        add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
+        add("message.void_reclaimer.scanner_on", "Cloud scanner: ON");
+        add("message.void_reclaimer.scanner_off", "Cloud scanner: OFF");
         add("hud.void_reclaimer.sensor.cloud", "%s cloud: %s%% density");
         add("hud.void_reclaimer.sensor.core", "CORE %sm");
         add("hud.void_reclaimer.sensor.edge", "EDGE %sm");
@@ -75,8 +77,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.SALVAGE_TOOL.get(), "Salvage Tool");
 
         add(ModItems.NANITE_SWARM.get(), "Nanite Swarm");
-        add("item.void_reclaimer.nanite_swarm.tooltip", "Builds the offhand block (or Scaffold) in empty space ahead. Sneak + scroll: distance.");
-        add("item.void_reclaimer.nanite_swarm.tooltip.range", "Build distance: %s blocks");
+        add("item.void_reclaimer.nanite_swarm.tooltip", "Tool module: with an empty hand, right-click builds the offhand block (or Scaffold) in empty space; sneak + right-click builds against a block. Sneak + scroll: distance.");
         add("message.void_reclaimer.nanite.no_power", "Nanites offline: low power.");
         add("message.void_reclaimer.nanite.no_blocks", "No material: hold a block in the offhand or carry Scaffold.");
         add("message.void_reclaimer.nanite.blocked", "Something is in the way.");
@@ -117,13 +118,15 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.death_marker", "DROPS %sm");
 
         add("commands.void_reclaimer.milestone.unknown", "Unknown milestone: %s");
+        add("commands.void_reclaimer.body.reset", "Reset %s to the starter drone");
+        add("commands.void_reclaimer.body.get", "%s: %s, mass %s / %s, %s inventory slots, top speed %s m/s");
         add("commands.void_reclaimer.milestone.granted", "Granted %s to %s");
         add("commands.void_reclaimer.milestone.revoked", "Revoked %s from %s");
         add("commands.void_reclaimer.core.charged", "Filled %s Backup Core(s) of %s");
         add("gamerule.voidReclaimerStarterNebula", "Void Reclaimer: starter nebula");
         add("gamerule.voidReclaimerStarterNebula.description",
                 "Places a small cloud of every dust kind near spawn. Only read when the world is created.");
-        add("item.void_reclaimer.salvage_tool.tooltip", "Quickly dismantles things you built and recovers part of their dust. Can't cut natural rock.");
+        add("item.void_reclaimer.salvage_tool.tooltip", "Tool module: with an empty hand, quickly dismantles things you built and recovers part of their dust.");
 
         add("key.void_reclaimer.replicator", "Open Replicator");
         add("replicator.void_reclaimer.title", "Replicator");
@@ -169,6 +172,86 @@ public final class ModLangProvider extends LanguageProvider {
         add("log.void_reclaimer.diversified.title", "Log 0004: Redundancy");
         add("log.void_reclaimer.diversified.text", "Metal, glass, ice, carbon: enough variety to copy myself. "
                 + "If this chassis fails, a backup core can hold my pattern and rebuild me where I left it.");
+
+        add("milestone.void_reclaimer.expansion", "Expansion");
+        add("milestone.void_reclaimer.expansion.hint", "Fill one kind of dust to capacity");
+        add("log.void_reclaimer.expansion.title", "Log 0005: Outgrown");
+        add("log.void_reclaimer.expansion.text", "My reserves are full and the cloud keeps giving. This chassis is too small for what I am becoming. "
+                + "A stronger core, heavier thrusters, a frame with room to spare: the next body is already drafted.");
+
+        add("replicator.void_reclaimer.tab.parts", "Parts");
+        add("replicator.void_reclaimer.tab.body", "Body");
+        add(ModItems.DRONE_FRAME.get(), "Drone Frame");
+        add(ModItems.MECH_FRAME.get(), "Mech Frame");
+        add(ModItems.SHIP_FRAME.get(), "Ship Frame");
+        add(ModItems.CORE_MK1.get(), "Core Mk I");
+        add(ModItems.CORE_MK2.get(), "Core Mk II");
+        add(ModItems.THRUSTER_MK1.get(), "Thruster Mk I");
+        add(ModItems.THRUSTER_MK2.get(), "Thruster Mk II");
+        add(ModItems.STORAGE_MK1.get(), "Storage Pod Mk I");
+        add(ModItems.STORAGE_MK2.get(), "Storage Pod Mk II");
+        add(ModItems.BRASS_TRIM.get(), "Brass Trim");
+        add(ModItems.COGWHEEL_CROWN.get(), "Cogwheel Crown");
+        add("item.void_reclaimer.ship_frame.tooltip", "Too large to assemble yet: needs materials from beyond the dust clouds.");
+        add("item.void_reclaimer.brass_trim.tooltip", "Cosmetic. Shown on the body once body models arrive.");
+        add("item.void_reclaimer.cogwheel_crown.tooltip", "Cosmetic. Shown on the body once body models arrive.");
+        add("tooltip.void_reclaimer.part", "%s · Tier %s · Mass %s");
+        add("tooltip.void_reclaimer.part.frame", "%s · budget %s · %s hearts");
+        add("tooltip.void_reclaimer.part.slots", "Slots: %s thruster, %s storage, %s sensor, %s tool, %s cosmetic");
+        add("tooltip.void_reclaimer.part.core", "Energy %s · solar ×%s");
+        add("tooltip.void_reclaimer.part.thruster", "Thrust %s · top speed %s m/s");
+        add("tooltip.void_reclaimer.part.storage", "+%s inventory rows · +%s dust per kind");
+        add("tooltip.void_reclaimer.part.min_size", "Needs a %s frame or larger");
+        for (com.voidreclaimer.body.PartKind kind : com.voidreclaimer.body.PartKind.values()) {
+            add("body.void_reclaimer.kind." + kind.getSerializedName(), switch (kind) {
+                case FRAME -> "Frame";
+                case CORE -> "Core";
+                case THRUSTER -> "Thrusters";
+                case STORAGE -> "Storage";
+                case SENSOR -> "Sensors";
+                case TOOL -> "Tools";
+                case COSMETIC -> "Cosmetic";
+            });
+        }
+        add("body.void_reclaimer.size.drone", "Drone");
+        add("body.void_reclaimer.size.mech", "Mech");
+        add("body.void_reclaimer.size.ship", "Ship");
+        add("body.void_reclaimer.casing.andesite", "Andesite");
+        add("body.void_reclaimer.casing.brass", "Brass");
+        add("body.void_reclaimer.casing.copper", "Copper");
+        add("body.void_reclaimer.trail.none", "None");
+        add("body.void_reclaimer.trail.standard", "Standard");
+        add("body.void_reclaimer.trail.ember", "Ember");
+        add("body.void_reclaimer.trail.plasma", "Plasma");
+        add("body.void_reclaimer.trail.accent", "Accent");
+        add("body.void_reclaimer.casing", "Casing: %s");
+        add("body.void_reclaimer.trail", "Trail: %s");
+        add("body.void_reclaimer.accent", "Accent");
+        add("body.void_reclaimer.stats", "Body");
+        add("body.void_reclaimer.stat.size", "%s (scale %s)");
+        add("body.void_reclaimer.stat.mass", "Mass %s / %s");
+        add("body.void_reclaimer.stat.flight", "Accel %s · %s m/s");
+        add("body.void_reclaimer.stat.energy", "Energy %s · sun ×%s");
+        add("body.void_reclaimer.stat.health", "%s hearts · reach +%s");
+        add("body.void_reclaimer.stat.dust", "Dust %s · intake ×%s");
+        add("body.void_reclaimer.stat.inventory", "Inventory %s/36");
+        add("body.void_reclaimer.stat.tier", "Core tier %s");
+        add("body.void_reclaimer.overloaded", "Over the mass budget: slower and hungrier.");
+        add("body.void_reclaimer.empty_slot", "Empty");
+        add("body.void_reclaimer.remove", "[Remove]");
+        add("body.void_reclaimer.install", "Install:");
+        add("body.void_reclaimer.no_parts", "No matching parts in your inventory.");
+        add("body.void_reclaimer.click_install", "Click to install");
+        add("message.void_reclaimer.body.not_a_part", "That isn't a body part.");
+        add("message.void_reclaimer.body.wrong_slot", "That part goes in a different slot.");
+        add("message.void_reclaimer.body.tier_too_high", "The core can't run a part of that tier.");
+        add("message.void_reclaimer.body.frame_too_small", "That part needs a bigger frame.");
+        add("message.void_reclaimer.body.bad_slot", "Nothing to do there.");
+        add("message.void_reclaimer.body.core_too_low", "A weaker core couldn't run the installed parts.");
+        add("message.void_reclaimer.body.required", "Frame and core can only be replaced, not removed.");
+        add("message.void_reclaimer.body.inventory_full", "No free inventory slot for the removed parts.");
+        add("key.void_reclaimer.module_wheel", "Module Wheel (hold)");
+        add("screen.void_reclaimer.module_wheel", "Tool modules");
 
         add("subtitles.void_reclaimer.thruster", "Thrusters fire");
         add("subtitles.void_reclaimer.dampener", "Dampener hums");

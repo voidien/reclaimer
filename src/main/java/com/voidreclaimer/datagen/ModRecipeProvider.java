@@ -33,6 +33,19 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorRecipe.Category.BLOCKS, Milestone.FIRST_STRUCTURE);
         replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, new DustCost(30, 20, 10, 10), 60,
                 ReplicatorRecipe.Category.BLOCKS, Milestone.DIVERSIFIED);
+
+        // Body parts. The drone frame, Mk I core and Mk I thruster are also craftable as spares.
+        ReplicatorRecipe.Category parts = ReplicatorRecipe.Category.PARTS;
+        replicator(output, "thruster_mk1", ModItems.THRUSTER_MK1.get(), 1, new DustCost(10, 5, 0, 0), 30, parts, Milestone.AWAKENING);
+        replicator(output, "drone_frame", ModItems.DRONE_FRAME.get(), 1, new DustCost(20, 10, 0, 0), 60, parts, Milestone.FIRST_DUST);
+        replicator(output, "core_mk1", ModItems.CORE_MK1.get(), 1, new DustCost(15, 10, 0, 5), 45, parts, Milestone.FIRST_DUST);
+        replicator(output, "storage_mk1", ModItems.STORAGE_MK1.get(), 1, new DustCost(8, 8, 0, 0), 30, parts, Milestone.FIRST_DUST);
+        replicator(output, "brass_trim", ModItems.BRASS_TRIM.get(), 1, new DustCost(5, 0, 0, 0), 10, parts, Milestone.FIRST_STRUCTURE);
+        replicator(output, "cogwheel_crown", ModItems.COGWHEEL_CROWN.get(), 1, new DustCost(8, 0, 0, 4), 15, parts, Milestone.DIVERSIFIED);
+        replicator(output, "core_mk2", ModItems.CORE_MK2.get(), 1, new DustCost(40, 30, 10, 20), 90, parts, Milestone.EXPANSION);
+        replicator(output, "thruster_mk2", ModItems.THRUSTER_MK2.get(), 1, new DustCost(30, 10, 0, 10), 60, parts, Milestone.EXPANSION);
+        replicator(output, "storage_mk2", ModItems.STORAGE_MK2.get(), 1, new DustCost(20, 20, 10, 0), 60, parts, Milestone.EXPANSION);
+        replicator(output, "mech_frame", ModItems.MECH_FRAME.get(), 1, new DustCost(80, 60, 20, 40), 180, parts, Milestone.EXPANSION);
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,

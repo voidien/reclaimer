@@ -2,6 +2,7 @@ package com.voidreclaimer.salvage;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Modules;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
@@ -21,7 +22,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.BlockEvent;
 
 /**
- * Breaking a salvageable block with the Salvage Tool removes it without drops and refunds a fraction of the dust its
+ * Breaking a salvageable block with the Salvage Tool module active (empty hand) removes it without drops and refunds a fraction of the dust its
  * Replicator recipe cost (per block, so a recipe making 8 Scaffold refunds 1/8 of its cost per block).
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
@@ -34,7 +35,7 @@ public final class Salvage {
             return;
         }
         BlockState state = event.getState();
-        if (!state.is(ModBlocks.SALVAGEABLE) || !player.getMainHandItem().is(ModItems.SALVAGE_TOOL.get())) {
+        if (!state.is(ModBlocks.SALVAGEABLE) || !Modules.isActive(player, ModItems.SALVAGE_TOOL.get())) {
             return;
         }
         ServerLevel level = player.serverLevel();
