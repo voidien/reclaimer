@@ -1,7 +1,6 @@
 package com.voidreclaimer.replicator;
 
 import com.voidreclaimer.dust.DustData;
-import com.voidreclaimer.dust.DustKind;
 
 /**
  * The player state milestone criteria look at. Kept to plain values so the criteria stay unit-testable.
@@ -21,22 +20,11 @@ public record MilestoneContext(DustData dust, int blocksPlaced, float dustCapaci
 
     /** Whether any one kind of dust is at capacity. */
     public boolean anyKindFull() {
-        for (DustKind kind : DustKind.values()) {
-            if (dust.get(kind) >= dustCapacity - 1.0E-3f) {
-                return true;
-            }
-        }
-        return false;
+        return dust.anyKindFull(dustCapacity);
     }
 
     /** How many dust kinds the reserve holds any of. */
     public int kindsHeld() {
-        int kinds = 0;
-        for (DustKind kind : DustKind.values()) {
-            if (dust.get(kind) > 0f) {
-                kinds++;
-            }
-        }
-        return kinds;
+        return dust.kindsHeld();
     }
 }

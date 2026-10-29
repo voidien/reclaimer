@@ -2,8 +2,8 @@
   "type": "void_reclaimer:replicator",
   "category": "parts",
   "cost": {
-    "metallic": 10.0,
-    "silicate": 5.0
+    "void_reclaimer:metallic": 10.0,
+    "void_reclaimer:silicate": 5.0
   },
   "milestone": "awakening",
   "result": {

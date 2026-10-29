@@ -2,8 +2,8 @@
   "type": "void_reclaimer:replicator",
   "category": "parts",
   "cost": {
-    "carbon": 4.0,
-    "metallic": 8.0
+    "void_reclaimer:carbon": 4.0,
+    "void_reclaimer:metallic": 8.0
   },
   "milestone": "diversified",
   "result": {

@@ -2,7 +2,7 @@
   "type": "void_reclaimer:replicator",
   "category": "parts",
   "cost": {
-    "metallic": 5.0
+    "void_reclaimer:metallic": 5.0
   },
   "milestone": "first_structure",
   "result": {

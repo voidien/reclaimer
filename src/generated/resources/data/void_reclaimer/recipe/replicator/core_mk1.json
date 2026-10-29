@@ -2,9 +2,9 @@
   "type": "void_reclaimer:replicator",
   "category": "parts",
   "cost": {
-    "carbon": 5.0,
-    "metallic": 15.0,
-    "silicate": 10.0
+    "void_reclaimer:carbon": 5.0,
+    "void_reclaimer:metallic": 15.0,
+    "void_reclaimer:silicate": 10.0
   },
   "milestone": "first_dust",
   "result": {

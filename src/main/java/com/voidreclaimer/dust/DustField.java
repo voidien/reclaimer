@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -40,17 +41,23 @@ public final class DustField {
     @Nullable
     private final Vec3 nebulaCenter;
     private final List<DustCloud> nebula;
+    private final List<DustKinds.Entry> kinds;
 
+    /** A field with the built-in dust kinds and no nebula (tests, tools). */
     public DustField(long seed) {
-        this(seed, null);
+        this(seed, null, DustKinds.builtinEntries());
     }
 
-    /** @param nebulaCenter center of the {@link StarterNebula}, or null if the world has none */
-    public DustField(long seed, @Nullable Vec3 nebulaCenter) {
+    /**
+     * @param nebulaCenter center of the {@link StarterNebula}, or null if the world has none
+     * @param kinds        registered dust kinds in {@link DustKinds#ORDER}; clouds pick from them by weight
+     */
+    public DustField(long seed, @Nullable Vec3 nebulaCenter, List<DustKinds.Entry> kinds) {
         this.seed = seed;
         this.noise = new SimplexNoise(RandomSource.create(seed ^ NOISE_SALT));
         this.nebulaCenter = nebulaCenter;
         this.nebula = nebulaCenter == null ? List.of() : StarterNebula.pockets(nebulaCenter);
+        this.kinds = List.copyOf(kinds);
     }
 
     /** The field of a deep space level, or null anywhere else (or before the seed has been synced). */
@@ -65,8 +72,10 @@ public final class DustField {
         }
         DustField field = cached;
         Vec3 nebula = fieldSeed.nebula().orElse(null);
-        if (field == null || field.seed != fieldSeed.seed() || !java.util.Objects.equals(field.nebulaCenter, nebula)) {
-            field = new DustField(fieldSeed.seed(), nebula);
+        List<DustKinds.Entry> kinds = DustKinds.all(level.registryAccess());
+        if (field == null || field.seed != fieldSeed.seed() || !java.util.Objects.equals(field.nebulaCenter, nebula)
+                || !field.kinds.equals(kinds)) {
+            field = new DustField(fieldSeed.seed(), nebula, kinds);
             cached = field;
         }
         return field;
@@ -87,7 +96,10 @@ public final class DustField {
                 (cx + random.nextDouble()) * CELL,
                 (cy + random.nextDouble()) * CELL,
                 (cz + random.nextDouble()) * CELL);
-        DustKind kind = DustKind.pick(random.nextDouble());
+        ResourceLocation kind = DustKinds.pick(kinds, random.nextDouble());
+        if (kind == null) {
+            return Optional.empty();
+        }
         double intensity = 0.6 + 0.4 * random.nextDouble();
         Vec3 offset = new Vec3(random.nextDouble() * 10_000, random.nextDouble() * 10_000, random.nextDouble() * 10_000);
         return Optional.of(new DustCloud(center, radius, kind, intensity, offset));

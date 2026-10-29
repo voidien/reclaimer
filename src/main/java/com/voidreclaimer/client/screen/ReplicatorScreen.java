@@ -2,7 +2,9 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.dust.DustData;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
+import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.network.ReplicatorActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
@@ -195,13 +197,13 @@ public final class ReplicatorScreen extends Screen {
     /** "M10 S15 C5 · 20s", each amount red when not affordable. */
     private Component costLine(ReplicatorRecipe recipe, DustData dust) {
         MutableComponent line = Component.empty();
-        for (DustKind kind : DustKind.values()) {
-            float amount = recipe.cost().get(kind);
-            if (amount <= 0f) {
-                continue;
-            }
-            int color = dust.get(kind) + 1.0E-4f >= amount ? kind.color() : 0xFF5050;
-            String label = kind.getSerializedName().substring(0, 1).toUpperCase(java.util.Locale.ROOT) + Mth.ceil(amount) + " ";
+        for (Map.Entry<ResourceLocation, Float> cost : recipe.cost().amounts().entrySet()) {
+            ResourceLocation kind = cost.getKey();
+            float amount = cost.getValue();
+            var access = minecraft.level.registryAccess();
+            int color = dust.get(kind) + 1.0E-4f >= amount ? DustKinds.color(access, kind) : 0xFF5050;
+            String name = DustKinds.name(access, kind).getString();
+            String label = (name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(java.util.Locale.ROOT)) + Mth.ceil(amount) + " ";
             line.append(Component.literal(label).withColor(color));
         }
         line.append(Component.literal(String.format(java.util.Locale.ROOT, "· %ds", Mth.ceil(recipe.ticks() / 20f))).withColor(0x8899AA));

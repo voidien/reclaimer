@@ -2,8 +2,8 @@
   "type": "void_reclaimer:replicator",
   "category": "blocks",
   "cost": {
-    "metallic": 15.0,
-    "silicate": 5.0
+    "void_reclaimer:metallic": 15.0,
+    "void_reclaimer:silicate": 5.0
   },
   "milestone": "first_structure",
   "result": {

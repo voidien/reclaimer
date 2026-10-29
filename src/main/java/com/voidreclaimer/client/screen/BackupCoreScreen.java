@@ -2,6 +2,7 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.core.CoreCharging;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.network.CoreActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.client.gui.GuiGraphics;
@@ -51,7 +52,7 @@ public final class BackupCoreScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("screen.void_reclaimer.core.rename"), b -> rename())
                 .bounds(left + WIDTH - 66, top + 20, 56, 20).build());
         chargeButton = addRenderableWidget(Button.builder(Component.translatable("screen.void_reclaimer.core.charge",
-                        Math.round(CoreCharging.CHARGE_COST.metallic()), Math.round(CoreCharging.CHARGE_COST.silicate())),
+                        Math.round(CoreCharging.CHARGE_COST.get(DustKinds.METALLIC)), Math.round(CoreCharging.CHARGE_COST.get(DustKinds.SILICATE))),
                 b -> PacketDistributor.sendToServer(CoreActionPayload.charge(pos)))
                 .bounds(left + 10, top + HEIGHT - 28, 130, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose())

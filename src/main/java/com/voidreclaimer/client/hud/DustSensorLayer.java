@@ -3,6 +3,7 @@ package com.voidreclaimer.client.hud;
 import com.voidreclaimer.client.input.ClientSensorController;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustField;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.dust.DustSensor;
 import com.voidreclaimer.dust.SensorPulse;
 import com.voidreclaimer.network.SensorEchoPayload;
@@ -54,8 +55,8 @@ public final class DustSensorLayer {
 
         if (sample.inCloud()) {
             DustCloud cloud = sample.cloud();
-            int kindColor = cloud.kind().color();
-            Component title = Component.translatable("hud.void_reclaimer.sensor.cloud", cloud.kind().displayName(),
+            int kindColor = DustKinds.color(player.registryAccess(), cloud.kind());
+            Component title = Component.translatable("hud.void_reclaimer.sensor.cloud", DustKinds.name(player.registryAccess(), cloud.kind()),
                     Math.round(sample.density() * 100));
             graphics.drawCenteredString(font, title, width / 2, PANEL_Y, kindColor);
             bar(graphics, width / 2 - BAR_WIDTH / 2, PANEL_Y + 11, (float) sample.density(), 0xFF000000 | kindColor);

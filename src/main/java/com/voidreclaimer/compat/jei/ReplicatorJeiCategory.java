@@ -1,7 +1,9 @@
 package com.voidreclaimer.compat.jei;
 
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
+import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModRecipeTypes;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
@@ -67,10 +69,10 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
         ReplicatorRecipe recipe = holder.value();
         Font font = Minecraft.getInstance().font;
         int x = 0;
-        for (DustKind kind : DustKind.values()) {
-            float amount = recipe.cost().get(kind);
+        for (Map.Entry<ResourceLocation, Float> cost : recipe.cost().amounts().entrySet()) {
+            float amount = cost.getValue();
             if (amount > 0f) {
-                graphics.fill(x, 5, x + 6, 11, 0xFF000000 | kind.color());
+                graphics.fill(x, 5, x + 6, 11, 0xFF000000 | DustKinds.color(Minecraft.getInstance().level.registryAccess(), cost.getKey()));
                 graphics.drawString(font, Integer.toString(Mth.ceil(amount)), x + 8, 4, 0xFF404040, false);
                 x += 30;
             }

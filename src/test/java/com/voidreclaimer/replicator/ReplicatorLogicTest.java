@@ -18,16 +18,16 @@ import org.junit.jupiter.api.Test;
 class ReplicatorLogicTest {
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("void_reclaimer", "replicator/test");
     private static final ReplicatorRecipe RECIPE = new ReplicatorRecipe(new ItemStack(Items.STONE, 8),
-            new DustCost(2, 8, 0, 0), 3, ReplicatorRecipe.Category.BLOCKS, Milestone.AWAKENING);
+            DustCost.of(2, 8, 0, 0), 3, ReplicatorRecipe.Category.BLOCKS, Milestone.AWAKENING);
     private static final ReplicatorData UNLOCKED = ReplicatorData.EMPTY.withUnlocked(Milestone.AWAKENING);
-    private static final DustData RICH = new DustData(10, 10, 0, 0);
+    private static final DustData RICH = DustData.of(10, 10, 0, 0);
 
     @Test
     void queuePaysDustUpFront() {
         ReplicatorLogic.Queued queued = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE);
         assertEquals(ReplicatorLogic.QueueResult.QUEUED, queued.result());
         assertEquals(1, queued.data().jobs().size());
-        assertEquals(new DustData(8, 2, 0, 0), queued.dust());
+        assertEquals(DustData.of(8, 2, 0, 0), queued.dust());
         assertEquals(RECIPE.cost(), queued.data().jobs().get(0).paid());
     }
 
@@ -36,10 +36,10 @@ class ReplicatorLogicTest {
         assertEquals(ReplicatorLogic.QueueResult.UNKNOWN_RECIPE, ReplicatorLogic.queue(UNLOCKED, RICH, ID, null).result());
         assertEquals(ReplicatorLogic.QueueResult.LOCKED, ReplicatorLogic.queue(ReplicatorData.EMPTY, RICH, ID, RECIPE).result());
         assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST,
-                ReplicatorLogic.queue(UNLOCKED, new DustData(10, 7.9f, 0, 0), ID, RECIPE).result());
+                ReplicatorLogic.queue(UNLOCKED, DustData.of(10, 7.9f, 0, 0), ID, RECIPE).result());
 
         ReplicatorData data = UNLOCKED;
-        DustData dust = new DustData(100, 100, 0, 0);
+        DustData dust = DustData.of(100, 100, 0, 0);
         for (int i = 0; i < ReplicatorData.MAX_JOBS; i++) {
             ReplicatorLogic.Queued queued = ReplicatorLogic.queue(data, dust, ID, RECIPE);
             data = queued.data();
@@ -57,8 +57,8 @@ class ReplicatorLogicTest {
         assertTrue(cancelled.data().jobs().isEmpty());
         assertEquals(RICH, cancelled.dust());
         // A full reserve can't overflow past capacity on refund.
-        ReplicatorLogic.Queued capped = ReplicatorLogic.cancel(queued.data(), new DustData(9, 9, 0, 0), 0, 10f);
-        assertEquals(new DustData(10, 10, 0, 0), capped.dust());
+        ReplicatorLogic.Queued capped = ReplicatorLogic.cancel(queued.data(), DustData.of(9, 9, 0, 0), 0, 10f);
+        assertEquals(DustData.of(10, 10, 0, 0), capped.dust());
         // Bad index changes nothing.
         assertSame(queued.data(), ReplicatorLogic.cancel(queued.data(), queued.dust(), 3, 200f).data());
     }
@@ -112,12 +112,12 @@ class ReplicatorLogicTest {
     void milestonesAndUnlockDiff() {
         assertTrue(Milestone.AWAKENING.isReached(MilestoneContext.of(DustData.EMPTY)));
         assertFalse(Milestone.FIRST_DUST.isReached(MilestoneContext.of(DustData.EMPTY)));
-        assertTrue(Milestone.FIRST_DUST.isReached(MilestoneContext.of(new DustData(0, 0, 0.01f, 0))));
+        assertTrue(Milestone.FIRST_DUST.isReached(MilestoneContext.of(DustData.of(0, 0, 0.01f, 0))));
 
         assertFalse(Milestone.FIRST_STRUCTURE.isReached(new MilestoneContext(DustData.EMPTY, Milestone.STRUCTURE_BLOCKS - 1)));
         assertTrue(Milestone.FIRST_STRUCTURE.isReached(new MilestoneContext(DustData.EMPTY, Milestone.STRUCTURE_BLOCKS)));
-        assertFalse(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(new DustData(5, 5, 0, 0))));
-        assertTrue(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(new DustData(5, 5, 0, 0.1f))));
+        assertFalse(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(DustData.of(5, 5, 0, 0))));
+        assertTrue(Milestone.DIVERSIFIED.isReached(MilestoneContext.of(DustData.of(5, 5, 0, 0.1f))));
 
         ReplicatorData before = UNLOCKED;
         ReplicatorData after = before.withUnlocked(Milestone.FIRST_DUST);
@@ -128,11 +128,11 @@ class ReplicatorLogicTest {
 
     @Test
     void dustCostArithmetic() {
-        DustCost cost = new DustCost(4, 2, 0, 1);
-        assertTrue(cost.canAfford(new DustData(4, 2, 0, 1)));
-        assertFalse(cost.canAfford(new DustData(4, 2, 0, 0.5f)));
-        assertEquals(new DustData(1, 0, 3, 0), cost.takeFrom(new DustData(5, 2, 3, 1)));
-        assertEquals(new DustCost(2, 1, 0, 0.5f), cost.scale(0.5f));
+        DustCost cost = DustCost.of(4, 2, 0, 1);
+        assertTrue(cost.canAfford(DustData.of(4, 2, 0, 1)));
+        assertFalse(cost.canAfford(DustData.of(4, 2, 0, 0.5f)));
+        assertEquals(DustData.of(1, 0, 3, 0), cost.takeFrom(DustData.of(5, 2, 3, 1)));
+        assertEquals(DustCost.of(2, 1, 0, 0.5f), cost.scale(0.5f));
         assertTrue(DustCost.NONE.isFree());
     }
 
@@ -158,7 +158,7 @@ class ReplicatorLogicTest {
                 {"result": {"id": "minecraft:stone", "count": 8}, "cost": {"silicate": 8.0},
                  "ticks": 100, "category": "blocks", "milestone": "awakening"}""";
         ReplicatorRecipe parsed = ReplicatorRecipe.CODEC.codec().parse(JsonOps.INSTANCE, JsonParser.parseString(json)).getOrThrow();
-        assertEquals(new DustCost(0, 8, 0, 0), parsed.cost());
+        assertEquals(DustCost.of(0, 8, 0, 0), parsed.cost());
         assertEquals(100, parsed.ticks());
         assertEquals(Milestone.AWAKENING, parsed.milestone());
         assertTrue(ItemStack.matches(new ItemStack(Items.STONE, 8), parsed.result()));

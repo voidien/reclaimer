@@ -2,10 +2,10 @@
   "type": "void_reclaimer:replicator",
   "category": "parts",
   "cost": {
-    "carbon": 40.0,
-    "ice": 20.0,
-    "metallic": 80.0,
-    "silicate": 60.0
+    "void_reclaimer:carbon": 40.0,
+    "void_reclaimer:ice": 20.0,
+    "void_reclaimer:metallic": 80.0,
+    "void_reclaimer:silicate": 60.0
   },
   "milestone": "expansion",
   "result": {

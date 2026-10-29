@@ -2,7 +2,7 @@
   "type": "void_reclaimer:replicator",
   "category": "blocks",
   "cost": {
-    "silicate": 8.0
+    "void_reclaimer:silicate": 8.0
   },
   "milestone": "awakening",
   "result": {

@@ -7,7 +7,7 @@ import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
 import com.voidreclaimer.dust.DustFieldSeed;
-import com.voidreclaimer.dust.DustKind;
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.dust.SensorPulse;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
@@ -50,10 +50,11 @@ public final class DustGameTests {
             moveAndTick(player, TICKS);
             DustData dust = player.getData(ModAttachments.DUST);
             float collected = dust.get(cloud.kind());
-            helper.assertTrue(collected > 0.05f, "collected only " + collected + " " + cloud.kind().getSerializedName());
-            for (DustKind other : DustKind.values()) {
-                if (other != cloud.kind()) {
-                    helper.assertTrue(dust.get(other) == 0f, "collected " + other.getSerializedName() + " in a " + cloud.kind().getSerializedName() + " cloud");
+            helper.assertTrue(collected > 0.05f, "collected only " + collected + " " + cloud.kind());
+            for (DustKinds.Entry entry : DustKinds.all(player.registryAccess())) {
+                net.minecraft.resources.ResourceLocation other = entry.id();
+                if (!other.equals(cloud.kind())) {
+                    helper.assertTrue(dust.get(other) == 0f, "collected " + other + " in a " + cloud.kind() + " cloud");
                 }
             }
             helper.succeed();

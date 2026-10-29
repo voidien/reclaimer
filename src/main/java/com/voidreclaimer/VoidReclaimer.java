@@ -11,6 +11,7 @@ import com.voidreclaimer.registry.ModCreativeTabs;
 import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModRecipeSerializers;
 import com.voidreclaimer.registry.ModRecipeTypes;
+import com.voidreclaimer.registry.ModRegistries;
 import com.voidreclaimer.registry.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -26,6 +27,7 @@ public final class VoidReclaimer {
 
     public VoidReclaimer(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        ModRegistries.register(modBus);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);

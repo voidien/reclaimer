@@ -1,5 +1,6 @@
 package com.voidreclaimer.gametest;
 
+import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.dust.DustData;
@@ -56,7 +57,7 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 41_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(50, 50, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(50, 50, 0, 0));
             // Dust alone doesn't unlock until the milestone check runs.
             helper.assertTrue(Replicator.queue(player, SALVAGE_TOOL) == ReplicatorLogic.QueueResult.LOCKED, "salvage tool unlocked too early");
             Replicator.checkMilestones(player);
@@ -72,9 +73,9 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 42_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 10, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 10, 0, 0));
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.QUEUED, "queue failed");
-            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 2f) < 1e-4, "dust not taken on queue");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 2f) < 1e-4, "dust not taken on queue");
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST, "queued without enough dust");
 
             for (int i = 0; i < SCAFFOLD_TICKS - 1; i++) {
@@ -96,7 +97,7 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 43_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             EnergyData energy = player.getData(ModAttachments.ENERGY);
             player.setData(ModAttachments.ENERGY, new EnergyData(0.01f, energy.capacity(), true));
@@ -115,10 +116,10 @@ public final class ReplicatorGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 44_000.5, 80, 0.5);
         try {
             Replicator.checkMilestones(player);
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             helper.assertTrue(Replicator.cancel(player, 0), "cancel failed");
-            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 8f) < 1e-4, "dust not refunded");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 8f) < 1e-4, "dust not refunded");
             helper.assertFalse(Replicator.cancel(player, 0), "cancelled a job that doesn't exist");
             helper.succeed();
         } finally {
@@ -134,7 +135,7 @@ public final class ReplicatorGameTests {
             for (int i = 0; i < player.getInventory().items.size(); i++) {
                 player.getInventory().items.set(i, new ItemStack(Items.STONE, 64));
             }
-            player.setData(ModAttachments.DUST, new DustData(0, 8, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(0, 8, 0, 0));
             Replicator.queue(player, SCAFFOLD);
             for (int i = 0; i < SCAFFOLD_TICKS + 1; i++) {
                 player.doTick();
@@ -168,19 +169,19 @@ public final class ReplicatorGameTests {
 
                 player.gameMode.destroyBlock(pos);
                 helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");
-                float refund = player.getData(ModAttachments.DUST).silicate();
+                float refund = player.getData(ModAttachments.DUST).get(DustKinds.SILICATE);
                 // 8 silicate per 8 scaffold, 50% refund: 0.5 per block.
                 helper.assertTrue(Math.abs(refund - 0.5f) < 1e-4, "expected 0.5 silicate refund, got " + refund);
 
                 // With something in hand the module is idle: the block drops itself and refunds nothing.
                 player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
                 player.gameMode.destroyBlock(pos.east());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "refund without the tool");
+                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "refund without the tool");
 
                 // Natural blocks aren't salvageable: no refund.
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.gameMode.destroyBlock(pos.west());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "stone gave a refund");
+                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "stone gave a refund");
             } finally {
                 TestPlayers.remove(player);
             }

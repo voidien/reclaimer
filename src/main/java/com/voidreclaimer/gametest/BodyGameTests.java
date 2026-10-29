@@ -170,10 +170,10 @@ public final class BodyGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 66_000.5, 80, 0.5);
         try {
             float capacity = DustData.capacity(player);
-            player.setData(ModAttachments.DUST, new DustData(capacity - 1f, 0, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(capacity - 1f, 0, 0, 0));
             Replicator.checkMilestones(player);
             helper.assertFalse(Replicator.data(player).isUnlocked(Milestone.EXPANSION), "unlocked below capacity");
-            player.setData(ModAttachments.DUST, new DustData(capacity, 0, 0, 0));
+            player.setData(ModAttachments.DUST, DustData.of(capacity, 0, 0, 0));
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.data(player).isUnlocked(Milestone.EXPANSION), "not unlocked at capacity");
             helper.succeed();

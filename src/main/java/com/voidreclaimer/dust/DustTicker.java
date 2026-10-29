@@ -4,6 +4,7 @@ import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -36,7 +37,7 @@ public final class DustTicker {
         float gain = gainPerTick(sample.density(), speed, Config.DUST_TRICKLE.get(), Config.DUST_SCOOP.get())
                 * com.voidreclaimer.body.Bodies.stats(player).dustIntake();
         DustData old = player.getData(ModAttachments.DUST);
-        DustKind kind = sample.cloud().kind();
+        ResourceLocation kind = sample.cloud().kind();
         DustData updated = old.add(kind, gain, DustData.capacity(player));
         if (updated.equals(old)) {
             return;

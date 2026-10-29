@@ -1,7 +1,6 @@
 package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.dust.DustKind;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.replicator.Milestone;
@@ -40,14 +39,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("itemGroup.void_reclaimer", "Void Reclaimer");
         add(ModItems.DUST_SENSOR.get(), "Dust Sensor");
         add("item.void_reclaimer.dust_sensor.tooltip", "Sensor module: cloud readout, pulse (B), hum and scanner view (N). Install it in a sensor slot.");
-        for (DustKind kind : DustKind.values()) {
-            add("dust.void_reclaimer." + kind.getSerializedName(), switch (kind) {
-                case METALLIC -> "Metallic";
-                case SILICATE -> "Silicate";
-                case ICE -> "Ice";
-                case CARBON -> "Carbon";
-            });
-        }
+        add("dust.void_reclaimer.metallic", "Metallic");
+        add("dust.void_reclaimer.silicate", "Silicate");
+        add("dust.void_reclaimer.ice", "Ice");
+        add("dust.void_reclaimer.carbon", "Carbon");
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
@@ -66,7 +61,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.sensor_cooldown", "Sensor recharging.");
         add("message.void_reclaimer.sensor_low_power", "Not enough power for a sensor pulse.");
 
-        add("commands.void_reclaimer.dust.get", "%s dust: metallic %s, silicate %s, ice %s, carbon %s");
+        add("commands.void_reclaimer.dust.get", "%s dust: %s");
+        add("commands.void_reclaimer.dust.amount", "%s %s");
         add("commands.void_reclaimer.dust.set", "Set %s's %s dust to %s");
         add("commands.void_reclaimer.dust.unknown_kind", "Unknown dust kind: %s");
         add("commands.void_reclaimer.dust.locate", "Nearest %s cloud: center %s, radius %s, edge %s blocks away");

@@ -61,7 +61,6 @@ public final class Salvage {
     }
 
     private static float totalPerItem(ReplicatorRecipe recipe) {
-        DustCost c = recipe.cost();
-        return (c.metallic() + c.silicate() + c.ice() + c.carbon()) / recipe.result().getCount();
+        return recipe.cost().total() / recipe.result().getCount();
     }
 }
