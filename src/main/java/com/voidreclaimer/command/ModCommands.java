@@ -135,6 +135,11 @@ public final class ModCommands {
                         .then(Commands.literal("reset")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> resetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
+                        .then(Commands.literal("preset")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.literal("drone").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.DRONE)))
+                                        .then(Commands.literal("mech").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.MECH)))
+                                        .then(Commands.literal("ship").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHIP)))))
                         .then(Commands.literal("get")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> getBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
@@ -240,6 +245,12 @@ public final class ModCommands {
     private static int resetBody(CommandSourceStack source, ServerPlayer player) {
         Bodies.store(player, Bodies.starter());
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.reset", player.getDisplayName()), true);
+        return 1;
+    }
+
+    private static int presetBody(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> chassis) {
+        Bodies.store(player, Bodies.preset(chassis));
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.preset", player.getDisplayName(), chassis.location().getPath()), true);
         return 1;
     }
 
