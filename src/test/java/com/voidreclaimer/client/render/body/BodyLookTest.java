@@ -153,4 +153,12 @@ class BodyLookTest {
         assertEquals(java.util.List.of("low_power", "idle"), BodyLook.fallbacks(BodyLook.Pose.LOW_POWER));
         assertEquals(java.util.List.of("idle"), BodyLook.fallbacks(BodyLook.Pose.IDLE));
     }
+
+    @Test
+    void bigBodiesGetTheCameraFurtherBackSmallOnesKeepTheirs() {
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f));
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f));
+        assertEquals(4f * 3f * 0.7f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f);
+        assertTrue(BodyRenderEvents.cameraDistance(4f, 1.2f) >= 4f);
+    }
 }

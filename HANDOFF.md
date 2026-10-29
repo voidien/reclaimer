@@ -12,7 +12,7 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
 - **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
 - **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
-- **Next phase:** 5b (GeckoLib rendering) or Act III, phase 11 (Ruined Earth); see the revised plan in `CLAUDE.md`. Phases 6 to 10 are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
+- **Next phase:** 5b-2 (first person and the 3D assembly view) or Act III, phase 11 (Ruined Earth); see the revised plan in `CLAUDE.md`. Phases 6 to 10 and 5b-1 (body rendering, third person) are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
 - **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
   - It's a Claude Docs project, at revision 12.
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.
@@ -90,6 +90,9 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 5. **JEI:** open the inventory (E), hover an item with `xt hover X Y`, then press R for its recipes.
 6. **Screenshots:** `shot file.png`, then view the PNG.
 7. **Stopping:** `kill $(clientpid)`. Rebuild by relaunching. There is no sound in the container, so check sound changes on a real machine.
+
+- **Seeing a body in the headless client:** the art's textures are near-black, so stand in a lit room first: `run "/fill ~-15 ~-15 ~-15 ~15 ~15 ~15 minecraft:sea_lantern hollow"`, then `run "/void_reclaimer body preset @s mech"` (or `drone`, `ship`) and F5 for third person (F5 cycles first person, back, front). Wait about 45 s after "joined the game" before typing commands (the world is still loading). Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
+- **A hung GameTest or client JVM:** kill it by PID (`ps -eo pid,args | grep gameTestServerRunProgramArgs`). A killed server can leave `run/world` damaged and make `salvageToolDismantlesForDustWithoutDrops` fail until you delete `run/world`; CI is always fresh. A fresh-world local run can also run out of heap near the end.
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").

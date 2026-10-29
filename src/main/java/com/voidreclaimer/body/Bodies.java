@@ -81,6 +81,9 @@ public final class Bodies {
         ResourceKey<Chassis> chassisKey = BuiltinBodies.CHASSIS.containsKey(key) ? key : BuiltinBodies.DRONE;
         Chassis chassis = BuiltinBodies.CHASSIS.get(chassisKey);
         Map<String, ItemStack> sections = BodyMigration.basicSections(chassisKey);
+        if (chassisKey.equals(BuiltinBodies.MECH)) {
+            sections.put("back", new ItemStack(ModItems.ROTOR_ARM.get())); // the jetpack: a Drone rotor arm
+        }
         Map<BodyData.Mount, ItemStack> modules = new java.util.LinkedHashMap<>();
         for (Socket socket : chassis.sockets()) {
             SectionStats section = Parts.section(sections.getOrDefault(socket.id(), ItemStack.EMPTY));
