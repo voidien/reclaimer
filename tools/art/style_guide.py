@@ -16,6 +16,8 @@ from pngutil import png_write  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 STYLE_PATH = os.path.join(REPO, 'docs', 'art', 'style.json')
+MAX_REFERENCES = 4  # RD custom styles take up to 4 reference images
+IMAGE_TYPES = ('.png', '.jpg', '.jpeg', '.webp')
 
 
 def load_style(path=STYLE_PATH):
@@ -26,6 +28,15 @@ def load_style(path=STYLE_PATH):
 def rgb(hex_color):
     h = hex_color.lstrip('#')
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+
+def reference_files(repo, category_def):
+    """The category's reference images, sorted by name, at most MAX_REFERENCES (extra ones are reported)."""
+    folder = os.path.join(repo, category_def['references'])
+    if not os.path.isdir(folder):
+        return [], []
+    files = sorted(os.path.join(folder, f) for f in os.listdir(folder) if f.lower().endswith(IMAGE_TYPES))
+    return files[:MAX_REFERENCES], files[MAX_REFERENCES:]
 
 
 def palette(style, category):
@@ -86,8 +97,7 @@ def guide_markdown(style):
                   '- **Palette:** %d colours from %s: `docs/art/palettes/%s.png` (swatches: `%s_preview.png`).'
                   % (len(colors), ', '.join(c['ramps']), key, key),
                   '- **Prompt template:** `%s`' % c['prompt_template'],
-                  '- **Reference image (for an RD custom style):** `%s`%s' % (
-                      c['reference'], '' if os.path.exists(os.path.join(REPO, c['reference'])) else ' (not chosen yet)'),
+                  '- **Reference images (for an RD custom style):** up to %d in `%s`' % (MAX_REFERENCES, c['references']),
                   '']
     lines += [
         '## How the tool applies it',
@@ -97,11 +107,12 @@ def guide_markdown(style):
         '- **Palette:** the category\'s palette PNG is sent as `input_palette`, so every pixel uses its colours (2D '
         'images and 3D models alike).',
         '- **Prompt:** the subject from `assets.csv` is wrapped in the category\'s prompt template.',
-        '- **Custom style:** once a category has a reference image (the path above) and you have run '
+        '- **Custom style:** once a category has reference images (1 to %d in its folder above; PNG, JPEG or WebP) '
+        'and you have run '
         '`python3 tools/art/rd_generate.py --setup-styles`, that category\'s 2D jobs use your RD custom style instead '
         'of the base style. A custom style is an RD Pro style ($0.18 an image instead of $0.06). It carries the '
-        'reference image, the rules above as instructions, and the prompt template. Choosing a reference: generate a '
-        'few assets, pick the one that best shows the look, and save it at the reference path.',
+        'reference images, the rules above as instructions, and the prompt template. Choosing references: generate '
+        'a few assets, pick the ones that best show the look together, and copy them into the folder.' % MAX_REFERENCES,
         '- `--no-style` turns all of this off for a run.',
         '',
     ]

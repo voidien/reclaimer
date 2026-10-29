@@ -114,6 +114,8 @@ class Fake(http.server.BaseHTTPRequestHandler):
     def do_PATCH(self):
         b = self.body()
         Fake.state['calls'].append(('PATCH', self.path, b, None))
+        if len(b.get('reference_images', [])) > Fake.state.get('max_refs', 4):
+            return self.reply({'error': {'code': 'invalid_request', 'message': 'exactly 1 reference image'}}, 400)
         return self.reply({'id': self.path.rsplit('/', 1)[1], 'prompt_style': 'user__void_reclaimer_1', 'type': 'user'})
 
     def do_POST(self):
@@ -461,15 +463,18 @@ class RdGenerateTest(unittest.TestCase):
         self.assertEqual(rd.category_for(rows['space_thruster'], 'model'), 'blocks')
 
     def test_setup_styles_and_custom_style_jobs(self):
-        ref = os.path.join(self.tmp, 'docs/art/style/items_reference.png')
-        os.makedirs(os.path.dirname(ref))
-        with open(ref, 'wb') as f:
-            f.write(checker(64, 64, False))
+        folder = os.path.join(self.tmp, 'docs/art/style/items')
+        os.makedirs(folder)
+        for n in range(5):  # one too many: only the first four (by name) are sent
+            with open(os.path.join(folder, 'ref_%d.png' % n), 'wb') as f:
+                f.write(checker(64, 64, False))
+        with open(os.path.join(folder, 'notes.txt'), 'w') as f:
+            f.write('not an image')
         rd.main(['--setup-styles'])
         created = [c[2] for c in Fake.state['calls'] if c[1] == '/v2/styles']
-        self.assertEqual(len(created), 1, 'only categories with a reference image get a custom style')
+        self.assertEqual(len(created), 1, 'only categories with reference images get a custom style')
         self.assertEqual(created[0]['user_prompt_template'].count('{prompt}'), 1)
-        self.assertEqual(len(created[0]['reference_images']), 1)
+        self.assertEqual(len(created[0]['reference_images']), 4)
         self.assertIn('cyan', created[0]['llm_instructions'])
         # Item jobs now use the custom style (RD Pro limits: 16x16 is fine); block jobs keep the base style.
         with mock.patch('builtins.input', return_value='y'):
@@ -479,6 +484,11 @@ class RdGenerateTest(unittest.TestCase):
         # Running it again updates the same style instead of creating another.
         rd.main(['--setup-styles'])
         self.assertTrue(any(c[0] == 'PATCH' and c[1] == '/v2/styles/st1' for c in Fake.state['calls']))
+        # If RD only takes one reference after all, the style is kept with the first one.
+        Fake.state['max_refs'] = 1
+        rd.main(['--setup-styles'])
+        patches = [c[2] for c in Fake.state['calls'] if c[0] == 'PATCH']
+        self.assertEqual([len(p['reference_images']) for p in patches[-2:]], [4, 1])
         self.assertEqual(len([c for c in Fake.state['calls'] if c[1] == '/v2/styles']), 1)
 
     def test_style_guide_files_are_up_to_date(self):

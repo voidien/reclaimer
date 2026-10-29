@@ -40,7 +40,7 @@
       ],
       "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon", "fluids", "status", "light"],
       "prompt_template": "{prompt}, dark industrial sci-fi, andesite grey and dark iron with brass trim, cyan glow accents",
-      "reference": "docs/art/style/items_reference.png"
+      "references": "docs/art/style/items/"
     },
     "blocks": {
       "title": "Block textures",
@@ -53,7 +53,7 @@
       ],
       "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon", "status"],
       "prompt_template": "{prompt}, Create mod style block, dark cool tones",
-      "reference": "docs/art/style/blocks_reference.png"
+      "references": "docs/art/style/blocks/"
     },
     "body": {
       "title": "The AI's body and other models",
@@ -66,7 +66,7 @@
       ],
       "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "status", "light"],
       "prompt_template": "{prompt}, blocky Minecraft-style robot part, Create mod machinery, dark iron and andesite with brass joints, cyan lights",
-      "reference": "docs/art/style/body_reference.png"
+      "references": "docs/art/style/body/"
     },
     "gui": {
       "title": "HUD and screens",
@@ -78,7 +78,7 @@
       ],
       "ramps": ["space_iron", "andesite", "brass", "ai_cyan", "status", "light", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon"],
       "prompt_template": "{prompt}, sci-fi machine interface, dark panel, cyan highlights",
-      "reference": "docs/art/style/gui_reference.png"
+      "references": "docs/art/style/gui/"
     },
     "sky": {
       "title": "Sky and effects",
@@ -90,7 +90,7 @@
       ],
       "ramps": ["sky", "sun", "ai_cyan", "brass", "smog", "light"],
       "prompt_template": "{prompt}, deep space, cold dark blues, glowing cyan energy",
-      "reference": "docs/art/style/sky_reference.png"
+      "references": "docs/art/style/sky/"
     }
   }
 }

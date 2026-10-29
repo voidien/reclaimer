@@ -337,29 +337,49 @@ def custom_styles():
 
 
 def setup_styles(key):
-    """Creates (or updates) an RD custom style for every category that has a reference image."""
+    """Creates (or updates) an RD custom style for every category with reference images (1-4 in its folder)."""
     style = style_guide.load_style()
     registered = custom_styles()
     for cat, c in style['categories'].items():
-        ref = os.path.join(REPO, c['reference'])
-        if not os.path.exists(ref):
-            print('  %s: skipped, no reference image at %s yet' % (cat, c['reference']))
+        refs, extra = style_guide.reference_files(REPO, c)
+        if not refs:
+            print('  %s: skipped, no reference images in %s yet' % (cat, c['references']))
             continue
-        with open(ref, 'rb') as f:
-            image = base64.b64encode(f.read()).decode()
-        body = {'name': '%s %s' % (style['name'], c['title']), 'reference_images': [image],
+        if extra:
+            print('  %s: using the first %d references; ignoring %s' % (cat, len(refs), ', '.join(
+                os.path.basename(x) for x in extra)))
+        images = []
+        for ref in refs:
+            with open(ref, 'rb') as f:
+                images.append(base64.b64encode(f.read()).decode())
+        body = {'name': '%s %s' % (style['name'], c['title']), 'reference_images': images,
                 'description': c['covers'][:300],
                 'llm_instructions': ' '.join([style['mood']] + style['rules'] + c['rules']),
                 'user_prompt_template': c['prompt_template'], 'force_palette': False}
         old = registered.get(cat)
+
+        def send(b):
+            if old:
+                return request('PATCH', '/styles/%s' % old['id'], key, b)
+            return request('POST', '/styles', key, b)
+        try:
+            res = send(body)
+        except ApiError as e:
+            # RD's API summary says custom styles take exactly one reference; its app takes up to 4. If the API
+            # refuses several, keep the style with the first one rather than failing.
+            if len(images) < 2 or e.status not in (400, 422):
+                raise
+            print('  %s: RD refused %d references (%s); using only %s'
+                  % (cat, len(images), e.status, os.path.basename(refs[0])))
+            body['reference_images'] = images[:1]
+            res = send(body)
         if old:
-            res = request('PATCH', '/styles/%s' % old['id'], key, body)
             registered[cat] = {'id': old['id'], 'prompt_style': res.get('prompt_style', old['prompt_style'])}
-            print('  %s: updated %s' % (cat, registered[cat]['prompt_style']))
+            print('  %s: updated %s (%d references)' % (cat, registered[cat]['prompt_style'],
+                                                       len(body['reference_images'])))
         else:
-            res = request('POST', '/styles', key, body)
             registered[cat] = {'id': res['id'], 'prompt_style': res['prompt_style']}
-            print('  %s: created %s' % (cat, res['prompt_style']))
+            print('  %s: created %s (%d references)' % (cat, res['prompt_style'], len(body['reference_images'])))
         os.makedirs(STAGING, exist_ok=True)
         with open(styles_path(), 'w') as f:
             json.dump(registered, f, indent=1)
@@ -840,7 +860,7 @@ def main(argv=None):
     p.add_argument('--no-style', action='store_true',
                    help="don't apply docs/art/style.json (palette, prompt template, custom styles) to this run")
     p.add_argument('--setup-styles', action='store_true',
-                   help='create or update the RD custom styles for categories that have a reference image')
+                   help='create or update the RD custom styles for categories with reference images (up to 4 each)')
     p.add_argument('--again', action='store_true', help='new jobs even for assets generated before')
     p.add_argument('--dry-run', action='store_true', help='plan and offline price only; no key needed, nothing sent')
     p.add_argument('--yes', action='store_true', help="don't ask before spending")

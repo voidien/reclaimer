@@ -49,7 +49,7 @@ Everything in the inventory: tools and modules, body section icons, raw material
 
 - **Palette:** 60 colours from andesite, space_iron, brass, copper, ai_cyan, dust_metallic, dust_silicon, dust_ice, dust_carbon, fluids, status, light: `docs/art/palettes/items.png` (swatches: `items_preview.png`).
 - **Prompt template:** `{prompt}, dark industrial sci-fi, andesite grey and dark iron with brass trim, cyan glow accents`
-- **Reference image (for an RD custom style):** `docs/art/style/items_reference.png` (not chosen yet)
+- **Reference images (for an RD custom style):** up to 4 in `docs/art/style/items/`
 
 ### Block textures (`blocks`)
 Asteroid rock, machine faces, scaffold, and the textures of block models (Space Thruster, Helm, Mass Driver, Spire, Monolith).
@@ -61,7 +61,7 @@ Asteroid rock, machine faces, scaffold, and the textures of block models (Space 
 
 - **Palette:** 53 colours from andesite, space_iron, brass, copper, ai_cyan, dust_metallic, dust_silicon, dust_ice, dust_carbon, status: `docs/art/palettes/blocks.png` (swatches: `blocks_preview.png`).
 - **Prompt template:** `{prompt}, Create mod style block, dark cool tones`
-- **Reference image (for an RD custom style):** `docs/art/style/blocks_reference.png` (not chosen yet)
+- **Reference images (for an RD custom style):** up to 4 in `docs/art/style/blocks/`
 
 ### The AI's body and other models (`body`)
 GeckoLib body rigs, sections and modules made in RD 3D, plus entity models (drop pod, helper drone, Industrial Mech).
@@ -73,7 +73,7 @@ GeckoLib body rigs, sections and modules made in RD 3D, plus entity models (drop
 
 - **Palette:** 34 colours from andesite, space_iron, brass, copper, ai_cyan, status, light: `docs/art/palettes/body.png` (swatches: `body_preview.png`).
 - **Prompt template:** `{prompt}, blocky Minecraft-style robot part, Create mod machinery, dark iron and andesite with brass joints, cyan lights`
-- **Reference image (for an RD custom style):** `docs/art/style/body_reference.png` (not chosen yet)
+- **Reference images (for an RD custom style):** up to 4 in `docs/art/style/body/`
 
 ### HUD and screens (`gui`)
 The energy bar, Replicator panels and tabs, the module wheel, HUD icons, toasts, the mod logo.
@@ -84,7 +84,7 @@ The energy bar, Replicator panels and tabs, the module wheel, HUD icons, toasts,
 
 - **Palette:** 48 colours from space_iron, andesite, brass, ai_cyan, status, light, dust_metallic, dust_silicon, dust_ice, dust_carbon: `docs/art/palettes/gui.png` (swatches: `gui_preview.png`).
 - **Prompt template:** `{prompt}, sci-fi machine interface, dark panel, cyan highlights`
-- **Reference image (for an RD custom style):** `docs/art/style/gui_reference.png` (not chosen yet)
+- **Reference images (for an RD custom style):** up to 4 in `docs/art/style/gui/`
 
 ### Sky and effects (`sky`)
 The distant sun, Dyson swarm and shell sprites, power beams, launch streaks, the Atmospheric Portal surface, Ruined Earth's smoggy skies and acid rain.
@@ -95,11 +95,11 @@ The distant sun, Dyson swarm and shell sprites, power beams, launch streaks, the
 
 - **Palette:** 27 colours from sky, sun, ai_cyan, brass, smog, light: `docs/art/palettes/sky.png` (swatches: `sky_preview.png`).
 - **Prompt template:** `{prompt}, deep space, cold dark blues, glowing cyan energy`
-- **Reference image (for an RD custom style):** `docs/art/style/sky_reference.png` (not chosen yet)
+- **Reference images (for an RD custom style):** up to 4 in `docs/art/style/sky/`
 
 ## How the tool applies it
 `rd_generate.py` puts every row in a category: item icons in `items`, block textures and block models in `blocks`, body parts and entity models in `body`, HUD and screens in `gui`, sky and effects in `sky`. Then, on every job:
 - **Palette:** the category's palette PNG is sent as `input_palette`, so every pixel uses its colours (2D images and 3D models alike).
 - **Prompt:** the subject from `assets.csv` is wrapped in the category's prompt template.
-- **Custom style:** once a category has a reference image (the path above) and you have run `python3 tools/art/rd_generate.py --setup-styles`, that category's 2D jobs use your RD custom style instead of the base style. A custom style is an RD Pro style ($0.18 an image instead of $0.06). It carries the reference image, the rules above as instructions, and the prompt template. Choosing a reference: generate a few assets, pick the one that best shows the look, and save it at the reference path.
+- **Custom style:** once a category has reference images (1 to 4 in its folder above; PNG, JPEG or WebP) and you have run `python3 tools/art/rd_generate.py --setup-styles`, that category's 2D jobs use your RD custom style instead of the base style. A custom style is an RD Pro style ($0.18 an image instead of $0.06). It carries the reference images, the rules above as instructions, and the prompt template. Choosing references: generate a few assets, pick the ones that best show the look together, and copy them into the folder.
 - `--no-style` turns all of this off for a run.

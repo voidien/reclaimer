@@ -21,9 +21,11 @@ Then, on every job:
 - **Palette:** the category's palette goes in as `input_palette`, so every pixel uses its colours. This applies to 3D models too.
 - **Prompt:** the subject is wrapped in the category's prompt template.
 - **Custom styles:**
-  1. Pick a reference image for a category: a generated asset that shows the look best.
-  2. Save it at the category's `reference` path (`docs/art/style/<category>_reference.png`).
-  3. Run `python3 tools/art/rd_generate.py --setup-styles`. That creates an RD custom style with the reference, the guide's rules as instructions, and the prompt template. Running it again updates the style.
+  1. Pick 1 to 4 reference images for a category: generated assets that together show the look best.
+  2. Copy them into the category's folder, `docs/art/style/<category>/` (PNG, JPEG or WebP). They are used in name order; a fifth and later are ignored.
+  3. Run `python3 tools/art/rd_generate.py --setup-styles`. That creates an RD custom style with the references, the guide's rules as instructions, and the prompt template. Running it again updates the style, so add or swap references any time.
+
+  If RD's API turns down several references, the tool keeps the style with the first one and says so.
 
   From then on, that category's 2D jobs use the custom style. It runs on RD Pro: $0.18 an image instead of $0.06. The style ids are kept in `art/rd/styles.json`.
 - `--no-style` sends plain prompts with no palette, for one run.
