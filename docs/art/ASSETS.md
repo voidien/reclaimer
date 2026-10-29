@@ -62,6 +62,8 @@ RD's blocky style "tilts where needed", so check tilted boxes in Blockbench; a b
 Rows marked "code change needed" (GUI skins, the sun, dust meter icons, toast icon, logo) have no slot in the game yet. They need a small change from me before they show up. The same goes for new models from future phases: their blocks and entities don't exist yet.
 
 ## Style guide
+The full guide is `docs/art/STYLE_GUIDE.md`: mood, rules, colour ramps, a locked palette and a prompt template per category, and custom RD styles. `rd_generate.py` applies it to every job. This section is the short version for prompting by hand.
+
 - **Resolution (decided):** 16x16 for item icons and blocks, like vanilla and Create. HUD, GUI and sky sprites are larger (sizes per row). The energy bar must stay 90x9.
 - **Look:** Create mod's industrial style: andesite grey, brass, copper, cogs, rivets. Cyan for the AI's glow (lights, cores, lenses).
 - **Icons:** transparent background, light from the top-left, dark 1-pixel outline, at most about 16 colors.

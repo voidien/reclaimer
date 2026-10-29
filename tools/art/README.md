@@ -4,6 +4,32 @@
 - `rd_generate.py` generates the CSV's rows with the [Retro Diffusion API](https://github.com/Retro-Diffusion/api-examples), so prompts never have to be typed by hand.
 - `test_rd_generate.py` tests it offline against a fake RD server (CI runs it): `python3 tools/art/test_rd_generate.py`.
 
+- `style_guide.py` builds `docs/art/STYLE_GUIDE.md` and the palettes in `docs/art/palettes/` from `docs/art/style.json`.
+
+## Style
+Every job follows the art style guide (`docs/art/STYLE_GUIDE.md`, defined in `docs/art/style.json`). Each row belongs to a category:
+
+| Category | Covers |
+|---|---|
+| `items` | Item icons |
+| `blocks` | Block textures and block models |
+| `body` | Body parts and entity models |
+| `gui` | HUD and screens |
+| `sky` | Sky and effects |
+
+Then, on every job:
+- **Palette:** the category's palette goes in as `input_palette`, so every pixel uses its colours. This applies to 3D models too.
+- **Prompt:** the subject is wrapped in the category's prompt template.
+- **Custom styles:**
+  1. Pick a reference image for a category: a generated asset that shows the look best.
+  2. Save it at the category's `reference` path (`docs/art/style/<category>_reference.png`).
+  3. Run `python3 tools/art/rd_generate.py --setup-styles`. That creates an RD custom style with the reference, the guide's rules as instructions, and the prompt template. Running it again updates the style.
+
+  From then on, that category's 2D jobs use the custom style. It runs on RD Pro: $0.18 an image instead of $0.06. The style ids are kept in `art/rd/styles.json`.
+- `--no-style` sends plain prompts with no palette, for one run.
+
+To change the style, edit `docs/art/style.json`, then run `python3 tools/art/style_guide.py`. A test fails while the guide or the palettes are out of date.
+
 ## Setup
 - Python 3.9 or newer. Standard library only; nothing to install.
 - A Retro Diffusion API key (`rdpk-...`, from your account at retrodiffusion.ai), in an environment variable:
