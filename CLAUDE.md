@@ -265,6 +265,18 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 
 **Phase order (decided after 4b, revised 2026-10-29):** 5a Body data → extensibility + body sections → **Foundations (Aeronautics + Dyson Sphere counters and sky)** → 6 Asteroids → 7 Machines → 7b Aeronautics ships (Space Thruster, Helm; Aeronautics is required now) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
 
+**Interview decisions (2026-10-29, owner's answers; later work follows these)**
+- **Order of work (revised after the brainstorm, same day):** (1) housekeeping; (2) playtest from the checklist and fix what comes back, plus the raw-item collector part and a first balance pass; (3) first person with a cockpit camera (5b-2a); (4) an **Act III vertical slice** before stations, to prove the riskiest part early: the `ruined_earth` dimension and Atmospheric Portal, the **full three-era sky**, and one Terraforming Spire pulse that rewrites biomes and resends chunks; (5) the launch complex; (6) stations stage 1, then helper drones in job order (ferry, mine, collect, carry); (7) the rest of Act III (weather, Data Monolith and villagers, restoration and the victory state); (8) the 3D assembly view (5b-2b); (9) 7b Aeronautics ships; (10) polish (goggle tooltips, Ponder, JEI freezing category, sounds) alongside whichever step has room. Every step is split into small PRs. The order may change when a step shows it needs to.
+- **Create Aeronautics and Sable stay required** (the owner wants them); 7b must make real use of them, so it is planned, not dropped.
+- **Titan unlock:** Dyson tier 3 (`TITAN_UNLOCK` stays `Milestones.DYSON_TIER_3`). Decided; no longer open.
+- **First person:** big ships (Ship, Shuttle, Titan) get a cockpit camera and no hand. The Drone and Mech hide the vanilla hand too once their first-person pieces exist.
+- **Body light:** bodies get a minimum brightness so the dark art textures read in deep space (renderer change, its own PR).
+- **Stations come in stages:** (1) a hub/dock for the Ship, (2) factory bonuses from the multiblock controllers, (3) a respawn and landing base. Each stage is its own phase of work.
+- **Helper drones** (the probe model is their blueprint) do four jobs: ferry items between stations, mine asteroids, collect from dust clouds, carry payloads to the launcher.
+- **Launch complex** (replaces the 3-block Mass Driver stack; the old blocks stay as inert items): the player builds a frame of blocks (a ring around the footprint), a controller takes Create rotation and payload input, solid invisible filler blocks fill the footprint and are removed on disassembly, the model `entity/mass_driver` is drawn by a block entity renderer, and the animations are simple code placeholders. Not started: it needs an explicit go and a file list first.
+- **Everything obtainable:** a GameTest must check that every section and module can be crafted in survival and installed (housekeeping).
+- **Playtesting:** the owner playtests from a checklist the AI writes (first dust to a first launch, with commands to skip waiting).
+
 **Test Starship (placeholder entity, 2026-10-29)**
 - `void_reclaimer:test_starship` is for checking RD models and animations in game; it is not gameplay. Its model is the owner's RD starship, promoted with `--promote-as entity/starship --scale-like body/ship`. It is drawn at the Ship size class's scale.
 - It drifts and turns round its anchor (`StarshipDrift`, from game time, the same on both sides), loops `gear_cycle`, and plays `ignite_prep` on right-click.

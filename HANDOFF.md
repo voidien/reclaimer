@@ -12,14 +12,14 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Phase 6 asteroids; Phase 7 machines (nebula materials, Create chains, Electrolyzer, Spinner, fan freezing, spout casting).
   - Phase 8 Zero-G Frame and payloads; Phase 9 Kinetic Mass Driver, Quantum Receiver and power beams; Phase 10 the Starship milestone and the Ship recipes.
   - Phase 5b-1 body rendering in third person (the GeckoLib body replaces the player model; see the Phase 5b-1 block in `CLAUDE.md`).
-  - The Titan size class (a 67-block ship body from the owner's RD model), Core Mk III and IV, and module mounts on whole-model rigs (see the Titan block in `CLAUDE.md`). Open: when the Titan unlocks (Starship or a Dyson tier; one constant, `TITAN_UNLOCK`), and its module models.
+  - The Titan size class (a 67-block ship body from the owner's RD model), Core Mk III and IV, and module mounts on whole-model rigs (see the Titan block in `CLAUDE.md`). The Titan unlocks at Dyson tier 3 (decided; one constant, `TITAN_UNLOCK`). Open: its module models.
   - The art pipeline (`tools/art/`, see "Art workflow" below), art drop 1, RD art pass 1, and the Test Starship placeholder entity.
 - **Last verified on `main`:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
 - **Not done yet** (revised plan in `CLAUDE.md`):
   - **5b-2:** first-person body rendering (the vanilla hand still shows) and the 3D assembly view in the Body tab. Third person is done (`client/render/body/`).
   - **7b:** Aeronautics ships (Space Thruster, Helm). Stations and helper drones.
   - **Act III, phases 11 to 14:** Ruined Earth, the Terraforming Spire, the Data Monolith and villagers, Restoration.
-- **Next phase:** the owner's choice between 5b-2 and phase 11. Ask first (`CLAUDE.md` workflow rule 2): clarifying questions, the file list, then wait for the go-ahead.
+- **Order decided (2026-10-29, `CLAUDE.md` "Interview decisions"):** housekeeping PRs → playtest → first person → Act III vertical slice (full three-era sky) → launch complex → stations and helper drones → rest of Act III → 3D assembly view → 7b. Titan unlock is Dyson tier 3 (decided). Still ask first (`CLAUDE.md` workflow rule 2): clarifying questions, the file list, then wait for the go-ahead; the launch complex has no go yet.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
   - https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n (a Claude Docs project, at revision 12).
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work, nor the later phases. Update it from the blocks in `CLAUDE.md` if the owner asks.
