@@ -1,0 +1,2365 @@
+{
+ "assets": {
+  "quartz_wafer": {
+   "group": "Materials",
+   "asset": "quartz_wafer",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/quartz_wafer.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "13bf9b43-6635-4d10-8c30-54bdbcba4701",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "fb852fa0-b823-403a-9ecc-0b53c2d88628",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 2,
+     "variants": [
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ],
+   "promoted": "v1"
+  },
+  "asteroid_ice": {
+   "group": "Blocks",
+   "asset": "asteroid_ice",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/asteroid_ice.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "a01dc91d-b93a-4f9f-9b8f-114f5c774b7b",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "core_mk1_model": {
+   "group": "Missing module models",
+   "asset": "core_mk1",
+   "file": "src/main/resources/assets/void_reclaimer/textures/entity/body/core_mk1.png",
+   "model": "src/main/resources/assets/void_reclaimer/geo/module/core_mk1.geo.json",
+   "jobs": [
+    {
+     "kind": "model",
+     "task": "cbc08367-bd89-5d5e-bf58-6673104f5887",
+     "asset_id": "d2fa223d-2681-4d55-b812-28dfc7e1e4a5",
+     "status": "done",
+     "salt": "",
+     "style": "rd_lowpoly__blocky_lite"
+    }
+   ],
+   "promoted": "model"
+  },
+  "mechanical_drill": {
+   "group": "Tools & modules",
+   "asset": "mechanical_drill",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/mechanical_drill.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "67d04a0d-7981-4128-8380-2f08fbedb4da",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "matter_harvester": {
+   "group": "Tools & modules",
+   "asset": "matter_harvester",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/matter_harvester.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "27dc3c63-5eca-4e1b-a83f-a73b059d2c0d",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "raw_ice_shards": {
+   "group": "Materials",
+   "asset": "raw_ice_shards",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/raw_ice_shards.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "650c3191-aa22-48cb-9bf4-1af540077d3e",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "carbon_flakes": {
+   "group": "Materials",
+   "asset": "carbon_flakes",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/carbon_flakes.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "bb501fa8-70d3-4657-a177-85cd7947292c",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "silicon_grit": {
+   "group": "Materials",
+   "asset": "silicon_grit",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/silicon_grit.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "99dc7c80-9968-470a-83cf-cdbf2bd03123",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "metallic_grains": {
+   "group": "Materials",
+   "asset": "metallic_grains",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/metallic_grains.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "310b91a2-f41d-423e-92a3-e43967afc38d",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "01c8e0da-bbdf-44a1-af47-525b1fa34b89",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 3,
+     "variants": [
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 6,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ]
+  },
+  "crushed_cryo_ice": {
+   "group": "Materials",
+   "asset": "crushed_cryo_ice",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/crushed_cryo_ice.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "4bf9e201-a458-4d9d-b161-df5b8d36ef40",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "coolant_frame_plate": {
+   "group": "Materials",
+   "asset": "coolant_frame_plate",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/coolant_frame_plate.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "13e2eb11-cdab-4997-adc9-a5cfe45edbb9",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "fine_carbon_powder": {
+   "group": "Materials",
+   "asset": "fine_carbon_powder",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/fine_carbon_powder.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "96c8499a-6611-468f-a282-d707125d72c2",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "carbon_paste": {
+   "group": "Materials",
+   "asset": "carbon_paste",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/carbon_paste.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "a97b5956-68fb-4e13-b66b-b39a43cdef5b",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "carbon_composite_plate": {
+   "group": "Materials",
+   "asset": "carbon_composite_plate",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/carbon_composite_plate.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "7e4fbfef-e1ac-4e1b-9042-6a44cc94929f",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "silicon_carbide_slurry": {
+   "group": "Materials",
+   "asset": "silicon_carbide_slurry",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/silicon_carbide_slurry.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "481f9c56-6da7-4f8a-9ea2-72348e87925e",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "silicon_carbide_coating": {
+   "group": "Materials",
+   "asset": "silicon_carbide_coating",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/silicon_carbide_coating.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "929179a9-dfa3-412d-9950-5982433c02df",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "023dfb86-e122-4958-a980-3c81d201ee89",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 3,
+     "variants": [
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 6,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ]
+  },
+  "thermal_shielding_tile": {
+   "group": "Materials",
+   "asset": "thermal_shielding_tile",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/thermal_shielding_tile.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "a69e7830-8db5-4c57-917a-796d41293706",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "high_purity_graphite": {
+   "group": "Materials",
+   "asset": "high_purity_graphite",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/high_purity_graphite.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "b26fc566-3491-4d17-a7c7-710b7958bd96",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "carbon_thread": {
+   "group": "Materials",
+   "asset": "carbon_thread",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/carbon_thread.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "7b927bd9-a7eb-4160-8075-7df7528b9742",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "pure_silicon_dust": {
+   "group": "Materials",
+   "asset": "pure_silicon_dust",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/pure_silicon_dust.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "2343b436-6ae6-49c1-af8c-947cd64257a9",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "doped_silicon_ingot": {
+   "group": "Materials",
+   "asset": "doped_silicon_ingot",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/doped_silicon_ingot.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "199b1d59-48f5-470f-9e98-c921b901e87c",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "high_efficiency_solar_cell": {
+   "group": "Materials",
+   "asset": "high_efficiency_solar_cell",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/high_efficiency_solar_cell.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "3ee3ab08-664d-49f5-812c-ecdfc5fa5d07",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "advanced_sensor_unit": {
+   "group": "Materials",
+   "asset": "advanced_sensor_unit",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/advanced_sensor_unit.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "03fd6907-86d0-4059-b112-e6b34e7687dd",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "refined_metal_nodule": {
+   "group": "Materials",
+   "asset": "refined_metal_nodule",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/refined_metal_nodule.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "68b6d0a1-55df-4d83-a433-7ecf6635a224",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "micro_alloy_sheet": {
+   "group": "Materials",
+   "asset": "micro_alloy_sheet",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/micro_alloy_sheet.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "ae45dad7-2df8-4396-9b83-696cc762be69",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "60cf75e9-7bb6-4760-8d19-5a59e5130881",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 3,
+     "variants": [
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 6,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ]
+  },
+  "high_output_solar_sail": {
+   "group": "Materials",
+   "asset": "high_output_solar_sail",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/high_output_solar_sail.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "863c7dd7-7420-405f-97e7-53ab38f51c74",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "zero_g_precision_frame": {
+   "group": "Materials",
+   "asset": "zero_g_precision_frame",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/zero_g_precision_frame.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "a55f2de5-9fba-4206-8729-3e9b97214c4a",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "dyson_swarm_satellite_payload": {
+   "group": "Materials",
+   "asset": "dyson_swarm_satellite_payload",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/dyson_swarm_satellite_payload.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "04d0536e-cc8e-4a0f-9093-b970a98094f5",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "bd70b733-a354-4442-b55f-b08173fe1d2f",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 3,
+     "variants": [
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 6,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ],
+   "promoted": "v5"
+  },
+  "dyson_shell_truss_module": {
+   "group": "Materials",
+   "asset": "dyson_shell_truss_module",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/dyson_shell_truss_module.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "e50e2d91-9fc2-4d53-a9d2-1ca50af0c93f",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "rcs_thruster": {
+   "group": "Materials",
+   "asset": "rcs_thruster",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/rcs_thruster.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "eb64af40-9ebd-4751-a2f6-bc794e95e93c",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "reaction_wheel_gyroscope": {
+   "group": "Materials",
+   "asset": "reaction_wheel_gyroscope",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/reaction_wheel_gyroscope.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "1be87998-2b5b-421e-a8f0-db05c3dd5ebc",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "atmospheric_catalyst_core": {
+   "group": "Materials",
+   "asset": "atmospheric_catalyst_core",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/atmospheric_catalyst_core.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "498de04e-e373-4aef-962d-610c1dd8f726",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "incomplete_zero_g_precision_frame": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_zero_g_precision_frame",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_zero_g_precision_frame.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "b82debce-bd88-4e87-9db9-6d3e6f379a26",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "incomplete_dyson_swarm_satellite_payload": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_dyson_swarm_satellite_payload",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_dyson_swarm_satellite_payload.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "4db682ee-500e-4da5-96c2-39f588315173",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "incomplete_dyson_shell_truss_module": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_dyson_shell_truss_module",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_dyson_shell_truss_module.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "cfaa602f-62a0-4d93-88f6-3126ead17dc7",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "incomplete_rcs_thruster": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_rcs_thruster",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_rcs_thruster.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "bb0378b3-85aa-464c-8749-c645a7bb418d",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "incomplete_reaction_wheel_gyroscope": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_reaction_wheel_gyroscope",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_reaction_wheel_gyroscope.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "3de8817a-7639-4507-9aa2-6612b3480d3c",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    },
+    {
+     "kind": "image",
+     "task": "99fa7b54-3022-404c-a25a-d6c70ea98b2f",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_plus__mc_item",
+     "status": "done",
+     "salt": "1793296765.4747782",
+     "first": 3,
+     "variants": [
+      {
+       "n": 3,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 4,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 5,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 6,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.24
+    }
+   ],
+   "promoted": "v4"
+  },
+  "incomplete_atmospheric_catalyst_core": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_atmospheric_catalyst_core",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_atmospheric_catalyst_core.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "9aea7eb0-d538-4652-9a48-1b0ce417fae8",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "incomplete_high_output_solar_sail": {
+   "group": "Unfinished (Sequenced Assembly)",
+   "asset": "incomplete_high_output_solar_sail",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/incomplete_high_output_solar_sail.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "7eceff67-ac65-4d78-a39a-1c8c3085502c",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "purified_water_bucket": {
+   "group": "Fluid buckets",
+   "asset": "purified_water_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/purified_water_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "035a7ed6-8657-471b-8db5-7069a61a8ddf",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "oxygen_gas_bucket": {
+   "group": "Fluid buckets",
+   "asset": "oxygen_gas_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/oxygen_gas_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "7ce67939-0ee7-42cc-82eb-16293146f0bd",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "hydrogen_gas_bucket": {
+   "group": "Fluid buckets",
+   "asset": "hydrogen_gas_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/hydrogen_gas_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "9428b102-bd94-493d-98d7-ded14d2a7799",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "nebulite_propellant_bucket": {
+   "group": "Fluid buckets",
+   "asset": "nebulite_propellant_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/nebulite_propellant_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "4bd4d753-8aab-418b-9111-b4d095a7e303",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "coolant_fluid_bucket": {
+   "group": "Fluid buckets",
+   "asset": "coolant_fluid_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/coolant_fluid_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "c3ef3d8d-6be9-4110-a016-b1f7173d7bc0",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "liquid_silicon_bucket": {
+   "group": "Fluid buckets",
+   "asset": "liquid_silicon_bucket",
+   "file": "src/main/resources/assets/void_reclaimer/textures/item/liquid_silicon_bucket.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "f3730c0e-044f-4eab-b179-842f341dd4e6",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_item",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": false
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "asteroid_silicate": {
+   "group": "Blocks",
+   "asset": "asteroid_silicate",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/asteroid_silicate.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "f23800b6-3592-4ebc-b757-63769551679a",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "asteroid_carbon": {
+   "group": "Blocks",
+   "asset": "asteroid_carbon",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/asteroid_carbon.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "097c2b2e-8750-4cf5-9d5f-c7b295e30cc2",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "asteroid_metallic": {
+   "group": "Blocks",
+   "asset": "asteroid_metallic",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/asteroid_metallic.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "60ced399-99d8-470a-bc91-afabadaacbaa",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "electrolyzer_side": {
+   "group": "Blocks",
+   "asset": "electrolyzer_side",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/electrolyzer_side.png",
+   "model": "Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends (Create draws the turning shaft).",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "fbe057b2-24a4-43dd-84b8-a9792601c55e",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "electrolyzer_end": {
+   "group": "Blocks",
+   "asset": "electrolyzer_end",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/electrolyzer_end.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "2701567f-ed8d-43ef-80e5-24cb43ee34a1",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  },
+  "spinner_side": {
+   "group": "Blocks",
+   "asset": "spinner_side",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/spinner_side.png",
+   "model": "Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib).",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "3dd8e96e-222e-4d5f-b8fe-9ad729ae7bc9",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v1"
+  },
+  "spinner_end": {
+   "group": "Blocks",
+   "asset": "spinner_end",
+   "file": "src/main/resources/assets/void_reclaimer/textures/block/spinner_end.png",
+   "model": "",
+   "jobs": [
+    {
+     "kind": "image",
+     "task": "e739fd2a-d5b4-460f-970d-406aeecdc935",
+     "target": [
+      16,
+      16
+     ],
+     "frames": 0,
+     "style": "rd_fast__mc_texture",
+     "status": "done",
+     "salt": "",
+     "first": 1,
+     "variants": [
+      {
+       "n": 1,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      },
+      {
+       "n": 2,
+       "size": [
+        16,
+        16
+       ],
+       "opaque": true
+      }
+     ],
+     "cost": 0.06
+    }
+   ],
+   "promoted": "v2"
+  }
+ }
+}
