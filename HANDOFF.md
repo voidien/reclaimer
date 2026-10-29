@@ -12,6 +12,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Phase 6 asteroids; Phase 7 machines (nebula materials, Create chains, Electrolyzer, Spinner, fan freezing, spout casting).
   - Phase 8 Zero-G Frame and payloads; Phase 9 Kinetic Mass Driver, Quantum Receiver and power beams; Phase 10 the Starship milestone and the Ship recipes.
   - Phase 5b-1 body rendering in third person (the GeckoLib body replaces the player model; see the Phase 5b-1 block in `CLAUDE.md`).
+  - The Titan size class (a 67-block ship body from the owner's RD model), Core Mk III and IV, and module mounts on whole-model rigs (see the Titan block in `CLAUDE.md`). Open: when the Titan unlocks (Starship or a Dyson tier; one constant, `TITAN_UNLOCK`), and its module models.
   - The art pipeline (`tools/art/`, see "Art workflow" below), art drop 1, RD art pass 1, and the Test Starship placeholder entity.
 - **Last verified on `main`:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
 - **Not done yet** (revised plan in `CLAUDE.md`):
