@@ -237,6 +237,16 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - **Cosmetics:** casing material + accent tint + thruster trail (drawn now as particles), plus cosmetic part slots (drawn in 5b).
 - **Mech frame and Mk II parts** unlock with the Expansion milestone (any dust kind at capacity). The Ship frame waits for Phase 6 materials.
 
+**Body sections (after 5a, replaces frames and part slots)**
+- A body is a tree of **sections** in **sockets**. The core section names a `chassis` (datapack) that lists the sockets: accepted socket types, `required`, `parent`, `pivot`, `area`. Only the core is required; a missing section empties its child sockets.
+- Sections offer **mounts** for modules (core, thruster, storage, sensor, tool, cosmetic). Size class, scale, health, reach and mass budget come from the chassis and its sections.
+- Kits for the starting set of a chassis (Drone Kit; Mech Core Kit = torso + pelvis + head); limbs are crafted singly. Mk II sections replace single sockets.
+- Old frame/part saves migrate on load; the body is kept on death. Body logic takes a `LivingEntity` where it can (entity-agnostic for helper drones later).
+- **Paint:** body default casing + accent, with optional per-section overrides.
+- **Wear:** light and repairable. Below 50% condition, efficiency drops up to 25%. Repair costs about 20% of the recipe dust. Never breaks; no wear in creative.
+- **Body Blueprint:** save the body, apply it from the inventory, queue Replicator jobs for missing parts.
+- **Replicator recipes** may have several `results` and a `title`; a job waits until the buffer fits all of its items. Salvage prices single-item recipes first.
+
 **Cloud scanner (after 4b)**
 - With a Dust Sensor, key N toggles (client config `cloudScanner`, default on) a wire mesh with a faint tint, in the kind's color, for every cloud whose edge is within 512 blocks.
 - The mesh follows the true lumpy edge (`CloudShape`): rays on a 16×32 latitude/longitude grid find the outermost point at density 0.05. Computed once per cloud on a background thread and cached.
@@ -265,7 +275,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
-| `void_reclaimer:replicator` recipes | Recipe type | `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
+| `void_reclaimer:replicator` recipes | Recipe type | `result` or `results` (kits), optional `title`; `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
 | `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name` |
 | `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`); socket id = GeckoLib bone (5b) |
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |

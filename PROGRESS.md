@@ -181,9 +181,12 @@
 - Tests: 54 unit tests (+2, `CloudShapeTest`: no dust beyond the edge, dust at the edge, lumpy, deterministic, closed seam). Mutation-checked: returning the outer bisection bound fails the test.
 - Verified in a real client: an Ice cloud seen from inside (grid around you) and from outside (lumpy globe); N turns it off and on, and the setting persists.
 
-## Create Aeronautics spike (not adopted)
-- Sable + Aeronautics load with Create and the performance mods, and all 40 GameTests pass locally. Paused sub-levels draw with Sodium.
-- Blocker: in `deep_space`, sub-levels are flung away or removed ("extreme Y coordinate range") on their first physics tick, with or without a zero-gravity `dimension_physics` file. Flight next to a moving ship couldn't be tested. Revisit before Phase 8.
+## Create Aeronautics spike: optional support planned (Phase 7b)
+- Retested on branch `claude/aeronautics-spike` (never merged; results in `AERONAUTICS_SPIKE.md` there).
+- The first spike's "flung away" ships were falling: the zero-G `dimension_physics` file wasn't in effect. With it, platforms rest in `deep_space`, players can ride moving ships, and height and f32 precision were not factors.
+- Propellers and balloons need air, so they give no thrust in vacuum. Phase 7b adds our own Space Thruster and a Helm block.
+- `sable64bit` (f64 physics) keeps far-out positions exact; recommended, not a dependency.
+- Upstream: an intermittent start-up deadlock between Aeronautics/Simulated/Veil and Create render classes in client-dist runs; keep Aeronautics out of CI datagen.
 
 ## Phase 5a: Body data: done
 - **Body model** (`body/`):
@@ -225,6 +228,31 @@
 - The body itself is still the vanilla player model, scaled. Casing, accent and cosmetic parts aren't visible until 5b.
 - Thruster trails use vanilla dust particles.
 
+## Extensibility + body sections: done
+- **Extensibility** (`api/`):
+  - Datapack registries for dust kinds, milestones (with code-registered criterion types), Replicator categories, casings, trails, size classes and chassis.
+  - Code registry for tool module types; data components for sections and modules; the `#void_reclaimer:modules/dust_sensor` tag.
+  - Events: `DustGainEvent`, `MilestoneReachedEvent`, `ReplicatorJobFinishedEvent`, `BodyStatsEvent`, `BodyChangedEvent`, `ModuleUseEvent`.
+  - The full list is in CLAUDE.md under "Extension points". A GameTest-only datapack (`void_reclaimer_test`) and tagged test listeners cover each one.
+- **Body sections** (replaces frames and part slots):
+  - A core section names a chassis: a tree of sockets, each with accepted socket types, a parent and a pivot. Sections offer module mounts.
+  - Only the core is required; missing sections leave their sockets (and children) empty.
+  - Built-in: Drone (hull, rotor arms, sensor dome, tool claw) and Mech (torso, pelvis, head, arms, legs; Mk II forearm and shin). The Ship keel is defined but not craftable.
+  - Old frame/part saves migrate on load (frames become their chassis's basic sections). Old frame items are aliased to the new core sections. The body is kept on death.
+- **Body tab:** socket tree with area filters, the selected socket's section and mounts, candidates from the inventory, condition and repair, per-section paint, and the Blueprint row.
+- **Paint:** the body default plus per-section casing and accent overrides.
+- **Wear:** sections and modules lose condition with thrust time and tool use (config). Below 50% condition, efficiency falls up to 25%. Repair costs about 20% of the recipe dust. Wear never breaks a part, and there is none in creative.
+- **Body Blueprint** item: save the current body, apply it from the inventory, and queue Replicator jobs for missing parts.
+- **Replicator recipes with several outputs:** `results` list and optional `title`. A job waits until the output buffer has room for all of its items. Kits: **Drone Kit** (hull, dome, claw, 4 rotor arms) and **Mech Core Kit** (torso, pelvis, head).
+  - Salvage prices a part by single-item recipes first, kits only as a fallback. Blueprint queueing picks the cheapest recipe per wanted part.
+- **Tests:**
+  - 67 unit tests.
+  - 63 GameTests (new: `ExtensionGameTests`, `SectionCareGameTests`, kit delivery; `BodyGameTests` rewritten).
+  - Mutation-checked: each new test fails with its feature broken.
+
+### Placeholder assets
+- Item textures for all section items (`drone_hull`, `rotor_arm`, `rotor_arm_mk2`, `sensor_dome`, `tool_claw`, `mech_*`, `ship_keel`) and `body_blueprint`. They are 16x16 programmer art.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight
@@ -232,9 +260,11 @@
 - [x] 4a. Replicator (queue, milestones and logs, JEI, Scaffold, Salvage Tool)
 - [x] 4b. Nanite Swarm, Tether Anchor, Backup Core (plus death marker and starter nebula)
 - [x] 5a. Body data (frames, parts, size classes, scale, stats, storage, modules)
+- [x] Extensibility + body sections (datapack registries, events, chassis/sockets, paint, wear, blueprint, kits)
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 6. Asteroids
 - [ ] 7. Machines
+- [ ] 7b. Create Aeronautics support (optional)
 - [ ] 8. Stations & Helpers
 - [ ] 9. Ruined Earth
 - [ ] 10. Terraforming
