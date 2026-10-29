@@ -1,0 +1,88 @@
+{
+  "model": "void_reclaimer:geo/entity/mining_probe.geo.json",
+  "texture": "void_reclaimer:textures/entity/mining_probe.png",
+  "animations": "void_reclaimer:animations/entity/mining_probe.animation.json",
+  "animation_prefix": "animation.void_reclaimer.mining_probe.",
+  "grounded": false,
+  "offset_y": -8.5,
+  "yaw": 180,
+  "pitches": true,
+  "mounts": {
+    "mount_core_1": {
+      "bone": "probe",
+      "offset": [
+        0,
+        16,
+        -2
+      ],
+      "yaw": 0
+    },
+    "mount_storage_1": {
+      "bone": "probe",
+      "offset": [
+        0,
+        9,
+        -10.4
+      ],
+      "yaw": 180
+    },
+    "sensor_dome__mount_sensor_1": {
+      "bone": "probe",
+      "offset": [
+        0,
+        12,
+        9.5
+      ],
+      "yaw": 180
+    },
+    "rotor_front_left__mount_thruster_1": {
+      "bone": "probe",
+      "offset": [
+        -9.5,
+        9,
+        2
+      ],
+      "yaw": 180
+    },
+    "rotor_front_right__mount_thruster_1": {
+      "bone": "probe",
+      "offset": [
+        9.5,
+        9,
+        2
+      ],
+      "yaw": 180
+    },
+    "rotor_back_left__mount_thruster_1": {
+      "bone": "probe",
+      "offset": [
+        -4,
+        9,
+        -15
+      ],
+      "yaw": 180
+    },
+    "rotor_back_right__mount_thruster_1": {
+      "bone": "probe",
+      "offset": [
+        4,
+        9,
+        -15
+      ],
+      "yaw": 180
+    },
+    "tool_claw__mount_tool_1": {
+      "bone": "probe",
+      "offset": [
+        0,
+        5.5,
+        9.5
+      ],
+      "yaw": 0
+    }
+  },
+  "poses": {
+    "idle": "idle",
+    "thrust": "thrust"
+  }
+}

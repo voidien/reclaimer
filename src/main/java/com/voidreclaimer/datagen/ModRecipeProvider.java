@@ -128,6 +128,18 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "core_mk3", ModItems.CORE_MK3.get(), 1, DustCost.of(120, 90, 50, 70), 180, parts, starship);
         replicator(output, "core_mk4", ModItems.CORE_MK4.get(), 1, DustCost.of(400, 300, 200, 250), 360, parts, TITAN_UNLOCK);
 
+        // Shuttle sections (a second Ship layout), a little cheaper than the Ship's. Placeholder prices.
+        replicator(output, "shuttle_hull", ModItems.SHUTTLE_HULL.get(), 1, DustCost.of(100, 75, 50, 65), 240, parts, starship);
+        replicator(output, "shuttle_nose", ModItems.SHUTTLE_NOSE.get(), 1, DustCost.of(20, 15, 10, 14), 60, parts, starship);
+        replicator(output, "shuttle_windshield", ModItems.SHUTTLE_WINDSHIELD.get(), 1, DustCost.of(24, 18, 12, 16), 60, parts, starship);
+        replicator(output, "shuttle_dome", ModItems.SHUTTLE_DOME.get(), 1, DustCost.of(20, 15, 10, 14), 50, parts, starship);
+        replicator(output, "shuttle_ridge", ModItems.SHUTTLE_RIDGE.get(), 1, DustCost.of(16, 12, 8, 11), 45, parts, starship);
+        replicator(output, "shuttle_aft", ModItems.SHUTTLE_AFT.get(), 1, DustCost.of(28, 22, 14, 20), 70, parts, starship);
+        replicator(output, "shuttle_strut", ModItems.SHUTTLE_STRUT.get(), 1, DustCost.of(10, 8, 5, 7), 30, parts, starship);
+        replicator(output, "shuttle_nacelle", ModItems.SHUTTLE_NACELLE.get(), 1, DustCost.of(30, 22, 14, 20), 70, parts, starship);
+        kit(output, "shuttle_core_kit", List.of(new ItemStack(ModItems.SHUTTLE_HULL.get()), new ItemStack(ModItems.SHUTTLE_WINDSHIELD.get()),
+                new ItemStack(ModItems.SHUTTLE_NOSE.get())), DustCost.of(130, 98, 64, 85), 270, parts, starship);
+
         // Titan sections: about ten times the Ship's, since the Titan is over 60 blocks long. Placeholder prices.
         replicator(output, "titan_saucer", ModItems.TITAN_SAUCER.get(), 1, DustCost.of(1200, 900, 600, 800), 900, parts, TITAN_UNLOCK);
         replicator(output, "titan_neck", ModItems.TITAN_NECK.get(), 1, DustCost.of(280, 200, 140, 180), 300, parts, TITAN_UNLOCK);

@@ -127,12 +127,12 @@ public final class Bodies {
         return new BodyData(chassis.coreSocket(), sections, modules, 0, Cosmetics.DEFAULT, List.of());
     }
 
-    /** The core module a preset carries: one the chassis' sections can be installed under (Ship: Mk III, Titan: Mk IV). */
+    /** The core module a preset carries: one the chassis' sections can be installed under (Ship and Shuttle: Mk III, Titan: Mk IV). */
     private static net.minecraft.world.item.Item presetCore(ResourceKey<Chassis> chassis, boolean full) {
         if (chassis.equals(BuiltinBodies.TITAN)) {
             return ModItems.CORE_MK4.get();
         }
-        if (chassis.equals(BuiltinBodies.SHIP)) {
+        if (chassis.equals(BuiltinBodies.SHIP) || chassis.equals(BuiltinBodies.SHUTTLE)) {
             return ModItems.CORE_MK3.get();
         }
         return (full ? ModItems.CORE_MK2 : ModItems.CORE_MK1).get();

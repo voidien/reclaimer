@@ -1,0 +1,157 @@
+{
+  "core_socket": "body",
+  "size_class": "void_reclaimer:ship",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:shuttle_hull"
+      ],
+      "area": "core",
+      "id": "body",
+      "required": true
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_nose"
+      ],
+      "area": "hull",
+      "id": "nose",
+      "pivot": [
+        0.0,
+        14.08,
+        40.0
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_windshield"
+      ],
+      "area": "control",
+      "id": "windshield",
+      "pivot": [
+        0.0,
+        28.8,
+        35.3
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_dome"
+      ],
+      "area": "sensors",
+      "id": "dome",
+      "pivot": [
+        0.0,
+        33.0,
+        11.2
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_ridge"
+      ],
+      "area": "hull",
+      "id": "ridge",
+      "pivot": [
+        0.0,
+        31.0,
+        -14.4
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_aft"
+      ],
+      "area": "cargo",
+      "id": "aft",
+      "pivot": [
+        0.0,
+        17.9,
+        -32.0
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_strut"
+      ],
+      "area": "propulsion",
+      "id": "strut_l",
+      "pivot": [
+        16.1,
+        14.1,
+        -12.8
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_strut"
+      ],
+      "area": "propulsion",
+      "id": "strut_l2",
+      "pivot": [
+        16.1,
+        14.1,
+        -28.8
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_strut"
+      ],
+      "area": "propulsion",
+      "id": "strut_r",
+      "pivot": [
+        -16.1,
+        14.1,
+        -12.8
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_strut"
+      ],
+      "area": "propulsion",
+      "id": "strut_r2",
+      "pivot": [
+        -16.1,
+        14.1,
+        -28.8
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_l",
+      "pivot": [
+        40.0,
+        10.0,
+        -19.2
+      ]
+    },
+    {
+      "parent": "body",
+      "accepts": [
+        "void_reclaimer:shuttle_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_r",
+      "pivot": [
+        -40.0,
+        10.0,
+        -19.2
+      ]
+    }
+  ]
+}

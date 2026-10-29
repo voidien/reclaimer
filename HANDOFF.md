@@ -107,7 +107,7 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 7. **Stopping:** `kill $(clientpid)`. Rebuild by relaunching. There is no sound in the container, so check sound changes on a real machine.
 
 - **Seeing a body in the headless client:** the art's textures are near-black, so stand in a lit room first: `run "/fill ~-15 ~-15 ~-15 ~15 ~15 ~15 minecraft:sea_lantern hollow"`, then `run "/void_reclaimer body preset @s mech"` (or `drone`, `ship`) and F5 for third person (F5 cycles first person, back, front). Wait about 45 s after "joined the game" before typing commands (the world is still loading). Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
-- **A hung GameTest or client JVM:** kill it by PID (`ps -eo pid,args | grep gameTestServerRunProgramArgs`). A killed server can leave `run/world` damaged and make `salvageToolDismantlesForDustWithoutDrops` fail until you delete `run/world`; CI is always fresh. A fresh-world local run can also run out of heap near the end.
+- **A hung GameTest or client JVM:** kill it by PID (`ps -eo pid,args | grep gameTestServerRunProgramArgs`). `salvageToolDismantlesForDustWithoutDrops` is flaky locally too, also on a fresh world (see "Open items"). A fresh-world local run can also run out of heap near the end.
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").

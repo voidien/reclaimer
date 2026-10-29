@@ -1,0 +1,140 @@
+{
+  "model": "void_reclaimer:geo/entity/shuttle.geo.json",
+  "texture": "void_reclaimer:textures/entity/shuttle.png",
+  "animations": "void_reclaimer:animations/entity/shuttle.animation.json",
+  "animation_prefix": "animation.void_reclaimer.shuttle.",
+  "grounded": false,
+  "offset_y": -18.5,
+  "yaw": 180,
+  "pitches": true,
+  "sockets": {
+    "nose": [
+      "nose"
+    ],
+    "windshield": [
+      "windshield"
+    ],
+    "dome": [
+      "dome"
+    ],
+    "ridge": [
+      "ridge"
+    ],
+    "aft": [
+      "aft"
+    ],
+    "strut_l": [
+      "strut_l"
+    ],
+    "strut_l2": [
+      "strut_l2"
+    ],
+    "strut_r": [
+      "strut_r"
+    ],
+    "strut_r2": [
+      "strut_r2"
+    ],
+    "nacelle_l": [
+      "nacelle_l"
+    ],
+    "nacelle_r": [
+      "nacelle_r"
+    ]
+  },
+  "mounts": {
+    "mount_core_1": {
+      "bone": "body",
+      "offset": [
+        0,
+        19,
+        -14
+      ],
+      "yaw": 0
+    },
+    "mount_storage_1": {
+      "bone": "body",
+      "offset": [
+        -11,
+        15,
+        -10
+      ],
+      "yaw": 0
+    },
+    "mount_storage_2": {
+      "bone": "body",
+      "offset": [
+        11,
+        15,
+        -10
+      ],
+      "yaw": 0
+    },
+    "windshield__mount_sensor_1": {
+      "bone": "windshield",
+      "offset": [
+        0,
+        -2.8,
+        6
+      ],
+      "yaw": 180
+    },
+    "dome__mount_sensor_1": {
+      "bone": "dome",
+      "offset": [
+        0,
+        4,
+        8
+      ],
+      "yaw": 180
+    },
+    "aft__mount_storage_1": {
+      "bone": "aft",
+      "offset": [
+        0,
+        2,
+        -16.5
+      ],
+      "yaw": 180
+    },
+    "nacelle_l__mount_thruster_1": {
+      "bone": "nacelle_l",
+      "offset": [
+        0,
+        6,
+        -30
+      ],
+      "yaw": 180
+    },
+    "nacelle_l__mount_thruster_2": {
+      "bone": "nacelle_l",
+      "offset": [
+        0,
+        -6,
+        -30
+      ],
+      "yaw": 180
+    },
+    "nacelle_r__mount_thruster_1": {
+      "bone": "nacelle_r",
+      "offset": [
+        0,
+        6,
+        -30
+      ],
+      "yaw": 180
+    },
+    "nacelle_r__mount_thruster_2": {
+      "bone": "nacelle_r",
+      "offset": [
+        0,
+        -6,
+        -30
+      ],
+      "yaw": 180
+    }
+  },
+  "poses": {
+    "thrust": "engines_firing"
+  }
+}

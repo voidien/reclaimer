@@ -25,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  * @param animations      its animation file
  * @param animationPrefix put before each name in {@code poses} to get the animation id
  * @param grounded        the model's origin is at its feet (else at its middle)
+ * @param offsetY         pixels to move the model up (down when negative), at the body's scale (the probe's middle at the hitbox's)
  * @param yaw             degrees to turn the model so its front faces where the body looks (180 when the model's front is +Z)
  * @param pitches         the body also nose-dives and climbs with the look pitch (ships); else it only turns
  * @param sockets         bones to hide, with their children, when the socket has no section ({@code socket id -> bones})
@@ -37,7 +38,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  *                        ({@link BodyLook#fallbacks})
  */
 public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, ResourceLocation animations, String animationPrefix,
-                          boolean grounded, float yaw, boolean pitches, Map<String, List<String>> sockets,
+                          boolean grounded, float offsetY, float yaw, boolean pitches, Map<String, List<String>> sockets,
                           Map<String, List<String>> socketParts, Map<String, Mount> mounts, Map<String, String> poses) {
     /**
      * A module position on a rig: the bone it follows, an offset from that bone's pivot in pixels (the same axes as the
@@ -73,6 +74,7 @@ public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, Reso
             ResourceLocation.CODEC.fieldOf("animations").forGetter(BodyRigSpec::animations),
             Codec.STRING.optionalFieldOf("animation_prefix", "").forGetter(BodyRigSpec::animationPrefix),
             Codec.BOOL.optionalFieldOf("grounded", false).forGetter(BodyRigSpec::grounded),
+            Codec.FLOAT.optionalFieldOf("offset_y", 0f).forGetter(BodyRigSpec::offsetY),
             Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(BodyRigSpec::yaw),
             Codec.BOOL.optionalFieldOf("pitches", false).forGetter(BodyRigSpec::pitches),
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("sockets", Map.of()).forGetter(BodyRigSpec::sockets),

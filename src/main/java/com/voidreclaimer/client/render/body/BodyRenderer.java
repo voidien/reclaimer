@@ -191,7 +191,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     public static double originHeight(String rig, Player player) {
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
         if (spec != null) {
-            return spec.grounded() ? 0.0 : player.getBbHeight() / 2.0;
+            return (spec.grounded() ? 0.0 : player.getBbHeight() / 2.0) + spec.offsetY() / 16.0 * player.getScale();
         }
         return "mech".equals(rig) ? 15.0 / 16.0 * player.getScale() : player.getBbHeight() / 2.0;
     }

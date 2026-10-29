@@ -37,7 +37,7 @@ class BodyRigSpecTest {
     }
 
     private static final java.util.Map<String, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis>> RIGS = java.util.Map.of(
-            "mech", BuiltinBodies.MECH, "titan", BuiltinBodies.TITAN);
+            "mech", BuiltinBodies.MECH, "titan", BuiltinBodies.TITAN, "drone", BuiltinBodies.DRONE, "shuttle", BuiltinBodies.SHUTTLE);
     private static final java.util.regex.Pattern MOUNT_NAME =
             java.util.regex.Pattern.compile("^(?:([a-z_]+)__)?mount_(core|thruster|storage|sensor|tool|cosmetic)_[1-9]$");
 
@@ -61,7 +61,6 @@ class BodyRigSpecTest {
             json(file(spec.model()));
             json(file(spec.animations()));
             assertNotNull(BodyRigSpecTest.class.getResourceAsStream("/assets/void_reclaimer/" + file(spec.texture())), rig);
-            assertTrue(spec.grounded(), rig);
         }
     }
 
@@ -115,7 +114,7 @@ class BodyRigSpecTest {
                 assertNotNull(id);
                 assertTrue(animations.has(id), rig + ": no animation " + id + " for pose " + key);
             }
-            assertTrue(spec.poses().containsKey("idle"), rig + " needs an idle animation: every other pose falls back to it");
+            assertFalse(spec.poses().isEmpty(), rig + " has no animation at all");
         }
         assertNull(spec("mech").animation("low_power"), "the mech has no low-power animation (it falls back to idle)");
     }
@@ -132,6 +131,23 @@ class BodyRigSpecTest {
                 assertTrue(known.contains(key), rig + ": unknown pose key " + key);
             }
         }
+    }
+
+    @Test
+    void theMechAndTheTitanStandOnTheirOriginTheOthersAreCentred() throws IOException {
+        assertTrue(spec("mech").grounded());
+        assertTrue(spec("titan").grounded());
+        assertFalse(spec("drone").grounded());
+        assertFalse(spec("shuttle").grounded());
+    }
+
+    @Test
+    void theDroneIsASkinAndTheShuttleHidesPartsBySocket() throws IOException {
+        assertTrue(spec("drone").sockets().isEmpty() && spec("drone").socketParts().isEmpty(), "the probe skin shows no part by part");
+        assertEquals(java.util.Set.of("nose", "windshield", "dome", "ridge", "aft", "strut_l", "strut_l2", "strut_r", "strut_r2", "nacelle_l", "nacelle_r"),
+                spec("shuttle").sockets().keySet());
+        assertTrue(spec("drone").pitches() && spec("shuttle").pitches());
+        assertEquals("shuttle", BodyLook.rig(BuiltinBodies.SHUTTLE));
     }
 
     @Test

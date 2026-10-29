@@ -56,6 +56,18 @@ public final class BodyMigration {
             put(sections, "rcs_aft", ModItems.SHIP_RCS_CLUSTER.get());
             put(sections, "dorsal_spine", ModItems.SHIP_DORSAL_SPINE.get());
             put(sections, "ventral_fin", ModItems.SHIP_VENTRAL_FIN.get());
+        } else if (chassis.equals(BuiltinBodies.SHUTTLE)) {
+            put(sections, "body", ModItems.SHUTTLE_HULL.get());
+            put(sections, "nose", ModItems.SHUTTLE_NOSE.get());
+            put(sections, "windshield", ModItems.SHUTTLE_WINDSHIELD.get());
+            put(sections, "dome", ModItems.SHUTTLE_DOME.get());
+            put(sections, "ridge", ModItems.SHUTTLE_RIDGE.get());
+            put(sections, "aft", ModItems.SHUTTLE_AFT.get());
+            for (String strut : List.of("strut_l", "strut_l2", "strut_r", "strut_r2")) {
+                put(sections, strut, ModItems.SHUTTLE_STRUT.get());
+            }
+            put(sections, "nacelle_l", ModItems.SHUTTLE_NACELLE.get());
+            put(sections, "nacelle_r", ModItems.SHUTTLE_NACELLE.get());
         } else if (chassis.equals(BuiltinBodies.TITAN)) {
             put(sections, "saucer", ModItems.TITAN_SAUCER.get());
             put(sections, "neck", ModItems.TITAN_NECK.get());

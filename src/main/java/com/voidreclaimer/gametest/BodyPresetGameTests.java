@@ -52,6 +52,20 @@ public final class BodyPresetGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 60)
+    public static void shuttlePresetIsComplete(GameTestHelper helper) {
+        check(helper, BuiltinBodies.SHUTTLE, 89_120.5, false);
+    }
+
+    /** The Shuttle is a second layout of the Ship size class: same scale, own chassis. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void shuttleSharesTheShipSizeClassButHasItsOwnLayout(GameTestHelper helper) {
+        helper.assertTrue(BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE).sizeClass().equals(BuiltinBodies.SHIP_SIZE), "not Ship class");
+        helper.assertTrue(!BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE).sockets().equals(BuiltinBodies.CHASSIS.get(BuiltinBodies.SHIP).sockets()), "same sockets as the Ship");
+        helper.assertTrue(BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.SHIP_SIZE).scale() == 3.0, "the Ship size class changed");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 60)
     public static void titanPresetIsComplete(GameTestHelper helper) {
         check(helper, BuiltinBodies.TITAN, 89_080.5, false);
     }
@@ -74,6 +88,8 @@ public final class BodyPresetGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 89_100.5, 80, 0.5);
         try {
             check(helper, player, BuiltinBodies.SHIP, "wing_port", new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.SHIP_WING.get()),
+                    com.voidreclaimer.registry.ModItems.CORE_MK2.get(), com.voidreclaimer.registry.ModItems.CORE_MK3.get());
+            check(helper, player, BuiltinBodies.SHUTTLE, "nose", new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.SHUTTLE_NOSE.get()),
                     com.voidreclaimer.registry.ModItems.CORE_MK2.get(), com.voidreclaimer.registry.ModItems.CORE_MK3.get());
             check(helper, player, BuiltinBodies.TITAN, "bridge", new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.TITAN_BRIDGE.get()),
                     com.voidreclaimer.registry.ModItems.CORE_MK3.get(), com.voidreclaimer.registry.ModItems.CORE_MK4.get());
@@ -128,7 +144,7 @@ public final class BodyPresetGameTests {
         java.util.Set<String> expected = java.util.Set.of("dust_sensor", "mechanical_drill", "matter_harvester", "salvage_tool",
                 "nanite_swarm", "core_mk2", "core_mk3", "core_mk4", "storage_mk1", "storage_mk2");
         java.util.Set<String> seen = new java.util.HashSet<>();
-        for (ResourceKey<Chassis> key : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP, BuiltinBodies.TITAN)) {
+        for (ResourceKey<Chassis> key : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP, BuiltinBodies.SHUTTLE, BuiltinBodies.TITAN)) {
             BodyData preset = Bodies.preset(key, true);
             helper.assertTrue(BodyRules.normalize(preset, BuiltinBodies.CHASSIS.get(key)).returned().isEmpty(),
                     key.location() + " full preset has parts that don't fit");

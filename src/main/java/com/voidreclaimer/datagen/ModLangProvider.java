@@ -161,6 +161,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
         add("recipe.void_reclaimer.ship_core_kit", "Ship Core Kit");
         add("recipe.void_reclaimer.titan_core_kit", "Titan Core Kit");
+        add("recipe.void_reclaimer.shuttle_core_kit", "Shuttle Core Kit");
         add("commands.void_reclaimer.body.preset", "%s now has a complete %s body");
         add("milestone.void_reclaimer.starship", "Starship");
         add("milestone.void_reclaimer.starship.hint", "Make a Coolant Frame Plate, a Carbon Composite Plate, a High-Efficiency Solar Cell and a Micro-Alloy Sheet");
@@ -290,6 +291,15 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.SHIP_RCS_CLUSTER.get(), "RCS Cluster");
         add(ModItems.SHIP_DORSAL_SPINE.get(), "Dorsal Spine");
         add(ModItems.SHIP_VENTRAL_FIN.get(), "Ventral Fin");
+        add(ModItems.SHUTTLE_HULL.get(), "Shuttle Hull");
+        add(ModItems.SHUTTLE_NOSE.get(), "Shuttle Nose");
+        add(ModItems.SHUTTLE_WINDSHIELD.get(), "Shuttle Windshield");
+        add(ModItems.SHUTTLE_DOME.get(), "Shuttle Dome");
+        add(ModItems.SHUTTLE_RIDGE.get(), "Shuttle Ridge");
+        add(ModItems.SHUTTLE_AFT.get(), "Shuttle Aft Section");
+        add(ModItems.SHUTTLE_STRUT.get(), "Shuttle Strut");
+        add(ModItems.SHUTTLE_NACELLE.get(), "Shuttle Nacelle");
+        add("item.void_reclaimer.shuttle_hull.tooltip", "Core section of a Shuttle, a second Ship layout. Needs a Core Mk III.");
         add(ModItems.TITAN_SAUCER.get(), "Titan Saucer");
         add(ModItems.TITAN_NECK.get(), "Titan Neck");
         add(ModItems.TITAN_BRIDGE.get(), "Titan Bridge");
@@ -332,6 +342,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.chassis.mech", "Mech");
         add("body.void_reclaimer.chassis.ship", "Ship");
         add("body.void_reclaimer.chassis.titan", "Titan");
+        add("body.void_reclaimer.chassis.shuttle", "Shuttle");
         add("body.void_reclaimer.area.all", "All");
         add("body.void_reclaimer.area.core", "Core");
         add("body.void_reclaimer.area.sensors", "Sensors");

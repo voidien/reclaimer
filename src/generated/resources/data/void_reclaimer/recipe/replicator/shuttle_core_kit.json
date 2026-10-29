@@ -1,0 +1,29 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 85.0,
+    "void_reclaimer:ice": 64.0,
+    "void_reclaimer:metallic": 130.0,
+    "void_reclaimer:silicate": 98.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "results": [
+    {
+      "count": 1,
+      "id": "void_reclaimer:shuttle_hull"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:shuttle_windshield"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:shuttle_nose"
+    }
+  ],
+  "ticks": 5400,
+  "title": {
+    "translate": "recipe.void_reclaimer.shuttle_core_kit"
+  }
+}

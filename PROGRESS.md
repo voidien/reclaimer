@@ -350,7 +350,13 @@ From an outside audit, each checked against the code first (several claims were 
 - All 8 missing module models arrived through the owner's PRs #34 and #35 (Retro Diffusion, promoted with the default 4 px fit): `core_mk2`, `storage_mk1`, `storage_mk2`, `mechanical_drill`, `matter_harvester`, `salvage_tool`, `nanite_swarm`, `dust_sensor`. Each has its root and `_mount` bones; the longest side is about 4 px for all (the tools were suggested at 7 to 8 px, so they are small; re-promote with `--fit 7` to enlarge).
 - The Mech does not show modules (its whole-model rig has none); the Drone and Ship do. In the real client the Drone shows them, but the art's textures are very dark, so they read as silhouettes. `body preset ... full` puts all of them on a body; `fullPresetsCarryEveryModuleAndAllFit` checks that they all fit.
 
-## Shuttle, station and mining probe models (art only, not used yet)
+## Shuttle layout, Drone probe skin: done
+- Shuttle: a second Ship-class chassis (11 sockets, 8 tier-3 sections, a core kit, recipes under the Starship milestone) drawn by the owner's RD shuttlecraft through `body_rigs/shuttle.json`; Drone: the owner's RD mining probe as a skin through `body_rigs/drone.json`, with placeholder animations (the model had none). Details in the "Shuttle layout" block in `CLAUDE.md`.
+- Tests: `BodyRigSpecTest` now covers four specs; GameTests `shuttlePresetIsComplete`, `shuttleSharesTheShipSizeClassButHasItsOwnLayout`, the tier and full-preset tests include the Shuttle, and the Starship recipe test includes the Shuttle's recipes.
+- Placeholders: icons for the 8 Shuttle sections; the probe animations; prices.
+- Not checked in a real client yet (see the chat).
+
+## Shuttle, station and mining probe models (art)
 - Three more RD models from the owner, promoted with `rd_generate.py --promote-as entity/NAME` at native size: `shuttle` (5.8 x 2.3 x 8.5 blocks; bones body, nose, windshield, dome, ridge, aft, struts, two nacelles with flames; animations `engines_firing` loop, `hatch_open` and `hatch_ramp` once), `station` (a ring station, 14 x 13.5 x 14.6 blocks, 203 boxes in 6 groups st, br, sol, py, py_1, py_2; no animations) and `mining_probe` (1.2 x 1.1 x 2.0 blocks, two arms with elbows; no animations).
 - Nothing draws them. Their roles (helper drone, vehicle, station structure) are the owner's decision; see the question in the chat.
 

@@ -120,6 +120,26 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> SHIP_VENTRAL_FIN = section("ship_ventral_fin", BuiltinBodies.VENTRAL_FIN, 3,
             s -> s.mass(0.3f).health(1f).stability(0.1f).mount(ModuleKind.COSMETIC, 1));
 
+    // ---- Shuttle sections (tier 3; the hull is the core section; a second Ship-class layout) --------------
+
+    public static final DeferredItem<SectionItem> SHUTTLE_HULL = section("shuttle_hull", BuiltinBodies.SHUTTLE_HULL, 3,
+            s -> s.mass(1.8f).budget(9f).health(12f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+                    .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.SHUTTLE));
+    public static final DeferredItem<SectionItem> SHUTTLE_NOSE = section("shuttle_nose", BuiltinBodies.SHUTTLE_NOSE, 3,
+            s -> s.mass(0.4f).budget(1f).health(2f).intake(0.5f));
+    public static final DeferredItem<SectionItem> SHUTTLE_WINDSHIELD = section("shuttle_windshield", BuiltinBodies.SHUTTLE_WINDSHIELD, 3,
+            s -> s.mass(0.3f).reach(1f).mount(ModuleKind.SENSOR, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_DOME = section("shuttle_dome", BuiltinBodies.SHUTTLE_DOME, 3,
+            s -> s.mass(0.3f).mount(ModuleKind.SENSOR, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_RIDGE = section("shuttle_ridge", BuiltinBodies.SHUTTLE_RIDGE, 3,
+            s -> s.mass(0.3f).budget(1f).mount(ModuleKind.COSMETIC, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_AFT = section("shuttle_aft", BuiltinBodies.SHUTTLE_AFT, 3,
+            s -> s.mass(0.5f).budget(1f).health(2f).mount(ModuleKind.STORAGE, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_STRUT = section("shuttle_strut", BuiltinBodies.SHUTTLE_STRUT, 3,
+            s -> s.mass(0.15f).stability(0.05f));
+    public static final DeferredItem<SectionItem> SHUTTLE_NACELLE = section("shuttle_nacelle", BuiltinBodies.SHUTTLE_NACELLE, 3,
+            s -> s.mass(0.4f).turn(0.1f).mount(ModuleKind.THRUSTER, 2));
+
     // ---- Titan sections (tier 4; the saucer is the core section) -----------------------------------------
 
     public static final DeferredItem<SectionItem> TITAN_SAUCER = section("titan_saucer", BuiltinBodies.TITAN_SAUCER, 4,
