@@ -127,7 +127,12 @@ python3 tools/art/rd_generate.py --balance
 Everything goes to `art/rd/`, which is gitignored:
 - `art/rd/<asset>/v1.png`... are the ready-size variants; the originals are in `raw/`.
 - `state.json` remembers jobs, RD asset ids and costs.
-- `index.html` is a contact sheet: each asset's current texture next to the new variants and model renders.
+- `index.html` is the **picker**: each asset's current texture next to the new variants and model renders.
+  - Tap a variant to promote it (tap again to undo), **Promote model** for a 3D model, or mark the asset **Keep current** or **Redo**. Each asset has a notes box.
+  - The bar at the bottom counts what is decided, can hide decided assets, and shows the commands for your picks: one `--promote ...` command and one `--again --asset ...` command for the redos. **Copy commands**, then paste them into a terminal in the repo.
+  - Picks and notes stay in that browser (its local storage) across visits and rebuilds. Promoted assets show as done.
+  - Everything is inside the one file (images embedded, script `picker.js` and styles `picker.css` inlined), so it opens anywhere, a phone included, and can be sent on.
+  - `--index` rebuilds it from what is staged, without sending anything.
 
 ## Promoting
 **Images:** `--promote asset=n` copies variant n into the mod after checking its size. Assets without a single target file yet (future blocks named with `*` or `{...}`) are copied by hand once their block exists.

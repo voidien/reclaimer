@@ -1,0 +1,21 @@
+body{font:14px system-ui,sans-serif;background:#1b1d22;color:#ddd;margin:0 16px}
+h1{font-size:20px;margin:16px 0 4px}
+code{color:#9fe2ff}
+img,video{image-rendering:pixelated;background:repeating-conic-gradient(#333 0 25%,#444 0 50%) 0 0/16px 16px;display:block}
+.a{border-top:1px solid #333;padding:10px 0}
+.a.done{opacity:.55}
+.a header{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.state{color:#9fe2ff;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+figure{margin:0;text-align:center;font-size:12px;color:#999}
+button{font:inherit;color:#ddd;background:#2a2d35;border:2px solid #3a3f4a;border-radius:6px;padding:4px;cursor:pointer}
+button.on{border-color:#2fc0e0;background:#10536b}
+.v{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button,.model{padding:6px 10px}
+.note{display:block;width:100%;max-width:480px;box-sizing:border-box;margin-top:8px;background:#141b2c;color:#ddd;border:1px solid #3a3f4a;border-radius:6px;padding:6px;font:inherit}
+.f{color:#f88}
+footer{position:fixed;left:0;right:0;bottom:0;background:#0b0f1a;border-top:2px solid #2fc0e0;padding:10px 16px;display:flex;flex-direction:column;gap:6px}
+footer .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#cmd{width:100%;box-sizing:border-box;background:#020306;color:#8be8f7;border:1px solid #3a3f4a;border-radius:6px;padding:6px;font:12px ui-monospace,monospace;resize:vertical}
+#copied{color:#5bd16a}
