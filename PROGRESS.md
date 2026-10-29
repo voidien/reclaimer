@@ -444,6 +444,9 @@ From an outside audit, each checked against the code first (several claims were 
 - Everything the Art drop 1 section lists as "still our placeholders" is replaced except these.
 - Colour notes for the owner to judge: `asteroid_silicate` is orange (style guide: sand-tan); `carbon_flakes` reads as a dagger; `dyson_shell_truss_module` reads as a hooked tool.
 
+## Body minimum brightness: done
+- `BodyLight.atLeast` (pure, `BodyLightTest`) lifts the light the body rig is drawn with to client config `body.minLight` (default 8). Not yet compared in a real client.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
