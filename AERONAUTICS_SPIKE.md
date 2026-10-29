@@ -25,9 +25,17 @@ With `data/void_reclaimer/dimension_physics/*.json` shipped in the mod (gravity 
 - **Dimension height:** not the cause. Sable removes a sub-level only outside its config range
   (`sub_level_remove_min` -10,000 / `sub_level_remove_max` 100,000); deep_space is Y -2032..2031. A
   vanilla-height copy behaved identically.
-- **sable-rapier-64bit:** not needed for this. It fixes f32 precision far from the origin. It is CurseForge
-  only (not reachable from this container) and predates Sable 2.0's change to native loading, so it may not
-  fit 2.0.6. Worth a look if very distant stations ever jitter.
+- **sable64bit (f64 Rapier):** not needed for the original problem, but it works and helps far out.
+  Source: github.com/Chelovechic/sable64bit-1.21.1 (AGPL-3.0, Sable [2.0.3,2.1), Rapier 0.35.3 f64). Built
+  the Linux native locally (`cargo build --release`, 43 s) and loaded it with `-PspikeF64=true`:
+
+  | Run | Result |
+  |---|---|
+  | All GameTests, f32 and f64 | 55/55 pass both ways; the patch logs "Loaded Sable64 f64 Rapier native" |
+  | Propeller ship at X 3,400 vs X 20,000,000 (f64) | Identical trajectories to 13 digits; X stays 20,000,000.5 |
+  | Same at X 20,000,000 (f32) | X snaps to 20,000,000.0 (half a block lost); trajectory differs from the near run |
+
+  Worth recommending to players who build far from spawn; not a dependency (license, separate download).
 
 ## Moving ship
 A 3x3 stone deck with a Create creative motor driving an Aeronautics andesite propeller, assembled with

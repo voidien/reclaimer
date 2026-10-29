@@ -76,11 +76,17 @@ public final class SableSpikeGameTests {
         runPropeller(helper, ModDimensions.SPIKE_SHORT, new BlockPos(3_400, 200, 3_000));
     }
 
+    /** Far from the origin, where f32 physics loses precision (spacing ~2 blocks near 30 million). */
+    @GameTest(template = "empty", timeoutTicks = 400, required = false)
+    public static void propellerShipAirFar(GameTestHelper helper) {
+        runPropeller(helper, ModDimensions.SPIKE_SHORT, new BlockPos(20_000_000, 200, 3_000));
+    }
+
     /** A 3x3 stone deck with a creative motor driving an andesite propeller, assembled into a sub-level. */
     private static void runPropeller(GameTestHelper helper, ResourceKey<Level> key, BlockPos pos) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel level = server.getLevel(key);
-        String tag = "[SableSpike propeller " + key.location() + "]";
+        String tag = "[SableSpike propeller " + key.location() + " x=" + pos.getX() + "]";
         level.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         helper.runAfterDelay(5, () -> {
             int x = pos.getX(), y = pos.getY(), z = pos.getZ();

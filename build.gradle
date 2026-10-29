@@ -118,6 +118,10 @@ dependencies {
     // Spike only: Create Aeronautics evaluation.
     localRuntime "maven.modrinth:sable:2.0.6+mc1.21.1"
     localRuntime "maven.modrinth:create-aeronautics:1.3.2+mc1.21.1"
+    // Spike only: Chelovechic's sable64bit (f64 Rapier), built locally; ./gradlew ... -PspikeF64=true
+    if (project.findProperty('spikeF64') == 'true') {
+        localRuntime files('libs/sable64bit-1.0.0.jar')
+    }
 
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"
