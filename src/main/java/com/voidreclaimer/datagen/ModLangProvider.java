@@ -353,7 +353,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.paint.default", "Body default");
         add("body.void_reclaimer.blueprint.save", "Save");
         add("body.void_reclaimer.blueprint.apply", "Apply");
-        add("body.void_reclaimer.blueprint.queue", "Queue missing");
+        add("body.void_reclaimer.blueprint.queue", "Queue");
         add("message.void_reclaimer.body.not_worn", "That section isn't worn.");
         add("message.void_reclaimer.body.repair_dust", "Not enough dust to repair it.");
         add(ModItems.BODY_BLUEPRINT.get(), "Body Blueprint");

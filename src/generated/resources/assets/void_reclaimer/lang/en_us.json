@@ -19,7 +19,7 @@
   "body.void_reclaimer.area.tools": "Tools",
   "body.void_reclaimer.area.weapons": "Hardpoints",
   "body.void_reclaimer.blueprint.apply": "Apply",
-  "body.void_reclaimer.blueprint.queue": "Queue missing",
+  "body.void_reclaimer.blueprint.queue": "Queue",
   "body.void_reclaimer.blueprint.save": "Save",
   "body.void_reclaimer.casing": "Casing: %s",
   "body.void_reclaimer.casing.andesite": "Andesite",

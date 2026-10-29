@@ -460,15 +460,21 @@ final class BodyPanel {
             }
             Component label = Component.translatable("body.void_reclaimer.blueprint." + action.name().substring(10).toLowerCase(Locale.ROOT));
             int w = font.width(label) + 6;
-            chip(graphics, x0, by, w, label, false, mouseX, mouseY);
-            regions.add(new Region(x0, by, w, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.blueprint(action, blueprintSlot))));
+            if (x0 + w > rightX() + rightWidth()) {
+                // Long translations wrap under the first chip.
+                x0 = bx + 18;
+                by += 13;
+            }
+            int chipY = by;
+            chip(graphics, x0, chipY, w, label, false, mouseX, mouseY);
+            regions.add(new Region(x0, chipY, w, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.blueprint(action, blueprintSlot))));
             x0 += w + 3;
         }
     }
 
     private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, int mouseX, int mouseY) {
         int cx = rightX() + 2;
-        int cy = y + 106;
+        int cy = y + 94;
         RegistryAccess access = player.registryAccess();
         ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
         Component casing = Component.translatable("body.void_reclaimer.casing", Cosmetics.name(access, VoidReclaimerRegistries.CASING, cosmetics.casing()));
@@ -479,12 +485,18 @@ final class BodyPanel {
                 cosmetics.withCasing(Cosmetics.next(access, VoidReclaimerRegistries.CASING, Casing::order, cosmetics.casing(),
                         replicator::isUnlocked))))));
         int trailX = cx + casingWidth + 4;
+        int trailY = cy;
         int trailWidth = font.width(trail) + 6;
-        chip(graphics, trailX, cy, trailWidth, trail, false, mouseX, mouseY);
-        regions.add(new Region(trailX, cy, trailWidth, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
+        if (trailX + trailWidth > rightX() + rightWidth()) {
+            // Long names: the trail chip wraps to its own line.
+            trailX = cx;
+            trailY = cy + 13;
+        }
+        chip(graphics, trailX, trailY, trailWidth, trail, false, mouseX, mouseY);
+        regions.add(new Region(trailX, trailY, trailWidth, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
                 cosmetics.withTrail(Cosmetics.next(access, VoidReclaimerRegistries.TRAIL, Trail::order, cosmetics.trail(),
                         replicator::isUnlocked))))));
-        int sy = cy + 14;
+        int sy = trailY + 14;
         graphics.drawString(font, Component.translatable("body.void_reclaimer.accent"), cx, sy + 1, DIM, false);
         int sx = cx + 40;
         for (int color : ACCENTS) {

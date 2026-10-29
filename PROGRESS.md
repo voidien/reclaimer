@@ -249,6 +249,10 @@
   - 67 unit tests.
   - 63 GameTests (new: `ExtensionGameTests`, `SectionCareGameTests`, kit delivery; `BodyGameTests` rewritten).
   - Mutation-checked: each new test fails with its feature broken.
+- Verified in a real client (with the performance mods):
+  - Old save migrates; the Body tab shows the socket tree, stats, looks and the Blueprint row (Save, Apply, Queue).
+  - Kit rows show "+N" for extra parts. A Drone Kit job took 40/20 dust and delivered all 7 parts. JEI shows kit parts in a row under the text.
+  - Fixed during the check: the trail chip, Blueprint chips and locked-recipe "???" overflowed their areas.
 
 ### Placeholder assets
 - Item textures for all section items (`drone_hull`, `rotor_arm`, `rotor_arm_mk2`, `sensor_dome`, `tool_claw`, `mech_*`, `ship_keel`) and `body_blueprint`. They are 16x16 programmer art.
@@ -284,4 +288,5 @@
 - Thruster trails are only drawn for the local player.
 - The death screen list shows core charges as of the moment of death; sunlight charges gained while the screen is open appear only after respawn.
 - Respawn at a core always uses the spot above the core (or the first free side). It doesn't check whether that spot is dark or enclosed.
+- In one client session, queueing a kit did nothing (no job, no dust taken, no message) while single items queued fine. It did not happen again after a restart, and logging showed the request arriving and queueing correctly. Watch for it.
 - The milestone toast was not caught in a screenshot (it fires on first login, during "Loading terrain"). Its trigger is covered by tests.

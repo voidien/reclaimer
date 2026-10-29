@@ -29,7 +29,10 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<ReplicatorRecipe>> {
     static final RecipeType<RecipeHolder<ReplicatorRecipe>> TYPE = RecipeType.createFromDeferredVanilla(ModRecipeTypes.REPLICATOR).get();
     private static final int WIDTH = 160;
-    private static final int HEIGHT = 48;
+    /** Three text lines plus one row for the extra parts of a kit. */
+    private static final int HEIGHT = 66;
+    private static final int KIT_ROW_Y = 48;
+    private static final int KIT_COLUMNS = 8;
 
     private final IDrawable icon;
 
@@ -64,10 +67,13 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ReplicatorRecipe> holder, IFocusGroup focuses) {
-        // Kits list every part, right to left.
+        // The first result sits top right; a kit's other parts go in rows below the text.
         List<ItemStack> results = holder.value().results();
-        for (int i = 0; i < results.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, WIDTH - 20 - (i % 6) * 18, 4 + (i / 6) * 18).addItemStack(results.get(i));
+        builder.addSlot(RecipeIngredientRole.OUTPUT, WIDTH - 20, 4).addItemStack(results.get(0));
+        for (int i = 1; i < results.size(); i++) {
+            int index = i - 1;
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 1 + (index % KIT_COLUMNS) * 18, KIT_ROW_Y + (index / KIT_COLUMNS) * 18)
+                    .addItemStack(results.get(i));
         }
     }
 

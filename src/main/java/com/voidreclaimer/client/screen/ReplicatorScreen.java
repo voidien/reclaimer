@@ -199,7 +199,7 @@ public final class ReplicatorScreen extends Screen {
                 graphics.drawString(font, name, x + 24, rowY + 2, TEXT, false);
                 graphics.drawString(font, costLine(recipe, dust), x + 24, rowY + 12, TEXT, false);
             } else {
-                graphics.drawString(font, "???", x + 8, rowY + 7, DIM, false);
+                graphics.drawString(font, "???", x + 11 - font.width("???") / 2, rowY + 7, DIM, false);
                 graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
             }
         }
