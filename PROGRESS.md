@@ -350,6 +350,13 @@ From an outside audit, each checked against the code first (several claims were 
 - All 8 missing module models arrived through the owner's PRs #34 and #35 (Retro Diffusion, promoted with the default 4 px fit): `core_mk2`, `storage_mk1`, `storage_mk2`, `mechanical_drill`, `matter_harvester`, `salvage_tool`, `nanite_swarm`, `dust_sensor`. Each has its root and `_mount` bones; the longest side is about 4 px for all (the tools were suggested at 7 to 8 px, so they are small; re-promote with `--fit 7` to enlarge).
 - The Mech does not show modules (its whole-model rig has none); the Drone and Ship do. In the real client the Drone shows them, but the art's textures are very dark, so they read as silhouettes. `body preset ... full` puts all of them on a body; `fullPresetsCarryEveryModuleAndAllFit` checks that they all fit.
 
+## Titan size class, Core Mk III and IV, Mech mounts: done
+- Titan: size class (scale 8, about 67 blocks), chassis with 10 sockets, 8 tier-4 section items, Titan Core Kit, whole-model rig spec over the owner's RD ship, Replicator recipes at about ten times the Ship's prices (placeholder, Dyson tier 3 unlock). Core Mk III and Mk IV (new modules) because Ship sections could not be installed with a Mk II core at best. Mech module mounts and a 180 degree turn through the rig spec. Details in the "Titan size class" block in `CLAUDE.md`.
+- Tests: `BodyRigSpecTest` now covers the Mech and the Titan (sockets, bones, mounts, animations, mount names) and the new spec fields; GameTests `titanPresetIsComplete`, `titanIsTheBiggestSizeClass`, `shipAndTitanSectionsNeedTheirCores` and `titanAndCoreRecipesWaitForTheirMilestones` (113 pass). Mutation-checked: making Core Mk IV tier 3 fails the tier test.
+- Checked in a real client: modules draw on the Mech facing forward; the Titan renders whole from 128 blocks.
+- Placeholders: icons for `core_mk3`, `core_mk4` and the 8 Titan sections (generated); prices and Titan unlock.
+- Found on the way: the camera factor first multiplied the distance by the scale twice (the whole Titan was one gray square 1000 blocks away); fixed and the test says why.
+
 ## Titan ship model (art only, not used yet)
 - The owner's RD "blocky starship" (a saucer on a neck with two pylons, nacelles with bussard collectors, a hangar door, flame effects) promoted with `rd_generate.py --promote-as entity/titan` at RD's native size (64 x 43 x 134 px, so 4 x 2.7 x 8.4 blocks at scale 1): `geo/entity/titan.geo.json`, `textures/entity/titan.png`, `animations/entity/titan.animation.json`.
 - Animations kept: `warp_cruise` (loop, 4 s) and `bay_open` (once, 1.6 s). The owner's longer export also had `body_rotate` and `bridge_spin`; they were left out as unnecessary.
