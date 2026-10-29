@@ -137,9 +137,16 @@ public final class ModCommands {
                                         .executes(ctx -> resetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
                         .then(Commands.literal("preset")
                                 .then(Commands.argument("player", EntityArgument.player())
-                                        .then(Commands.literal("drone").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.DRONE)))
-                                        .then(Commands.literal("mech").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.MECH)))
-                                        .then(Commands.literal("ship").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHIP)))))
+                                        .then(Commands.literal("drone").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.DRONE, false))
+                                                .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.DRONE, true))))
+                                        .then(Commands.literal("mech").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.MECH, false))
+                                                .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.MECH, true))))
+                                        .then(Commands.literal("ship").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHIP, false))
+                                                .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHIP, true))))
+                                        .then(Commands.literal("shuttle").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHUTTLE, false))
+                                                .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHUTTLE, true))))
+                                        .then(Commands.literal("titan").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.TITAN, false))
+                                                .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.TITAN, true))))))
                         .then(Commands.literal("remove")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("socket", com.mojang.brigadier.arguments.StringArgumentType.word())
@@ -253,8 +260,8 @@ public final class ModCommands {
         return 1;
     }
 
-    private static int presetBody(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> chassis) {
-        Bodies.store(player, Bodies.preset(chassis));
+    private static int presetBody(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> chassis, boolean full) {
+        Bodies.store(player, Bodies.preset(chassis, full));
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.preset", player.getDisplayName(), chassis.location().getPath()), true);
         return 1;
     }

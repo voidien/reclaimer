@@ -124,9 +124,39 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "ship_rcs_cluster", ModItems.SHIP_RCS_CLUSTER.get(), 1, DustCost.of(14, 10, 8, 12), 40, parts, starship);
         replicator(output, "ship_dorsal_spine", ModItems.SHIP_DORSAL_SPINE.get(), 1, DustCost.of(28, 22, 12, 18), 60, parts, starship);
         replicator(output, "ship_ventral_fin", ModItems.SHIP_VENTRAL_FIN.get(), 1, DustCost.of(16, 12, 8, 10), 45, parts, starship);
+        // Core Mk III opens the Ship's tier 3 sections, Mk IV the Titan's tier 4.
+        replicator(output, "core_mk3", ModItems.CORE_MK3.get(), 1, DustCost.of(120, 90, 50, 70), 180, parts, starship);
+        replicator(output, "core_mk4", ModItems.CORE_MK4.get(), 1, DustCost.of(400, 300, 200, 250), 360, parts, TITAN_UNLOCK);
+
+        // Shuttle sections (a second Ship layout), a little cheaper than the Ship's. Placeholder prices.
+        replicator(output, "shuttle_hull", ModItems.SHUTTLE_HULL.get(), 1, DustCost.of(100, 75, 50, 65), 240, parts, starship);
+        replicator(output, "shuttle_nose", ModItems.SHUTTLE_NOSE.get(), 1, DustCost.of(20, 15, 10, 14), 60, parts, starship);
+        replicator(output, "shuttle_windshield", ModItems.SHUTTLE_WINDSHIELD.get(), 1, DustCost.of(24, 18, 12, 16), 60, parts, starship);
+        replicator(output, "shuttle_dome", ModItems.SHUTTLE_DOME.get(), 1, DustCost.of(20, 15, 10, 14), 50, parts, starship);
+        replicator(output, "shuttle_ridge", ModItems.SHUTTLE_RIDGE.get(), 1, DustCost.of(16, 12, 8, 11), 45, parts, starship);
+        replicator(output, "shuttle_aft", ModItems.SHUTTLE_AFT.get(), 1, DustCost.of(28, 22, 14, 20), 70, parts, starship);
+        replicator(output, "shuttle_strut", ModItems.SHUTTLE_STRUT.get(), 1, DustCost.of(10, 8, 5, 7), 30, parts, starship);
+        replicator(output, "shuttle_nacelle", ModItems.SHUTTLE_NACELLE.get(), 1, DustCost.of(30, 22, 14, 20), 70, parts, starship);
+        kit(output, "shuttle_core_kit", List.of(new ItemStack(ModItems.SHUTTLE_HULL.get()), new ItemStack(ModItems.SHUTTLE_WINDSHIELD.get()),
+                new ItemStack(ModItems.SHUTTLE_NOSE.get())), DustCost.of(130, 98, 64, 85), 270, parts, starship);
+
+        // Titan sections: about ten times the Ship's, since the Titan is over 60 blocks long. Placeholder prices.
+        replicator(output, "titan_saucer", ModItems.TITAN_SAUCER.get(), 1, DustCost.of(1200, 900, 600, 800), 900, parts, TITAN_UNLOCK);
+        replicator(output, "titan_neck", ModItems.TITAN_NECK.get(), 1, DustCost.of(280, 200, 140, 180), 300, parts, TITAN_UNLOCK);
+        replicator(output, "titan_bridge", ModItems.TITAN_BRIDGE.get(), 1, DustCost.of(360, 260, 180, 240), 360, parts, TITAN_UNLOCK);
+        replicator(output, "titan_sensor_array", ModItems.TITAN_SENSOR_ARRAY.get(), 1, DustCost.of(200, 150, 100, 140), 240, parts, TITAN_UNLOCK);
+        replicator(output, "titan_deflector", ModItems.TITAN_DEFLECTOR.get(), 1, DustCost.of(260, 190, 130, 180), 300, parts, TITAN_UNLOCK);
+        replicator(output, "titan_bay_door", ModItems.TITAN_BAY_DOOR.get(), 1, DustCost.of(340, 250, 170, 230), 360, parts, TITAN_UNLOCK);
+        replicator(output, "titan_pylon", ModItems.TITAN_PYLON.get(), 1, DustCost.of(220, 160, 110, 150), 240, parts, TITAN_UNLOCK);
+        replicator(output, "titan_nacelle", ModItems.TITAN_NACELLE.get(), 1, DustCost.of(300, 220, 150, 200), 300, parts, TITAN_UNLOCK);
+        kit(output, "titan_core_kit", List.of(new ItemStack(ModItems.TITAN_SAUCER.get()), new ItemStack(ModItems.TITAN_NECK.get()),
+                new ItemStack(ModItems.TITAN_BRIDGE.get())), DustCost.of(1650, 1220, 830, 1100), 1500, parts, TITAN_UNLOCK);
         kit(output, "ship_core_kit", List.of(new ItemStack(ModItems.SHIP_KEEL.get()), new ItemStack(ModItems.SHIP_BRIDGE.get()),
                 new ItemStack(ModItems.SHIP_BOW.get())), DustCost.of(150, 114, 74, 102), 300, parts, starship);
     }
+
+    /** The milestone that opens the Titan's recipes. Placeholder: the owner picks between the Starship and a Dyson tier later. */
+    private static final ResourceKey<Milestone> TITAN_UNLOCK = Milestones.DYSON_TIER_3;
 
     /** A multi-output recipe, titled {@code recipe.void_reclaimer.<name>}. */
     private static void kit(RecipeOutput output, String name, List<ItemStack> results, DustCost cost, int seconds,

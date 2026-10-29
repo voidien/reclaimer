@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 16.0,
+    "void_reclaimer:ice": 12.0,
+    "void_reclaimer:metallic": 24.0,
+    "void_reclaimer:silicate": 18.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:shuttle_windshield"
+  },
+  "ticks": 1200
+}

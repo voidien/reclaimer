@@ -25,6 +25,8 @@ public final class StarshipGameTests {
 
     private static final ResourceLocation SHIP_KEEL = VoidReclaimer.id("replicator/ship_keel");
     private static final ResourceLocation SHIP_CORE_KIT = VoidReclaimer.id("replicator/ship_core_kit");
+    private static final ResourceLocation SHUTTLE_HULL = VoidReclaimer.id("replicator/shuttle_hull");
+    private static final ResourceLocation SHUTTLE_KIT = VoidReclaimer.id("replicator/shuttle_core_kit");
 
     private static void give(ServerPlayer player, net.minecraft.world.item.Item item) {
         player.getInventory().add(new ItemStack(item));
@@ -68,6 +70,8 @@ public final class StarshipGameTests {
             player.setData(ModAttachments.DUST, DustData.of(1000, 1000, 1000, 1000));
             helper.assertTrue(Replicator.queue(player, SHIP_KEEL) == ReplicatorLogic.QueueResult.LOCKED, "keel unlocked before the milestone");
             helper.assertTrue(Replicator.queue(player, SHIP_CORE_KIT) == ReplicatorLogic.QueueResult.LOCKED, "core kit unlocked before the milestone");
+            helper.assertTrue(Replicator.queue(player, SHUTTLE_HULL) == ReplicatorLogic.QueueResult.LOCKED, "shuttle hull unlocked before the milestone");
+            helper.assertTrue(Replicator.queue(player, SHUTTLE_KIT) == ReplicatorLogic.QueueResult.LOCKED, "shuttle kit unlocked before the milestone");
 
             give(player, ModMaterials.COOLANT_FRAME_PLATE.get());
             give(player, ModMaterials.CARBON_COMPOSITE_PLATE.get());
@@ -76,6 +80,7 @@ public final class StarshipGameTests {
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.queue(player, SHIP_KEEL) == ReplicatorLogic.QueueResult.QUEUED, "keel still locked");
             helper.assertTrue(Replicator.queue(player, SHIP_CORE_KIT) == ReplicatorLogic.QueueResult.QUEUED, "core kit still locked");
+            helper.assertTrue(Replicator.queue(player, SHUTTLE_HULL) == ReplicatorLogic.QueueResult.QUEUED, "shuttle hull still locked");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);
@@ -95,6 +100,30 @@ public final class StarshipGameTests {
             give(player, Items.FLINT);
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.data(player).isUnlocked(toolmaker), "datapack items_made milestone not reached");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** The Titan's sections and Core Mk IV wait for the Titan milestone (a Dyson tier for now); Core Mk III waits for the Starship. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void titanAndCoreRecipesWaitForTheirMilestones(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 88_060.5, 80, 0.5);
+        try {
+            Replicator.checkMilestones(player);
+            player.setData(ModAttachments.DUST, DustData.of(100_000, 100_000, 100_000, 100_000));
+            for (String recipe : java.util.List.of("titan_saucer", "titan_nacelle", "titan_core_kit", "core_mk4", "core_mk3")) {
+                helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/" + recipe)) == ReplicatorLogic.QueueResult.LOCKED,
+                        recipe + " unlocked too early");
+            }
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.STARSHIP));
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/core_mk3")) == ReplicatorLogic.QueueResult.QUEUED, "Core Mk III still locked");
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/titan_saucer")) == ReplicatorLogic.QueueResult.LOCKED,
+                    "the Starship milestone must not open the Titan");
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.DYSON_TIER_3));
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/titan_saucer")) == ReplicatorLogic.QueueResult.QUEUED, "Titan saucer still locked");
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/core_mk4")) == ReplicatorLogic.QueueResult.QUEUED, "Core Mk IV still locked");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

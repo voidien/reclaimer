@@ -1,0 +1,131 @@
+{
+  "core_socket": "saucer",
+  "size_class": "void_reclaimer:titan",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:titan_saucer"
+      ],
+      "area": "core",
+      "id": "saucer",
+      "required": true
+    },
+    {
+      "parent": "saucer",
+      "accepts": [
+        "void_reclaimer:titan_neck"
+      ],
+      "area": "hull",
+      "id": "neck",
+      "pivot": [
+        0.0,
+        17.6,
+        -6.4
+      ]
+    },
+    {
+      "parent": "saucer",
+      "accepts": [
+        "void_reclaimer:titan_bridge"
+      ],
+      "area": "control",
+      "id": "bridge",
+      "pivot": [
+        0.0,
+        35.04,
+        28.0
+      ]
+    },
+    {
+      "parent": "saucer",
+      "accepts": [
+        "void_reclaimer:titan_sensor_array"
+      ],
+      "area": "sensors",
+      "id": "sensor",
+      "pivot": [
+        0.0,
+        18.5,
+        28.0
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_deflector"
+      ],
+      "area": "hull",
+      "id": "deflector",
+      "pivot": [
+        0.0,
+        10.0,
+        9.6
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_bay_door"
+      ],
+      "area": "cargo",
+      "id": "bay_door",
+      "pivot": [
+        0.0,
+        6.0,
+        -48.0
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_pylon"
+      ],
+      "area": "propulsion",
+      "id": "pylon_l",
+      "pivot": [
+        6.4,
+        17.6,
+        -32.0
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_pylon"
+      ],
+      "area": "propulsion",
+      "id": "pylon_r",
+      "pivot": [
+        -6.4,
+        17.6,
+        -32.0
+      ]
+    },
+    {
+      "parent": "pylon_l",
+      "accepts": [
+        "void_reclaimer:titan_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_l",
+      "pivot": [
+        22.0,
+        38.0,
+        -34.0
+      ]
+    },
+    {
+      "parent": "pylon_r",
+      "accepts": [
+        "void_reclaimer:titan_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_r",
+      "pivot": [
+        -22.0,
+        38.0,
+        -34.0
+      ]
+    }
+  ]
+}

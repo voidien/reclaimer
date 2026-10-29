@@ -24,11 +24,14 @@ public final class BuiltinBodies {
     public static final ResourceKey<SizeClass> DRONE_SIZE = sizeKey("drone");
     public static final ResourceKey<SizeClass> MECH_SIZE = sizeKey("mech");
     public static final ResourceKey<SizeClass> SHIP_SIZE = sizeKey("ship");
+    public static final ResourceKey<SizeClass> TITAN_SIZE = sizeKey("titan");
 
     public static final Map<ResourceKey<SizeClass>, SizeClass> SIZE_CLASSES = Map.of(
             DRONE_SIZE, new SizeClass(0.4, 0),
             MECH_SIZE, new SizeClass(1.2, 1),
-            SHIP_SIZE, new SizeClass(3.0, 2));
+            SHIP_SIZE, new SizeClass(3.0, 2),
+            // The Titan model is 8.4 blocks long at scale 1: at 8 it is about 67 blocks.
+            TITAN_SIZE, new SizeClass(8.0, 3));
 
     // ---- socket types (what sections are) -----------------------------------------------------------------
 
@@ -60,11 +63,32 @@ public final class BuiltinBodies {
     public static final ResourceLocation DORSAL_SPINE = id("dorsal_spine");
     public static final ResourceLocation VENTRAL_FIN = id("ventral_fin");
 
+    public static final ResourceLocation TITAN_SAUCER = id("titan_saucer");
+    public static final ResourceLocation TITAN_NECK = id("titan_neck");
+    public static final ResourceLocation TITAN_BRIDGE = id("titan_bridge");
+    public static final ResourceLocation TITAN_SENSOR_ARRAY = id("titan_sensor_array");
+    public static final ResourceLocation TITAN_DEFLECTOR = id("titan_deflector");
+    public static final ResourceLocation TITAN_BAY_DOOR = id("titan_bay_door");
+    public static final ResourceLocation TITAN_PYLON = id("titan_pylon");
+    public static final ResourceLocation TITAN_NACELLE = id("titan_nacelle");
+
+    public static final ResourceLocation SHUTTLE_HULL = id("shuttle_hull");
+    public static final ResourceLocation SHUTTLE_NOSE = id("shuttle_nose");
+    public static final ResourceLocation SHUTTLE_WINDSHIELD = id("shuttle_windshield");
+    public static final ResourceLocation SHUTTLE_DOME = id("shuttle_dome");
+    public static final ResourceLocation SHUTTLE_RIDGE = id("shuttle_ridge");
+    public static final ResourceLocation SHUTTLE_AFT = id("shuttle_aft");
+    public static final ResourceLocation SHUTTLE_STRUT = id("shuttle_strut");
+    public static final ResourceLocation SHUTTLE_NACELLE = id("shuttle_nacelle");
+
     // ---- chassis ------------------------------------------------------------------------------------------
 
     public static final ResourceKey<Chassis> DRONE = chassisKey("drone");
     public static final ResourceKey<Chassis> MECH = chassisKey("mech");
     public static final ResourceKey<Chassis> SHIP = chassisKey("ship");
+    public static final ResourceKey<Chassis> TITAN = chassisKey("titan");
+    /** A second layout of the Ship size class: a shuttle, 25 blocks long at scale 3. */
+    public static final ResourceKey<Chassis> SHUTTLE = chassisKey("shuttle");
 
     public static final Map<ResourceKey<Chassis>, Chassis> CHASSIS = chassis();
 
@@ -127,6 +151,36 @@ public final class BuiltinBodies {
         ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE));
         ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN));
         map.put(SHIP, new Chassis(SHIP_SIZE, "keel", List.copyOf(ship)));
+
+        // The Shuttle: a second Ship-class layout. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
+        List<Socket> shuttle = new ArrayList<>();
+        shuttle.add(root("body", SHUTTLE_HULL, "core"));
+        shuttle.add(socket("nose", "body", 0, 14.08, 40, "hull", SHUTTLE_NOSE));
+        shuttle.add(socket("windshield", "body", 0, 28.8, 35.3, "control", SHUTTLE_WINDSHIELD));
+        shuttle.add(socket("dome", "body", 0, 33, 11.2, "sensors", SHUTTLE_DOME));
+        shuttle.add(socket("ridge", "body", 0, 31, -14.4, "hull", SHUTTLE_RIDGE));
+        shuttle.add(socket("aft", "body", 0, 17.9, -32, "cargo", SHUTTLE_AFT));
+        shuttle.add(socket("strut_l", "body", 16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT));
+        shuttle.add(socket("strut_l2", "body", 16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
+        shuttle.add(socket("strut_r", "body", -16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT));
+        shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
+        shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
+        shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
+        map.put(SHUTTLE, new Chassis(SHIP_SIZE, "body", List.copyOf(shuttle)));
+
+        // The Titan: the saucer is the core. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
+        List<Socket> titan = new ArrayList<>();
+        titan.add(root("saucer", TITAN_SAUCER, "core"));
+        titan.add(socket("neck", "saucer", 0, 17.6, -6.4, "hull", TITAN_NECK));
+        titan.add(socket("bridge", "saucer", 0, 35.04, 28, "control", TITAN_BRIDGE));
+        titan.add(socket("sensor", "saucer", 0, 18.5, 28, "sensors", TITAN_SENSOR_ARRAY));
+        titan.add(socket("deflector", "neck", 0, 10, 9.6, "hull", TITAN_DEFLECTOR));
+        titan.add(socket("bay_door", "neck", 0, 6, -48, "cargo", TITAN_BAY_DOOR));
+        titan.add(socket("pylon_l", "neck", 6.4, 17.6, -32, "propulsion", TITAN_PYLON));
+        titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON));
+        titan.add(socket("nacelle_l", "pylon_l", 22, 38, -34, "propulsion", TITAN_NACELLE));
+        titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE));
+        map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan)));
         return Map.copyOf(map);
     }
 

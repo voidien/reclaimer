@@ -158,49 +158,53 @@ public final class ReplicatorGameTests {
         }
     }
 
-    @GameTest(template = "empty", timeoutTicks = 60)
+    @GameTest(template = "empty", timeoutTicks = 120)
     public static void salvageToolDismantlesForDustWithoutDrops(GameTestHelper helper) {
         ServerLevel space = TestPlayers.deepSpace(helper);
         BlockPos pos = new BlockPos(46_000, 80, 2);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
-        // A fresh world has to generate this chunk first; load it now instead of hoping 5 ticks are enough.
+        // A fresh world has to generate this chunk first, and a dropped item is only found by getEntitiesOfClass once the chunk
+        // ticks entities, which can come a few ticks after the chunk is loaded: wait for it instead of a fixed delay.
         space.getChunk(pos);
-        helper.runAfterDelay(5, () -> {
-            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY(), pos.getZ() - 1.5);
-            try {
-                space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).forEach(ItemEntity::discard);
-                space.setBlock(pos, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
-                space.setBlock(pos.east(), ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
-                space.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
-                TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(space.isPositionEntityTicking(pos), "chunk not ticking entities yet"))
+                .thenExecute(() -> {
+                    ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY(), pos.getZ() - 1.5);
+                    try {
+                        space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).forEach(ItemEntity::discard);
+                        space.setBlock(pos, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
+                        space.setBlock(pos.east(), ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
+                        space.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
+                        TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
 
-                player.gameMode.destroyBlock(pos);
-                helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");
-                float refund = player.getData(ModAttachments.DUST).get(DustKinds.SILICATE);
-                // 8 silicate per 8 scaffold, 50% refund: 0.5 per block.
-                helper.assertTrue(Math.abs(refund - 0.5f) < 1e-4, "expected 0.5 silicate refund, got " + refund);
+                        player.gameMode.destroyBlock(pos);
+                        helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");
+                        float refund = player.getData(ModAttachments.DUST).get(DustKinds.SILICATE);
+                        // 8 silicate per 8 scaffold, 50% refund: 0.5 per block.
+                        helper.assertTrue(Math.abs(refund - 0.5f) < 1e-4, "expected 0.5 silicate refund, got " + refund);
 
-                // With something in hand the module is idle: the block drops itself and refunds nothing.
-                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
-                player.gameMode.destroyBlock(pos.east());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "refund without the tool");
+                        // With something in hand the module is idle: the block drops itself and refunds nothing.
+                        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
+                        player.gameMode.destroyBlock(pos.east());
+                        helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "refund without the tool");
 
-                // Natural blocks aren't salvageable: no refund.
-                player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                player.gameMode.destroyBlock(pos.west());
-                helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "stone gave a refund");
-            } finally {
-                TestPlayers.remove(player);
-            }
-            helper.runAfterDelay(2, () -> {
-                long scaffoldDrops = space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).stream()
-                        .filter(e -> e.getItem().is(ModItems.SCAFFOLD.get())).mapToInt(e -> e.getItem().getCount()).sum();
-                helper.assertTrue(scaffoldDrops == 1, "expected exactly the hand-broken scaffold to drop, got " + scaffoldDrops);
-                space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).forEach(ItemEntity::discard);
-                space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
-                helper.succeed();
-            });
-        });
+                        // Natural blocks aren't salvageable: no refund.
+                        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                        player.gameMode.destroyBlock(pos.west());
+                        helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.SILICATE) - 0.5f) < 1e-4, "stone gave a refund");
+                    } finally {
+                        TestPlayers.remove(player);
+                    }
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    long scaffoldDrops = space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).stream()
+                            .filter(e -> e.getItem().is(ModItems.SCAFFOLD.get())).mapToInt(e -> e.getItem().getCount()).sum();
+                    space.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4)).forEach(ItemEntity::discard);
+                    space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
+                    helper.assertTrue(scaffoldDrops == 1, "expected exactly the hand-broken scaffold to drop, got " + scaffoldDrops);
+                })
+                .thenSucceed();
     }
 
     @GameTest(template = "empty")

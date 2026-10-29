@@ -346,6 +346,35 @@ From an outside audit, each checked against the code first (several claims were 
 - Not done (next 5b PR): first-person view (the vanilla hand still shows) and the 3D assembly view in the Body tab.
 - New art in the repo: `geo/entity/mech_suit`, `textures/entity/mech_suit.png`, `animations/entity/mech_suit` (the owner's RD model), `body_rigs/mech.json`. The older `geo/body/mech.geo.json` and the Mech section models are unused while the whole-model spec exists.
 
+## Module models: done (art)
+- All 8 missing module models arrived through the owner's PRs #34 and #35 (Retro Diffusion, promoted with the default 4 px fit): `core_mk2`, `storage_mk1`, `storage_mk2`, `mechanical_drill`, `matter_harvester`, `salvage_tool`, `nanite_swarm`, `dust_sensor`. Each has its root and `_mount` bones; the longest side is about 4 px for all (the tools were suggested at 7 to 8 px, so they are small; re-promote with `--fit 7` to enlarge).
+- The Mech does not show modules (its whole-model rig has none); the Drone and Ship do. In the real client the Drone shows them, but the art's textures are very dark, so they read as silhouettes. `body preset ... full` puts all of them on a body; `fullPresetsCarryEveryModuleAndAllFit` checks that they all fit.
+
+## Launcher model (art only, not used yet)
+- The owner's RD "launch mortar" (a launch complex for the Dyson sphere's Kinetic Mass Driver) promoted as `entity/mass_driver` at native size: a square pad about 15 x 15 blocks with a tall gun tower (14 blocks), two dishes and two cranes (groups `gun`, `dish_a`, `dish_b`, `crane`, `crane2`; 81 boxes; no animations). The current Mass Driver is three 1x1 blocks, so how the model is used (scale, footprint, launch animations) is an open question for the owner.
+
+## Shuttle layout, Drone probe skin: done
+- Shuttle: a second Ship-class chassis (11 sockets, 8 tier-3 sections, a core kit, recipes under the Starship milestone) drawn by the owner's RD shuttlecraft through `body_rigs/shuttle.json`; Drone: the owner's RD mining probe as a skin through `body_rigs/drone.json`, with placeholder animations (the model had none). Details in the "Shuttle layout" block in `CLAUDE.md`.
+- Tests: `BodyRigSpecTest` now covers four specs; GameTests `shuttlePresetIsComplete`, `shuttleSharesTheShipSizeClassButHasItsOwnLayout`, the tier and full-preset tests include the Shuttle, and the Starship recipe test includes the Shuttle's recipes.
+- Placeholders: icons for the 8 Shuttle sections; the probe animations; prices.
+- Not checked in a real client yet (see the chat).
+
+## Shuttle, station and mining probe models (art)
+- Three more RD models from the owner, promoted with `rd_generate.py --promote-as entity/NAME` at native size: `shuttle` (5.8 x 2.3 x 8.5 blocks; bones body, nose, windshield, dome, ridge, aft, struts, two nacelles with flames; animations `engines_firing` loop, `hatch_open` and `hatch_ramp` once), `station` (a ring station, 14 x 13.5 x 14.6 blocks, 203 boxes in 6 groups st, br, sol, py, py_1, py_2; no animations) and `mining_probe` (1.2 x 1.1 x 2.0 blocks, two arms with elbows; no animations).
+- Nothing draws them. Their roles (helper drone, vehicle, station structure) are the owner's decision; see the question in the chat.
+
+## Titan size class, Core Mk III and IV, Mech mounts: done
+- Titan: size class (scale 8, about 67 blocks), chassis with 10 sockets, 8 tier-4 section items, Titan Core Kit, whole-model rig spec over the owner's RD ship, Replicator recipes at about ten times the Ship's prices (placeholder, Dyson tier 3 unlock). Core Mk III and Mk IV (new modules) because Ship sections could not be installed with a Mk II core at best. Mech module mounts and a 180 degree turn through the rig spec. Details in the "Titan size class" block in `CLAUDE.md`.
+- Tests: `BodyRigSpecTest` now covers the Mech and the Titan (sockets, bones, mounts, animations, mount names) and the new spec fields; GameTests `titanPresetIsComplete`, `titanIsTheBiggestSizeClass`, `shipAndTitanSectionsNeedTheirCores` and `titanAndCoreRecipesWaitForTheirMilestones` (113 pass). Mutation-checked: making Core Mk IV tier 3 fails the tier test.
+- Checked in a real client: modules draw on the Mech facing forward; the Titan renders whole from 128 blocks.
+- Placeholders: icons for `core_mk3`, `core_mk4` and the 8 Titan sections (generated); prices and Titan unlock.
+- Found on the way: the camera factor first multiplied the distance by the scale twice (the whole Titan was one gray square 1000 blocks away); fixed and the test says why.
+
+## Titan ship model (art only, not used yet)
+- The owner's RD "blocky starship" (a saucer on a neck with two pylons, nacelles with bussard collectors, a hangar door, flame effects) promoted with `rd_generate.py --promote-as entity/titan` at RD's native size (64 x 43 x 134 px, so 4 x 2.7 x 8.4 blocks at scale 1): `geo/entity/titan.geo.json`, `textures/entity/titan.png`, `animations/entity/titan.animation.json`.
+- Animations kept: `warp_cruise` (loop, 4 s) and `bay_open` (once, 1.6 s). The owner's longer export also had `body_rotate` and `bridge_spin`; they were left out as unnecessary.
+- Nothing draws it yet. Its role (a "Titan" size class bigger than the Ship, a Ship skin, or a separate vehicle) is the owner's decision; see the open question in the chat. `GeoModelLoadTest` loads the model and animations.
+
 ## Art drop 1 imported: done
 - From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
 - Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).

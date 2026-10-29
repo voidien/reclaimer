@@ -1,0 +1,29 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 1100.0,
+    "void_reclaimer:ice": 830.0,
+    "void_reclaimer:metallic": 1650.0,
+    "void_reclaimer:silicate": 1220.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "results": [
+    {
+      "count": 1,
+      "id": "void_reclaimer:titan_saucer"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:titan_neck"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:titan_bridge"
+    }
+  ],
+  "ticks": 30000,
+  "title": {
+    "translate": "recipe.void_reclaimer.titan_core_kit"
+  }
+}

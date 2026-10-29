@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceKey;
  */
 public final class BodyLook {
     /** The body rigs the art drop provides (geo/body/NAME.geo.json). */
-    public static final Set<String> RIGS = Set.of("drone", "mech", "ship");
+    public static final Set<String> RIGS = Set.of("drone", "mech", "ship", "titan", "shuttle");
     public static final String DEFAULT_RIG = "drone";
 
     /** Side of the casing swatch in the top-left corner of every body and section texture. */

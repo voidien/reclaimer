@@ -30,6 +30,9 @@ public final class ModItems {
 
     public static final DeferredItem<ModuleItem> CORE_MK1 = module("core_mk1", ModuleStats.core(1, 0.2f, new ModuleStats.Core(100f, 1.0f)));
     public static final DeferredItem<ModuleItem> CORE_MK2 = module("core_mk2", ModuleStats.core(2, 0.5f, new ModuleStats.Core(250f, 1.5f)));
+    /** Ship sections are tier 3 and Titan sections tier 4, and a section can't be above the core's tier: these two open them. */
+    public static final DeferredItem<ModuleItem> CORE_MK3 = module("core_mk3", ModuleStats.core(3, 1.0f, new ModuleStats.Core(500f, 2.0f)));
+    public static final DeferredItem<ModuleItem> CORE_MK4 = module("core_mk4", ModuleStats.core(4, 1.6f, new ModuleStats.Core(1000f, 3.0f)));
     /** Starter thruster: exactly the Phase 2 starter drone handling (thrust 0.03, brake 0.04, 10 m/s). */
     public static final DeferredItem<ModuleItem> THRUSTER_MK1 = module("thruster_mk1",
             ModuleStats.thruster(1, 0.3f, Optional.empty(), new ModuleStats.Thruster(0.03f, 0.04f, 10f)));
@@ -116,6 +119,46 @@ public final class ModItems {
             s -> s.mass(0.5f).budget(2f).health(3f).mount(ModuleKind.COSMETIC, 1));
     public static final DeferredItem<SectionItem> SHIP_VENTRAL_FIN = section("ship_ventral_fin", BuiltinBodies.VENTRAL_FIN, 3,
             s -> s.mass(0.3f).health(1f).stability(0.1f).mount(ModuleKind.COSMETIC, 1));
+
+    // ---- Shuttle sections (tier 3; the hull is the core section; a second Ship-class layout) --------------
+
+    public static final DeferredItem<SectionItem> SHUTTLE_HULL = section("shuttle_hull", BuiltinBodies.SHUTTLE_HULL, 3,
+            s -> s.mass(1.8f).budget(9f).health(12f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+                    .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.SHUTTLE));
+    public static final DeferredItem<SectionItem> SHUTTLE_NOSE = section("shuttle_nose", BuiltinBodies.SHUTTLE_NOSE, 3,
+            s -> s.mass(0.4f).budget(1f).health(2f).intake(0.5f));
+    public static final DeferredItem<SectionItem> SHUTTLE_WINDSHIELD = section("shuttle_windshield", BuiltinBodies.SHUTTLE_WINDSHIELD, 3,
+            s -> s.mass(0.3f).reach(1f).mount(ModuleKind.SENSOR, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_DOME = section("shuttle_dome", BuiltinBodies.SHUTTLE_DOME, 3,
+            s -> s.mass(0.3f).mount(ModuleKind.SENSOR, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_RIDGE = section("shuttle_ridge", BuiltinBodies.SHUTTLE_RIDGE, 3,
+            s -> s.mass(0.3f).budget(1f).mount(ModuleKind.COSMETIC, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_AFT = section("shuttle_aft", BuiltinBodies.SHUTTLE_AFT, 3,
+            s -> s.mass(0.5f).budget(1f).health(2f).mount(ModuleKind.STORAGE, 1));
+    public static final DeferredItem<SectionItem> SHUTTLE_STRUT = section("shuttle_strut", BuiltinBodies.SHUTTLE_STRUT, 3,
+            s -> s.mass(0.15f).stability(0.05f));
+    public static final DeferredItem<SectionItem> SHUTTLE_NACELLE = section("shuttle_nacelle", BuiltinBodies.SHUTTLE_NACELLE, 3,
+            s -> s.mass(0.4f).turn(0.1f).mount(ModuleKind.THRUSTER, 2));
+
+    // ---- Titan sections (tier 4; the saucer is the core section) -----------------------------------------
+
+    public static final DeferredItem<SectionItem> TITAN_SAUCER = section("titan_saucer", BuiltinBodies.TITAN_SAUCER, 4,
+            s -> s.mass(10f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+                    .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.TITAN));
+    public static final DeferredItem<SectionItem> TITAN_NECK = section("titan_neck", BuiltinBodies.TITAN_NECK, 4,
+            s -> s.mass(3f).budget(8f).health(20f));
+    public static final DeferredItem<SectionItem> TITAN_BRIDGE = section("titan_bridge", BuiltinBodies.TITAN_BRIDGE, 4,
+            s -> s.mass(2.5f).health(10f).reach(3f).mount(ModuleKind.SENSOR, 1));
+    public static final DeferredItem<SectionItem> TITAN_SENSOR_ARRAY = section("titan_sensor_array", BuiltinBodies.TITAN_SENSOR_ARRAY, 4,
+            s -> s.mass(1.5f).reach(2f).mount(ModuleKind.SENSOR, 2));
+    public static final DeferredItem<SectionItem> TITAN_DEFLECTOR = section("titan_deflector", BuiltinBodies.TITAN_DEFLECTOR, 4,
+            s -> s.mass(3f).health(20f).stability(0.3f));
+    public static final DeferredItem<SectionItem> TITAN_BAY_DOOR = section("titan_bay_door", BuiltinBodies.TITAN_BAY_DOOR, 4,
+            s -> s.mass(3f).budget(5f).mount(ModuleKind.STORAGE, 2));
+    public static final DeferredItem<SectionItem> TITAN_PYLON = section("titan_pylon", BuiltinBodies.TITAN_PYLON, 4,
+            s -> s.mass(2.5f).health(10f).turn(0.1f));
+    public static final DeferredItem<SectionItem> TITAN_NACELLE = section("titan_nacelle", BuiltinBodies.TITAN_NACELLE, 4,
+            s -> s.mass(4f).turn(0.1f).mount(ModuleKind.THRUSTER, 3));
 
     /** A saved body design: save, rebuild from the inventory, queue what's missing. */
     public static final DeferredItem<com.voidreclaimer.body.part.BlueprintItem> BODY_BLUEPRINT = ITEMS.register("body_blueprint",

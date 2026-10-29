@@ -12,6 +12,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Phase 6 asteroids; Phase 7 machines (nebula materials, Create chains, Electrolyzer, Spinner, fan freezing, spout casting).
   - Phase 8 Zero-G Frame and payloads; Phase 9 Kinetic Mass Driver, Quantum Receiver and power beams; Phase 10 the Starship milestone and the Ship recipes.
   - Phase 5b-1 body rendering in third person (the GeckoLib body replaces the player model; see the Phase 5b-1 block in `CLAUDE.md`).
+  - The Titan size class (a 67-block ship body from the owner's RD model), Core Mk III and IV, and module mounts on whole-model rigs (see the Titan block in `CLAUDE.md`). Open: when the Titan unlocks (Starship or a Dyson tier; one constant, `TITAN_UNLOCK`), and its module models.
   - The art pipeline (`tools/art/`, see "Art workflow" below), art drop 1, RD art pass 1, and the Test Starship placeholder entity.
 - **Last verified on `main`:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
 - **Not done yet** (revised plan in `CLAUDE.md`):
@@ -106,7 +107,7 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 7. **Stopping:** `kill $(clientpid)`. Rebuild by relaunching. There is no sound in the container, so check sound changes on a real machine.
 
 - **Seeing a body in the headless client:** the art's textures are near-black, so stand in a lit room first: `run "/fill ~-15 ~-15 ~-15 ~15 ~15 ~15 minecraft:sea_lantern hollow"`, then `run "/void_reclaimer body preset @s mech"` (or `drone`, `ship`) and F5 for third person (F5 cycles first person, back, front). Wait about 45 s after "joined the game" before typing commands (the world is still loading). Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
-- **A hung GameTest or client JVM:** kill it by PID (`ps -eo pid,args | grep gameTestServerRunProgramArgs`). A killed server can leave `run/world` damaged and make `salvageToolDismantlesForDustWithoutDrops` fail until you delete `run/world`; CI is always fresh. A fresh-world local run can also run out of heap near the end.
+- **A hung GameTest or client JVM:** kill it by PID (`ps -eo pid,args | grep gameTestServerRunProgramArgs`). `salvageToolDismantlesForDustWithoutDrops` is flaky locally too, also on a fresh world (see "Open items"). A fresh-world local run can also run out of heap near the end.
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").

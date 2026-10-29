@@ -25,20 +25,61 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  * @param animations      its animation file
  * @param animationPrefix put before each name in {@code poses} to get the animation id
  * @param grounded        the model's origin is at its feet (else at its middle)
- * @param sockets         bones to hide when the socket has no section ({@code socket id -> bones}, children go with them)
+ * @param offsetY         pixels to move the model up (down when negative), at the body's scale (the probe's middle at the hitbox's)
+ * @param yaw             degrees to turn the model so its front faces where the body looks (180 when the model's front is +Z)
+ * @param pitches         the body also nose-dives and climbs with the look pitch (ships); else it only turns
+ * @param sockets         bones to hide, with their children, when the socket has no section ({@code socket id -> bones})
+ * @param socketParts     bones to hide when the socket has no section, without their children (a neck that carries the head)
+ * @param mounts          where modules sit: {@code rig mount name -> bone and offset}; the name is
+ *                        {@code mount_<kind>_<n>} on the core socket and {@code <socket>__mount_<kind>_<n>} elsewhere
+ *                        ({@link BodyLook#rigMountBone}). A mount with no entry is not drawn.
  * @param poses           animation per pose key ({@code idle}, {@code thrust}, {@code brake}, {@code back}, {@code strafe_left},
  *                        {@code strafe_right}, {@code low_power}, {@code module_work}); a missing pose falls back
  *                        ({@link BodyLook#fallbacks})
  */
 public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, ResourceLocation animations, String animationPrefix,
-                          boolean grounded, Map<String, List<String>> sockets, Map<String, String> poses) {
+                          boolean grounded, float offsetY, float yaw, boolean pitches, Map<String, List<String>> sockets,
+                          Map<String, List<String>> socketParts, Map<String, Mount> mounts, Map<String, String> poses) {
+    /**
+     * A module position on a rig: the bone it follows, an offset from that bone's pivot in pixels (the same axes as the
+     * pivots in the {@code .geo.json}), and a turn about the vertical axis in degrees.
+     */
+    public record Mount(String bone, List<Double> offset, float yaw) {
+        public static final Codec<Mount> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("bone").forGetter(Mount::bone),
+                Codec.DOUBLE.listOf().optionalFieldOf("offset", List.of(0.0, 0.0, 0.0)).forGetter(Mount::offset),
+                Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(Mount::yaw)
+        ).apply(instance, Mount::new));
+
+        public Mount {
+            offset = offset.size() == 3 ? List.copyOf(offset) : List.of(0.0, 0.0, 0.0);
+        }
+
+        public float x() {
+            return offset.get(0).floatValue();
+        }
+
+        public float y() {
+            return offset.get(1).floatValue();
+        }
+
+        public float z() {
+            return offset.get(2).floatValue();
+        }
+    }
+
     public static final Codec<BodyRigSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("model").forGetter(BodyRigSpec::model),
             ResourceLocation.CODEC.fieldOf("texture").forGetter(BodyRigSpec::texture),
             ResourceLocation.CODEC.fieldOf("animations").forGetter(BodyRigSpec::animations),
             Codec.STRING.optionalFieldOf("animation_prefix", "").forGetter(BodyRigSpec::animationPrefix),
             Codec.BOOL.optionalFieldOf("grounded", false).forGetter(BodyRigSpec::grounded),
+            Codec.FLOAT.optionalFieldOf("offset_y", 0f).forGetter(BodyRigSpec::offsetY),
+            Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(BodyRigSpec::yaw),
+            Codec.BOOL.optionalFieldOf("pitches", false).forGetter(BodyRigSpec::pitches),
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("sockets", Map.of()).forGetter(BodyRigSpec::sockets),
+            Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("socket_parts", Map.of()).forGetter(BodyRigSpec::socketParts),
+            Codec.unboundedMap(Codec.STRING, Mount.CODEC).optionalFieldOf("mounts", Map.of()).forGetter(BodyRigSpec::mounts),
             Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("poses", Map.of()).forGetter(BodyRigSpec::poses)
     ).apply(instance, BodyRigSpec::new));
 

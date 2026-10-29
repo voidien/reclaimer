@@ -30,6 +30,8 @@ public final class ModCreativeTabs {
                 }
                 output.accept(ModItems.CORE_MK1.get());
                 output.accept(ModItems.CORE_MK2.get());
+                output.accept(ModItems.CORE_MK3.get());
+                output.accept(ModItems.CORE_MK4.get());
                 output.accept(ModItems.THRUSTER_MK1.get());
                 output.accept(ModItems.THRUSTER_MK2.get());
                 output.accept(ModItems.STORAGE_MK1.get());

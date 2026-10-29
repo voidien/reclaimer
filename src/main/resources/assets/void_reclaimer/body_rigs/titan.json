@@ -1,0 +1,172 @@
+{
+  "model": "void_reclaimer:geo/entity/titan.geo.json",
+  "texture": "void_reclaimer:textures/entity/titan.png",
+  "animations": "void_reclaimer:animations/entity/titan.animation.json",
+  "animation_prefix": "animation.void_reclaimer.titan.",
+  "grounded": true,
+  "yaw": 180,
+  "pitches": true,
+  "sockets": {
+    "bridge": [
+      "bridge"
+    ],
+    "sensor": [
+      "sensor"
+    ],
+    "deflector": [
+      "deflector"
+    ],
+    "bay_door": [
+      "bay_door"
+    ],
+    "pylon_l": [
+      "pylon_l"
+    ],
+    "pylon_r": [
+      "pylon_r"
+    ],
+    "nacelle_l": [
+      "nacelle_l"
+    ],
+    "nacelle_r": [
+      "nacelle_r"
+    ]
+  },
+  "socket_parts": {
+    "neck": [
+      "neck"
+    ]
+  },
+  "mounts": {
+    "mount_core_1": {
+      "bone": "saucer",
+      "offset": [
+        0,
+        8,
+        -14
+      ],
+      "yaw": 0
+    },
+    "mount_storage_1": {
+      "bone": "saucer",
+      "offset": [
+        -14,
+        8,
+        6
+      ],
+      "yaw": 0
+    },
+    "mount_storage_2": {
+      "bone": "saucer",
+      "offset": [
+        14,
+        8,
+        6
+      ],
+      "yaw": 0
+    },
+    "bridge__mount_sensor_1": {
+      "bone": "bridge",
+      "offset": [
+        0,
+        2.4,
+        0
+      ],
+      "yaw": 0
+    },
+    "sensor__mount_sensor_1": {
+      "bone": "sensor",
+      "offset": [
+        -1.2,
+        -0.8,
+        0
+      ],
+      "yaw": 0
+    },
+    "sensor__mount_sensor_2": {
+      "bone": "sensor",
+      "offset": [
+        1.2,
+        -0.8,
+        0
+      ],
+      "yaw": 0
+    },
+    "bay_door__mount_storage_1": {
+      "bone": "bay_door",
+      "offset": [
+        -3,
+        5,
+        -2.5
+      ],
+      "yaw": 180
+    },
+    "bay_door__mount_storage_2": {
+      "bone": "bay_door",
+      "offset": [
+        3,
+        5,
+        -2.5
+      ],
+      "yaw": 180
+    },
+    "nacelle_l__mount_thruster_1": {
+      "bone": "nacelle_l",
+      "offset": [
+        -3,
+        0,
+        -29
+      ],
+      "yaw": 180
+    },
+    "nacelle_l__mount_thruster_2": {
+      "bone": "nacelle_l",
+      "offset": [
+        3,
+        0,
+        -29
+      ],
+      "yaw": 180
+    },
+    "nacelle_l__mount_thruster_3": {
+      "bone": "nacelle_l",
+      "offset": [
+        0,
+        4,
+        -29
+      ],
+      "yaw": 180
+    },
+    "nacelle_r__mount_thruster_1": {
+      "bone": "nacelle_r",
+      "offset": [
+        -3,
+        0,
+        -29
+      ],
+      "yaw": 180
+    },
+    "nacelle_r__mount_thruster_2": {
+      "bone": "nacelle_r",
+      "offset": [
+        3,
+        0,
+        -29
+      ],
+      "yaw": 180
+    },
+    "nacelle_r__mount_thruster_3": {
+      "bone": "nacelle_r",
+      "offset": [
+        0,
+        4,
+        -29
+      ],
+      "yaw": 180
+    }
+  },
+  "poses": {
+    "idle": "warp_cruise",
+    "thrust": "warp_cruise"
+  }
+}

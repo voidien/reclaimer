@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 240.0,
+    "void_reclaimer:ice": 180.0,
+    "void_reclaimer:metallic": 360.0,
+    "void_reclaimer:silicate": 260.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:titan_bridge"
+  },
+  "ticks": 7200
+}
