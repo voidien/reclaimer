@@ -39,6 +39,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
+- **Playtest checklist:** `docs/PLAYTEST.md` (first dust to first launch, with skip commands). The owner plays it and reports back by stage; fix what comes back.
 - **Two flaky GameTests (root cause not found, worth their own PR):**
   - `placingregisterscoresuptothelimitandsunlightcharges` ("sunlight did not charge"; failed on PRs #28 and #30) and `salvagetooldismantlesfordustwithoutdrops` (PR #27).
   - Each failed once in CI and passed on the one allowed re-run of the failed job. The PR-triggered run and the push-triggered run of the same commit disagreed, so it is timing or world state, not the PR's change.
