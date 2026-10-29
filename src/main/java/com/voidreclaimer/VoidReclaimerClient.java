@@ -29,6 +29,9 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 public final class VoidReclaimerClient {
     public VoidReclaimerClient(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
+        // Mods > Void Reclaimer > Config: lists the client and common settings.
+        container.registerExtensionPoint(net.neoforged.neoforge.client.gui.IConfigScreenFactory.class,
+                net.neoforged.neoforge.client.gui.ConfigurationScreen::new);
         modBus.addListener(VoidReclaimerClient::onRegisterDimensionEffects);
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
         modBus.addListener(ModKeyMappings::register);

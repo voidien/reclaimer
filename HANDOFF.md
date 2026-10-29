@@ -27,7 +27,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
 
 ## The user's standing instructions
 - **Clarifying questions:** ask them before each phase (their preference, and `CLAUDE.md` workflow rule 2). Wait for a go-ahead on the file list.
-- **"Merge all once CI is green":** merge your PRs yourself once CI passes.
+- **Merge in batches (2026-10-29, replaces "merge once CI is green"):** keep PRs open and merge them only when at least 5 are open and green. Each PR branches from the latest `main` on its own (never stacked), so they can merge in any order; `PROGRESS.md` and `CLAUDE.md` will conflict, resolve with a base merge.
 - **"Stop listening to pull requests unless they are from me":**
   - Don't subscribe to PR activity for PRs you open.
   - Check CI the next time the user writes, and merge if it's green.
