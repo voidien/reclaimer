@@ -111,6 +111,13 @@ class Fake(http.server.BaseHTTPRequestHandler):
     def base(self):
         return 'http://127.0.0.1:%d' % self.server.server_port
 
+    def do_PATCH(self):
+        b = self.body()
+        Fake.state['calls'].append(('PATCH', self.path, b, None))
+        if len(b.get('reference_images', [])) > Fake.state.get('max_refs', 4):
+            return self.reply({'error': {'code': 'invalid_request', 'message': 'exactly 1 reference image'}}, 400)
+        return self.reply({'id': self.path.rsplit('/', 1)[1], 'prompt_style': 'user__void_reclaimer_1', 'type': 'user'})
+
     def do_POST(self):
         s = Fake.state
         b = self.body()
@@ -126,6 +133,10 @@ class Fake(http.server.BaseHTTPRequestHandler):
             s['idem'][key] = tid
             s['charged'] += 1
             return self.reply({'status': 'accepted', 'task_id': tid})
+        if self.path == '/v2/styles':
+            s['styles'] = s.get('styles', 0) + 1
+            return self.reply({'id': 'st%d' % s['styles'], 'prompt_style': 'user__void_reclaimer_%d' % s['styles'],
+                               'name': b['name'], 'type': 'user'}, 201)
         if self.path == '/v2/lowpoly/estimate':
             return self.reply({'operation': 'generate', 'size': 32, 'cost': 0.5})
         if self.path == '/v2/lowpoly/generate':
@@ -404,6 +415,111 @@ class RdGenerateTest(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo/module/core_mk2.geo.json')))
         with self.assertRaises(SystemExit):
             rd.main(['--promote', 'space_thruster'])  # its block does not exist yet
+
+    def posted(self, path='/v2/inferences'):
+        return [c[2] for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == path and not c[2].get('check_cost')]
+
+    def test_style_guide_palette_and_prompt_on_every_job(self):
+        import style_guide
+        style = style_guide.load_style()
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--asset', 'quartz_wafer', '--asset', 'asteroid_ice', '--variants', '1'])
+        bodies = {b['prompt_style']: b for b in self.posted()}
+        for style_id, cat in (('rd_plus__mc_item', 'items'), ('rd_plus__mc_texture', 'blocks')):
+            b = bodies[style_id]
+            colors = rd.png_read(base64.b64decode(b['input_palette']))[0]
+            want = [style_guide.rgb(c) + (255,) for c in style_guide.palette(style, cat)]
+            self.assertEqual(colors, want, cat + ' palette sent as input_palette')
+            tail = style['categories'][cat]['prompt_template'].replace('{prompt}', '')
+            self.assertTrue(b['prompt'].endswith(tail), b['prompt'])
+        with mock.patch('builtins.input', return_value='l'):
+            rd.main(['--asset', 'core_mk1_model'])
+        gen = self.posted('/v2/lowpoly/generate')[0]
+        self.assertTrue(gen['input_palette'].startswith('data:image/png;base64,'))
+        self.assertEqual(rd.png_read(base64.b64decode(gen['input_palette'].split(',', 1)[1]))[0],
+                         [style_guide.rgb(c) + (255,) for c in style_guide.palette(style, 'body')])
+        self.assertLessEqual(len(gen['prompt']), 250)
+        self.assertIn('blocky Minecraft-style robot part', gen['prompt'])
+        self.assertNotIn('boxy Minecraft-style model', gen['prompt'], 'no duplicated style phrase')
+        long = rd.styled('word ' * 80, 'body', mock.Mock(no_style=False), 250)
+        self.assertLessEqual(len(long), 250)
+        self.assertTrue(long.split(', blocky')[0].endswith('word'), 'cut at a word boundary')
+
+    def test_no_style_sends_plain_prompts(self):
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--asset', 'quartz_wafer', '--variants', '1', '--no-style'])
+        b = self.posted()[0]
+        self.assertNotIn('input_palette', b)
+        self.assertEqual(b['prompt'], 'thin round translucent quartz wafer disk')
+
+    def test_categories(self):
+        rows = {r['key']: r for r in rd.load_rows()}
+        self.assertEqual(rd.category_for(rows['quartz_wafer'], 'image'), 'items')
+        self.assertEqual(rd.category_for(rows['asteroid_ice'], 'image'), 'blocks')
+        self.assertEqual(rd.category_for(rows['energy_full'], 'image'), 'gui')
+        self.assertEqual(rd.category_for(rows['sun'], 'image'), 'sky')
+        self.assertEqual(rd.category_for(rows['mod_logo'], 'image'), 'gui')
+        self.assertEqual(rd.category_for(rows['rotor_arm_section'], 'model'), 'body')
+        self.assertEqual(rd.category_for(rows['space_thruster'], 'model'), 'blocks')
+
+    def test_setup_styles_and_custom_style_jobs(self):
+        folder = os.path.join(self.tmp, 'docs/art/style/items')
+        os.makedirs(folder)
+        for n in range(5):  # one too many: only the first four (by name) are sent
+            with open(os.path.join(folder, 'ref_%d.png' % n), 'wb') as f:
+                f.write(checker(64, 64, False))
+        with open(os.path.join(folder, 'notes.txt'), 'w') as f:
+            f.write('not an image')
+        rd.main(['--setup-styles'])
+        created = [c[2] for c in Fake.state['calls'] if c[1] == '/v2/styles']
+        self.assertEqual(len(created), 1, 'only categories with reference images get a custom style')
+        self.assertEqual(created[0]['user_prompt_template'].count('{prompt}'), 1)
+        self.assertEqual(len(created[0]['reference_images']), 4)
+        ref = rd.png_read(base64.b64decode(created[0]['reference_images'][0]))
+        self.assertEqual((len(ref[0]), len(ref)), (256, 256), '64x64 references are enlarged to the 256x256 RD needs')
+        import style_guide
+        self.assertEqual(created[0]['llm_instructions'], style_guide.instructions(style_guide.load_style(), 'items'))
+        self.assertTrue(created[0]['force_bg_removal'], 'item styles remove the background')
+        self.assertIn('cyan', created[0]['llm_instructions'])
+        # Item jobs now use the custom style (RD Pro limits: 16x16 is fine); block jobs keep the base style.
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--asset', 'quartz_wafer', '--asset', 'asteroid_ice', '--variants', '1'])
+        styles = sorted(b['prompt_style'] for b in self.posted())
+        self.assertEqual(styles, ['rd_plus__mc_texture', 'user__void_reclaimer_1'])
+        # Running it again updates the same style instead of creating another.
+        rd.main(['--setup-styles'])
+        self.assertTrue(any(c[0] == 'PATCH' and c[1] == '/v2/styles/st1' for c in Fake.state['calls']))
+        # If RD only takes one reference after all, the style is kept with the first one.
+        Fake.state['max_refs'] = 1
+        rd.main(['--setup-styles'])
+        patches = [c[2] for c in Fake.state['calls'] if c[0] == 'PATCH']
+        self.assertEqual([len(p['reference_images']) for p in patches[-2:]], [4, 1])
+        self.assertEqual(len([c for c in Fake.state['calls'] if c[1] == '/v2/styles']), 1)
+
+    def test_reference_images_are_256_square(self):
+        import style_guide
+        icon = checker(16, 16)
+        big = rd.png_read(style_guide.reference_png(icon))
+        self.assertEqual((len(big[0]), len(big)), (256, 256))
+        self.assertEqual(big[0:16], [[px for px in rd.png_read(icon)[0] for _ in range(16)]] * 16, 'no smoothing')
+        self.assertEqual(len(rd.png_read(style_guide.reference_png(checker(512, 512)))), 256)
+        same = checker(256, 256)
+        self.assertIs(style_guide.reference_png(same), same)
+        for bad in (checker(100, 100), checker(64, 32)):
+            with self.assertRaises(ValueError):
+                style_guide.reference_png(bad)
+
+    def test_style_guide_files_are_up_to_date(self):
+        import style_guide
+        style = style_guide.load_style()
+        art = os.path.join(REAL_REPO, 'docs', 'art')
+        with open(os.path.join(art, 'STYLE_GUIDE.md')) as f:
+            self.assertEqual(f.read(), style_guide.guide_markdown(style),
+                             'docs/art/STYLE_GUIDE.md is stale: run python3 tools/art/style_guide.py')
+        for cat in style['categories']:
+            self.assertEqual(self.read(os.path.join(art, 'palettes', cat + '.png')),
+                             style_guide.palette_png(style_guide.palette(style, cat)), cat + ' palette is stale')
+            self.assertLessEqual(len(style_guide.palette(style, cat)), 256, 'RD palettes hold at most 256 colours')
 
     def test_dry_run_needs_no_key_and_sends_nothing(self):
         os.environ.pop('RD_API_KEY')

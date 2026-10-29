@@ -37,6 +37,7 @@ import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pngutil import png_read, png_write  # noqa: E402
+import style_guide  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 CSV_PATH = os.path.join(REPO, 'docs', 'art', 'assets.csv')
@@ -53,7 +54,6 @@ PREFIXES = (
     'seamless tileable 16x16 Minecraft block texture, pixel art, Create mod style; ',
     '16x16 Minecraft block face texture, pixel art, Create mod style, not tiled; ',
 )
-STYLE_HINT = 'Create mod industrial style, andesite grey, brass and copper, cyan glow'
 
 # Size limits per style (from RD's llms.txt, 2026-10-29). With a key, the live limits from /styles/selector win.
 STYLE_LIMITS = {
@@ -64,7 +64,8 @@ STYLE_LIMITS = {
     'rd_pro__simple': (12, 256, 16), 'rd_pro__scifi': (12, 256, 16),
     'rd_animation__vfx': (24, 96, 1),
 }
-IMAGE_PRICE = {'rd_fast': 0.03, 'rd_plus': 0.06, 'rd_mini': 0.06, 'rd_pro': 0.18, 'rd_animation': 0.25}
+IMAGE_PRICE = {'rd_fast': 0.03, 'rd_plus': 0.06, 'rd_mini': 0.06, 'rd_pro': 0.18, 'rd_animation': 0.25,
+               'user': 0.18}  # 'user' = custom styles, which run on RD Pro
 LOWPOLY_PRICE = {16: 0.25, 32: 0.50, 64: 0.85, 128: 1.20, 256: 3.00}
 LOWPOLY_ANIMATE_PRICE = {16: 0.15, 32: 0.25, 64: 0.35, 128: 0.50, 256: 1.00}
 LITE_GENERATE, LITE_OTHER = 0.10, 0.08
@@ -240,7 +241,7 @@ def image_style(row):
 
 def fit(style, tw, th, limits):
     """Smallest integer upscale of the target that the style accepts. Returns (w, h, factor)."""
-    lo, hi, _ = limits.get(style, (16, 384, 16))
+    lo, hi, _ = limits.get(style, (12, 256, 16) if style.startswith('user__') else (16, 384, 16))
     for k in range(1, 65):
         w, h = tw * k, th * k
         if w >= lo and h >= lo:
@@ -264,21 +265,131 @@ def jobs_for(row, args, limits):
             w = h = side
         else:
             w, h, _ = fit(style, tw, th, limits)
-        prompt = subject(row['prompt'])
-        if not style.endswith(('mc_item', 'mc_texture')):
-            prompt = prompt + ', ' + STYLE_HINT
-        jobs.append(dict(kind='image', style=style, prompt=prompt[:1000], width=w, height=h, target=(tw, th),
-                         tile=tile, remove_bg=remove_bg, frames=frames,
-                         variants=1 if frames else args.variants))
+        category = category_for(row, 'image')
+        custom = None if args.no_style or frames else custom_styles().get(category)
+        if custom:
+            style = custom['prompt_style']
+            w, h, _ = fit(style, tw, th, limits)
+        jobs.append(dict(kind='image', style=style, prompt=styled(subject(row['prompt']), category, args, 1000),
+                         width=w, height=h, target=(tw, th), tile=tile, remove_bg=remove_bg, frames=frames,
+                         variants=1 if frames else args.variants, palette=None if args.no_style else category))
     if '3D blocky' in method:
         size = args.model_size or MODEL_SIZE.get(row['asset'], 'auto')
+        category = category_for(row, 'model')
         jobs.append(dict(kind='model', style=MODEL_STYLES[args.model_style or 'blocky'],
-                         prompt=subject(row['prompt'])[:250], size=size, variants=args.model_variants))
+                         prompt=styled(subject(row['prompt']), category, args, 250), size=size,
+                         variants=args.model_variants, palette=None if args.no_style else category))
     if method == 'RD 3D animate':
         rig = os.path.basename(row['model']).split('.')[0]
         jobs.append(dict(kind='animate', rig=rig + ' (body)', prompt=row['prompt'][:250],
                          name=row['asset'].split('.')[-1], variants=1))
     return jobs
+
+
+def category_for(row, kind):
+    """The style category (docs/art/style.json) of a row's image or model job."""
+    f, group = row['file'], row['group']
+    if kind == 'model':
+        return 'blocks' if '/textures/block/' in f else 'body'
+    if '/textures/gui/' in f or group == 'HUD & GUI':
+        return 'gui'
+    if '/textures/environment/' in f or group == 'Sky':
+        return 'sky'
+    if '/textures/block/' in f:
+        return 'blocks'
+    if '/textures/entity/' in f:
+        return 'body'
+    return 'items'
+
+
+def styled(text, category, args, limit):
+    """Wraps a subject in its category's prompt template, shortening the subject (not the style) to fit `limit`."""
+    if args.no_style:
+        return text[:limit]
+    template = style_guide.load_style()['categories'][category]['prompt_template']
+    # The CSV's 3D prompts end with their own style phrase; the template says it better.
+    for tail in ('; single body part, boxy Minecraft-style model', '; small module that mounts on a robot body, '
+                 'boxy Minecraft-style model', '; boxy Minecraft-style model'):
+        if text.endswith(tail):
+            text = text[:-len(tail)] + ('; module that mounts on a robot body' if 'module' in tail else '')
+    room = limit - len(template.replace('{prompt}', ''))
+    if len(text) > room:
+        cut = text[:room]
+        text = cut[:max(cut.rfind(' '), 20)]  # whole words only
+    return template.replace('{prompt}', text.rstrip(' ,;:'))[:limit]
+
+
+def palette_b64(category):
+    style = style_guide.load_style()
+    return base64.b64encode(style_guide.palette_png(style_guide.palette(style, category))).decode()
+
+
+def styles_path():
+    """The account's RD custom style ids, written by --setup-styles (in the gitignored staging folder)."""
+    return os.path.join(STAGING, 'styles.json')
+
+
+def custom_styles():
+    if os.path.exists(styles_path()):
+        with open(styles_path()) as f:
+            return json.load(f)
+    return {}
+
+
+def setup_styles(key):
+    """Creates (or updates) an RD custom style for every category with reference images (1-4 in its folder)."""
+    style = style_guide.load_style()
+    registered = custom_styles()
+    for cat, c in style['categories'].items():
+        refs, extra = style_guide.reference_files(REPO, c)
+        if not refs:
+            print('  %s: skipped, no reference images in %s yet' % (cat, c['references']))
+            continue
+        if extra:
+            print('  %s: using the first %d references; ignoring %s' % (cat, len(refs), ', '.join(
+                os.path.basename(x) for x in extra)))
+        images = []
+        for ref in refs:
+            with open(ref, 'rb') as f:
+                data = f.read()
+            if data[:8] == b'\x89PNG\r\n\x1a\n':
+                try:
+                    data = style_guide.reference_png(data)  # RD wants exactly 256x256
+                except ValueError as e:
+                    sys.exit('%s: %s; RD needs square 256x256 references' % (os.path.relpath(ref, REPO), e))
+            images.append(base64.b64encode(data).decode())
+        body = {'name': '%s %s' % (style['name'], c['title']), 'reference_images': images,
+                'description': c['covers'][:300],
+                'llm_instructions': style_guide.instructions(style, cat),
+                'user_prompt_template': c['prompt_template'], 'force_palette': False,
+                'force_bg_removal': bool(c.get('remove_background'))}
+        old = registered.get(cat)
+
+        def send(b):
+            if old:
+                return request('PATCH', '/styles/%s' % old['id'], key, b)
+            return request('POST', '/styles', key, b)
+        try:
+            res = send(body)
+        except ApiError as e:
+            # RD's API summary says custom styles take exactly one reference; its app takes up to 4. If the API
+            # refuses several, keep the style with the first one rather than failing.
+            if len(images) < 2 or e.status not in (400, 422):
+                raise
+            print('  %s: RD refused %d references (%s); using only %s'
+                  % (cat, len(images), e.status, os.path.basename(refs[0])))
+            body['reference_images'] = images[:1]
+            res = send(body)
+        if old:
+            registered[cat] = {'id': old['id'], 'prompt_style': res.get('prompt_style', old['prompt_style'])}
+            print('  %s: updated %s (%d references)' % (cat, registered[cat]['prompt_style'],
+                                                       len(body['reference_images'])))
+        else:
+            registered[cat] = {'id': res['id'], 'prompt_style': res['prompt_style']}
+            print('  %s: created %s (%d references)' % (cat, res['prompt_style'], len(body['reference_images'])))
+        os.makedirs(STAGING, exist_ok=True)
+        with open(styles_path(), 'w') as f:
+            json.dump(registered, f, indent=1)
 
 
 def selected(rows, args):
@@ -323,11 +434,15 @@ def image_body(job, row, seed=None):
         body.update(frames_duration=job['frames'], return_spritesheet=True)
     if seed is not None:
         body['seed'] = seed
+    if job.get('palette'):
+        body['input_palette'] = palette_b64(job['palette'])
     return body
 
 
 def model_body(job, row, args):
     body = dict(prompt=job['prompt'], size=job['size'], style=job['style'])
+    if job.get('palette'):
+        body['input_palette'] = 'data:image/png;base64,' + palette_b64(job['palette'])
     ref = reference_image(row) if not args.no_refs else None
     if ref:
         body['reference_images'] = [ref]
@@ -749,6 +864,10 @@ def main(argv=None):
                         'Without it, a run that makes models shows both prices and asks.')
     p.add_argument('--image-tier', choices=['plus', 'fast', 'mini'], default='plus', help='Minecraft image styles tier')
     p.add_argument('--no-refs', action='store_true', help="don't send the item icon as a 3D reference image")
+    p.add_argument('--no-style', action='store_true',
+                   help="don't apply docs/art/style.json (palette, prompt template, custom styles) to this run")
+    p.add_argument('--setup-styles', action='store_true',
+                   help='create or update the RD custom styles for categories with reference images (up to 4 each)')
     p.add_argument('--again', action='store_true', help='new jobs even for assets generated before')
     p.add_argument('--dry-run', action='store_true', help='plan and offline price only; no key needed, nothing sent')
     p.add_argument('--yes', action='store_true', help="don't ask before spending")
@@ -776,6 +895,9 @@ def main(argv=None):
     key = os.environ.get('RD_API_KEY', '').strip()
     if not key and not args.dry_run:
         sys.exit('Set RD_API_KEY (your Retro Diffusion key, rdpk-...), or use --dry-run.')
+    if args.setup_styles:
+        setup_styles(key)
+        return 0
     if args.balance:
         print(request('GET', '/inferences/credits', key))
         return 0

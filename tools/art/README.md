@@ -4,6 +4,36 @@
 - `rd_generate.py` generates the CSV's rows with the [Retro Diffusion API](https://github.com/Retro-Diffusion/api-examples), so prompts never have to be typed by hand.
 - `test_rd_generate.py` tests it offline against a fake RD server (CI runs it): `python3 tools/art/test_rd_generate.py`.
 
+- `style_guide.py` builds `docs/art/STYLE_GUIDE.md` and the palettes in `docs/art/palettes/` from `docs/art/style.json`.
+
+## Style
+Every job follows the art style guide (`docs/art/STYLE_GUIDE.md`, defined in `docs/art/style.json`). Each row belongs to a category:
+
+| Category | Covers |
+|---|---|
+| `items` | Item icons |
+| `blocks` | Block textures and block models |
+| `body` | Body parts and entity models |
+| `gui` | HUD and screens |
+| `sky` | Sky and effects |
+
+To make a style by hand in RD's app instead, `docs/art/STYLE_GUIDE.md` has the form values for each category (name, guidelines, template, palette, checkboxes).
+
+Then, on every job:
+- **Palette:** the category's palette goes in as `input_palette`, so every pixel uses its colours. This applies to 3D models too.
+- **Prompt:** the subject is wrapped in the category's prompt template.
+- **Custom styles:**
+  1. Pick 1 to 4 reference images for a category: generated assets that together show the look best.
+  2. Copy them into the category's folder, `docs/art/style/<category>/` (PNG, JPEG or WebP). They are used in name order; a fifth and later are ignored. RD needs square images of exactly 256x256: PNGs that divide 256 (16x16 icons) are enlarged and exact multiples (512x512 renders) reduced automatically. `python3 tools/art/style_guide.py --reference IMAGE...` does the same for upload by hand.
+  3. Run `python3 tools/art/rd_generate.py --setup-styles`. That creates an RD custom style with the references, the guide's rules as instructions, and the prompt template. Running it again updates the style, so add or swap references any time.
+
+  If RD's API turns down several references, the tool keeps the style with the first one and says so.
+
+  From then on, that category's 2D jobs use the custom style. It runs on RD Pro: $0.18 an image instead of $0.06. The style ids are kept in `art/rd/styles.json`.
+- `--no-style` sends plain prompts with no palette, for one run.
+
+To change the style, edit `docs/art/style.json`, then run `python3 tools/art/style_guide.py`. A test fails while the guide or the palettes are out of date.
+
 ## Setup
 - Python 3.9 or newer. Standard library only; nothing to install.
 - A Retro Diffusion API key (`rdpk-...`, from your account at retrodiffusion.ai), in an environment variable:
