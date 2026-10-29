@@ -193,7 +193,10 @@ public final class ReplicatorScreen extends Screen {
             if (unlocked) {
                 graphics.renderItem(recipe.result(), x + 3, rowY + 3);
                 graphics.renderItemDecorations(font, recipe.result(), x + 3, rowY + 3);
-                graphics.drawString(font, recipe.result().getHoverName(), x + 24, rowY + 2, TEXT, false);
+                Component name = recipe.results().size() > 1
+                        ? recipe.displayName().copy().append(Component.literal(" +" + (recipe.results().size() - 1)).withColor(DIM))
+                        : recipe.displayName();
+                graphics.drawString(font, name, x + 24, rowY + 2, TEXT, false);
                 graphics.drawString(font, costLine(recipe, dust), x + 24, rowY + 12, TEXT, false);
             } else {
                 graphics.drawString(font, "???", x + 8, rowY + 7, DIM, false);

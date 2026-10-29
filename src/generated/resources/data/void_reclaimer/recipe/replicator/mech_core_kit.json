@@ -1,0 +1,29 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 24.0,
+    "void_reclaimer:ice": 12.0,
+    "void_reclaimer:metallic": 48.0,
+    "void_reclaimer:silicate": 36.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "results": [
+    {
+      "count": 1,
+      "id": "void_reclaimer:mech_torso"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:mech_pelvis"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:mech_head"
+    }
+  ],
+  "ticks": 3000,
+  "title": {
+    "translate": "recipe.void_reclaimer.mech_core_kit"
+  }
+}

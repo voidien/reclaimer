@@ -305,6 +305,8 @@
   "milestone.void_reclaimer.first_dust.hint": "Collect any cosmic dust",
   "milestone.void_reclaimer.first_structure": "First Structure",
   "milestone.void_reclaimer.first_structure.hint": "Place 10 blocks",
+  "recipe.void_reclaimer.drone_kit": "Drone Kit",
+  "recipe.void_reclaimer.mech_core_kit": "Mech Core Kit",
   "replicator.void_reclaimer.collect": "Collect output",
   "replicator.void_reclaimer.empty_tab": "No designs in this category yet.",
   "replicator.void_reclaimer.no_logs": "No log entries.",

@@ -112,9 +112,9 @@ public final class Replicator {
         }
         ReplicatorData updated = tick.data();
         if (!tick.finished().isEmpty() && job != null) {
-            Component name = tick.finished().getHoverName();
+            Component name = tick.finished().get(0).getHoverName();
             ReplicatorJobFinishedEvent finished = NeoForge.EVENT_BUS.post(
-                    new ReplicatorJobFinishedEvent(player, job.recipe(), List.of(tick.finished())));
+                    new ReplicatorJobFinishedEvent(player, job.recipe(), tick.finished()));
             for (ItemStack output : finished.getOutputs()) {
                 player.getInventory().add(output); // shrinks output to whatever didn't fit
                 updated = ReplicatorLogic.toBuffer(updated, output);

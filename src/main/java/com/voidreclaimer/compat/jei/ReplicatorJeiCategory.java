@@ -3,6 +3,8 @@ package com.voidreclaimer.compat.jei;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.replicator.Milestones;
+import java.util.List;
+import net.minecraft.world.item.ItemStack;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.registry.ModItems;
@@ -62,7 +64,11 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ReplicatorRecipe> holder, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.OUTPUT, WIDTH - 20, 4).addItemStack(holder.value().result());
+        // Kits list every part, right to left.
+        List<ItemStack> results = holder.value().results();
+        for (int i = 0; i < results.size(); i++) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, WIDTH - 20 - (i % 6) * 18, 4 + (i / 6) * 18).addItemStack(results.get(i));
+        }
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModRecipeTypes;
 import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
+import java.util.Comparator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -53,16 +54,21 @@ public final class Salvage {
         }
     }
 
-    /** Per-item refund: the cheapest Replicator recipe producing {@code item}, divided by its output count. */
+    /**
+     * Per-item refund: the cheapest Replicator recipe that makes only {@code item}, its cost divided by the output count.
+     * Kits (several different items) count only when no such recipe exists; their cost is then shared evenly over every
+     * part, so a kit never prices one part by the whole kit.
+     */
     public static DustCost refundFor(RecipeManager recipes, Item item, float fraction) {
         Optional<ReplicatorRecipe> recipe = recipes.getAllRecipesFor(ModRecipeTypes.REPLICATOR.get()).stream()
                 .map(holder -> holder.value())
-                .filter(r -> r.result().is(item))
-                .min((a, b) -> Float.compare(totalPerItem(a), totalPerItem(b)));
-        return recipe.map(r -> r.cost().scale(fraction / r.result().getCount())).orElse(DustCost.NONE);
+                .filter(r -> r.count(item) > 0)
+                .min(Comparator.comparing((ReplicatorRecipe r) -> r.count(item) < r.totalCount())
+                        .thenComparingDouble(Salvage::totalPerItem));
+        return recipe.map(r -> r.cost().scale(fraction / r.totalCount())).orElse(DustCost.NONE);
     }
 
     private static float totalPerItem(ReplicatorRecipe recipe) {
-        return recipe.cost().total() / recipe.result().getCount();
+        return recipe.cost().total() / recipe.totalCount();
     }
 }

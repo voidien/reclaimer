@@ -126,6 +126,8 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("key.void_reclaimer.replicator", "Open Replicator");
         add("replicator.void_reclaimer.title", "Replicator");
+        add("recipe.void_reclaimer.drone_kit", "Drone Kit");
+        add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
         add("replicator.void_reclaimer.tab.tools", "Tools");
         add("replicator.void_reclaimer.tab.modules", "Modules");
         add("replicator.void_reclaimer.tab.blocks", "Blocks");

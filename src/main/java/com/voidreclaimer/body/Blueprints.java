@@ -65,13 +65,14 @@ public final class Blueprints {
         List<RecipeHolder<ReplicatorRecipe>> recipes = player.serverLevel().getRecipeManager().getAllRecipesFor(ModRecipeTypes.REPLICATOR.get());
         for (Map.Entry<Item, Integer> entry : missing.entrySet()) {
             Optional<RecipeHolder<ReplicatorRecipe>> recipe = recipes.stream()
-                    .filter(h -> h.value().result().is(entry.getKey()))
+                    .filter(h -> h.value().count(entry.getKey()) > 0)
                     .filter(h -> Replicator.data(player).isUnlocked(h.value().milestone()))
-                    .min(Comparator.comparingDouble(h -> h.value().cost().total() / h.value().result().getCount()));
+                    // Cheapest per wanted part, so a missing hull queues the hull, not a whole kit.
+                    .min(Comparator.comparingDouble(h -> h.value().cost().total() / h.value().count(entry.getKey())));
             if (recipe.isEmpty()) {
                 continue;
             }
-            int perJob = recipe.get().value().result().getCount();
+            int perJob = recipe.get().value().count(entry.getKey());
             for (int made = 0; made < entry.getValue(); made += perJob) {
                 if (Replicator.queue(player, recipe.get().id()) != ReplicatorLogic.QueueResult.QUEUED) {
                     break;

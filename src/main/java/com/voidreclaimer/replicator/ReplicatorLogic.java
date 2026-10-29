@@ -30,7 +30,7 @@ public final class ReplicatorLogic {
             return new Queued(QueueResult.NOT_ENOUGH_DUST, data, dust);
         }
         List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
-        jobs.add(new ReplicatorJob(id, recipe.result().copy(), recipe.cost(), 0, recipe.ticks()));
+        jobs.add(new ReplicatorJob(id, recipe.results(), recipe.cost(), 0, recipe.ticks()));
         return new Queued(QueueResult.QUEUED, data.withJobs(jobs), recipe.cost().takeFrom(dust));
     }
 
@@ -48,38 +48,42 @@ public final class ReplicatorLogic {
      * Result of one work tick.
      *
      * @param data     updated data
-     * @param finished item produced this tick that still needs delivering, or empty
+     * @param finished items produced this tick that still need delivering (empty list when none)
      * @param worked   whether work was done (energy should be charged)
      */
-    public record Tick(ReplicatorData data, ItemStack finished, boolean worked) {}
+    public record Tick(ReplicatorData data, List<ItemStack> finished, boolean worked) {}
 
     /**
-     * Advances the first job by one tick when powered. A finished job is removed and its item returned for
-     * delivery, unless the output buffer is full, in which case the finished job waits at the head of the queue
-     * (no work, no energy) until there is room.
+     * Advances the first job by one tick when powered. A finished job is removed and its items returned for
+     * delivery, unless the output buffer lacks room for all of them, in which case the finished job waits at the head
+     * of the queue (no work, no energy) until there is room.
      */
     public static Tick tick(ReplicatorData data, boolean powered) {
         ReplicatorJob job = data.current();
         if (job == null || !powered) {
-            return new Tick(data, ItemStack.EMPTY, false);
+            return new Tick(data, List.of(), false);
         }
         if (job.isDone()) {
-            if (data.buffer().size() >= ReplicatorData.BUFFER_SLOTS) {
-                return new Tick(data, ItemStack.EMPTY, false);
+            if (!hasRoom(data, job)) {
+                return new Tick(data, List.of(), false);
             }
             List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
             jobs.remove(0);
-            return new Tick(data.withJobs(jobs), job.result().copy(), false);
+            return new Tick(data.withJobs(jobs), job.results(), false);
         }
         List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
         ReplicatorJob advanced = job.advanced();
         jobs.set(0, advanced);
         ReplicatorData updated = data.withJobs(jobs);
-        if (advanced.isDone() && updated.buffer().size() < ReplicatorData.BUFFER_SLOTS) {
+        if (advanced.isDone() && hasRoom(updated, advanced)) {
             jobs.remove(0);
-            return new Tick(updated.withJobs(jobs), advanced.result().copy(), true);
+            return new Tick(updated.withJobs(jobs), advanced.results(), true);
         }
-        return new Tick(updated, ItemStack.EMPTY, true);
+        return new Tick(updated, List.of(), true);
+    }
+
+    private static boolean hasRoom(ReplicatorData data, ReplicatorJob job) {
+        return data.buffer().size() + job.results().size() <= ReplicatorData.BUFFER_SLOTS;
     }
 
     /** Puts a stack that didn't fit in the inventory into the output buffer. */

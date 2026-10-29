@@ -80,8 +80,9 @@ class ReplicatorLogicTest {
         assertTrue(t1.worked() && t2.worked());
         assertTrue(t2.finished().isEmpty());
         ReplicatorLogic.Tick t3 = ReplicatorLogic.tick(t2.data(), true);
-        assertEquals(8, t3.finished().getCount());
-        assertTrue(t3.finished().is(Items.STONE));
+        assertEquals(1, t3.finished().size());
+        assertEquals(8, t3.finished().get(0).getCount());
+        assertTrue(t3.finished().get(0).is(Items.STONE));
         assertTrue(t3.data().jobs().isEmpty());
         assertFalse(ReplicatorLogic.tick(t3.data(), true).worked(), "an empty queue does no work");
     }
@@ -103,7 +104,31 @@ class ReplicatorLogicTest {
         // Once there's room it is delivered without more work or energy.
         ReplicatorLogic.Tick delivered = ReplicatorLogic.tick(data.withBuffer(List.of()), true);
         assertFalse(delivered.worked());
-        assertEquals(8, delivered.finished().getCount());
+        assertEquals(8, delivered.finished().get(0).getCount());
+    }
+
+    @Test
+    void kitsDeliverEveryPartAndNeedRoomForAll() {
+        ReplicatorRecipe kit = new ReplicatorRecipe(List.of(new ItemStack(Items.STONE, 2), new ItemStack(Items.DIRT),
+                new ItemStack(Items.GLASS)), DustCost.of(3, 0, 0, 0), 1, ReplicatorCategories.BLOCKS, Milestones.AWAKENING,
+                Optional.empty());
+        assertEquals(4, kit.totalCount());
+        assertEquals(2, kit.count(Items.STONE));
+        assertEquals(0, kit.count(Items.SAND));
+
+        ReplicatorData queued = ReplicatorLogic.queue(UNLOCKED, RICH, ID, kit).data();
+        ReplicatorLogic.Tick done = ReplicatorLogic.tick(queued, true);
+        assertEquals(3, done.finished().size());
+        assertTrue(done.finished().get(2).is(Items.GLASS));
+
+        // Only two buffer slots free: the three-part kit waits rather than losing a part.
+        List<ItemStack> buffer = new ArrayList<>();
+        for (int i = 0; i < ReplicatorData.BUFFER_SLOTS - 2; i++) {
+            buffer.add(new ItemStack(Items.DIRT));
+        }
+        ReplicatorLogic.Tick waiting = ReplicatorLogic.tick(queued.withBuffer(buffer), true);
+        assertTrue(waiting.finished().isEmpty());
+        assertEquals(1, waiting.data().jobs().size());
     }
 
     @Test
@@ -187,5 +212,14 @@ class ReplicatorLogicTest {
         assertEquals(100, parsed.ticks());
         assertEquals(Milestones.AWAKENING, parsed.milestone());
         assertTrue(ItemStack.matches(new ItemStack(Items.STONE, 8), parsed.result()));
+
+        ReplicatorRecipe kit = ReplicatorRecipe.CODEC.codec().parse(JsonOps.INSTANCE, JsonParser.parseString("""
+                {"results": [{"id": "minecraft:stone"}, {"id": "minecraft:dirt", "count": 2}], "cost": {"metallic": 1.0},
+                 "ticks": 20, "category": "blocks", "milestone": "awakening", "title": {"text": "Kit"}}""")).getOrThrow();
+        assertEquals(2, kit.results().size());
+        assertEquals("Kit", kit.displayName().getString());
+        assertTrue(ReplicatorRecipe.CODEC.codec().parse(JsonOps.INSTANCE, JsonParser.parseString("""
+                {"results": [], "cost": {}, "ticks": 20, "category": "blocks", "milestone": "awakening"}""")).isError(),
+                "a recipe must make something");
     }
 }

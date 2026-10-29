@@ -11,7 +11,11 @@ import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
+import com.voidreclaimer.replicator.ReplicatorJob;
 import com.voidreclaimer.replicator.ReplicatorLogic;
+import com.voidreclaimer.replicator.DustCost;
+import com.voidreclaimer.salvage.Salvage;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -33,6 +37,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class ReplicatorGameTests {
     private static final ResourceLocation SCAFFOLD = VoidReclaimer.id("replicator/scaffold");
     private static final ResourceLocation SALVAGE_TOOL = VoidReclaimer.id("replicator/salvage_tool");
+    private static final ResourceLocation DRONE_KIT = VoidReclaimer.id("replicator/drone_kit");
     /** Scaffold recipe: 5 s build. */
     private static final int SCAFFOLD_TICKS = 100;
 
@@ -194,6 +199,35 @@ public final class ReplicatorGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    @GameTest(template = "empty")
+    public static void kitsDeliverEveryPartAndKeepSalvagePrices(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 47_000.5, 80, 0.5);
+        try {
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.AWAKENING).withUnlocked(Milestones.FIRST_DUST));
+            player.setData(ModAttachments.DUST, DustData.of(40, 20, 0, 0));
+            helper.assertTrue(Replicator.queue(player, DRONE_KIT) == ReplicatorLogic.QueueResult.QUEUED, "kit not queued");
+            // Skip to the last tick of the 80 s job.
+            ReplicatorData data = Replicator.data(player);
+            ReplicatorJob job = data.jobs().get(0);
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(),
+                    job.total() - 1, job.total()))));
+            player.doTick();
+            player.doTick();
+            helper.assertTrue(countOf(player, ModItems.DRONE_HULL.get().getDefaultInstance()) == 1, "hull not delivered");
+            helper.assertTrue(countOf(player, ModItems.SENSOR_DOME.get().getDefaultInstance()) == 1, "dome not delivered");
+            helper.assertTrue(countOf(player, ModItems.TOOL_CLAW.get().getDefaultInstance()) == 1, "claw not delivered");
+            helper.assertTrue(countOf(player, ModItems.ROTOR_ARM.get().getDefaultInstance()) == 4, "4 rotor arms not delivered");
+
+            // Salvage prices a hull by its own recipe (20/10), not by a seventh of the kit.
+            DustCost hull = Salvage.refundFor(player.server.getRecipeManager(), ModItems.DRONE_HULL.get(), 1f);
+            helper.assertTrue(Math.abs(hull.get(DustKinds.METALLIC) - 20f) < 1e-4, "hull refund " + hull);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
     }
 
     private static int countOf(ServerPlayer player, ItemStack target) {

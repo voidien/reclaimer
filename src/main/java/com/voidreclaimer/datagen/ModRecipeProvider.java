@@ -9,7 +9,10 @@ import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.replicator.Milestones;
 import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -70,6 +73,22 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "mech_foot", ModItems.MECH_FOOT.get(), 1, DustCost.of(3, 2, 1, 1), 15, parts, Milestones.EXPANSION);
         replicator(output, "mech_forearm_mk2", ModItems.MECH_FOREARM_MK2.get(), 1, DustCost.of(12, 8, 4, 6), 60, parts, Milestones.EXPANSION);
         replicator(output, "mech_shin_mk2", ModItems.MECH_SHIN_MK2.get(), 1, DustCost.of(12, 8, 4, 6), 60, parts, Milestones.EXPANSION);
+
+        // Kits: several sections in one job, a little cheaper than crafting them singly. Sections stack to 1.
+        kit(output, "drone_kit", List.of(new ItemStack(ModItems.DRONE_HULL.get()), new ItemStack(ModItems.SENSOR_DOME.get()),
+                new ItemStack(ModItems.TOOL_CLAW.get()), new ItemStack(ModItems.ROTOR_ARM.get()),
+                new ItemStack(ModItems.ROTOR_ARM.get()), new ItemStack(ModItems.ROTOR_ARM.get()), new ItemStack(ModItems.ROTOR_ARM.get())),
+                DustCost.of(40, 20, 0, 0), 80, parts, Milestones.FIRST_DUST);
+        kit(output, "mech_core_kit", List.of(new ItemStack(ModItems.MECH_TORSO.get()), new ItemStack(ModItems.MECH_PELVIS.get()),
+                new ItemStack(ModItems.MECH_HEAD.get())), DustCost.of(48, 36, 12, 24), 150, parts, Milestones.EXPANSION);
+    }
+
+    /** A multi-output recipe, titled {@code recipe.void_reclaimer.<name>}. */
+    private static void kit(RecipeOutput output, String name, List<ItemStack> results, DustCost cost, int seconds,
+                            ResourceKey<ReplicatorCategory> category, ResourceKey<Milestone> milestone) {
+        ReplicatorRecipe recipe = new ReplicatorRecipe(results, cost, seconds * 20, category, milestone,
+                Optional.of(Component.translatable("recipe.void_reclaimer." + name)));
+        output.accept(VoidReclaimer.id("replicator/" + name), recipe, null);
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,
