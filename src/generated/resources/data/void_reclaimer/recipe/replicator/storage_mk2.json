@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "ice": 10.0,
+    "metallic": 20.0,
+    "silicate": 20.0
+  },
+  "milestone": "expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:storage_mk2"
+  },
+  "ticks": 1200
+}

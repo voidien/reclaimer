@@ -12,6 +12,13 @@ public record EnergyRules(
         float restartFraction) {
     private static final float TICKS_PER_SECOND = 20f;
 
+    /** Config rates with the body's core capacity and solar multiplier. */
+    public static EnergyRules forBody(com.voidreclaimer.body.BodyStats body) {
+        EnergyRules base = fromConfig();
+        return new EnergyRules(body.energyCapacity(), base.idleDrainPerTick, base.sunChargePerTick * body.solarRate(),
+                base.emergencyChargePerTick, base.reserveFraction, base.restartFraction);
+    }
+
     public static EnergyRules fromConfig() {
         return new EnergyRules(
                 Config.ENERGY_CAPACITY.get().floatValue(),

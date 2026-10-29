@@ -24,7 +24,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Nanite Swarm's building logic, kept apart from the item so Phase 5a can run it from a body module.
+ * The Nanite Swarm's building logic, run from the tool module ({@link com.voidreclaimer.body.Modules}).
  *
  * <p>The swarm assembles a block in empty space {@link NaniteTargeting range} blocks ahead: the offhand block if
  * there is one, otherwise Scaffold from the inventory. Placement goes through the normal {@link BlockItem#place}
@@ -32,7 +32,7 @@ import net.minecraft.world.phys.Vec3;
  * rule is skipped.
  */
 public final class Nanites {
-    /** Ticks between builds (also the item cooldown). */
+    /** Ticks between builds (the module's cooldown). */
     public static final int BUILD_TICKS = 10;
 
     private Nanites() {}

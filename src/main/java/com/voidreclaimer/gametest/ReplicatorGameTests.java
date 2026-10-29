@@ -1,6 +1,7 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
@@ -163,7 +164,7 @@ public final class ReplicatorGameTests {
                 space.setBlock(pos, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.east(), ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
-                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.SALVAGE_TOOL.get()));
+                TestPlayers.installModule(player, PartKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
 
                 player.gameMode.destroyBlock(pos);
                 helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");
@@ -171,13 +172,13 @@ public final class ReplicatorGameTests {
                 // 8 silicate per 8 scaffold, 50% refund: 0.5 per block.
                 helper.assertTrue(Math.abs(refund - 0.5f) < 1e-4, "expected 0.5 silicate refund, got " + refund);
 
-                // Without the tool the block drops itself and refunds nothing.
-                player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                // With something in hand the module is idle: the block drops itself and refunds nothing.
+                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
                 player.gameMode.destroyBlock(pos.east());
                 helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "refund without the tool");
 
                 // Natural blocks aren't salvageable: no refund.
-                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.SALVAGE_TOOL.get()));
+                player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 player.gameMode.destroyBlock(pos.west());
                 helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).silicate() - 0.5f) < 1e-4, "stone gave a refund");
             } finally {

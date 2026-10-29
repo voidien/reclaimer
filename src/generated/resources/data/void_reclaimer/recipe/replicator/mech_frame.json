@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "carbon": 40.0,
+    "ice": 20.0,
+    "metallic": 80.0,
+    "silicate": 60.0
+  },
+  "milestone": "expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:mech_frame"
+  },
+  "ticks": 3600
+}

@@ -21,6 +21,17 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.NANITE_SWARM.get());
                 output.accept(ModItems.TETHER_ANCHOR.get());
                 output.accept(ModItems.BACKUP_CORE.get());
+                output.accept(ModItems.DRONE_FRAME.get());
+                output.accept(ModItems.MECH_FRAME.get());
+                output.accept(ModItems.SHIP_FRAME.get());
+                output.accept(ModItems.CORE_MK1.get());
+                output.accept(ModItems.CORE_MK2.get());
+                output.accept(ModItems.THRUSTER_MK1.get());
+                output.accept(ModItems.THRUSTER_MK2.get());
+                output.accept(ModItems.STORAGE_MK1.get());
+                output.accept(ModItems.STORAGE_MK2.get());
+                output.accept(ModItems.BRASS_TRIM.get());
+                output.accept(ModItems.COGWHEEL_CROWN.get());
             })
             .build());
 

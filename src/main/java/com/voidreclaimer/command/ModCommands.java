@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.replicator.Milestone;
 import com.voidreclaimer.replicator.Replicator;
@@ -40,6 +42,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer milestone grant|revoke <player> <milestone>} (a revoked milestone whose condition
  *       still holds is granted again at the next check)</li>
  *   <li>{@code /void_reclaimer core charge <player>}: fill every Backup Core the player owns</li>
+ *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  * </ul>
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
@@ -85,6 +88,13 @@ public final class ModCommands {
                 .then(Commands.literal("milestone")
                         .then(milestoneAction("grant", true))
                         .then(milestoneAction("revoke", false)))
+                .then(Commands.literal("body")
+                        .then(Commands.literal("reset")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> resetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
+                        .then(Commands.literal("get")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> getBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
                 .then(Commands.literal("core")
                         .then(Commands.literal("charge")
                                 .then(Commands.argument("player", EntityArgument.player())
@@ -112,6 +122,21 @@ public final class ModCommands {
         source.sendSuccess(() -> Component.translatable(grant ? "commands.void_reclaimer.milestone.granted"
                 : "commands.void_reclaimer.milestone.revoked", milestone.title(), player.getDisplayName()), true);
         return 1;
+    }
+
+    /** Back to the starter drone. Installed parts are discarded (it's a debug command). */
+    private static int resetBody(CommandSourceStack source, ServerPlayer player) {
+        Bodies.store(player, Bodies.starter());
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.reset", player.getDisplayName()), true);
+        return 1;
+    }
+
+    private static int getBody(CommandSourceStack source, ServerPlayer player) {
+        BodyStats stats = Bodies.stats(player);
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.get", player.getDisplayName(),
+                stats.size().displayName(), format(stats.mass()), format(stats.massBudget()), stats.inventorySlots(),
+                format((float) (stats.flight().maxSpeed() * 20))), false);
+        return stats.inventorySlots();
     }
 
     private static int chargeCores(CommandSourceStack source, ServerPlayer player) {

@@ -5,6 +5,7 @@ import com.voidreclaimer.client.hud.DustMeterLayer;
 import com.voidreclaimer.client.hud.DustSensorLayer;
 import com.voidreclaimer.client.hud.EnergyBarLayer;
 import com.voidreclaimer.client.hud.FlightHudLayer;
+import com.voidreclaimer.client.hud.ModuleHudLayer;
 import com.voidreclaimer.client.hud.TetherHudLayer;
 import com.voidreclaimer.client.input.ClientReplicatorController;
 import com.voidreclaimer.client.input.ClientSensorController;
@@ -44,6 +45,7 @@ public final class VoidReclaimerClient {
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, EnergyBarLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("module"), ModuleHudLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_meter"), DustMeterLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_sensor"), DustSensorLayer::render);

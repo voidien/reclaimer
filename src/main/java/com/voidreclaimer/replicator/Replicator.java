@@ -118,7 +118,7 @@ public final class Replicator {
 
     public static void checkMilestones(ServerPlayer player) {
         ReplicatorData data = data(player);
-        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced());
+        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player));
         ReplicatorData updated = data;
         for (Milestone milestone : Milestone.values()) {
             if (!updated.isUnlocked(milestone) && milestone.isReached(context)) {

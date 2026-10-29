@@ -30,7 +30,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The AI's built-in Replicator. Left: recipes of the selected tab (locked ones show as "???" with a milestone hint).
- * Right: the job queue with progress and cancel buttons, and the output buffer. A fourth tab shows the AI's log.
+ * Right: the job queue with progress and cancel buttons, and the output buffer. Two more tabs show the AI's log and
+ * its body ({@link BodyPanel}).
  * Drawn entirely with {@link GuiGraphics} fills and text (no textures). Doesn't pause the game, so jobs keep
  * running while it is open.
  */
@@ -46,8 +47,12 @@ public final class ReplicatorScreen extends Screen {
     private static final int TEXT = 0xFFDDE6EE;
     private static final int DIM = 0xFF7A8794;
 
-    /** Tabs: the three recipe categories, then the log. */
+    /** Tabs: the recipe categories, then the log, then the body. */
+    private static final int CATEGORY_TABS = ReplicatorRecipe.Category.values().length;
+    private static final int LOGS_TAB = CATEGORY_TABS;
+    private static final int BODY_TAB = CATEGORY_TABS + 1;
     private int tab;
+    private BodyPanel bodyPanel;
     private int scroll;
     @Nullable
     private RecipeHolder<ReplicatorRecipe> selected;
@@ -71,12 +76,14 @@ public final class ReplicatorScreen extends Screen {
         left = (width - WIDTH) / 2;
         top = (height - HEIGHT) / 2;
         int tabX = left + 6;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i <= BODY_TAB; i++) {
             int index = i;
-            Component label = i < 3 ? ReplicatorRecipe.Category.values()[i].title() : Component.translatable("replicator.void_reclaimer.tab.logs");
-            addRenderableWidget(Button.builder(label, b -> selectTab(index)).bounds(tabX, top + 18, 60, 16).build());
-            tabX += 62;
+            Component label = i < CATEGORY_TABS ? ReplicatorRecipe.Category.values()[i].title()
+                    : Component.translatable(i == LOGS_TAB ? "replicator.void_reclaimer.tab.logs" : "replicator.void_reclaimer.tab.body");
+            addRenderableWidget(Button.builder(label, b -> selectTab(index)).bounds(tabX, top + 18, 50, 16).build());
+            tabX += 52;
         }
+        bodyPanel = new BodyPanel(font, left + 6, top + 38, WIDTH - 12);
         replicateButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.replicate"), b -> replicate())
                 .bounds(left + 6, top + HEIGHT - 24, 90, 18).build());
         collectButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.collect"),
@@ -104,8 +111,9 @@ public final class ReplicatorScreen extends Screen {
             return;
         }
         ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
-        boolean recipeTab = tab < 3;
+        boolean recipeTab = tab < CATEGORY_TABS;
         replicateButton.visible = recipeTab;
+        collectButton.visible = tab != BODY_TAB;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
                 && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST));
         collectButton.active = !data.buffer().isEmpty();
@@ -125,7 +133,11 @@ public final class ReplicatorScreen extends Screen {
         if (!Energy.canPowerSystems(player)) {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.paused"), left + 120, top + 6, 0xFFFF6060, false);
         }
-        if (tab < 3) {
+        if (tab == BODY_TAB) {
+            bodyPanel.render(graphics, player, mouseX, mouseY);
+            return;
+        }
+        if (tab < CATEGORY_TABS) {
             renderRecipes(graphics, player, data, mouseX, mouseY);
         } else {
             renderLogs(graphics, data);
@@ -138,6 +150,10 @@ public final class ReplicatorScreen extends Screen {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.fill(left, top, left + WIDTH, top + HEIGHT, PANEL);
         graphics.renderOutline(left, top, WIDTH, HEIGHT, 0xFF3A4A5A);
+        if (tab == BODY_TAB) {
+            graphics.fill(left + LIST_WIDTH + 12, top + 38, left + WIDTH - 6, top + HEIGHT - 6, PANEL_LIGHT);
+            return;
+        }
         graphics.fill(left + 6, top + 38, left + LIST_WIDTH + 6, top + 38 + VISIBLE_ROWS * ROW, PANEL_LIGHT);
         graphics.fill(left + LIST_WIDTH + 14, top + 38, left + WIDTH - 6, top + HEIGHT - 28, PANEL_LIGHT);
     }
@@ -257,10 +273,13 @@ public final class ReplicatorScreen extends Screen {
         if (player == null) {
             return false;
         }
+        if (tab == BODY_TAB) {
+            return bodyPanel.mouseClicked(player, mouseX, mouseY);
+        }
         ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
         int x = left + 6;
         int y = top + 38;
-        if (tab < 3) {
+        if (tab < CATEGORY_TABS) {
             List<RecipeHolder<ReplicatorRecipe>> recipes = recipesForTab(data);
             for (int i = scroll; i < Math.min(recipes.size(), scroll + VISIBLE_ROWS); i++) {
                 if (inside(mouseX, mouseY, x, y + (i - scroll) * ROW, LIST_WIDTH, ROW)) {
@@ -292,7 +311,7 @@ public final class ReplicatorScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && tab < 3) {
+        if (player != null && tab < CATEGORY_TABS) {
             int max = Math.max(0, recipesForTab(player.getData(ModAttachments.REPLICATOR)).size() - VISIBLE_ROWS);
             scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, max);
             return true;
@@ -312,7 +331,7 @@ public final class ReplicatorScreen extends Screen {
     /** Recipes in the current tab: unlocked ones first (cheapest first), then locked ones. */
     private List<RecipeHolder<ReplicatorRecipe>> recipesForTab(ReplicatorData data) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || tab >= 3) {
+        if (mc.level == null || tab >= CATEGORY_TABS) {
             return List.of();
         }
         ReplicatorRecipe.Category category = ReplicatorRecipe.Category.values()[tab];

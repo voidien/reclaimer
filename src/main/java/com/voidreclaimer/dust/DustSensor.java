@@ -6,8 +6,9 @@ import net.minecraft.world.entity.player.Player;
 public final class DustSensor {
     private DustSensor() {}
 
-    /** Whether the player carries a Dust Sensor. Phase 5a adds the sensor body module as a second source. */
+    /** Whether a Dust Sensor module is installed in the body (both sides). Carried sensors do nothing. */
     public static boolean has(Player player) {
-        return player.getInventory().contains(stack -> stack.is(ModItems.DUST_SENSOR.get()));
+        return com.voidreclaimer.body.Bodies.data(player).hasInstalled(com.voidreclaimer.body.PartKind.SENSOR,
+                stack -> stack.is(ModItems.DUST_SENSOR.get()));
     }
 }

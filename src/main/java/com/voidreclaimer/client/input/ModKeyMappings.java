@@ -26,6 +26,10 @@ public final class ModKeyMappings {
     public static final KeyMapping CLOUD_SCANNER = new KeyMapping("key.void_reclaimer.cloud_scanner",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, CATEGORY);
 
+    /** Hold to open the module wheel (Left Alt: C is vanilla's save-hotbar key). */
+    public static final KeyMapping MODULE_WHEEL = new KeyMapping("key.void_reclaimer.module_wheel",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, CATEGORY);
+
     private ModKeyMappings() {}
 
     public static void register(RegisterKeyMappingsEvent event) {
@@ -35,5 +39,6 @@ public final class ModKeyMappings {
         event.register(REPLICATOR);
         event.register(RECALL);
         event.register(CLOUD_SCANNER);
+        event.register(MODULE_WHEEL);
     }
 }
