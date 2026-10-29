@@ -116,9 +116,11 @@ src/main/java/com/voidreclaimer/
 ├── nanite/                       Phase 4: Nanite Swarm (build in empty space)
 ├── tether/                       Phase 4: Tether Anchor leash and recall
 ├── core/                         Phase 4: Backup Cores, respawn choice, death marker
-├── body/                         Phase 5: SizeClass, PartKind, PartStats, BodyData attachment, BodyStats,
-│   │                             BodyRules, Bodies (server), InventoryLock, Modules
-│   ├── part/                     PartItem
+├── api/                          public API: registry keys, registry element types, extension interfaces, events
+├── body/                         Phase 5: BodyData attachment (sections per socket, modules per mount), BodyView,
+│   │                             BodyStats, BodyRules, BodyMigration, BuiltinBodies, Bodies (server),
+│   │                             ToolModules, Modules, InventoryLock, Cosmetics
+│   ├── part/                     SectionItem, ModuleItem
 │   └── assembly/                 (5b) 3D assembly view logic
 ├── asteroid/                     Phase 6: worldgen features, drill gating
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
@@ -264,14 +266,22 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
 | `void_reclaimer:replicator` recipes | Recipe type | `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
+| `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name` |
+| `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`); socket id = GeckoLib bone (5b) |
+| `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
+| `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
+| `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
 | `#void_reclaimer:modules/dust_sensor` | Item tag | Items that work as a Dust Sensor in a sensor slot |
 | `#void_reclaimer:salvageable` | Block tag | Blocks the Salvage Tool refunds |
 | `DustGainEvent` | Event, modifiable + cancellable | Before cloud dust is added |
 | `MilestoneReachedEvent` | Event | After a milestone is reached in play |
 | `ReplicatorJobFinishedEvent` | Event, mutable outputs | Before a finished job's items are delivered |
+| `BodyStatsEvent` | Event, replace stats | When body stats are computed (cached until the body changes), both sides |
+| `BodyChangedEvent` | Event | After a body changed (sections, modules, looks), server side |
+| `ModuleUseEvent` | Event, cancellable | Before the active tool module is used |
 
 ### Fixed sets (enums by design)
-- `PartKind`: the body's slot kinds (frame, core, thruster, storage, sensor, tool, cosmetic). Replaced by section sockets in the body sections work.
+- `ModuleKind` (`api.body`): the mount kinds sections offer (core, thruster, storage, sensor, tool, cosmetic). Each has its own rule in `BodyStats`; new behaviour comes from new modules of these kinds (tools: `ToolModuleType`). Sections themselves are open (socket types are free ids).
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.

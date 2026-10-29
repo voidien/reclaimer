@@ -1,7 +1,11 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.event.BodyChangedEvent;
+import com.voidreclaimer.api.event.BodyStatsEvent;
 import com.voidreclaimer.api.event.DustGainEvent;
+import com.voidreclaimer.api.event.ModuleUseEvent;
+import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.api.event.MilestoneReachedEvent;
 import com.voidreclaimer.api.event.ReplicatorJobFinishedEvent;
 import com.voidreclaimer.api.milestone.Milestone;
@@ -29,6 +33,14 @@ public final class TestEventListeners {
     /** Finished Replicator jobs also deliver a diamond. */
     public static final String BONUS_OUTPUT = "vr_test_bonus_output";
 
+    /** Body stats get +10 max health. */
+    public static final String TOUGH = "vr_test_tough";
+    /** Tool module use is cancelled. */
+    public static final String NO_MODULES = "vr_test_no_modules";
+
+    /** Body changes per player, for every player. */
+    static final Map<UUID, Integer> BODY_CHANGES = new ConcurrentHashMap<>();
+
     /** Milestones reached per player, in order, for every player. */
     static final Map<UUID, List<ResourceKey<Milestone>>> REACHED = new ConcurrentHashMap<>();
 
@@ -40,6 +52,28 @@ public final class TestEventListeners {
             event.setCanceled(true);
         } else if (event.getEntity().getTags().contains(FIXED_DUST)) {
             event.setAmount(1f);
+        }
+    }
+
+    @SubscribeEvent
+    static void onBodyStats(BodyStatsEvent event) {
+        if (event.getEntity().getTags().contains(TOUGH)) {
+            BodyStats s = event.getStats();
+            event.setStats(new BodyStats(s.size(), s.scale(), s.sizeRank(), s.mass(), s.massBudget(), s.coreTier(), s.flight(),
+                    s.energyUse(), s.energyCapacity(), s.solarRate(), s.maxHealth() + 10f, s.reach(), s.dustIntake(), s.rows(),
+                    s.dustCapacity(), s.stability(), s.turnRate()));
+        }
+    }
+
+    @SubscribeEvent
+    static void onBodyChanged(BodyChangedEvent event) {
+        BODY_CHANGES.merge(event.getEntity().getUUID(), 1, Integer::sum);
+    }
+
+    @SubscribeEvent
+    static void onModuleUse(ModuleUseEvent event) {
+        if (event.getEntity().getTags().contains(NO_MODULES)) {
+            event.setCanceled(true);
         }
     }
 

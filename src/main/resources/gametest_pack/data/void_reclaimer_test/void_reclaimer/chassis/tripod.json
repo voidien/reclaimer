@@ -1,0 +1,10 @@
+{
+  "size_class": "void_reclaimer_test:tiny",
+  "core_socket": "body",
+  "sockets": [
+    {"id": "body", "accepts": ["void_reclaimer_test:tripod_body"], "required": true, "area": "core"},
+    {"id": "leg_1", "accepts": ["void_reclaimer:rotor_arm"], "parent": "body", "pivot": [2, 0, 0], "area": "legs"},
+    {"id": "leg_2", "accepts": ["void_reclaimer:rotor_arm"], "parent": "body", "pivot": [-1, 0, 2], "area": "legs"},
+    {"id": "leg_3", "accepts": ["void_reclaimer:rotor_arm"], "parent": "body", "pivot": [-1, 0, -2], "area": "legs"}
+  ]
+}

@@ -1,6 +1,16 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import java.util.Optional;
+import java.util.Map;
+import com.voidreclaimer.registry.ModItems;
+import com.voidreclaimer.registry.ModDataComponents;
+import com.voidreclaimer.body.Modules;
+import com.voidreclaimer.body.BodyRules;
+import com.voidreclaimer.body.BodyData;
+import com.voidreclaimer.api.body.SectionStats;
+import com.voidreclaimer.api.body.ModuleStats;
 import com.voidreclaimer.api.VoidReclaimerRegistries;
 import com.voidreclaimer.api.body.Casing;
 import com.voidreclaimer.api.milestone.Milestone;
@@ -172,6 +182,68 @@ public final class ExtensionGameTests {
             helper.assertFalse(DustSensor.has(player), "untagged item counted as a sensor");
             TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(Items.SPYGLASS));
             helper.assertTrue(DustSensor.has(player), "tagged item not counted as a sensor");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** A datapack chassis (with a datapack size class) takes over when its core section is installed. */
+    @GameTest(template = "empty")
+    public static void datapackChassisSetsTheLayout(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 65_000.5, 80, 0.5);
+        try {
+            ItemStack core = new ItemStack(Items.IRON_BLOCK);
+            core.set(ModDataComponents.SECTION.get(), new SectionStats(ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "tripod_body"),
+                    1, 0.3f, 2f, 6f, 0f, 1f, 1, 0f, 0f, 0f, Map.of(ModuleKind.CORE, 1),
+                    Optional.of(ResourceKey.create(VoidReclaimerRegistries.CHASSIS, ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "tripod")))));
+            player.getInventory().items.set(0, core);
+            helper.assertTrue(Bodies.installSection(player, "hull", 0) == BodyRules.Check.OK, "tripod core refused");
+            helper.assertTrue(Bodies.data(player).coreSocket().equals("body"), "layout not switched");
+            helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.SCALE) - 0.25) < 1e-6, "datapack size class not applied");
+            helper.assertTrue(Bodies.view(player).missing().size() == 3, "tripod legs");
+            int arm = player.getInventory().findSlotMatchingItem(new ItemStack(ModItems.ROTOR_ARM.get()));
+            helper.assertTrue(Bodies.installSection(player, "leg_1", arm) == BodyRules.Check.OK, "rotor arm refused as a leg");
+            int claw = player.getInventory().findSlotMatchingItem(new ItemStack(ModItems.TOOL_CLAW.get()));
+            helper.assertTrue(Bodies.installSection(player, "leg_2", claw) == BodyRules.Check.WRONG_SOCKET, "claw accepted as a leg");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** An addon tool module type runs on use; ModuleUseEvent can stop it. */
+    @GameTest(template = "empty")
+    public static void addonToolModuleTypeAndModuleUseEvent(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 66_000.5, 80, 0.5);
+        try {
+            ItemStack marker = new ItemStack(Items.STICK);
+            marker.set(ModDataComponents.MODULE.get(), ModuleStats.simple(ModuleKind.TOOL, 1, 0f));
+            marker.set(ModDataComponents.TOOL_MODULE.get(), GameTestPack.MARKER);
+            TestPlayers.installModule(player, ModuleKind.TOOL, 0, marker);
+            Modules.use(player);
+            helper.assertTrue(GameTestPack.MARKER_USES.getOrDefault(player.getUUID(), 0) == 1, "addon tool type not used");
+            player.addTag(TestEventListeners.NO_MODULES);
+            Modules.use(player);
+            helper.assertTrue(GameTestPack.MARKER_USES.getOrDefault(player.getUUID(), 0) == 1, "cancelled use still ran");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** BodyStatsEvent changes computed stats; BodyChangedEvent fires once per change. */
+    @GameTest(template = "empty")
+    public static void bodyStatsAndChangedEvents(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 67_000.5, 80, 0.5);
+        try {
+            player.addTag(TestEventListeners.TOUGH);
+            int before = TestEventListeners.BODY_CHANGES.getOrDefault(player.getUUID(), 0);
+            player.getInventory().items.set(3, new ItemStack(ModItems.STORAGE_MK1.get()));
+            helper.assertTrue(Bodies.installModule(player, new BodyData.Mount("hull", ModuleKind.STORAGE, 0), 3) == BodyRules.Check.OK,
+                    "install failed");
+            helper.assertTrue(TestEventListeners.BODY_CHANGES.getOrDefault(player.getUUID(), 0) == before + 1, "BodyChangedEvent count");
+            helper.assertTrue(player.getMaxHealth() == 22f, "BodyStatsEvent ignored: " + player.getMaxHealth());
             helper.succeed();
         } finally {
             TestPlayers.remove(player);
