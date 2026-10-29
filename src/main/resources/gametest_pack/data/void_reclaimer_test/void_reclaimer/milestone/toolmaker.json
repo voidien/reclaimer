@@ -1,0 +1,7 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:items_made",
+    "items": ["minecraft:stick", "minecraft:flint"]
+  },
+  "order": 60
+}

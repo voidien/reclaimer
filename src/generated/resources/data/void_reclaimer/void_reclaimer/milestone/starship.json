@@ -1,0 +1,12 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:items_made",
+    "items": [
+      "void_reclaimer:coolant_frame_plate",
+      "void_reclaimer:carbon_composite_plate",
+      "void_reclaimer:high_efficiency_solar_cell",
+      "void_reclaimer:micro_alloy_sheet"
+    ]
+  },
+  "order": 50
+}

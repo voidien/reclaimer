@@ -130,9 +130,9 @@ public final class Replicator {
     }
 
     public static void checkMilestones(ServerPlayer player) {
-        ReplicatorData data = data(player);
+        ReplicatorData data = trackItems(player, data(player));
         MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player),
-                DysonSphereData.of(player.serverLevel()).tier());
+                DysonSphereData.of(player.serverLevel()).tier(), java.util.Set.copyOf(data.itemsMade()));
         ReplicatorData updated = data;
         List<ResourceKey<Milestone>> reached = new ArrayList<>();
         for (Milestones.Entry entry : Milestones.all(player.registryAccess())) {
@@ -147,6 +147,40 @@ public final class Replicator {
         for (ResourceKey<Milestone> milestone : reached) {
             NeoForge.EVENT_BUS.post(new MilestoneReachedEvent(player, milestone));
         }
+    }
+
+    /** Records the items some unreached milestone asks for that the player is holding right now (inventory, armor, offhand). */
+    private static ReplicatorData trackItems(ServerPlayer player, ReplicatorData data) {
+        java.util.Set<net.minecraft.resources.ResourceLocation> wanted = Milestones.itemsWanted(player.registryAccess(), data::isUnlocked);
+        wanted.removeAll(data.itemsMade());
+        if (wanted.isEmpty()) {
+            return data;
+        }
+        ReplicatorData updated = data;
+        for (ItemStack stack : player.getInventory().items) {
+            updated = noteItem(stack, wanted, updated);
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            updated = noteItem(stack, wanted, updated);
+        }
+        for (ItemStack stack : player.getInventory().armor) {
+            updated = noteItem(stack, wanted, updated);
+        }
+        for (ItemStack stack : data.buffer()) {
+            updated = noteItem(stack, wanted, updated);
+        }
+        if (updated != data) {
+            store(player, updated);
+        }
+        return updated;
+    }
+
+    private static ReplicatorData noteItem(ItemStack stack, java.util.Set<net.minecraft.resources.ResourceLocation> wanted, ReplicatorData data) {
+        if (stack.isEmpty()) {
+            return data;
+        }
+        net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return wanted.contains(id) ? data.withItemMade(id) : data;
     }
 
     /** Counts a block the player placed, for block-placing milestones. Stops once every such milestone is satisfied. */

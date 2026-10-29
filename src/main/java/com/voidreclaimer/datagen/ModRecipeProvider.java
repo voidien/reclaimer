@@ -107,6 +107,25 @@ public final class ModRecipeProvider extends RecipeProvider {
                 DustCost.of(40, 20, 0, 0), 80, parts, Milestones.FIRST_DUST);
         kit(output, "mech_core_kit", List.of(new ItemStack(ModItems.MECH_TORSO.get()), new ItemStack(ModItems.MECH_PELVIS.get()),
                 new ItemStack(ModItems.MECH_HEAD.get())), DustCost.of(48, 36, 12, 24), 150, parts, Milestones.EXPANSION);
+
+        // Ship sections (tier 3), unlocked by the Starship milestone. Placeholder prices: a whole Ship costs several times a Mech.
+        ResourceKey<Milestone> starship = Milestones.STARSHIP;
+        replicator(output, "ship_keel", ModItems.SHIP_KEEL.get(), 1, DustCost.of(120, 90, 60, 80), 240, parts, starship);
+        replicator(output, "ship_bow", ModItems.SHIP_BOW.get(), 1, DustCost.of(24, 18, 12, 16), 60, parts, starship);
+        replicator(output, "ship_bridge", ModItems.SHIP_BRIDGE.get(), 1, DustCost.of(30, 22, 14, 20), 70, parts, starship);
+        replicator(output, "ship_hull_segment", ModItems.SHIP_HULL_SEGMENT.get(), 1, DustCost.of(20, 16, 10, 14), 50, parts, starship);
+        replicator(output, "ship_hull_segment_mk2", ModItems.SHIP_HULL_SEGMENT_MK2.get(), 1, DustCost.of(50, 40, 25, 35), 120, parts, starship);
+        replicator(output, "ship_wing", ModItems.SHIP_WING.get(), 1, DustCost.of(18, 14, 8, 12), 45, parts, starship);
+        replicator(output, "ship_engine_nacelle", ModItems.SHIP_ENGINE_NACELLE.get(), 1, DustCost.of(30, 20, 10, 24), 70, parts, starship);
+        replicator(output, "ship_engine_nacelle_mk2", ModItems.SHIP_ENGINE_NACELLE_MK2.get(), 1, DustCost.of(70, 50, 30, 60), 140, parts, starship);
+        replicator(output, "ship_hardpoint", ModItems.SHIP_HARDPOINT.get(), 1, DustCost.of(12, 8, 6, 10), 40, parts, starship);
+        replicator(output, "ship_cargo_bay", ModItems.SHIP_CARGO_BAY.get(), 1, DustCost.of(24, 20, 10, 14), 60, parts, starship);
+        replicator(output, "ship_sensor_mast", ModItems.SHIP_SENSOR_MAST.get(), 1, DustCost.of(14, 10, 8, 12), 40, parts, starship);
+        replicator(output, "ship_rcs_cluster", ModItems.SHIP_RCS_CLUSTER.get(), 1, DustCost.of(14, 10, 8, 12), 40, parts, starship);
+        replicator(output, "ship_dorsal_spine", ModItems.SHIP_DORSAL_SPINE.get(), 1, DustCost.of(28, 22, 12, 18), 60, parts, starship);
+        replicator(output, "ship_ventral_fin", ModItems.SHIP_VENTRAL_FIN.get(), 1, DustCost.of(16, 12, 8, 10), 45, parts, starship);
+        kit(output, "ship_core_kit", List.of(new ItemStack(ModItems.SHIP_KEEL.get()), new ItemStack(ModItems.SHIP_BRIDGE.get()),
+                new ItemStack(ModItems.SHIP_BOW.get())), DustCost.of(150, 114, 74, 102), 300, parts, starship);
     }
 
     /** A multi-output recipe, titled {@code recipe.void_reclaimer.<name>}. */

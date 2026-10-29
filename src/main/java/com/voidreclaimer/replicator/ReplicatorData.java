@@ -13,26 +13,29 @@ import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Per-player Replicator state: the job queue (first job is the one being worked on), the output buffer for
  * finished items that didn't fit in the inventory, the milestones reached in order (which is also the log), and
- * progress counters that milestones look at.
+ * progress counters that milestones look at (blocks placed, and the ids of the items the player has ever held).
  * Immutable; every change produces a new instance.
  */
-public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, List<ResourceKey<Milestone>> unlocked, int blocksPlaced) {
+public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, List<ResourceKey<Milestone>> unlocked, int blocksPlaced,
+                             List<ResourceLocation> itemsMade) {
     public static final int MAX_JOBS = 5;
     public static final int BUFFER_SLOTS = 9;
 
-    public static final ReplicatorData EMPTY = new ReplicatorData(List.of(), List.of(), List.of(), 0);
+    public static final ReplicatorData EMPTY = new ReplicatorData(List.of(), List.of(), List.of(), 0, List.of());
 
     public static final Codec<ReplicatorData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             // Lenient: a field that no longer parses (e.g. an item from a removed mod) resets instead of failing the load.
             ReplicatorJob.CODEC.listOf().lenientOptionalFieldOf("jobs", List.of()).forGetter(ReplicatorData::jobs),
             ItemStack.CODEC.listOf().lenientOptionalFieldOf("buffer", List.of()).forGetter(ReplicatorData::buffer),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).listOf().lenientOptionalFieldOf("unlocked", List.of()).forGetter(ReplicatorData::unlocked),
-            Codec.INT.lenientOptionalFieldOf("blocks_placed", 0).forGetter(ReplicatorData::blocksPlaced)
+            Codec.INT.lenientOptionalFieldOf("blocks_placed", 0).forGetter(ReplicatorData::blocksPlaced),
+            ModCodecs.ID.listOf().lenientOptionalFieldOf("items_made", List.of()).forGetter(ReplicatorData::itemsMade)
     ).apply(instance, ReplicatorData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorData> STREAM_CODEC = StreamCodec.composite(
@@ -40,6 +43,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
             ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::buffer,
             ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE).apply(ByteBufCodecs.list()), ReplicatorData::unlocked,
             ByteBufCodecs.VAR_INT, ReplicatorData::blocksPlaced,
+            ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::itemsMade,
             ReplicatorData::new);
 
     /**
@@ -52,6 +56,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         jobs = List.copyOf(jobs);
         buffer = List.copyOf(buffer);
         unlocked = List.copyOf(unlocked);
+        itemsMade = List.copyOf(itemsMade);
     }
 
     public boolean isUnlocked(ResourceKey<Milestone> milestone) {
@@ -68,11 +73,11 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
     }
 
     public ReplicatorData withJobs(List<ReplicatorJob> newJobs) {
-        return new ReplicatorData(newJobs, buffer, unlocked, blocksPlaced);
+        return new ReplicatorData(newJobs, buffer, unlocked, blocksPlaced, itemsMade);
     }
 
     public ReplicatorData withBuffer(List<ItemStack> newBuffer) {
-        return new ReplicatorData(jobs, newBuffer, unlocked, blocksPlaced);
+        return new ReplicatorData(jobs, newBuffer, unlocked, blocksPlaced, itemsMade);
     }
 
     public ReplicatorData withUnlocked(ResourceKey<Milestone> milestone) {
@@ -81,7 +86,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         }
         List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.add(milestone);
-        return new ReplicatorData(jobs, buffer, list, blocksPlaced);
+        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade);
     }
 
     public ReplicatorData withoutUnlocked(ResourceKey<Milestone> milestone) {
@@ -90,11 +95,21 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         }
         List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.remove(milestone);
-        return new ReplicatorData(jobs, buffer, list, blocksPlaced);
+        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade);
     }
 
     public ReplicatorData withBlocksPlaced(int count) {
-        return new ReplicatorData(jobs, buffer, unlocked, count);
+        return new ReplicatorData(jobs, buffer, unlocked, count, itemsMade);
+    }
+
+    /** Remembers that the player has had the item {@code id}; a no-op when already recorded. */
+    public ReplicatorData withItemMade(ResourceLocation id) {
+        if (itemsMade.contains(id)) {
+            return this;
+        }
+        List<ResourceLocation> list = new ArrayList<>(itemsMade);
+        list.add(id);
+        return new ReplicatorData(jobs, buffer, unlocked, blocksPlaced, list);
     }
 
     /** Milestones present in {@code current} but not in {@code previous}, in unlock order. */

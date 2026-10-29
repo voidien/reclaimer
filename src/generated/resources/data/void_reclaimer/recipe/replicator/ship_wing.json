@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 12.0,
+    "void_reclaimer:ice": 8.0,
+    "void_reclaimer:metallic": 18.0,
+    "void_reclaimer:silicate": 14.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:ship_wing"
+  },
+  "ticks": 900
+}

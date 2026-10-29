@@ -1,0 +1,29 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 102.0,
+    "void_reclaimer:ice": 74.0,
+    "void_reclaimer:metallic": 150.0,
+    "void_reclaimer:silicate": 114.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "results": [
+    {
+      "count": 1,
+      "id": "void_reclaimer:ship_keel"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:ship_bridge"
+    },
+    {
+      "count": 1,
+      "id": "void_reclaimer:ship_bow"
+    }
+  ],
+  "ticks": 6000,
+  "title": {
+    "translate": "recipe.void_reclaimer.ship_core_kit"
+  }
+}

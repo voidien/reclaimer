@@ -24,6 +24,7 @@ public final class MilestoneCriteria {
         TYPES.register("blocks_placed", () -> BlocksPlaced.CODEC);
         TYPES.register("dust_full", () -> DustFull.CODEC);
         TYPES.register("dyson_tier", () -> DysonTier.CODEC);
+        TYPES.register("items_made", () -> ItemsMade.CODEC);
     }
 
     private MilestoneCriteria() {}
@@ -128,6 +129,26 @@ public final class MilestoneCriteria {
 
         @Override
         public MapCodec<DysonTier> codec() {
+            return CODEC;
+        }
+    }
+
+    /**
+     * The player has held every item in {@code items} at some point (made, crafted, taken from a machine or picked up; the
+     * Replicator checks the inventory about once a second).
+     */
+    public record ItemsMade(java.util.List<ResourceLocation> items) implements MilestoneCriterion {
+        public static final MapCodec<ItemsMade> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                ExtraCodecs.nonEmptyList(ModCodecs.ID.listOf()).fieldOf("items").forGetter(ItemsMade::items)
+        ).apply(instance, ItemsMade::new));
+
+        @Override
+        public boolean isReached(MilestoneContext context) {
+            return context.itemsMade().containsAll(items);
+        }
+
+        @Override
+        public MapCodec<ItemsMade> codec() {
             return CODEC;
         }
     }
