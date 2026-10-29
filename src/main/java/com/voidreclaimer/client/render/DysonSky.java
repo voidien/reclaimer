@@ -36,7 +36,29 @@ final class DysonSky {
     /** Angular radius (radians) of the shell around the star. */
     private static final float SHELL_RADIUS = 0.24f;
 
+    /** Payloads on their way to the star: seen from deep space as blue streaks after a Mass Driver fires. */
+    private static final int STREAK_TICKS = 120;
+    private static final int STREAK_TRAIL = 10;
+    private static final java.util.List<Streak> STREAKS = new java.util.ArrayList<>();
+
+    private static final class Streak {
+        final float azimuth;
+        final boolean truss;
+        float born = Float.NaN;
+
+        Streak(float azimuth, boolean truss) {
+            this.azimuth = azimuth;
+            this.truss = truss;
+        }
+    }
+
     private DysonSky() {}
+
+    /** Starts a streak from the direction the launch point hashes to. Client thread only. */
+    static void addStreak(net.minecraft.core.BlockPos from, boolean truss) {
+        long h = from.asLong() * 0x9E3779B97F4A7C15L;
+        STREAKS.add(new Streak(((h >>> 20) & 0xFFFF) / 65536f * Mth.TWO_PI, truss));
+    }
 
     /** Tint for the star's own disc: amber as the swarm thickens, dimmer as the shell closes. */
     static float[] sunTint(DysonSphereData data) {
@@ -46,18 +68,124 @@ final class DysonSky {
     }
 
     /** Draws everything with alpha blending already on; {@code frame} puts the star at +Y. */
-    static void render(Matrix4f frame, DysonSphereData data, float time) {
-        if (data.tier() <= 0) {
+    static void render(Matrix4f frame, Matrix4f view, net.minecraft.world.phys.Vec3 camera, DysonSphereData data, float time) {
+        if (data.tier() <= 0 && STREAKS.isEmpty()) {
             return;
         }
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         // The quads are built from tangent vectors, so their winding depends on the view: draw both faces.
         RenderSystem.disableCull();
+        drawStreaks(frame, time);
+        if (data.tier() <= 0) {
+            RenderSystem.enableCull();
+            return;
+        }
         drawSwarm(frame, data, time);
         if (data.shellProgress() > 0f || data.tier() >= 3) {
             drawShell(frame, data, time);
         }
+        drawBeams(frame, view, camera, data, time);
         RenderSystem.enableCull();
+    }
+
+    /**
+     * Layer C: additive power beams from the star to each running Quantum Receiver the player can see, brighter the more trusses
+     * are launched. The beam ends at the sky point in the receiver's direction, so it seems to come down to the block.
+     */
+    private static void drawBeams(Matrix4f frame, Matrix4f view, net.minecraft.world.phys.Vec3 camera, DysonSphereData data, float time) {
+        net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+        if (level == null || data.trusses() <= 0 || com.voidreclaimer.machine.QuantumReceiverBlockEntity.CLIENT_RECEIVERS.isEmpty()) {
+            return;
+        }
+        float strength = 0.25f + 0.75f * com.voidreclaimer.machine.MassDriverMath.receiverFraction(data.trusses(), data.shellTotal());
+        // The frame matrix carries the sun's tilt on top of the view; the star in view-space coordinates is that tilt applied to +Y.
+        Matrix4f tilt = new Matrix4f(view).invert().mul(frame);
+        Vector3f star = tilt.transformPosition(new Vector3f(0f, RADIUS, 0f));
+        Vector3f forward = new Matrix4f(view).invert().transformDirection(new Vector3f(0f, 0f, -1f)).normalize();
+        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
+                com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+        BufferBuilder builder = begin();
+        var iterator = com.voidreclaimer.machine.QuantumReceiverBlockEntity.CLIENT_RECEIVERS.iterator();
+        while (iterator.hasNext()) {
+            net.minecraft.core.BlockPos pos = iterator.next();
+            if (!(level.getBlockEntity(pos) instanceof com.voidreclaimer.machine.QuantumReceiverBlockEntity receiver)) {
+                if (level.isLoaded(pos)) {
+                    iterator.remove();
+                }
+                continue;
+            }
+            if (Math.abs(receiver.getSpeed()) < 1f) {
+                continue;
+            }
+            Vector3f target = new Vector3f((float) (pos.getX() + 0.5 - camera.x), (float) (pos.getY() + 0.5 - camera.y),
+                    (float) (pos.getZ() + 0.5 - camera.z));
+            if (target.lengthSquared() < 1f) {
+                continue;
+            }
+            target.normalize(RADIUS);
+            Vector3f axis = new Vector3f(target).sub(star);
+            Vector3f side = axis.cross(forward, new Vector3f());
+            if (side.lengthSquared() < 1.0E-6f) {
+                continue;
+            }
+            side.normalize();
+            int segments = 24;
+            for (int i = 0; i < segments; i++) {
+                float t0 = i / (float) segments;
+                float t1 = (i + 1) / (float) segments;
+                // Pulses travel along the beam.
+                float pulse = 0.55f + 0.45f * Mth.sin(t0 * 14f - time * 0.35f);
+                Vector3f w0 = new Vector3f(side).mul(0.9f + 0.8f * t0);
+                Vector3f w1 = new Vector3f(side).mul(0.9f + 0.8f * t1);
+                Vector3f a = new Vector3f(star).lerp(target, t0);
+                Vector3f b = new Vector3f(star).lerp(target, t1);
+                float alpha = strength * pulse * (0.5f + 0.5f * t0);
+                beamVertex(builder, view, a.x - w0.x, a.y - w0.y, a.z - w0.z, alpha);
+                beamVertex(builder, view, a.x + w0.x, a.y + w0.y, a.z + w0.z, alpha);
+                beamVertex(builder, view, b.x + w1.x, b.y + w1.y, b.z + w1.z, alpha);
+                beamVertex(builder, view, b.x - w1.x, b.y - w1.y, b.z - w1.z, alpha);
+            }
+        }
+        draw(builder);
+        RenderSystem.defaultBlendFunc();
+    }
+
+    private static void beamVertex(BufferBuilder builder, Matrix4f view, float x, float y, float z, float alpha) {
+        builder.addVertex(view, x, y, z).setColor(0.55f, 0.85f, 1f, alpha);
+    }
+
+    private static void drawStreaks(Matrix4f frame, float time) {
+        if (STREAKS.isEmpty()) {
+            return;
+        }
+        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
+                com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+        BufferBuilder builder = begin();
+        java.util.Iterator<Streak> it = STREAKS.iterator();
+        while (it.hasNext()) {
+            Streak streak = it.next();
+            if (Float.isNaN(streak.born)) {
+                streak.born = time;
+            }
+            float age = time - streak.born;
+            if (age > STREAK_TICKS + STREAK_TRAIL) {
+                it.remove();
+                continue;
+            }
+            for (int i = 0; i < STREAK_TRAIL; i++) {
+                float p = Mth.clamp((age - i * 0.8f) / STREAK_TICKS, 0f, 1f);
+                if (p <= 0f || p >= 1f) {
+                    continue;
+                }
+                // From 1.3 rad out to the star's disc, speeding up as it goes.
+                float radius = 1.3f * (1f - p * p);
+                float fade = 1f - i / (float) STREAK_TRAIL;
+                float size = (streak.truss ? 0.7f : 0.5f) * fade;
+                quad(builder, frame, onSphere(radius, streak.azimuth, 0f), size, 0.45f, 0.7f, 1f, 0.9f * fade);
+            }
+        }
+        draw(builder);
+        RenderSystem.defaultBlendFunc();
     }
 
     private static void drawSwarm(Matrix4f frame, DysonSphereData data, float time) {

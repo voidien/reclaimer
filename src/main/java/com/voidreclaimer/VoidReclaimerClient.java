@@ -34,6 +34,7 @@ public final class VoidReclaimerClient {
         modBus.addListener(ModKeyMappings::register);
         modBus.addListener(VoidReclaimerClient::onRegisterClientExtensions);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
+        com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
     }

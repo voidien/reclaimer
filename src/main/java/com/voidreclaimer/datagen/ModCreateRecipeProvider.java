@@ -29,6 +29,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
     private static final String RCS = "rcsThruster";
     private static final String GYRO = "reactionWheel";
     private static final String CATALYST = "catalystCore";
+    private static final String RECEIVER = "quantumReceiver";
 
     private static final int BUCKET_QUARTER = 250;
 
@@ -50,6 +51,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
         metallic();
         solarSail();
         frameAndMachinery();
+        quantumReceiver();
         return CompletableFuture.allOf(pending.toArray(CompletableFuture[]::new));
     }
 
@@ -174,6 +176,13 @@ public final class ModCreateRecipeProvider implements DataProvider {
         // Atmospheric Catalyst Core: Advanced Sensor Unit base, Deploy Quartz Wafer, Spout Nebulite Propellant, Press.
         assembly("frame/atmospheric_catalyst_core", CATALYST, item("advanced_sensor_unit"), "atmospheric_catalyst_core", 1,
                 deploy(item("quartz_wafer")), spout("void_reclaimer:nebulite_propellant"), press());
+    }
+
+    /** Sub-Light Quantum Receiver: Micro-Alloy Sheet base, Deploy Solar Cell, Deploy Composite Plate, Deploy Precision Mechanism, Spout Coolant. */
+    private void quantumReceiver() {
+        assembly("receiver/quantum_receiver", RECEIVER, item("micro_alloy_sheet"), "quantum_receiver", 1,
+                deploy(item("high_efficiency_solar_cell")), deploy(item("carbon_composite_plate")),
+                deploy(vanillaItem("create:precision_mechanism")), spout("void_reclaimer:coolant_fluid"));
     }
 
     // ---- Sequenced Assembly -------------------------------------------------------------------------------

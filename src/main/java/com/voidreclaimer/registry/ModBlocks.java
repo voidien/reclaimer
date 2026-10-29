@@ -51,6 +51,23 @@ public final class ModBlocks {
                     com.voidreclaimer.machine.SpinnerBlockEntity.class, ModBlockEntities.SPINNER::get),
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
 
+    /** The Kinetic Mass Driver: the drive base (shaft input, controller), the payload chamber and the barrel nozzle, stacked in that order. */
+    public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.MassDriverBaseBlockEntity>> KINETIC_DRIVE_BASE =
+            BLOCKS.registerBlock("kinetic_drive_base", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
+                    com.voidreclaimer.machine.MassDriverBaseBlockEntity.class, ModBlockEntities.MASS_DRIVER_BASE::get),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+    public static final DeferredBlock<com.voidreclaimer.machine.PayloadChamberBlock> PAYLOAD_CHAMBER =
+            BLOCKS.registerBlock("payload_chamber", com.voidreclaimer.machine.PayloadChamberBlock::new,
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER));
+    public static final DeferredBlock<Block> MAGNETIC_BARREL_NOZZLE =
+            BLOCKS.registerSimpleBlock("magnetic_barrel_nozzle",
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER));
+    /** The Sub-Light Quantum Receiver: a rotation source fed by the Dyson Sphere. */
+    public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.QuantumReceiverBlockEntity>> QUANTUM_RECEIVER =
+            BLOCKS.registerBlock("quantum_receiver", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
+                    com.voidreclaimer.machine.QuantumReceiverBlockEntity.class, ModBlockEntities.QUANTUM_RECEIVER::get),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+
     private static DeferredBlock<AsteroidBlock> asteroid(String name, ResourceLocation kind, MapColor color) {
         return BLOCKS.registerBlock(name, properties -> new AsteroidBlock(kind, properties),
                 BlockBehaviour.Properties.of().mapColor(color).strength(3.0f, 12.0f).sound(SoundType.STONE));

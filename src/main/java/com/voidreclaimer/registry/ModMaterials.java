@@ -70,6 +70,8 @@ public final class ModMaterials {
             incomplete("incomplete_reaction_wheel_gyroscope", "Incomplete Reaction Wheel Gyroscope");
     public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_CATALYST_CORE =
             incomplete("incomplete_atmospheric_catalyst_core", "Incomplete Atmospheric Catalyst Core");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_QUANTUM_RECEIVER =
+            incomplete("incomplete_quantum_receiver", "Incomplete Sub-Light Quantum Receiver");
 
     private ModMaterials() {}
 

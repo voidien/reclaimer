@@ -82,6 +82,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.tab.materials", "Raw");
         add(ModItems.ELECTROLYZER.get(), "Electrolyzer");
         add(ModItems.SPINNER.get(), "Spinner");
+        add(ModItems.KINETIC_DRIVE_BASE.get(), "Kinetic Drive Base");
+        add(ModItems.PAYLOAD_CHAMBER.get(), "Payload Chamber");
+        add(ModItems.MAGNETIC_BARREL_NOZZLE.get(), "Magnetic Barrel Nozzle");
+        add(ModItems.QUANTUM_RECEIVER.get(), "Sub-Light Quantum Receiver");
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             add(material.item().get(), material.name());
         }
@@ -99,6 +103,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.nanite.blocked", "Something is in the way.");
         add("message.void_reclaimer.nanite.range", "Nanite build distance: %s");
         add("subtitles.void_reclaimer.nanite_build", "Nanites assemble");
+        add("subtitles.void_reclaimer.mass_driver_launch", "Mass Driver fires");
 
         add(ModBlocks.TETHER_ANCHOR.get(), "Tether Anchor");
         add("key.void_reclaimer.recall", "Tether Recall (hold)");

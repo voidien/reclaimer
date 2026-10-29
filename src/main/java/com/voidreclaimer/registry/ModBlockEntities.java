@@ -20,5 +20,14 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.SpinnerBlockEntity>> SPINNER = BLOCK_ENTITIES.register("spinner",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.SpinnerBlockEntity::new, ModBlocks.SPINNER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.machine.MassDriverBaseBlockEntity>> MASS_DRIVER_BASE = BLOCK_ENTITIES.register("kinetic_drive_base",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.MassDriverBaseBlockEntity::new, ModBlocks.KINETIC_DRIVE_BASE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<com.voidreclaimer.machine.PayloadChamberBlockEntity>> PAYLOAD_CHAMBER = BLOCK_ENTITIES.register("payload_chamber",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.PayloadChamberBlockEntity::new, ModBlocks.PAYLOAD_CHAMBER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<com.voidreclaimer.machine.QuantumReceiverBlockEntity>> QUANTUM_RECEIVER = BLOCK_ENTITIES.register("quantum_receiver",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.QuantumReceiverBlockEntity::new, ModBlocks.QUANTUM_RECEIVER.get()).build(null));
+
     private ModBlockEntities() {}
 }

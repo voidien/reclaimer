@@ -20,5 +20,7 @@ public final class ModItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(ModTags.DUST_SENSOR_MODULES).add(ModItems.DUST_SENSOR.get());
+        tag(ModTags.DYSON_SATELLITE_PAYLOADS).add(com.voidreclaimer.registry.ModMaterials.DYSON_SWARM_SATELLITE_PAYLOAD.get());
+        tag(ModTags.DYSON_TRUSS_PAYLOADS).add(com.voidreclaimer.registry.ModMaterials.DYSON_SHELL_TRUSS_MODULE.get());
     }
 }

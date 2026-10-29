@@ -304,6 +304,9 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `BodyStatsEvent` | Event, replace stats | When body stats are computed (cached until the body changes), both sides |
 | `BodyChangedEvent` | Event | After a body changed (sections, modules, looks), server side |
 | `ModuleUseEvent` | Event, cancellable | Before the active tool module is used |
+| `MassDriverLaunchEvent` | Event, cancellable, mutable counts | When a Mass Driver fires a payload, before the Dyson counters change; counts start from the payload's tag |
+| `#void_reclaimer:dyson/satellite_payloads` | Item tag | Items the Mass Driver launches as one Dyson Swarm Satellite each |
+| `#void_reclaimer:dyson/truss_payloads` | Item tag | Items the Mass Driver launches as one Dyson Shell Truss Module each |
 
 ### Fixed sets (enums by design)
 - `ModuleKind` (`api.body`): the mount kinds sections offer (core, thruster, storage, sensor, tool, cosmetic). Each has its own rule in `BodyStats`; new behaviour comes from new modules of these kinds (tools: `ToolModuleType`). Sections themselves are open (socket types are free ids).
@@ -368,7 +371,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
 Act II, the Dyson Sphere (deep_space):
 - **8. Zero-G Frame and payloads (done):** Zero-G Precision Frame, Dyson Swarm Satellite Payload, Dyson Shell Truss Module, RCS Thruster, Reaction Wheel Gyroscope, Atmospheric Catalyst Core, as Create Sequenced Assembly recipes (see the Phase 8 block).
-- **9. Kinetic Mass Driver:** the 1x1x3 multiblock, its launch sequence and animations, the handoff to `Dyson.launchSatellites/launchTrusses`, the Sub-Light Quantum Receiver and the sky's power beams. Sky tier thresholds from the truss counts.
+- **9. Kinetic Mass Driver (done, see the Phase 9 block):** the 1x1x3 multiblock, its launch sequence and animations, the handoff to `Dyson.launchSatellites/launchTrusses`, the Sub-Light Quantum Receiver and the sky's power beams. Sky tier thresholds from the truss counts.
 - **10. The Starship:** the milestone that unlocks the Ship frame (one item from each nebula chain) and the Ship class's recipes.
 Act III, Planetary Genesis (ruined_earth):
 - **11. Ruined Earth:** the dimension and its three-era sky, the Atmospheric Portal, the Planetary Grid HUD, the drop pod and Industrial Mech, Ashen Slag, smog, Acid Drizzle weather.
@@ -394,3 +397,16 @@ Parallel tracks, scheduled as they fit:
 - Dyson sky thresholds now default to 50 and 2000 (`DysonTiers`, config `dyson`).
 - Not here: the Mass Driver, the Quantum Receiver, the Starship milestone.
 
+
+**Phase 9: Kinetic Mass Driver, Quantum Receiver, power beams (2026-10-29, defaults; all numbers are placeholders with config)**
+- **Mass Driver** (`machine/MassDriver*`): a vertical stack Kinetic Drive Base (`kinetic_drive_base`, shaft through two opposite faces, the controller), Payload Chamber (`payload_chamber`) and Magnetic Barrel Nozzle (`magnetic_barrel_nozzle`). The base checks the stack above it each tick. Stress 32 SU per RPM (`massDriverStress`).
+  - The chamber has 2 slots of up to 16, takes payload items only (tags `dyson/satellite_payloads`, `dyson/truss_payloads`) from belts, funnels, arms, hoppers or a right-click, and gives nothing back to automation; it drops its items when broken.
+  - Wind-up runs only while a payload is loaded. `MassDriverMath.launchTicks`: nothing below 64 RPM, 400 ticks (20 s) at 64 RPM falling linearly to 60 ticks (3 s) at 256 RPM (`massDriverMinRpm`, `massDriverFastRpm`, `massDriverSlowTicks`, `massDriverFastTicks`).
+  - Firing takes one payload, posts `MassDriverLaunchEvent`, then calls `Dyson.launchSatellites/launchTrusses` (a cancelled launch still uses up the payload). Works in any dimension. Sound `mass_driver_launch` (vanilla stand-in), cloud particles at the nozzle.
+  - **Assumption, not built:** no projectile entity, steam ring, wind-up animation or flywheel; the doc's launch animation is replaced by the sound, the particles and the sky streak. The blocks are static cubes.
+- **Sky streak:** `LaunchStreakPayload` (server to client) makes the deep space sky draw a blue streak from a direction hashed from the launch position towards the star (`DysonSky.drawStreaks`, 120 ticks; wider for trusses).
+- **Sub-Light Quantum Receiver** (`quantum_receiver`, `QuantumReceiverBlockEntity extends GeneratingKineticBlockEntity`): turns at `receiverRpm` (128) once any truss is launched, with output proportional to trusses launched, `receiverMaxStress` (262,144 SU) at `shellTotal`. The server refreshes it once a second. It reads the global `DysonSphereData`, so a Receiver on a ship or on Ruined Earth draws on the same sphere. Made only by Sequenced Assembly (toggle `quantumReceiver`): Micro-Alloy Sheet base, Deploy High-Efficiency Solar Cell, Deploy Carbon Composite Plate, Deploy Create's Precision Mechanism, Spout 250 mB Coolant Fluid; one loop, no press (the doc ends at the coolant).
+- **Power beams (sky Layer C):** additive beams from the star to the direction of every loaded, turning Receiver (`QuantumReceiverBlockEntity.CLIENT_RECEIVERS`), brighter with the trusses launched, pulses travelling along them. They are drawn in deep space only (the only dimension with the Dyson sky).
+- **Replicator:** the three Mass Driver blocks (Blocks tab, Diversified milestone, toggle `massDriver`) at placeholder prices; the doc names none.
+- **Toggles** (config `dysonMachines`): `massDriver`, `quantumReceiver`; the numbers above are in the same section.
+- **Not here:** goggle tooltips, rotation animation, Ponder; Receiver tooltip shows Create's per-RPM capacity rather than the live output; the Receiver does not require sky exposure.
