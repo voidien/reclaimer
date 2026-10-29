@@ -16,6 +16,9 @@ import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
+import com.voidreclaimer.asteroid.AsteroidBody;
+import com.voidreclaimer.asteroid.AsteroidChunkGenerator;
+import com.voidreclaimer.asteroid.AsteroidField;
 import com.voidreclaimer.dust.DustField;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.voidreclaimer.dyson.Dyson;
@@ -51,6 +54,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer milestone grant|revoke <player> <milestone>} (a revoked milestone whose condition
  *       still holds is granted again at the next check)</li>
  *   <li>{@code /void_reclaimer core charge <player>}: fill every Backup Core the player owns</li>
+ *   <li>{@code /void_reclaimer asteroid locate [small|large|giant]}: nearest asteroid from the command position (deep space)</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  * </ul>
@@ -95,6 +99,14 @@ public final class ModCommands {
                                 .executes(ctx -> locate(ctx.getSource(), DEFAULT_LOCATE_RANGE))
                                 .then(Commands.argument("range", IntegerArgumentType.integer(1, 100_000))
                                         .executes(ctx -> locate(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "range"))))))
+                .then(Commands.literal("asteroid")
+                        .then(Commands.literal("locate")
+                                .executes(ctx -> locateAsteroid(ctx.getSource(), null))
+                                .then(Commands.argument("size", StringArgumentType.word())
+                                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                                Arrays.stream(AsteroidBody.Size.values()).map(s -> s.name().toLowerCase(Locale.ROOT)), builder))
+                                        .executes(ctx -> locateAsteroid(ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "size").toUpperCase(Locale.ROOT))))))
                 .then(Commands.literal("dyson")
                         .then(Commands.literal("get").executes(ctx -> getDyson(ctx.getSource())))
                         .then(Commands.literal("set")
@@ -128,6 +140,55 @@ public final class ModCommands {
                                         Milestones.all(ctx.getSource().registryAccess()).stream().map(e -> e.key().location()), builder))
                                 .executes(ctx -> setMilestone(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
                                         ResourceLocationArgument.getId(ctx, "milestone"), grant))));
+    }
+
+    /** Cells searched around the command position, in rings, so the nearest cell wins: 6 rings is about 6000 blocks. */
+    private static final int ASTEROID_SEARCH_CELLS = 6;
+
+    private static int locateAsteroid(CommandSourceStack source, String sizeName) {
+        if (!com.voidreclaimer.space.ModDimensions.isDeepSpace(source.getLevel())) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.asteroid.no_field"));
+            return 0;
+        }
+        AsteroidBody.Size size = null;
+        if (sizeName != null) {
+            try {
+                size = AsteroidBody.Size.valueOf(sizeName);
+            } catch (IllegalArgumentException e) {
+                source.sendFailure(Component.translatable("commands.void_reclaimer.asteroid.unknown_size", sizeName.toLowerCase(Locale.ROOT)));
+                return 0;
+            }
+        }
+        net.minecraft.world.phys.Vec3 spawn = new Vec3(com.voidreclaimer.Config.SPAWN_X.get() + 0.5, com.voidreclaimer.Config.SPAWN_Y.get(),
+                com.voidreclaimer.Config.SPAWN_Z.get() + 0.5);
+        AsteroidField field = new AsteroidField(source.getLevel().getSeed(), spawn, AsteroidChunkGenerator.SPAWN_CLEARANCE);
+        Vec3 pos = source.getPosition();
+        int cx0 = Mth.floor(pos.x / AsteroidField.CELL);
+        int cy0 = Mth.floor(pos.y / AsteroidField.CELL);
+        int cz0 = Mth.floor(pos.z / AsteroidField.CELL);
+        AsteroidBody best = null;
+        for (int dx = -ASTEROID_SEARCH_CELLS; dx <= ASTEROID_SEARCH_CELLS; dx++) {
+            for (int dy = -ASTEROID_SEARCH_CELLS; dy <= ASTEROID_SEARCH_CELLS; dy++) {
+                for (int dz = -ASTEROID_SEARCH_CELLS; dz <= ASTEROID_SEARCH_CELLS; dz++) {
+                    for (AsteroidBody body : field.bodiesIn(cx0 + dx, cy0 + dy, cz0 + dz)) {
+                        if ((size == null || body.size() == size) && (best == null || body.center().distanceToSqr(pos) < best.center().distanceToSqr(pos))) {
+                            best = body;
+                        }
+                    }
+                }
+            }
+        }
+        if (best == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.asteroid.locate.none", ASTEROID_SEARCH_CELLS * AsteroidField.CELL));
+            return 0;
+        }
+        AsteroidBody found = best;
+        int distance = Mth.floor(found.center().distanceTo(pos));
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.asteroid.locate",
+                found.size().name().toLowerCase(Locale.ROOT), DustKinds.name(source.registryAccess(), found.kind()),
+                Mth.floor(found.center().x), Mth.floor(found.center().y), Mth.floor(found.center().z),
+                Mth.floor(2 * Math.max(found.rx(), Math.max(found.ry(), found.rz()))), distance), false);
+        return distance;
     }
 
     private static int getDyson(CommandSourceStack source) {

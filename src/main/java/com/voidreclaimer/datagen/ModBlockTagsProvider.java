@@ -16,6 +16,8 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        tag(ModBlocks.ASTEROID_BLOCKS).add(ModBlocks.ASTEROID_SILICATE.get(), ModBlocks.ASTEROID_ICE.get(),
+                ModBlocks.ASTEROID_CARBON.get(), ModBlocks.ASTEROID_METALLIC.get());
         tag(ModBlocks.SALVAGEABLE).add(ModBlocks.SCAFFOLD.get(), ModBlocks.TETHER_ANCHOR.get(), ModBlocks.BACKUP_CORE.get());
     }
 }

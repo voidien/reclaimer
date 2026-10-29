@@ -56,7 +56,25 @@ public final class ToolModules {
         }
     });
 
+    /** Mechanical Drill: breaks asteroid rock fast; the dust refund is in {@link com.voidreclaimer.asteroid.Drilling}. */
+    public static final DeferredHolder<ToolModuleType, ToolModuleType> DRILL = TYPES.register("drill", () -> new ToolModuleType() {
+        @Override
+        public float breakSpeed(Player player, ItemStack module, BlockState state, float speed) {
+            return state.is(ModBlocks.ASTEROID_BLOCKS) ? DRILL_SPEED : speed;
+        }
+    });
+
+    /** Matter Harvester: takes asteroid rock out whole, as the block item, more slowly than the drill. */
+    public static final DeferredHolder<ToolModuleType, ToolModuleType> HARVESTER = TYPES.register("harvester", () -> new ToolModuleType() {
+        @Override
+        public float breakSpeed(Player player, ItemStack module, BlockState state, float speed) {
+            return state.is(ModBlocks.ASTEROID_BLOCKS) ? HARVESTER_SPEED : speed;
+        }
+    });
+
     private static final float SALVAGE_SPEED = 20f;
+    private static final float DRILL_SPEED = 10f;
+    private static final float HARVESTER_SPEED = 4f;
 
     private ToolModules() {}
 

@@ -7,6 +7,7 @@ import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlockEntities;
 import com.voidreclaimer.registry.ModDataComponents;
 import com.voidreclaimer.registry.ModBlocks;
+import com.voidreclaimer.registry.ModChunkGenerators;
 import com.voidreclaimer.registry.ModCreativeTabs;
 import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModRecipeSerializers;
@@ -30,6 +31,7 @@ public final class VoidReclaimer {
         ModRegistries.register(modBus);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
+        ModChunkGenerators.CHUNK_GENERATORS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);

@@ -1,7 +1,10 @@
 package com.voidreclaimer.registry;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.asteroid.AsteroidBlock;
 import com.voidreclaimer.core.BackupCoreBlock;
+import com.voidreclaimer.dust.DustKinds;
+import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.tether.TetherAnchorBlock;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -29,6 +32,31 @@ public final class ModBlocks {
     /** Respawn point picked on the death screen. */
     public static final DeferredBlock<BackupCoreBlock> BACKUP_CORE = BLOCKS.registerBlock("backup_core", BackupCoreBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(2.0f).sound(SoundType.COPPER).lightLevel(state -> 7));
+
+    /** Every asteroid block: only the Mechanical Drill and the Matter Harvester break them. */
+    public static final TagKey<Block> ASTEROID_BLOCKS = BlockTags.create(VoidReclaimer.id("asteroid_blocks"));
+
+    public static final DeferredBlock<AsteroidBlock> ASTEROID_SILICATE = asteroid("asteroid_silicate", DustKinds.SILICATE, MapColor.STONE);
+    public static final DeferredBlock<AsteroidBlock> ASTEROID_ICE = asteroid("asteroid_ice", DustKinds.ICE, MapColor.ICE);
+    public static final DeferredBlock<AsteroidBlock> ASTEROID_CARBON = asteroid("asteroid_carbon", DustKinds.CARBON, MapColor.COLOR_BLACK);
+    public static final DeferredBlock<AsteroidBlock> ASTEROID_METALLIC = asteroid("asteroid_metallic", DustKinds.METALLIC, MapColor.RAW_IRON);
+
+    private static DeferredBlock<AsteroidBlock> asteroid(String name, ResourceLocation kind, MapColor color) {
+        return BLOCKS.registerBlock(name, properties -> new AsteroidBlock(kind, properties),
+                BlockBehaviour.Properties.of().mapColor(color).strength(3.0f, 12.0f).sound(SoundType.STONE));
+    }
+
+    /** The asteroid block made of a dust kind; silicate for any other kind. */
+    public static AsteroidBlock asteroidBlock(ResourceLocation kind) {
+        if (kind.equals(DustKinds.ICE)) {
+            return ASTEROID_ICE.get();
+        } else if (kind.equals(DustKinds.CARBON)) {
+            return ASTEROID_CARBON.get();
+        } else if (kind.equals(DustKinds.METALLIC)) {
+            return ASTEROID_METALLIC.get();
+        }
+        return ASTEROID_SILICATE.get();
+    }
 
     private ModBlocks() {}
 }

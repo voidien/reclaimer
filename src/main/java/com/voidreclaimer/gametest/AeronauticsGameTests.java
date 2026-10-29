@@ -45,6 +45,7 @@ public final class AeronauticsGameTests {
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
             List<String> spawn = command(server, space, pos, "sable spawn platform 2 minecraft:stone");
             helper.runAfterDelay(WATCH_TICKS, () -> finish(helper, space, pos, command(server, space, pos, "sable info @n"), spawn));
         });
@@ -58,6 +59,7 @@ public final class AeronauticsGameTests {
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
             int x = pos.getX(), y = pos.getY(), z = pos.getZ();
             List<String> log = new ArrayList<>();
             log.addAll(command(server, space, pos, "fill " + (x - 1) + " " + y + " " + (z - 1) + " " + (x + 1) + " " + y + " " + (z + 1) + " minecraft:stone"));
@@ -68,6 +70,13 @@ public final class AeronauticsGameTests {
                 helper.runAfterDelay(WATCH_TICKS, () -> finish(helper, space, pos, command(server, space, pos, "sable info @n"), log));
             });
         });
+    }
+
+    /** Deep space has asteroids now, and a fresh world may put one where a test wants its sub-level. */
+    private static void clearArea(MinecraftServer server, ServerLevel space, BlockPos pos) {
+        space.getChunk(pos);
+        command(server, space, pos, "fill " + (pos.getX() - 10) + " " + (pos.getY() - 10) + " " + (pos.getZ() - 10) + " "
+                + (pos.getX() + 10) + " " + (pos.getY() + 10) + " " + (pos.getZ() + 10) + " minecraft:air");
     }
 
     private static void finish(GameTestHelper helper, ServerLevel space, BlockPos start, List<String> info, List<String> setup) {

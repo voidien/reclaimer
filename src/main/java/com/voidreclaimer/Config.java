@@ -54,6 +54,9 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue CORE_SUN_TICKS;
 
+    public static final ModConfigSpec.DoubleValue DRILL_ENERGY;
+    public static final ModConfigSpec.DoubleValue DRILL_DUST_YIELD;
+
     public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
     public static final ModConfigSpec.LongValue DYSON_SHELL_TOTAL;
 
@@ -160,6 +163,12 @@ public final class Config {
         CORE_SUN_TICKS = BUILDER
                 .comment("Ticks of full sunlight per respawn charge (deep space's distant sun is about 2/3 as fast).")
                 .defineInRange("sunTicksPerCharge", 12_000, 20, 1_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");
+        DRILL_ENERGY = BUILDER.comment("Energy per asteroid block broken by either tool.").defineInRange("drillEnergy", 0.5, 0.0, 100.0);
+        DRILL_DUST_YIELD = BUILDER.comment("Dust refunded per block by the Mechanical Drill, of the block's own kind.")
+                .defineInRange("drillDustYield", 1.0, 0.0, 1000.0);
         BUILDER.pop();
 
         BUILDER.comment("Dyson Sphere. The defaults are stand-ins until the design settles the numbers.").push("dyson");
