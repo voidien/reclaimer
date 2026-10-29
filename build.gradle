@@ -71,6 +71,14 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
+        // Create Aeronautics / Sable tests, kept out of gameTestServer: ./gradlew runGameTestAeronautics
+        gameTestAeronautics {
+            type = 'gameTestServer'
+            // Its own directory: Gradle runs tasks in parallel and the two GameTest worlds must not collide.
+            gameDirectory = file('run-aero')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id + '_aero'
+        }
+
         data {
             data()
             programArguments.addAll '--mod', project.mod_id, '--all',
@@ -114,6 +122,13 @@ dependencies {
     // Create: required dependency. The Modrinth release jar bundles Flywheel, Ponder and Registrate.
     implementation "maven.modrinth:create:${create_version}"
 
+    // Create Aeronautics (required) and its physics engine Sable. Runtime only: our code doesn't compile against them yet.
+    localRuntime "maven.modrinth:sable:${sable_version}"
+    localRuntime "maven.modrinth:create-aeronautics:${aeronautics_version}"
+    // The unit-test runtime only sees implementation/testRuntimeOnly, and loading our mod needs its required mods.
+    testRuntimeOnly "maven.modrinth:sable:${sable_version}"
+    testRuntimeOnly "maven.modrinth:create-aeronautics:${aeronautics_version}"
+
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"
     localRuntime "maven.modrinth:modernfix:${modernfix_version}"
@@ -139,6 +154,8 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             geckolib_version_range : geckolib_version_range,
             jei_version_range      : jei_version_range,
             create_version_range   : create_version_range,
+            aeronautics_version_range: aeronautics_version_range,
+            sable_version_range    : sable_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,

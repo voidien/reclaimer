@@ -32,9 +32,18 @@ jobs:
         run: ./gradlew runGameTestServer --stacktrace
 
       - name: Datagen output is up to date
+        # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
+        # HANDOFF.md). A healthy run takes under a minute, so cut a hung one off and try again.
         run: |
-          ./gradlew runData --stacktrace
-          git diff --exit-code -- src/generated
+          for attempt in 1 2 3; do
+            if timeout 300 ./gradlew runData --stacktrace; then
+              git diff --exit-code -- src/generated
+              exit $?
+            fi
+            echo "runData attempt $attempt failed or hung"
+            ./gradlew --stop
+          done
+          exit 1
 
       - name: Upload test reports
         if: failure()
@@ -45,4 +54,29 @@ jobs:
             build/reports/tests/
             build/test-results/
             run/logs/
+          if-no-files-found: ignore
+
+  aeronautics:
+    # Create Aeronautics / Sable inside deep space. Its own job, so an upstream problem doesn't hide the main results.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Aeronautics GameTests
+        run: ./gradlew runGameTestAeronautics --stacktrace
+
+      - name: Upload run logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: aeronautics-logs
+          path: run-aero/logs/
           if-no-files-found: ignore

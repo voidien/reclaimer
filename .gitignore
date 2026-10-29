@@ -39,3 +39,4 @@ run/
 repo/
 !**/src/**/repo/
 .claude/settings.local.json
+run-aero/
