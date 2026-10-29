@@ -57,11 +57,21 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer asteroid locate [small|large|giant]}: nearest asteroid from the command position (deep space)</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
+ *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
  * </ul>
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class ModCommands {
     private ModCommands() {}
+
+    private static int spawnStarship(CommandSourceStack source) {
+        Vec3 eye = source.getEntity() != null ? source.getEntity().getEyePosition() : source.getPosition();
+        Vec3 pos = com.voidreclaimer.starship.TestStarshipItem.ahead(eye, Vec3.directionFromRotation(source.getRotation()));
+        com.voidreclaimer.starship.TestStarship.spawn(source.getLevel(), pos);
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.starship.spawned",
+                String.format(Locale.ROOT, "%.1f %.1f %.1f", pos.x, pos.y, pos.z)), true);
+        return 1;
+    }
 
     @SubscribeEvent
     static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -116,6 +126,8 @@ public final class ModCommands {
                                 .then(Commands.literal("trusses")
                                         .then(Commands.argument("count", LongArgumentType.longArg(0))
                                                 .executes(ctx -> setDyson(ctx.getSource(), false, LongArgumentType.getLong(ctx, "count")))))))
+                .then(Commands.literal("starship")
+                        .then(Commands.literal("spawn").executes(ctx -> spawnStarship(ctx.getSource()))))
                 .then(Commands.literal("milestone")
                         .then(milestoneAction("grant", true))
                         .then(milestoneAction("revoke", false)))

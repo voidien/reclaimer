@@ -66,6 +66,8 @@ See `CLAUDE.md` → Testing.
 - Give each test its own X coordinate. Existing tests use 12,000–73,000, mostly in steps of 1,000; grep `survivalInDeepSpace(helper,` and pick a free one.
 - Test-only content lives in `src/main/resources/gametest_pack` (namespace `void_reclaimer_test`). It is only loaded on the GameTest server.
 - `TestEventListeners` reacts to tagged test players.
+- **Entities that move:** force-load every chunk they can reach, not only the start chunk. An entity in a chunk that isn't loaded doesn't tick. Wait for `isPositionEntityTicking` in a sequence before spawning, not a fixed delay. Release the chunks at the end; runs that left many forced chunks behind once hung the server while it saved on shutdown. See `StarshipEntityGameTests`.
+- **Don't start a second `helper.startSequence()` from inside a running sequence step** (the sequence list is iterated while it ticks). Chain steps on one sequence instead.
 - **Long jobs:** to skip a long Replicator job, rewrite the job's progress with `Replicator.store` (see `ReplicatorGameTests.kitsDeliverEveryPartAndKeepSalvagePrices`).
 
 ### In-game client checks (headless)
@@ -90,5 +92,6 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 7. **Stopping:** `kill $(clientpid)`. Rebuild by relaunching. There is no sound in the container, so check sound changes on a real machine.
 
 ### Placeholder art
+- **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").
 - **Art pipeline:** `docs/art/ASSETS.md` + `assets.csv` list every asset with Retro Diffusion prompts. The owner generates them with `tools/art/rd_generate.py` on their own computer (their key; never ask for it or store it). When they say a batch is promoted, check it in game and update the placeholder list in `PROGRESS.md`. `--promote <asset>` converts an RD `.bbmodel` into a part's GeckoLib model (`tools/art/bbgeo.py`): it keeps our skeleton, scales to fit and bakes rotated face UVs (GeckoLib 4.9.3 only supports geometry 1.12.0 cleanly). `GeoModelLoadTest` (Gradle unit test) loads every `.geo.json` through GeckoLib's own loader. `--from-group`/`--scale-like` cut Ship sections out of one whole-ship model; `--promote-as entity/NAME` writes a standalone model plus converted animations (Blockbench's Bedrock export rules; GeckoLib reads only `post`, so step keys become holds). `GeoModelLoadTest` also loads every animation and checks its bones (body animations may move section/module bones). Body animations from RD still need Blockbench. The style guide lives in `docs/art/style.json` (regenerate with `tools/art/style_guide.py`; a test checks it is current). The owner chose to pick custom-style reference images later (1-4 images in `docs/art/style/<category>/`, then `--setup-styles`).
 Item textures are 16×16 programmer art, written by small Python PNG scripts (zlib + struct, no PIL). Every placeholder must be listed in `PROGRESS.md`.

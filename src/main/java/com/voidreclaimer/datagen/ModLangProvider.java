@@ -410,6 +410,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.body.not_worn", "That section isn't worn.");
         add("message.void_reclaimer.body.repair_dust", "Not enough dust to repair it.");
         add(ModItems.BODY_BLUEPRINT.get(), "Body Blueprint");
+        add(ModItems.TEST_STARSHIP.get(), "Test Starship");
+        add(com.voidreclaimer.registry.ModEntities.TEST_STARSHIP.get(), "Test Starship");
+        add("commands.void_reclaimer.starship.spawned", "Spawned a Test Starship at %s");
         add("item.void_reclaimer.body_blueprint.empty", "Empty. Use it to save your current body.");
         add("item.void_reclaimer.body_blueprint.saved", "%s design · %s sections · %s modules");
         add("item.void_reclaimer.body_blueprint.usage", "Use to build it from your inventory; sneak-use to save over it.");

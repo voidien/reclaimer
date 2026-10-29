@@ -489,6 +489,13 @@ class RdGenerateTest(unittest.TestCase):
         self.assertAlmostEqual(s, 32 / max(h - l for l, h in zip(lo, hi)))
         with self.assertRaises(SystemExit), mock.patch('sys.stdout'):
             rd.whole_model_scale(bbmodel(), 'body/missing')
+        src = os.path.join(self.tmp, 'whole.bbmodel')
+        with open(src, 'w') as f:
+            f.write(bbmodel())
+        with mock.patch('sys.stdout'):
+            rd.main(['--promote-as', 'entity/sized', '--source', src, '--scale-like', 'body/test'])
+        lo, hi = bbgeo.cubes_bbox(self.geo('entity/sized.geo.json')['bones'])
+        self.assertAlmostEqual(max(h - l for l, h in zip(lo, hi)), 32, places=3, msg='--promote-as takes --scale-like')
 
     def test_model_promote_refuses_what_it_cannot_convert(self):
         mesh = {'uuid': 'm', 'name': 'm', 'type': 'mesh', 'vertices': {}, 'faces': {}}

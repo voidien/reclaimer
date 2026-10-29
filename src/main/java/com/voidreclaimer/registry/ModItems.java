@@ -120,6 +120,9 @@ public final class ModItems {
     /** A saved body design: save, rebuild from the inventory, queue what's missing. */
     public static final DeferredItem<com.voidreclaimer.body.part.BlueprintItem> BODY_BLUEPRINT = ITEMS.register("body_blueprint",
             () -> new com.voidreclaimer.body.part.BlueprintItem(new Item.Properties().stacksTo(1)));
+    /** Spawns the placeholder Test Starship entity (creative tab only, no recipe). */
+    public static final DeferredItem<com.voidreclaimer.starship.TestStarshipItem> TEST_STARSHIP = ITEMS.register("test_starship",
+            () -> new com.voidreclaimer.starship.TestStarshipItem(new Item.Properties()));
 
     // ---- blocks -------------------------------------------------------------------------------------------
 

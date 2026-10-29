@@ -126,6 +126,7 @@ src/main/java/com/voidreclaimer/
 │   │                             ToolModules, Modules, InventoryLock, Cosmetics
 │   ├── part/                     SectionItem, ModuleItem
 │   └── assembly/                 (5b) 3D assembly view logic
+├── starship/                     Test Starship placeholder entity (RD model/animation check), StarshipDrift
 ├── asteroid/                     Phase 6: AsteroidField/AsteroidBody (pure), AsteroidChunkGenerator, AsteroidBlock, Drilling
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
 ├── station/                      Phase 8: multiblock validation & controllers
@@ -261,6 +262,11 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Drawn unfogged (fog start restored afterwards) through `RenderLevelStageEvent`; this bends the Phase 3 "clouds are invisible" rule only for sensor owners who switch it on.
 
 **Phase order (decided after 4b, revised 2026-10-29):** 5a Body data → extensibility + body sections → **Foundations (Aeronautics + Dyson Sphere counters and sky)** → 6 Asteroids → 7 Machines → 7b Aeronautics ships (Space Thruster, Helm; Aeronautics is required now) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+
+**Test Starship (placeholder entity, 2026-10-29)**
+- `void_reclaimer:test_starship` is for checking RD models and animations in game; it is not gameplay. Its model is the owner's RD starship, promoted with `--promote-as entity/starship --scale-like body/ship`. It is drawn at the Ship size class's scale.
+- It drifts and turns round its anchor (`StarshipDrift`, from game time, the same on both sides), loops `gear_cycle`, and plays `ignite_prep` on right-click.
+- To replace it, promote a new RD `.bbmodel` to the same target. Spawn it from the creative item, with `/void_reclaimer starship spawn`, or with `/summon`.
 
 ## Extensibility (strict)
 Void Reclaimer is built to be extended by datapack makers, addon developers and KubeJS (through datapacks and events). Every change keeps it that way:

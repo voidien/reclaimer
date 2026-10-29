@@ -45,6 +45,7 @@ public final class VoidReclaimer {
         ModFluids.FLUIDS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
+        com.voidreclaimer.registry.ModEntities.ENTITY_TYPES.register(modBus);
         ModDataComponents.COMPONENTS.register(modBus);
         ModRecipeTypes.RECIPE_TYPES.register(modBus);
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modBus);

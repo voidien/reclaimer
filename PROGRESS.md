@@ -370,6 +370,30 @@ From an outside audit, each checked against the code first (several claims were 
 ### Not done yet
 - Goggle tooltips, rotation animation, a JEI category for freezing, Ponder scenes, the collector part for raw items from a cloud, and the items blocked on the doc's open questions (see part 1).
 
+## Test Starship (placeholder entity): done
+- A spawnable **Test Starship** for checking RD models and animations in game. It uses the owner's RD "Create style starship" `.bbmodel`, converted with `rd_generate.py --promote-as entity/starship --scale-like body/ship`. That makes it as long as the Ship rig, and it is drawn at the Ship size class's scale (3.0, read from the synced registry), so it is about 12 blocks long.
+- `starship.TestStarship` is a plain GeckoLib entity. It has no gravity, no AI and no drops, and breaks with one hit. It drifts round its anchor: a 3-block circle every 60 s, a 1-block bob, one turn every 72 s (`StarshipDrift`, worked out from game time on both sides, so no movement packets). It loops `gear_cycle`, and a right-click plays `ignite_prep` once (48 ticks).
+- **Spawning:**
+  - the Test Starship item (creative tab, vanilla spawn egg look, no recipe);
+  - `/void_reclaimer starship spawn` (12 blocks ahead);
+  - `/summon void_reclaimer:test_starship`.
+- **Replacing it:** run `--promote-as entity/starship --scale-like body/ship --source NEW.bbmodel`. The files are overwritten in place. The animation names must stay `ignite_prep` and `gear_cycle`, or the entity's names must change too.
+- `rd_generate.py --promote-as` now honours `--scale-like`. It was ignored before.
+- **Tests:**
+  - `StarshipEntityGameTests` (3): drift, turn, anchor and save; right-click ignition ends after 48 ticks and one hit breaks the ship; the spawn command.
+  - `StarshipDriftTest` (4).
+  - A new case in `test_rd_generate.py`.
+  - `GeoModelLoadTest` already loads the model and animations.
+  - Mutation-checked: no countdown, no turning, the command spawning at the source, and a doubled radius each fail a test.
+- **Checked in a real client** (with the performance mods):
+  - the ship renders textured at Ship scale inside its 8.5x5 hitbox;
+  - it drifts and turns;
+  - a right-click within reach starts `ignite_prep` on both sides.
+- The Drone's reach is short, so get within a few blocks of the hitbox to click it.
+
+### Placeholder
+- The whole entity is for testing. Its item uses vanilla's spawn egg model (brass and cyan tint). It plays no sounds.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -33,6 +33,8 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
         modBus.addListener(ModKeyMappings::register);
         modBus.addListener(VoidReclaimerClient::onRegisterClientExtensions);
+        modBus.addListener(VoidReclaimerClient::onRegisterRenderers);
+        modBus.addListener(VoidReclaimerClient::onRegisterItemColors);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
@@ -59,6 +61,15 @@ public final class VoidReclaimerClient {
                 }
             }, fluid.type());
         }
+    }
+
+    private static void onRegisterRenderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.TEST_STARSHIP.get(), com.voidreclaimer.client.render.TestStarshipRenderer::new);
+    }
+
+    /** The Test Starship item uses vanilla's spawn egg model: brass shell, cyan spots. */
+    private static void onRegisterItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register((stack, layer) -> layer == 0 ? 0xFFBF8B3A : 0xFF2FC0E0, com.voidreclaimer.registry.ModItems.TEST_STARSHIP.get());
     }
 
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
