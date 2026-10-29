@@ -141,12 +141,13 @@ public final class ModAttachments {
                     .sync((holder, to) -> holder == to, DeathMarker.STREAM_CODEC)
                     .build());
 
-    /** Per-player modular body. Persisted, kept on death, synced to the owner. Defaults to the starter drone. */
+    /** Per-player modular body. Persisted, kept on death, synced to the owner and to players who see them. Defaults to the starter drone. */
     public static final Supplier<AttachmentType<BodyData>> BODY = ATTACHMENT_TYPES.register("body",
             () -> AttachmentType.builder(Bodies::starter)
                     .serialize(BodyData.CODEC)
                     .copyOnDeath()
-                    .sync((holder, to) -> holder == to, BodyData.STREAM_CODEC)
+                    // Everyone who can see the player gets the body, to draw it on the model.
+                    .sync((holder, to) -> true, BodyData.STREAM_CODEC)
                     .build());
 
     private ModAttachments() {}

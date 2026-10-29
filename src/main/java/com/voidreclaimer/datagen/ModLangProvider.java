@@ -160,6 +160,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("recipe.void_reclaimer.drone_kit", "Drone Kit");
         add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
         add("recipe.void_reclaimer.ship_core_kit", "Ship Core Kit");
+        add("commands.void_reclaimer.body.preset", "%s now has a complete %s body");
         add("milestone.void_reclaimer.starship", "Starship");
         add("milestone.void_reclaimer.starship.hint", "Make a Coolant Frame Plate, a Carbon Composite Plate, a High-Efficiency Solar Cell and a Micro-Alloy Sheet");
         add("log.void_reclaimer.starship.title", "Log: The Starship");

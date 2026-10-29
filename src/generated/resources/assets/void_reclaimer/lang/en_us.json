@@ -136,6 +136,7 @@
   "commands.void_reclaimer.asteroid.no_field": "Asteroids only exist in deep space",
   "commands.void_reclaimer.asteroid.unknown_size": "Unknown size: %s (small, large or giant)",
   "commands.void_reclaimer.body.get": "%s: %s, mass %s / %s, %s inventory slots, top speed %s m/s",
+  "commands.void_reclaimer.body.preset": "%s now has a complete %s body",
   "commands.void_reclaimer.body.reset": "Reset %s to the starter drone",
   "commands.void_reclaimer.core.charged": "Filled %s Backup Core(s) of %s",
   "commands.void_reclaimer.dust.amount": "%s %s",

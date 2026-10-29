@@ -7,6 +7,7 @@ import com.voidreclaimer.api.body.Chassis;
 import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.api.body.ModuleStats;
 import com.voidreclaimer.api.body.SectionStats;
+import com.voidreclaimer.api.body.Socket;
 import com.voidreclaimer.api.body.SizeClass;
 import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.api.event.BodyChangedEvent;
@@ -70,6 +71,33 @@ public final class Bodies {
                 new BodyData.Mount("hull", ModuleKind.CORE, 0), new ItemStack(ModItems.CORE_MK1.get()),
                 new BodyData.Mount("rotor_front_left", ModuleKind.THRUSTER, 0), new ItemStack(ModItems.THRUSTER_MK1.get())),
                 0, Cosmetics.DEFAULT, List.of());
+    }
+
+    /**
+     * A complete body of a built-in chassis: every socket filled with its basic section, a Mk I core, and a Mk I thruster
+     * and storage pod on every mount that takes one. For tests and the {@code /void_reclaimer body preset} command.
+     */
+    public static BodyData preset(ResourceKey<Chassis> key) {
+        ResourceKey<Chassis> chassisKey = BuiltinBodies.CHASSIS.containsKey(key) ? key : BuiltinBodies.DRONE;
+        Chassis chassis = BuiltinBodies.CHASSIS.get(chassisKey);
+        Map<String, ItemStack> sections = BodyMigration.basicSections(chassisKey);
+        if (chassisKey.equals(BuiltinBodies.MECH)) {
+            sections.put("back", new ItemStack(ModItems.ROTOR_ARM.get())); // the jetpack: a Drone rotor arm
+        }
+        Map<BodyData.Mount, ItemStack> modules = new java.util.LinkedHashMap<>();
+        for (Socket socket : chassis.sockets()) {
+            SectionStats section = Parts.section(sections.getOrDefault(socket.id(), ItemStack.EMPTY));
+            for (int i = 0; section != null && i < section.mounts(ModuleKind.CORE); i++) {
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.CORE, i), new ItemStack(ModItems.CORE_MK1.get()));
+            }
+            for (int i = 0; section != null && i < section.mounts(ModuleKind.THRUSTER); i++) {
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.THRUSTER, i), new ItemStack(ModItems.THRUSTER_MK1.get()));
+            }
+            for (int i = 0; section != null && i < section.mounts(ModuleKind.STORAGE); i++) {
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.STORAGE, i), new ItemStack(ModItems.STORAGE_MK1.get()));
+            }
+        }
+        return new BodyData(chassis.coreSocket(), sections, modules, 0, Cosmetics.DEFAULT, List.of());
     }
 
     public static BodyData data(LivingEntity entity) {

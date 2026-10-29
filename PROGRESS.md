@@ -339,6 +339,13 @@ From an outside audit, each checked against the code first (several claims were 
 - Tests: `ItemsMadeCriterionTest` (6 unit tests, including old-save loading) and 3 GameTests in `StarshipGameTests` (needs all four chains, even after giving items away; Ship recipes locked then unlocked; a datapack milestone using `items_made`). Mutation-checked: "any one item" instead of "all items" fails the unit test and two GameTests. `DysonGameTests` now resets the sphere first, because the persistent GameTest world can hold leftovers from an earlier failed run.
 - Ship section icons are real art from drop 1; prices are placeholders.
 
+## Phase 5b-1: body rendering, third person: done
+- Replaces the vanilla player model with the GeckoLib body (composed Drone and Ship rigs, whole-model Mech from the owner's RD model), casing and accent paint, pose animations, camera distance, body sync to other players, `body preset` and `body remove` debug commands. Rules and file layout in the Phase 5b-1 block in `CLAUDE.md`.
+- Tests: `BodyLookTest` (pose, bone names, casing painting, camera), `BodyRigSpecTest` (the Mech spec against its model, animations and chassis), and 5 GameTests in `BodyPresetGameTests`. Mutation-checked: reversed strafe and back directions fail the unit tests, and a preset without the jetpack failed its GameTest.
+- Checked in a real client (with the performance mods): the Mech composes and animates, limbs disappear when their sections are removed, the Ship and Drone render and the camera clears the Ship.
+- Not done (next 5b PR): first-person view (the vanilla hand still shows) and the 3D assembly view in the Body tab.
+- New art in the repo: `geo/entity/mech_suit`, `textures/entity/mech_suit.png`, `animations/entity/mech_suit` (the owner's RD model), `body_rigs/mech.json`. The older `geo/body/mech.geo.json` and the Mech section models are unused while the whole-model spec exists.
+
 ## Art drop 1 imported: done
 - From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
 - Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).
