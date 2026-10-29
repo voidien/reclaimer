@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 final class BodyPanel {
     private static final int SLOT = 16;
     private static final int STEP = 17;
-    private static final int TREE_WIDTH = 150;
+    static final int TREE_WIDTH = 150;
     private static final int TREE_ROW = 11;
     private static final int TREE_ROWS = 10;
     private static final int TEXT = 0xFFDDE6EE;
@@ -319,7 +319,10 @@ final class BodyPanel {
         ty += 11;
         List<Integer> candidates = selectedMount == null ? sectionCandidates(player, view, socketId) : moduleCandidates(player, selectedMount.kind());
         if (candidates.isEmpty()) {
-            graphics.drawString(font, Component.translatable("body.void_reclaimer.no_parts"), tx, ty, DIM, false);
+            for (var seq : font.split(Component.translatable("body.void_reclaimer.no_parts"), rightWidth() - 4)) {
+                graphics.drawString(font, seq, tx, ty, DIM, false);
+                ty += 10;
+            }
             return;
         }
         int perRow = Math.max(1, (rightWidth() - 2) / STEP);

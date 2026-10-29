@@ -47,6 +47,18 @@ public final class DustKinds {
                 .orElse(List.of());
     }
 
+    /** {@code ids} in display order: registered kinds in {@link #ORDER}, then unknown ids by name. */
+    public static List<ResourceLocation> ordered(RegistryAccess access, java.util.Collection<ResourceLocation> ids) {
+        List<ResourceLocation> result = new java.util.ArrayList<>();
+        for (Entry entry : all(access)) {
+            if (ids.contains(entry.id())) {
+                result.add(entry.id());
+            }
+        }
+        ids.stream().filter(id -> !result.contains(id)).sorted().forEach(result::add);
+        return result;
+    }
+
     /** The built-in kinds as entries, in {@link #ORDER}. */
     public static List<Entry> builtinEntries() {
         return BUILTIN.entrySet().stream()

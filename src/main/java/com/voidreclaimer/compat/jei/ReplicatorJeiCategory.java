@@ -70,10 +70,11 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
         ReplicatorRecipe recipe = holder.value();
         Font font = Minecraft.getInstance().font;
         int x = 0;
-        for (Map.Entry<ResourceLocation, Float> cost : recipe.cost().amounts().entrySet()) {
-            float amount = cost.getValue();
+        var access = Minecraft.getInstance().level.registryAccess();
+        for (ResourceLocation kind : DustKinds.ordered(access, recipe.cost().amounts().keySet())) {
+            float amount = recipe.cost().get(kind);
             if (amount > 0f) {
-                graphics.fill(x, 5, x + 6, 11, 0xFF000000 | DustKinds.color(Minecraft.getInstance().level.registryAccess(), cost.getKey()));
+                graphics.fill(x, 5, x + 6, 11, 0xFF000000 | DustKinds.color(access, kind));
                 graphics.drawString(font, Integer.toString(Mth.ceil(amount)), x + 8, 4, 0xFF404040, false);
                 x += 30;
             }

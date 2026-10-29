@@ -165,7 +165,7 @@ public final class ReplicatorScreen extends Screen {
         graphics.fill(left, top, left + WIDTH, top + HEIGHT, PANEL);
         graphics.renderOutline(left, top, WIDTH, HEIGHT, 0xFF3A4A5A);
         if (tab == bodyTab) {
-            graphics.fill(left + LIST_WIDTH + 12, top + 38, left + WIDTH - 6, top + HEIGHT - 6, PANEL_LIGHT);
+            graphics.fill(left + 6 + BodyPanel.TREE_WIDTH + 4, top + 38, left + WIDTH - 6, top + HEIGHT - 6, PANEL_LIGHT);
             return;
         }
         graphics.fill(left + 6, top + 38, left + LIST_WIDTH + 6, top + 38 + VISIBLE_ROWS * ROW, PANEL_LIGHT);
@@ -209,10 +209,9 @@ public final class ReplicatorScreen extends Screen {
     /** "M10 S15 C5 · 20s", each amount red when not affordable. */
     private Component costLine(ReplicatorRecipe recipe, DustData dust) {
         MutableComponent line = Component.empty();
-        for (Map.Entry<ResourceLocation, Float> cost : recipe.cost().amounts().entrySet()) {
-            ResourceLocation kind = cost.getKey();
-            float amount = cost.getValue();
-            var access = minecraft.level.registryAccess();
+        var access = minecraft.level.registryAccess();
+        for (ResourceLocation kind : DustKinds.ordered(access, recipe.cost().amounts().keySet())) {
+            float amount = recipe.cost().get(kind);
             int color = dust.get(kind) + 1.0E-4f >= amount ? DustKinds.color(access, kind) : 0xFF5050;
             String name = DustKinds.name(access, kind).getString();
             String label = (name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(java.util.Locale.ROOT)) + Mth.ceil(amount) + " ";
