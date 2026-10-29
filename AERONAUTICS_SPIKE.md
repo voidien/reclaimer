@@ -39,13 +39,27 @@ A 3x3 stone deck with a Create creative motor driving an Aeronautics andesite pr
 | Propeller in the test dimension with pressure 1.0 | Accelerates smoothly to a steady speed (GameTest and client) |
 | Propeller facing sideways | Ship also spins (~1.9 rad/s) from the propeller's torque |
 | Real client: player standing on the deck while it climbs | Carried along at the same speed; motor and propeller draw correctly |
-| `runData` with Sable loaded | Finishes in 16 s. The earlier hang was a test client still running in the same run folder |
+| `runData` with Sable loaded | Usually 16-20 s, but hangs intermittently (1 in 6 locally, both CI runs) - see below |
 
 So Aeronautics' own propulsion (propellers, balloons) needs air and does nothing in deep space. Ships in
 space would need our own thruster block that pushes the sub-level through Sable's force API
 (`BlockEntitySubLevelPropellerActor` / force groups), or a little air pressure inside stations.
 
 `data/void_reclaimer/function/spike_ride.mcfunction` builds the riding test in one tick.
+
+## Start-up deadlock (upstream, not ours)
+Client-dist runs (`runData`, `runClient`, so also real players) can hang forever during parallel mod
+construction. Thread dump of a hung `runData`:
+
+- Aeronautics `AeroBlocks.<clinit>` -> Create `AllBlocks.<clinit>` -> waits on `RenderStateShard$OutputStateShard`
+- Veil `VeilRenderSystem.<clinit>` -> waits on `RenderStateShard`
+- Simulated `SimBlocks.<clinit>` -> waits on `RenderType`
+- Create `Create.onCtor` -> waits on `AllBlocks`
+
+A class-initialization cycle between Aeronautics/Simulated/Veil and Create's render classes. GameTests
+(server dist) never hit it. CI stops at the same log line
+(`FixAutoOrientationMixin ... DirectionalKineticBlock`). Worth reporting upstream; until fixed, keep
+Aeronautics out of the CI datagen run.
 
 ## How to rerun
 `./gradlew runGameTestServer` (tests `SableSpikeGameTests`, logs `[SableSpike ...]`), optionally with
