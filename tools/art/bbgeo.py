@@ -64,7 +64,7 @@ def read_bbmodel(data):
         if g.get('export') is False:
             return None
         children = [n for n in (node(c) for c in item.get('children', g.get('children', []))) if n]
-        return ('group', {'name': g.get('name', 'group'), 'origin': g.get('origin', [0, 0, 0]),
+        return ('group', {'name': g.get('name', 'group'), 'uuid': g.get('uuid'), 'origin': g.get('origin', [0, 0, 0]),
                           'rotation': g.get('rotation', [0, 0, 0]), 'children': children})
 
     outliner = model.get('outliner')
@@ -199,10 +199,55 @@ def cubes_bbox(bones):
 # ---------------------------------------------------------------------------------------------------------------------
 # Building the model
 
-def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, identifier=None, texture=None):
+def select_groups(tree, names):
+    """The subtrees of the named RD groups (each with everything inside it), wherever they sit in the outliner."""
+    found = []
+
+    def walk(nodes):
+        for kind, item in nodes:
+            if kind == 'group':
+                if item['name'] in names:
+                    found.append((kind, item))
+                else:
+                    walk(item['children'])
+    walk(tree)
+    missing = [n for n in names if n not in [i['name'] for _, i in found]]
+    if missing:
+        all_names = []
+
+        def collect(nodes):
+            for kind, item in nodes:
+                if kind == 'group':
+                    all_names.append(item['name'])
+                    collect(item['children'])
+        collect(tree)
+        raise ConvertError('--group names groups that are not in the model: %s (groups: %s)'
+                           % (', '.join(missing), ', '.join(all_names) or 'none'))
+    return found
+
+
+def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, identifier=None, texture=None,
+            groups=None, scale_factor=None, standalone=False, out=None):
     """Builds the .geo.json dict and returns (geo, png_bytes_or_None, report_lines). `texture` is the atlas PNG to
-    use when the .bbmodel has none embedded."""
+    use when the .bbmodel has none embedded.
+
+    `groups` keeps only those RD groups (to cut one part out of a whole model), `scale_factor` replaces the fit with a
+    fixed scale (the same for every part cut from one model), and `standalone` builds a model of its own: a root bone
+    named `part` with RD's groups under their own names (for entities and blocks, not body parts). `out`, if given,
+    receives `bones_by_uuid` (RD group uuid -> our bone name) and `scale`, for convert_animations."""
     tree, elements, png, (tw, th), box_uv = read_bbmodel(bbmodel)
+    if groups:
+        tree = select_groups(tree, groups)
+        keep = set()
+
+        def mark(nodes):
+            for kind, item in nodes:
+                if kind == 'element':
+                    keep.add(item['uuid'])
+                else:
+                    mark(item['children'])
+        mark(tree)
+        elements = {k: v for k, v in elements.items() if k in keep}
     png = png or texture
     baked = 0
     if png:
@@ -212,7 +257,13 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
     bone_map = dict(bone_map or {})
     report = []
 
-    if old_geo:
+    if standalone:
+        skeleton = [{'name': part, 'pivot': [0, 0, 0]}]
+        names = [part]
+        target, old_box = part, None
+        description = {'identifier': identifier or 'geometry.void_reclaimer.' + part,
+                       'visible_bounds_width': 4, 'visible_bounds_height': 3, 'visible_bounds_offset': [0, 1.5, 0]}
+    elif old_geo:
         old = old_geo['minecraft:geometry'][0]
         skeleton = [{k: v for k, v in b.items() if k != 'cubes'} for b in old['bones']]
         names = [b['name'] for b in skeleton]
@@ -245,6 +296,7 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
         return name
 
     seen_groups = []
+    bones_by_uuid = {}
 
     def walk(nodes, parent):
         for kind, item in nodes:
@@ -256,8 +308,10 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
                 continue
             seen_groups.append(item['name'])
             mapped = bone_map.get(item['name'])
-            bone = {'name': unique(part + '_' + slug(item['name'])), 'parent': mapped or parent,
-                    'pivot': bone_pivot(item['origin'])}
+            bone = {'name': unique(slug(item['name']) if standalone else part + '_' + slug(item['name'])),
+                    'parent': mapped or parent, 'pivot': bone_pivot(item['origin'])}
+            if item.get('uuid'):
+                bones_by_uuid[item['uuid']] = bone['name']
             rot = bone_rotation(item['rotation'])
             if rot:
                 bone['rotation'] = rot
@@ -279,14 +333,18 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
     # on the mount (bottom at y = 0). Only RD's geometry and RD's bones move; our skeleton stays exactly in place.
     lo, hi = cubes_bbox(added)
     dims = [hi[i] - lo[i] for i in range(3)]
-    if scale:
+    s = 1.0
+    if scale or scale_factor:
         if old_box:
             olo, ohi = old_box
-            s = max(ohi[i] - olo[i] for i in range(3)) / max(dims)
+            s = scale_factor or max(ohi[i] - olo[i] for i in range(3)) / max(dims)
             anchor_new = [(lo[i] + hi[i]) / 2 for i in range(3)]
             anchor_old = [(olo[i] + ohi[i]) / 2 for i in range(3)]
+        elif standalone:
+            s = scale_factor or fit / max(dims)
+            anchor_new = anchor_old = [0.0, 0.0, 0.0]  # keep RD's origin: the model's feet stay where they were
         else:
-            s = fit / max(dims)
+            s = scale_factor or fit / max(dims)
             anchor_new = [(lo[0] + hi[0]) / 2, lo[1], (lo[2] + hi[2]) / 2]
             anchor_old = [0.0, 0.0, 0.0]
 
@@ -311,7 +369,7 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
                   % (sum(len(b.get('cubes', [])) for b in bones), len(new_bones), target,
                      ''.join('; %s -> %s' % kv for kv in bone_map.items())))
     if old_geo:
-        empty = [b['name'] for b in skeleton if not b.get('cubes') and b['name'] in
+        empty = [b['name'] for b in skeleton if not b.get('cubes') and b['name'] != target and b['name'] in
                  [ob['name'] for ob in old_geo['minecraft:geometry'][0]['bones'] if ob.get('cubes')]]
         if empty:
             report.append('kept as empty bones (their old boxes used the old texture): ' + ', '.join(empty))
@@ -319,6 +377,8 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
     for b in bones:
         if not b.get('parent'):
             b.pop('parent', None)
+    if out is not None:
+        out['bones_by_uuid'], out['scale'] = bones_by_uuid, s
     geo = {'format_version': '1.12.0', 'minecraft:geometry': [{'description': description, 'bones': bones}]}
     return geo, png, report
 
@@ -327,6 +387,91 @@ def check_contract(geo, bone_names):
     """Returns the contract bones missing from the model (empty when it keeps the socket contract)."""
     have = {b['name'] for b in geo['minecraft:geometry'][0]['bones']}
     return [n for n in bone_names if n not in have]
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Animations
+
+LOOP = {'loop': True, 'hold': 'hold_on_last_frame', 'once': False}
+
+
+def _number(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _flip(v, flip):
+    """Negates a keyframe value (a number, or a Molang expression GeckoLib evaluates)."""
+    if not flip:
+        n = _number(v)
+        return n if n is not None else v
+    n = _number(v)
+    if n is not None:
+        return -n if n else 0.0
+    return '-(%s)' % v
+
+
+def _times(t):
+    return ('%.4f' % t).rstrip('0').rstrip('.') if t else '0.0'
+
+
+def convert_animations(bbmodel, bones_by_uuid, scale=1.0, prefix='animation.void_reclaimer.model'):
+    """Turns a .bbmodel's animations into a GeckoLib .animation.json dict, for the bones of a model converted with
+    convert(..., out=...). Follows Blockbench's own Bedrock export (Keyframe.compileBedrockKeyframe): rotation X and Y
+    and position X are negated. Positions are scaled with the model. GeckoLib reads only a keyframe's `post` value,
+    so a step keyframe is written as a hold: its value is repeated just before the next keyframe, then jumps.
+    Returns (animations_dict, report_lines)."""
+    model = json.loads(bbmodel) if isinstance(bbmodel, (str, bytes)) else bbmodel
+    out, report = {}, []
+    for anim in model.get('animations', []):
+        bones = {}
+        for uuid, animator in (anim.get('animators') or {}).items():
+            bone = bones_by_uuid.get(uuid)
+            if not bone or animator.get('type', 'bone') != 'bone':
+                continue
+            channels = {}
+            for channel in ('rotation', 'position', 'scale'):
+                keys = sorted((k for k in animator.get('keyframes', []) if k.get('channel') == channel),
+                              key=lambda k: float(k['time']))
+                if not keys:
+                    continue
+                frames = {}
+                for i, k in enumerate(keys):
+                    dp = (k.get('data_points') or [{}])[-1]
+                    raw = [dp.get(axis, 0) for axis in ('x', 'y', 'z')]
+                    if channel == 'rotation':
+                        vec = [_flip(raw[0], True), _flip(raw[1], True), _flip(raw[2], False)]
+                    elif channel == 'position':
+                        vec = [_flip(raw[0], True), _flip(raw[1], False), _flip(raw[2], False)]
+                        vec = [v * scale if isinstance(v, float) else '(%s)*%s' % (v, scale) for v in vec]
+                    else:
+                        vec = [_flip(v, False) for v in raw]
+                    vec = [round(v, 5) if isinstance(v, float) else v for v in vec]
+                    entry = {'vector': vec}
+                    if k.get('interpolation') == 'catmullrom':
+                        entry['lerp_mode'] = 'catmullrom'
+                    frames[_times(float(k['time']))] = entry
+                    if k.get('interpolation') == 'step' and i + 1 < len(keys):
+                        hold = float(keys[i + 1]['time']) - 0.0001
+                        if hold > float(k['time']):
+                            frames[_times(hold)] = {'vector': list(vec)}
+                rest = [1.0, 1.0, 1.0] if channel == 'scale' else [0.0, 0.0, 0.0]
+                if all(f['vector'] == rest for f in frames.values()):
+                    continue  # the bone never moves on this channel
+                channels[channel] = frames
+            if channels:
+                bones[bone] = channels
+        name = '%s.%s' % (prefix, slug(anim.get('name', 'animation')))
+        entry = {'loop': LOOP.get(anim.get('loop', 'once'), False), 'animation_length': float(anim.get('length') or 0)}
+        if entry['loop'] is False:
+            del entry['loop']
+        entry['bones'] = bones
+        out[name] = entry
+        report.append('animation %s: %d moving bones, %.2f s, %s' % (name, len(bones), entry['animation_length'],
+                                                                   anim.get('loop', 'once')))
+    return {'format_version': '1.8.0', 'animations': out}, report
 
 
 # ---------------------------------------------------------------------------------------------------------------------
