@@ -274,7 +274,7 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - **Stations come in stages:** (1) a hub/dock for the Ship, (2) factory bonuses from the multiblock controllers, (3) a respawn and landing base. Each stage is its own phase of work.
 - **Helper drones** (the probe model is their blueprint) do four jobs: ferry items between stations, mine asteroids, collect from dust clouds, carry payloads to the launcher.
 - **Launch complex** (replaces the 3-block Mass Driver stack; the old blocks stay as inert items): the player builds a frame of blocks (a ring around the footprint), a controller takes Create rotation and payload input, solid invisible filler blocks fill the footprint and are removed on disassembly, the model `entity/mass_driver` is drawn by a block entity renderer, and the animations are simple code placeholders. Not started: it needs an explicit go and a file list first.
-- **Everything obtainable:** a GameTest must check that every section and module can be crafted in survival and installed (housekeeping).
+- **Everything obtainable (done):** `ObtainabilityGameTests` finds every item with a section or module component and checks it has a Replicator recipe, that the recipe's milestone exists and can be reached (a fully satisfied `MilestoneContext`), that the price fits the biggest body's dust storage, then crafts it (grant the milestone, pay, finish the job) and installs it into some built-in chassis. A new part is covered without editing the test; a part that is deliberately not craftable would need an explicit exception in it.
 - **Playtesting:** the owner playtests from a checklist the AI writes (first dust to a first launch, with commands to skip waiting).
 
 **Test Starship (placeholder entity, 2026-10-29)**
