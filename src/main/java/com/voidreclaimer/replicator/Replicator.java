@@ -11,6 +11,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustData;
+import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModRecipeTypes;
@@ -130,7 +131,8 @@ public final class Replicator {
 
     public static void checkMilestones(ServerPlayer player) {
         ReplicatorData data = data(player);
-        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player));
+        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player),
+                DysonSphereData.of(player.serverLevel()).tier());
         ReplicatorData updated = data;
         List<ResourceKey<Milestone>> reached = new ArrayList<>();
         for (Milestones.Entry entry : Milestones.all(player.registryAccess())) {

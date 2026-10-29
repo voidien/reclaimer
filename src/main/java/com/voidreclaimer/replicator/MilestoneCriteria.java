@@ -23,6 +23,7 @@ public final class MilestoneCriteria {
         TYPES.register("dust_kinds_held", () -> DustKindsHeld.CODEC);
         TYPES.register("blocks_placed", () -> BlocksPlaced.CODEC);
         TYPES.register("dust_full", () -> DustFull.CODEC);
+        TYPES.register("dyson_tier", () -> DysonTier.CODEC);
     }
 
     private MilestoneCriteria() {}
@@ -110,6 +111,23 @@ public final class MilestoneCriteria {
 
         @Override
         public MapCodec<DustFull> codec() {
+            return CODEC;
+        }
+    }
+
+    /** The Dyson Sphere has reached skybox tier {@code tier} (1 to 4), for everyone in the world. */
+    public record DysonTier(int tier) implements MilestoneCriterion {
+        public static final MapCodec<DysonTier> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                com.mojang.serialization.Codec.intRange(1, 4).fieldOf("tier").forGetter(DysonTier::tier)
+        ).apply(instance, DysonTier::new));
+
+        @Override
+        public boolean isReached(MilestoneContext context) {
+            return context.dysonTier() >= tier;
+        }
+
+        @Override
+        public MapCodec<DysonTier> codec() {
             return CODEC;
         }
     }

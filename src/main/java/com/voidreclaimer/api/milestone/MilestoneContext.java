@@ -8,13 +8,18 @@ import com.voidreclaimer.dust.DustData;
  * @param dust         current dust reserve
  * @param blocksPlaced blocks the player has placed so far (by hand or with the Nanite Swarm)
  * @param dustCapacity storage per dust kind
+ * @param dysonTier    current Dyson Sphere skybox tier (0 to 4), the same for every player
  */
-public record MilestoneContext(DustData dust, int blocksPlaced, float dustCapacity) {
+public record MilestoneContext(DustData dust, int blocksPlaced, float dustCapacity, int dysonTier) {
     public static MilestoneContext of(DustData dust) {
-        return new MilestoneContext(dust, 0, Float.MAX_VALUE);
+        return new MilestoneContext(dust, 0, Float.MAX_VALUE, 0);
     }
 
     public MilestoneContext(DustData dust, int blocksPlaced) {
-        this(dust, blocksPlaced, Float.MAX_VALUE);
+        this(dust, blocksPlaced, Float.MAX_VALUE, 0);
+    }
+
+    public MilestoneContext(DustData dust, int blocksPlaced, float dustCapacity) {
+        this(dust, blocksPlaced, dustCapacity, 0);
     }
 }

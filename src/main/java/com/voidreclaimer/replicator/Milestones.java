@@ -26,6 +26,12 @@ public final class Milestones {
     /** Any one dust kind filled to capacity. Unlocks Mk II parts and the Mech frame. */
     public static final ResourceKey<Milestone> EXPANSION = key("expansion");
 
+    /** The Dyson Sphere reached skybox tier 1 to 4. Log entries only; no recipe waits on them yet. */
+    public static final ResourceKey<Milestone> DYSON_TIER_1 = key("dyson_tier_1");
+    public static final ResourceKey<Milestone> DYSON_TIER_2 = key("dyson_tier_2");
+    public static final ResourceKey<Milestone> DYSON_TIER_3 = key("dyson_tier_3");
+    public static final ResourceKey<Milestone> DYSON_TIER_4 = key("dyson_tier_4");
+
     public static final int STRUCTURE_BLOCKS = 10;
 
     /** The built-in entries, exactly as datagen writes them. */
@@ -101,6 +107,10 @@ public final class Milestones {
         map.put(FIRST_STRUCTURE, new Milestone(new MilestoneCriteria.BlocksPlaced(STRUCTURE_BLOCKS), 2));
         map.put(DIVERSIFIED, new Milestone(new MilestoneCriteria.DustKindsHeld(3), 3));
         map.put(EXPANSION, new Milestone(new MilestoneCriteria.DustFull(Optional.empty()), 4));
+        map.put(DYSON_TIER_1, new Milestone(new MilestoneCriteria.DysonTier(1), 100));
+        map.put(DYSON_TIER_2, new Milestone(new MilestoneCriteria.DysonTier(2), 101));
+        map.put(DYSON_TIER_3, new Milestone(new MilestoneCriteria.DysonTier(3), 102));
+        map.put(DYSON_TIER_4, new Milestone(new MilestoneCriteria.DysonTier(4), 103));
         return Map.copyOf(map);
     }
 }
