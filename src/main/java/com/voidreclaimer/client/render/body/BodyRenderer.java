@@ -131,7 +131,8 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
                 hideFilledCaps(rigModel, view);
             }
             withScale(player.getScale());
-            super.render(player, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+            super.render(player, entityYaw, partialTick, poseStack, bufferSource,
+                    BodyLight.atLeast(packedLight, com.voidreclaimer.ClientConfig.BODY_MIN_LIGHT.get()));
         } finally {
             frame = null;
         }
