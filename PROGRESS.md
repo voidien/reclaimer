@@ -346,6 +346,11 @@ From an outside audit, each checked against the code first (several claims were 
 - Not done (next 5b PR): first-person view (the vanilla hand still shows) and the 3D assembly view in the Body tab.
 - New art in the repo: `geo/entity/mech_suit`, `textures/entity/mech_suit.png`, `animations/entity/mech_suit` (the owner's RD model), `body_rigs/mech.json`. The older `geo/body/mech.geo.json` and the Mech section models are unused while the whole-model spec exists.
 
+## Titan ship model (art only, not used yet)
+- The owner's RD "blocky starship" (a saucer on a neck with two pylons, nacelles with bussard collectors, a hangar door, flame effects) promoted with `rd_generate.py --promote-as entity/titan` at RD's native size (64 x 43 x 134 px, so 4 x 2.7 x 8.4 blocks at scale 1): `geo/entity/titan.geo.json`, `textures/entity/titan.png`, `animations/entity/titan.animation.json`.
+- Animations kept: `warp_cruise` (loop, 4 s) and `bay_open` (once, 1.6 s). The owner's longer export also had `body_rotate` and `bridge_spin`; they were left out as unnecessary.
+- Nothing draws it yet. Its role (a "Titan" size class bigger than the Ship, a Ship skin, or a separate vehicle) is the owner's decision; see the open question in the chat. `GeoModelLoadTest` loads the model and animations.
+
 ## Art drop 1 imported: done
 - From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
 - Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).
