@@ -21,11 +21,39 @@ os.environ['RD_POLL_SECONDS'] = '0'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rd_generate as rd  # noqa: E402
 
+REAL_REPO = rd.REPO
+
 
 def checker(w, h, transparent_corner=True):
     px = [[((x // 2 + y // 2) % 2 * 200, 100, 50, 0 if transparent_corner and x < w // 4 and y < h // 4 else 255)
            for x in range(w)] for y in range(h)]
     return rd.png_write(px)
+
+
+def bbmodel(groups_v5=False, extra_elements=(), textures=1):
+    """A small Blockbench project like RD's blocky export: a loose box, a "body" group and a rotated "blade" group."""
+    def face(u1, v1, u2, v2):
+        return {'uv': [u1, v1, u2, v2], 'texture': 0}
+    def box(uuid, frm, to, origin=(0, 0, 0), rotation=(0, 0, 0)):
+        return {'uuid': uuid, 'name': uuid, 'type': 'cube', 'from': list(frm), 'to': list(to), 'origin': list(origin),
+                'rotation': list(rotation), 'faces': {f: face(0, 0, 8, 8) for f in
+                                                      ('north', 'east', 'south', 'west', 'up', 'down')}}
+    elements = [box('loose', (2, 0, 0), (6, 2, 2)), box('core', (-4, 0, -4), (4, 8, 4)),
+                box('fin', (-1, 8, -1), (1, 16, 1), origin=(0, 8, 0), rotation=(0, 0, 22.5))] + list(extra_elements)
+    png = base64.b64encode(checker(32, 32, transparent_corner=False)).decode()
+    model = {'meta': {'format_version': '4.10', 'model_format': 'free', 'box_uv': False}, 'name': 'rd',
+             'resolution': {'width': 32, 'height': 32}, 'elements': elements,
+             'textures': [{'name': 'atlas', 'source': 'data:image/png;base64,' + png, 'uv_width': 32, 'uv_height': 32}]
+             * textures}
+    blade = {'name': 'blade', 'uuid': 'g2', 'origin': [0, 8, 0], 'rotation': [0, 45, 0], 'children': ['fin']}
+    body = {'name': 'body', 'uuid': 'g1', 'origin': [0, 0, 0], 'rotation': [0, 0, 0], 'children': ['core', blade]}
+    if groups_v5:
+        model['groups'] = [{k: v for k, v in g.items() if k != 'children'} for g in (body, blade)]
+        model['outliner'] = ['loose', {'uuid': 'g1', 'children': ['core', {'uuid': 'g2', 'children': ['fin']}]}]
+    else:
+        model['outliner'] = ['loose', body]
+    model['outliner'] += [e['uuid'] for e in extra_elements]
+    return json.dumps(model)
 
 
 class Fake(http.server.BaseHTTPRequestHandler):
@@ -260,6 +288,122 @@ class RdGenerateTest(unittest.TestCase):
         # Blocky and Blocky Lite are the only choices (Detailed builds cylinders and spheres).
         with self.assertRaises(SystemExit), mock.patch('sys.stderr'):
             rd.main(['--asset', 'core_mk2_model', '--model-style', 'detailed'])
+
+    def stage_model(self, key, text):
+        os.makedirs(self.staged(key), exist_ok=True)
+        with open(self.staged(key, 'model.bbmodel'), 'w') as f:
+            f.write(text)
+
+    def geo(self, rel):
+        with open(os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo', rel)) as f:
+            return json.load(f)['minecraft:geometry'][0]
+
+    def test_promote_new_module_model(self):
+        import bbgeo
+        self.stage_model('core_mk1_model', bbmodel())
+        rd.main(['--promote', 'core_mk1_model'])
+        geo = self.geo('module/core_mk1.geo.json')
+        bones = {b['name']: b for b in geo['bones']}
+        self.assertEqual(list(bones)[:2], ['core_mk1', 'core_mk1_mount'], 'module skeleton')
+        self.assertEqual(bones['core_mk1_body']['parent'], 'core_mk1_mount')
+        self.assertEqual(bones['core_mk1_blade']['parent'], 'core_mk1_body')
+        self.assertEqual(len(bones['core_mk1_mount']['cubes']), 1, 'the loose box sits on the mount')
+        lo, hi = bbgeo.cubes_bbox(geo['bones'])
+        self.assertAlmostEqual(max(h - l for l, h in zip(lo, hi)), 4.0, 3, 'fitted to 4 px')
+        self.assertAlmostEqual(lo[1], 0.0, 3, 'stands on the mount')
+        self.assertEqual((geo['description']['texture_width'], geo['description']['texture_height']), (32, 32))
+        tex = os.path.join(self.tmp, rd.TEXTURES, 'entity/body')
+        self.assertEqual(rd.png_read(self.read(os.path.join(tex, 'core_mk1.png'))), rd.png_read(checker(32, 32, False)))
+        accent = rd.png_read(self.read(os.path.join(tex, 'core_mk1_accent.png')))
+        self.assertTrue(all(px[3] == 0 for row in accent for px in row), 'empty accent mask to paint')
+
+    def test_bedrock_coordinates_match_blockbench(self):
+        import bbgeo
+        geo, _, _ = bbgeo.convert(bbmodel(), 'p', scale=False)
+        bones = {b['name']: b for b in geo['minecraft:geometry'][0]['bones']}
+        loose = bones['p_mount']['cubes'][0]
+        self.assertEqual((loose['origin'], loose['size']), ([-6, 0, 0], [4, 2, 2]), 'X mirrored: origin x = -to.x')
+        self.assertEqual(loose['uv']['north'], {'uv': [0, 0], 'uv_size': [8, 8]})
+        self.assertEqual(loose['uv']['up'], {'uv': [8, 8], 'uv_size': [-8, -8]}, 'up/down flipped like Blockbench')
+        fin = bones['p_blade']['cubes'][0]
+        self.assertEqual((fin['pivot'], fin['rotation']), ([0, 8, 0], [0, 0, 22.5]))
+        self.assertEqual(bones['p_blade']['rotation'], [0, -45, 0], 'rotation around Y negated')
+        # Blockbench 5 keeps groups in a separate list; the result is the same.
+        self.assertEqual(bbgeo.convert(bbmodel(groups_v5=True), 'p', scale=False)[0], geo)
+
+    def test_promote_section_keeps_its_skeleton(self):
+        import bbgeo
+        rel = 'src/main/resources/assets/void_reclaimer/geo/section/rotor_arm.geo.json'
+        os.makedirs(os.path.dirname(os.path.join(self.tmp, rel)))
+        shutil.copy(os.path.join(REAL_REPO, rel), os.path.join(self.tmp, rel))
+        old = self.geo('section/rotor_arm.geo.json')
+        self.stage_model('rotor_arm_section', bbmodel())
+        with self.assertRaises(SystemExit), mock.patch('sys.stdout'):
+            rd.main(['--promote', 'rotor_arm_section', '--bone', 'blade=no_such_bone'])
+        rd.main(['--promote', 'rotor_arm_section', '--bone', 'blade=rotor_spin'])
+        new = self.geo('section/rotor_arm.geo.json')
+        nb = {b['name']: b for b in new['bones']}
+        for b in old['bones']:
+            self.assertEqual((nb[b['name']].get('parent'), nb[b['name']]['pivot']), (b.get('parent'), b['pivot']),
+                             'contract bone %s unchanged' % b['name'])
+        self.assertEqual(nb['rotor_arm_blade']['parent'], 'rotor_spin', 'mapped group turns with rotor_spin')
+        self.assertEqual(nb['rotor_arm_body']['parent'], 'rotor_arm_frame')
+        self.assertFalse(nb['cap_thruster'].get('cubes') if 'cap_thruster' in nb else False)
+        olo, ohi = bbgeo.cubes_bbox(old['bones'])
+        nlo, nhi = bbgeo.cubes_bbox(new['bones'])
+        self.assertAlmostEqual(max(h - l for l, h in zip(nlo, nhi)), max(h - l for l, h in zip(olo, ohi)), 3)
+        self.assertEqual(new['description']['identifier'], old['description']['identifier'])
+        self.assertTrue(os.path.exists(self.staged('rotor_arm_section', 'replaced', 'rotor_arm.geo.json')), 'backup')
+
+    def test_baked_faces_match_blockbench_rotation(self):
+        import bbgeo
+        # A texture where every pixel is different, and faces using it rotated and mirrored every way.
+        tex = [[(x * 16, y * 16, (x + y) * 8, 255) for x in range(16)] for y in range(16)]
+        uvs = [(2, 3, 8, 7), (8, 7, 2, 3), (8, 3, 2, 7), (2, 7, 8, 3)]
+        elements, cases = {}, []
+        for i, uv in enumerate(uvs):
+            for r in (90, 180, 270):
+                f = {'uv': list(uv), 'texture': 0, 'rotation': r}
+                elements['e%d_%d' % (i, r)] = {'faces': {'north': f}}
+                cases.append((uv, r, f))
+        png, new_h, n = bbgeo.bake_rotated_faces(elements, rd.png_write(tex), 16, 16)
+        self.assertEqual(n, 12)
+        baked = rd.png_read(png)
+
+        def blockbench(uv, r, s, t):
+            # Literal port of Blockbench's Cube.updateUV: corner UVs TL, TR, BL, BR, then per 90 degrees
+            # arr0 = arr2, arr2 = arr3, arr3 = arr1, arr1 = old arr0; the face shows them bilinearly.
+            u1, v1, u2, v2 = uv
+            arr = [(u1, v1), (u2, v1), (u1, v2), (u2, v2)]
+            for _ in range(r // 90):
+                a = arr[0]
+                arr[0], arr[2], arr[3], arr[1] = arr[2], arr[3], arr[1], a
+            u = arr[0][0] * (1 - s) * (1 - t) + arr[1][0] * s * (1 - t) + arr[2][0] * (1 - s) * t + arr[3][0] * s * t
+            v = arr[0][1] * (1 - s) * (1 - t) + arr[1][1] * s * (1 - t) + arr[2][1] * (1 - s) * t + arr[3][1] * s * t
+            return u, v
+
+        for uv, r, f in cases:
+            self.assertNotIn('rotation', f)
+            bu1, bv1, bu2, bv2 = f['uv']
+            w, h = int(abs(bu2 - bu1)), int(abs(bv2 - bv1))
+            for s, t in [((i + 0.5) / w, (j + 0.5) / h) for i in range(w) for j in range(h)]:  # every pixel's center
+                    u, v = blockbench(uv, r, s, t)
+                    want = tex[int(v)][int(u)]
+                    got = baked[int(bv1 + (bv2 - bv1) * t)][int(bu1 + (bu2 - bu1) * s)]
+                    self.assertEqual(got, want, 'uv %s rotation %d at (%.1f, %.1f)' % (uv, r, s, t))
+
+    def test_model_promote_refuses_what_it_cannot_convert(self):
+        mesh = {'uuid': 'm', 'name': 'm', 'type': 'mesh', 'vertices': {}, 'faces': {}}
+        for text in (bbmodel(extra_elements=[mesh]), bbmodel(textures=2)):
+            two = text if 'mesh' in text else json.dumps(dict(json.loads(text), elements=[
+                dict(e, faces={k: dict(v, texture=i % 2) for i, (k, v) in enumerate(e['faces'].items())})
+                for e in json.loads(text)['elements']]))
+            self.stage_model('core_mk2_model', two)
+            with self.assertRaises(SystemExit), mock.patch('sys.stdout'):
+                rd.main(['--promote', 'core_mk2_model'])
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo/module/core_mk2.geo.json')))
+        with self.assertRaises(SystemExit):
+            rd.main(['--promote', 'space_thruster'])  # its block does not exist yet
 
     def test_dry_run_needs_no_key_and_sends_nothing(self):
         os.environ.pop('RD_API_KEY')

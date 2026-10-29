@@ -35,6 +35,9 @@ import urllib.error
 import urllib.request
 import zlib
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pngutil import png_read, png_write  # noqa: E402
+
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 CSV_PATH = os.path.join(REPO, 'docs', 'art', 'assets.csv')
 STAGING = os.path.join(REPO, 'art', 'rd')
@@ -81,81 +84,6 @@ MODEL_SIZE = {'drone (body)': 64, 'mech (body)': 64, 'ship (body)': 128,
 
 # ---------------------------------------------------------------------------------------------------------------------
 # PNG (enough for RD's outputs and our textures: 8-bit gray/RGB/palette/gray+alpha/RGBA, not interlaced)
-
-def png_read(data):
-    if data[:8] != b'\x89PNG\r\n\x1a\n':
-        raise ValueError('not a PNG')
-    pos, idat, palette, trns = 8, b'', None, None
-    width = height = depth = ctype = interlace = None
-    while pos < len(data):
-        length, kind = struct.unpack('>I4s', data[pos:pos + 8])
-        body = data[pos + 8:pos + 8 + length]
-        pos += 12 + length
-        if kind == b'IHDR':
-            width, height, depth, ctype, _, _, interlace = struct.unpack('>IIBBBBB', body)
-        elif kind == b'PLTE':
-            palette = [tuple(body[i:i + 3]) for i in range(0, len(body), 3)]
-        elif kind == b'tRNS':
-            trns = body
-        elif kind == b'IDAT':
-            idat += body
-        elif kind == b'IEND':
-            break
-    if depth != 8 or interlace:
-        raise ValueError('unsupported PNG (bit depth %s, interlace %s)' % (depth, interlace))
-    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[ctype]
-    raw = zlib.decompress(idat)
-    stride = width * channels
-    rows, prev, i = [], bytearray(stride), 0
-    for _ in range(height):
-        f = raw[i]
-        line = bytearray(raw[i + 1:i + 1 + stride])
-        i += 1 + stride
-        for x in range(stride):
-            a = line[x - channels] if x >= channels else 0
-            b = prev[x]
-            c = prev[x - channels] if x >= channels else 0
-            if f == 1:
-                line[x] = (line[x] + a) & 255
-            elif f == 2:
-                line[x] = (line[x] + b) & 255
-            elif f == 3:
-                line[x] = (line[x] + ((a + b) >> 1)) & 255
-            elif f == 4:
-                p = a + b - c
-                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
-                line[x] = (line[x] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
-        rows.append(line)
-        prev = line
-    pixels = []
-    for line in rows:
-        row = []
-        for x in range(width):
-            px = line[x * channels:(x + 1) * channels]
-            if ctype == 0:
-                row.append((px[0], px[0], px[0], 255))
-            elif ctype == 2:
-                row.append((px[0], px[1], px[2], 255))
-            elif ctype == 3:
-                r, g, b = palette[px[0]]
-                row.append((r, g, b, trns[px[0]] if trns and px[0] < len(trns) else 255))
-            elif ctype == 4:
-                row.append((px[0], px[0], px[0], px[1]))
-            else:
-                row.append(tuple(px))
-        pixels.append(row)
-    return pixels
-
-
-def png_write(pixels):
-    height, width = len(pixels), len(pixels[0])
-    raw = b''.join(b'\x00' + bytes(v for px in row for v in px) for row in pixels)
-
-    def chunk(kind, body):
-        return struct.pack('>I', len(body)) + kind + body + struct.pack('>I', zlib.crc32(kind + body) & 0xffffffff)
-    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
-            + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b''))
-
 
 def downscale(pixels, tw, th):
     """Pixel-art downscale: each target pixel takes the most common color of its source block (transparent wins
@@ -697,6 +625,8 @@ def promote(spec, rows):
     row = next((r for r in rows if r['key'] == akey), None)
     if not row:
         sys.exit('unknown asset %r (use the name shown in art/rd/index.html)' % akey)
+    if '3D' in row['method'] and not row['method'].startswith('RD image'):
+        return promote_model(row, ARGS)
     src = os.path.join(STAGING, akey, 'v%s.png' % (n or '1'))
     if not os.path.exists(src):
         sys.exit('no variant %s for %s' % (n or '1', akey))
@@ -711,6 +641,89 @@ def promote(spec, rows):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(src, dst)
     print('copied %s -> %s' % (os.path.relpath(src, REPO), row['file']))
+
+
+def promote_model(row, args):
+    """Converts the staged .bbmodel into the part's GeckoLib model and texture (see bbgeo.py), backing up what it
+    replaces into art/rd/<asset>/replaced/."""
+    import bbgeo
+    akey = row['key']
+    model_rel = row['model']
+    if not model_rel.endswith('.geo.json'):
+        sys.exit('%s has no model file yet (%s): its block or entity is not built, so copy it by hand later'
+                 % (akey, model_rel))
+    src = os.path.join(STAGING, akey, 'model.bbmodel')
+    if not os.path.exists(src):
+        sys.exit('no staged model for %s (expected %s); generate it first' % (akey, os.path.relpath(src, REPO)))
+    part = os.path.basename(model_rel)[:-len('.geo.json')]
+    folder = os.path.basename(os.path.dirname(model_rel))
+    tex_name = ('first_person_' if folder == 'first_person' else '') + part
+    tex_rel = TEXTURES + 'entity/body/%s.png' % tex_name
+    accent_rel = TEXTURES + 'entity/body/%s_accent.png' % tex_name
+    geo_path = os.path.join(REPO, model_rel)
+    old_geo = None
+    if os.path.exists(geo_path):
+        with open(geo_path) as f:
+            old_geo = json.load(f)
+    bone_map = {}
+    for spec in args.bone or []:
+        rd_group, _, bone = spec.partition('=')
+        if not bone:
+            sys.exit('--bone takes RD_GROUP=OUR_BONE, got %r' % spec)
+        bone_map[rd_group] = bone
+    with open(src, 'rb') as f:
+        data = f.read()
+    atlas = os.path.join(STAGING, akey, 'atlas.png')
+    fallback = None
+    if os.path.exists(atlas):
+        with open(atlas, 'rb') as f:
+            fallback = f.read()
+    try:
+        geo, png, report = bbgeo.convert(data, part, old_geo, bone_map, fit=args.fit, scale=not args.no_fit,
+                                         identifier='geometry.void_reclaimer.%s.%s' % (folder, part), texture=fallback)
+    except (bbgeo.ConvertError, ValueError, KeyError) as e:
+        sys.exit('%s: cannot convert %s: %s' % (akey, os.path.relpath(src, REPO), e))
+    if png is None:
+        sys.exit('%s: the .bbmodel has no embedded texture and there is no atlas.png' % akey)
+    pixels = png_read(png)
+
+    contract = [part, part + '_mount'] if not old_geo else \
+        [b.strip() for b in row['notes'].split('Bones: ', 1)[1].split(',')] if 'Bones: ' in row['notes'] else \
+        [b['name'] for b in old_geo['minecraft:geometry'][0]['bones']]
+    missing = bbgeo.check_contract(geo, contract)
+    if missing:
+        sys.exit('%s: the converted model lost contract bones: %s' % (akey, ', '.join(missing)))
+
+    backup = os.path.join(STAGING, akey, 'replaced')
+    for rel in (model_rel, tex_rel, accent_rel):
+        path = os.path.join(REPO, rel)
+        if os.path.exists(path):
+            os.makedirs(backup, exist_ok=True)
+            shutil.copyfile(path, os.path.join(backup, os.path.basename(rel)))
+    os.makedirs(os.path.dirname(geo_path), exist_ok=True)
+    with open(geo_path, 'w') as f:
+        json.dump(geo, f, indent='\t')
+        f.write('\n')
+    os.makedirs(os.path.dirname(os.path.join(REPO, tex_rel)), exist_ok=True)
+    write_file(os.path.join(REPO, tex_rel), png)
+    # The old accent mask matched the old texture layout, so it is replaced by an empty one (no accent tint) to paint.
+    write_file(os.path.join(REPO, accent_rel), png_write([[(0, 0, 0, 0)] * len(pixels[0]) for _ in pixels]))
+    preview = os.path.join(STAGING, akey, 'promoted_preview.png')
+    try:
+        write_file(preview, bbgeo.preview_png(geo, png))
+    except bbgeo.ConvertError:
+        preview = None
+    print('promoted %s:' % akey)
+    print('  model   -> %s' % model_rel)
+    print('  texture -> %s (%dx%d)' % (tex_rel, len(pixels[0]), len(pixels)))
+    print('  accent  -> %s (empty: paint it in Blockbench to get the accent tint)' % accent_rel)
+    for line in report:
+        print('  ' + line)
+    if os.path.isdir(backup):
+        print('  the old files are in %s' % os.path.relpath(backup, REPO))
+    if preview:
+        print('  preview: %s (front, right, back, left, top; compare with render.png)' % os.path.relpath(preview, REPO))
+    print('  The game draws these from Phase 5b (body rendering) on.')
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -740,7 +753,12 @@ def main(argv=None):
     p.add_argument('--dry-run', action='store_true', help='plan and offline price only; no key needed, nothing sent')
     p.add_argument('--yes', action='store_true', help="don't ask before spending")
     p.add_argument('--resume', action='store_true', help='only poll jobs already submitted')
-    p.add_argument('--promote', action='append', help='copy a staged variant into the mod: asset=n')
+    p.add_argument('--promote', action='append', help='copy a staged pick into the mod: asset=n for an image, asset for a 3D model')
+    p.add_argument('--bone', action='append', metavar='RD_GROUP=OUR_BONE',
+                   help='model promote: put an RD group under one of our bones (e.g. blade=rotor_spin)')
+    p.add_argument('--fit', type=float, default=4.0,
+                   help='model promote, new modules: longest side in pixels (default 4, like the thrusters)')
+    p.add_argument('--no-fit', action='store_true', help="model promote: keep RD's size and position")
     p.add_argument('--balance', action='store_true', help='show the account balance')
     p.add_argument('--index', action='store_true', help='rewrite art/rd/index.html')
     args = ARGS = p.parse_args(argv)

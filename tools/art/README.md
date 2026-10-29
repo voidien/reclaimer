@@ -91,7 +91,7 @@ python3 tools/art/rd_generate.py --balance
 
 **Animations**
 - Run on the rig's model once that model exists, then the rig's `.bbmodel` is re-exported.
-- Bone names and animation names still need the Blockbench step in `docs/art/ASSETS.md`.
+- Animation names and bones still need the Blockbench step in `docs/art/ASSETS.md`; `--promote` converts models, not animations.
 
 ## Output
 Everything goes to `art/rd/`, which is gitignored:
@@ -99,4 +99,23 @@ Everything goes to `art/rd/`, which is gitignored:
 - `state.json` remembers jobs, RD asset ids and costs.
 - `index.html` is a contact sheet: each asset's current texture next to the new variants and model renders.
 
-`--promote asset=n` copies one variant into the mod after checking its size. Assets without a single target file yet (future blocks named with `*` or `{...}`) are copied by hand once their block exists.
+## Promoting
+**Images:** `--promote asset=n` copies variant n into the mod after checking its size. Assets without a single target file yet (future blocks named with `*` or `{...}`) are copied by hand once their block exists.
+
+**3D models:** `--promote asset` (no number) turns `art/rd/<asset>/model.bbmodel` into the part's GeckoLib model (`tools/art/bbgeo.py`):
+```
+python3 tools/art/rd_generate.py --promote core_mk1_model
+python3 tools/art/rd_generate.py --promote rotor_arm_section --bone blade=rotor_spin
+```
+- **Our skeleton is kept.** A part that already has a model keeps every bone exactly: names, parents and positions, which are the attach points the body is built from. Only the geometry is replaced: RD's boxes go into `<part>_frame`. A module without a model gets the module skeleton: `<part>` with `<part>_mount`, geometry on the mount.
+- **`--bone RD_GROUP=OUR_BONE`** puts one of RD's groups under one of our bones, for parts that move. For example, a rotor blade under `rotor_spin` turns with the rotor animation. The promote output lists RD's groups. A wrong name stops the promote and changes nothing.
+- **Scaled to fit.** RD builds models at 16+ texels and our parts are 2–66 pixels. The model is scaled to the old model's size and centered on it. A new module is scaled to `--fit` pixels on its longest side (default 4, like the thrusters) and stands on its mount. `--no-fit` keeps RD's size.
+- **Rotated face UVs are baked.** RD's models turn some face textures by 90/180/270°. GeckoLib 4.9.3 only supports unrotated face UVs without warnings, so those faces are copied into the texture already turned, in a strip added below the atlas. The model stays in the geometry format GeckoLib supports (1.12.0).
+- **Written:**
+  - `geo/<folder>/<part>.geo.json`;
+  - `textures/entity/body/<part>.png` (RD's texture);
+  - an empty `<part>_accent.png`. The old mask matched the old texture, so paint a new one in Blockbench to get the accent tint back.
+  - The files it replaces are backed up to `art/rd/<asset>/replaced/`.
+- **Check it:** `art/rd/<asset>/promoted_preview.png` shows the converted model from the front, right, back, left and top, to compare with RD's `render.png`. The Gradle unit test `GeoModelLoadTest` loads every model in the mod through GeckoLib's own loader (CI runs it), so a model GeckoLib can't read fails the build.
+- **Not converted:** animations (RD's rig is not ours; keyframe them in Blockbench) and models for blocks that don't exist yet. Body rigs (`drone (body)`, ...) convert, but RD's groups land in the core section's frame unless you map them with `--bone`.
+- The game draws these models from Phase 5b (body rendering) on.

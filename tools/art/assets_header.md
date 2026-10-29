@@ -26,6 +26,10 @@ Costs from RD's API page: about $0.25–3.00 per model, $0.20–1.50 per revisio
 
 ## 3D workflow (GeckoLib parts and rigs)
 The body is built in code from separate part models. Each part attaches to its parent by bone name, so a model only works if it keeps the **socket contract**. The art drop already meets it; a regenerated part must too.
+
+**Automatic:** `python3 tools/art/rd_generate.py --promote <asset>` does steps 2–4 and 6 for a part. It keeps our bones and positions, puts RD's boxes into the part's frame, scales the model to the old one's size, bakes rotated face UVs, and writes the model and texture with an empty accent mask. Details are in `tools/art/README.md`. The manual steps below are for animations, body rigs and anything the tool can't map.
+
+**By hand in Blockbench:**
 1. **Generate** in RD 3D, blocky style, with the row's prompt. Up to 4 reference images help: the current item icon, or the old model's turntable.
 2. **Export `.bbmodel`** and open it in Blockbench. Convert it to a GeckoLib model with the GeckoLib plugin.
 3. **Rename bones** to the row's "Bones to keep" list. Line up their pivots with the old model's. Easiest: open the old `.geo.json` beside the new one and copy the pivots.
@@ -50,7 +54,7 @@ RD's blocky style "tilts where needed", so check tilted boxes in Blockbench; a b
 1. `export RD_API_KEY=rdpk-...` (your key; it is never written to a file).
 2. `python3 tools/art/rd_generate.py --status placeholder --dry-run` shows the jobs and an offline price. Without `--dry-run` it prices them with RD's free estimates, checks your balance and asks before spending.
 3. Results land in `art/rd/` (not committed): 4 variants per image, 1 model per 3D asset, and a contact sheet `art/rd/index.html`.
-4. `python3 tools/art/rd_generate.py --promote quartz_wafer=2` copies a picked variant into the mod (size-checked). 3D models still go through Blockbench (workflow above).
+4. `python3 tools/art/rd_generate.py --promote quartz_wafer=2` copies a picked image into the mod (size-checked). `--promote core_mk1_model` converts a 3D model into the part's GeckoLib model (see the 3D workflow).
 5. Tell me when a batch is promoted. I'll check it in game and update `PROGRESS.md`.
 
 **By hand:** take the `prompt` column into RD's web app, in the mode the `method` column names, and save the result at exactly the `file` (or `model`) path and size.
