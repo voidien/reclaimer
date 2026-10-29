@@ -155,11 +155,12 @@ class BodyLookTest {
     }
 
     @Test
-    void cameraDistanceScalesWithTheBodyAndBigBodiesGetMore() {
-        assertEquals(1.6f, BodyRenderEvents.cameraDistance(4f, 0.4f), 1e-4f, "a drone sits close, as in vanilla");
-        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f), 1e-4f);
-        assertEquals(4.8f, BodyRenderEvents.cameraDistance(4f, 1.2f), 1e-4f, "a mech is just vanilla scaled");
-        assertEquals(4f * 3f * 2.1f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-3f, "a ship is 12 blocks long");
-        assertEquals(4f * 8f * 4f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-3f, "capped for the Titan, over 60 blocks long");
+    void bigBodiesGetTheCameraFurtherBackSmallOnesKeepTheirs() {
+        // Vanilla multiplies the distance by the body scale after this: 4 * factor * scale is what the camera really gets.
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f));
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f));
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1.2f));
+        assertEquals(4f * 2.1f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f, "a ship: about 25 blocks");
+        assertEquals(4f * 4f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-4f, "capped for the Titan: about 128 blocks");
     }
 }
