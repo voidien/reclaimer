@@ -9,7 +9,9 @@ import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.network.ReplicatorActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModRecipeTypes;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.replicator.Milestones;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.replicator.ReplicatorJob;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
@@ -185,7 +187,7 @@ public final class ReplicatorScreen extends Screen {
                 graphics.drawString(font, costLine(recipe, dust), x + 24, rowY + 12, TEXT, false);
             } else {
                 graphics.drawString(font, "???", x + 8, rowY + 7, DIM, false);
-                graphics.drawString(font, recipe.milestone().hint(), x + 24, rowY + 7, DIM, false);
+                graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
             }
         }
         if (recipes.size() > VISIBLE_ROWS) {
@@ -213,7 +215,8 @@ public final class ReplicatorScreen extends Screen {
     private void renderLogs(GuiGraphics graphics, ReplicatorData data) {
         int x = left + 6;
         int y = top + 38;
-        List<Milestone> logs = data.unlocked();
+        List<ResourceKey<Milestone>> logs = data.unlocked();
+        var access = minecraft.level.registryAccess();
         if (logs.isEmpty()) {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.no_logs"), x + 6, y + 6, DIM, false);
             return;
@@ -221,11 +224,11 @@ public final class ReplicatorScreen extends Screen {
         selectedLog = Mth.clamp(selectedLog, 0, logs.size() - 1);
         for (int i = 0; i < Math.min(logs.size(), VISIBLE_ROWS); i++) {
             int rowY = y + i * 12;
-            graphics.drawString(font, logs.get(i).logTitle(), x + 4, rowY + 3, i == selectedLog ? ACCENT : TEXT, false);
+            graphics.drawString(font, Milestones.logTitle(access, logs.get(i)), x + 4, rowY + 3, i == selectedLog ? ACCENT : TEXT, false);
         }
-        Milestone log = logs.get(selectedLog);
+        ResourceKey<Milestone> log = logs.get(selectedLog);
         int textY = y + Math.min(logs.size(), VISIBLE_ROWS) * 12 + 8;
-        for (FormattedCharSequence line : font.split(log.logText(), LIST_WIDTH - 8)) {
+        for (FormattedCharSequence line : font.split(Milestones.logText(access, log), LIST_WIDTH - 8)) {
             graphics.drawString(font, line, x + 4, textY, 0xFFB8C4CE, false);
             textY += 10;
         }

@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "description": "Void Reclaimer GameTest extension pack (loaded only by the GameTest server)",
+    "pack_format": 48
+  }
+}

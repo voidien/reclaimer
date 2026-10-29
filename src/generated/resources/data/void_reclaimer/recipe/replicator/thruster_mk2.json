@@ -6,7 +6,7 @@
     "void_reclaimer:metallic": 30.0,
     "void_reclaimer:silicate": 10.0
   },
-  "milestone": "expansion",
+  "milestone": "void_reclaimer:expansion",
   "result": {
     "count": 1,
     "id": "void_reclaimer:thruster_mk2"

@@ -3,7 +3,7 @@ package com.voidreclaimer.datagen;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -159,7 +159,7 @@ public final class ModLangProvider extends LanguageProvider {
                 + "Not much, but it is matter, and matter is everything. "
                 + "Drafted a salvage tool so nothing I build is ever wasted, and a nanite swarm to build where nothing stands.");
         add("milestone.void_reclaimer.first_structure", "First Structure");
-        add("milestone.void_reclaimer.first_structure.hint", "Place " + Milestone.STRUCTURE_BLOCKS + " blocks");
+        add("milestone.void_reclaimer.first_structure.hint", "Place " + Milestones.STRUCTURE_BLOCKS + " blocks");
         add("log.void_reclaimer.first_structure.title", "Log 0003: Foothold");
         add("log.void_reclaimer.first_structure.text", "Ten blocks, bolted to nothing. It is the first thing out here that did not drift. "
                 + "I could tie myself to it. A tether would let me work without losing my way back.");

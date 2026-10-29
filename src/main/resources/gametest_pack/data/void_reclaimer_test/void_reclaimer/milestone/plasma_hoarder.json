@@ -1,0 +1,9 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:dust_collected",
+    "kind": "void_reclaimer_test:plasma",
+    "amount": 5
+  },
+  "order": 90,
+  "title": {"text": "Plasma Hoarder"}
+}

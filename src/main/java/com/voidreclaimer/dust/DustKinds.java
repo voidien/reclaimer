@@ -24,9 +24,7 @@ public final class DustKinds {
     public static final Map<ResourceLocation, DustKind> BUILTIN = builtin();
 
     /** A kind id; a bare name like {@code "metallic"} means {@code void_reclaimer:metallic} (older saves and recipes). */
-    public static final Codec<ResourceLocation> ID_CODEC = Codec.STRING.comapFlatMap(
-            s -> ResourceLocation.read(s.indexOf(':') >= 0 ? s : VoidReclaimer.MOD_ID + ":" + s),
-            ResourceLocation::toString);
+    public static final Codec<ResourceLocation> ID_CODEC = com.voidreclaimer.registry.ModCodecs.ID;
 
     private static final int UNKNOWN_COLOR = 0x808080;
 

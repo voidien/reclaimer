@@ -8,7 +8,10 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.core.BackupCores;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.replicator.Milestones;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.dust.DustCloud;
@@ -107,23 +110,28 @@ public final class ModCommands {
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> milestoneAction(String name, boolean grant) {
         return Commands.literal(name)
                 .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.argument("milestone", StringArgumentType.word())
-                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                        Arrays.stream(Milestone.values()).map(Milestone::getSerializedName), builder))
+                        .then(Commands.argument("milestone", ResourceLocationArgument.id())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
+                                        Milestones.all(ctx.getSource().registryAccess()).stream().map(e -> e.key().location()), builder))
                                 .executes(ctx -> setMilestone(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
-                                        StringArgumentType.getString(ctx, "milestone"), grant))));
+                                        ResourceLocationArgument.getId(ctx, "milestone"), grant))));
     }
 
-    private static int setMilestone(CommandSourceStack source, ServerPlayer player, String name, boolean grant) {
-        Milestone milestone = Arrays.stream(Milestone.values()).filter(m -> m.getSerializedName().equals(name)).findFirst().orElse(null);
-        if (milestone == null) {
-            source.sendFailure(Component.translatable("commands.void_reclaimer.milestone.unknown", name));
+    private static int setMilestone(CommandSourceStack source, ServerPlayer player, ResourceLocation id, boolean grant) {
+        // "awakening" parses as minecraft:awakening; fall back to ours.
+        ResourceKey<Milestone> key = ResourceKey.create(VoidReclaimerRegistries.MILESTONE, id);
+        if (Milestones.get(source.registryAccess(), key) == null && id.getNamespace().equals("minecraft")) {
+            key = ResourceKey.create(VoidReclaimerRegistries.MILESTONE, VoidReclaimer.id(id.getPath()));
+        }
+        ResourceKey<Milestone> milestone = key;
+        if (Milestones.get(source.registryAccess(), milestone) == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.milestone.unknown", id.toString()));
             return 0;
         }
         ReplicatorData data = Replicator.data(player);
         Replicator.store(player, grant ? data.withUnlocked(milestone) : data.withoutUnlocked(milestone));
         source.sendSuccess(() -> Component.translatable(grant ? "commands.void_reclaimer.milestone.granted"
-                : "commands.void_reclaimer.milestone.revoked", milestone.title(), player.getDisplayName()), true);
+                : "commands.void_reclaimer.milestone.revoked", Milestones.title(source.registryAccess(), milestone), player.getDisplayName()), true);
         return 1;
     }
 

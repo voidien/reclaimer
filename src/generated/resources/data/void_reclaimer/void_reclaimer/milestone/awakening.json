@@ -1,0 +1,6 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:always"
+  },
+  "order": 0
+}

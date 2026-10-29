@@ -2,6 +2,10 @@ package com.voidreclaimer.replicator;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.registry.ModCodecs;
+import net.minecraft.resources.ResourceKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -17,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * progress counters that milestones look at.
  * Immutable; every change produces a new instance.
  */
-public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, List<Milestone> unlocked, int blocksPlaced) {
+public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, List<ResourceKey<Milestone>> unlocked, int blocksPlaced) {
     public static final int MAX_JOBS = 5;
     public static final int BUFFER_SLOTS = 9;
 
@@ -27,14 +31,14 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
             // Lenient: a field that no longer parses (e.g. an item from a removed mod) resets instead of failing the load.
             ReplicatorJob.CODEC.listOf().lenientOptionalFieldOf("jobs", List.of()).forGetter(ReplicatorData::jobs),
             ItemStack.CODEC.listOf().lenientOptionalFieldOf("buffer", List.of()).forGetter(ReplicatorData::buffer),
-            Milestone.CODEC.listOf().lenientOptionalFieldOf("unlocked", List.of()).forGetter(ReplicatorData::unlocked),
+            ModCodecs.key(VoidReclaimerRegistries.MILESTONE).listOf().lenientOptionalFieldOf("unlocked", List.of()).forGetter(ReplicatorData::unlocked),
             Codec.INT.lenientOptionalFieldOf("blocks_placed", 0).forGetter(ReplicatorData::blocksPlaced)
     ).apply(instance, ReplicatorData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorData> STREAM_CODEC = StreamCodec.composite(
             ReplicatorJob.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::jobs,
             ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::buffer,
-            Milestone.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::unlocked,
+            ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE).apply(ByteBufCodecs.list()), ReplicatorData::unlocked,
             ByteBufCodecs.VAR_INT, ReplicatorData::blocksPlaced,
             ReplicatorData::new);
 
@@ -50,7 +54,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         unlocked = List.copyOf(unlocked);
     }
 
-    public boolean isUnlocked(Milestone milestone) {
+    public boolean isUnlocked(ResourceKey<Milestone> milestone) {
         return unlocked.contains(milestone);
     }
 
@@ -71,20 +75,20 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         return new ReplicatorData(jobs, newBuffer, unlocked, blocksPlaced);
     }
 
-    public ReplicatorData withUnlocked(Milestone milestone) {
+    public ReplicatorData withUnlocked(ResourceKey<Milestone> milestone) {
         if (unlocked.contains(milestone)) {
             return this;
         }
-        List<Milestone> list = new ArrayList<>(unlocked);
+        List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.add(milestone);
         return new ReplicatorData(jobs, buffer, list, blocksPlaced);
     }
 
-    public ReplicatorData withoutUnlocked(Milestone milestone) {
+    public ReplicatorData withoutUnlocked(ResourceKey<Milestone> milestone) {
         if (!unlocked.contains(milestone)) {
             return this;
         }
-        List<Milestone> list = new ArrayList<>(unlocked);
+        List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.remove(milestone);
         return new ReplicatorData(jobs, buffer, list, blocksPlaced);
     }
@@ -94,7 +98,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
     }
 
     /** Milestones present in {@code current} but not in {@code previous}, in unlock order. */
-    public static List<Milestone> newlyUnlocked(@Nullable ReplicatorData previous, ReplicatorData current) {
+    public static List<ResourceKey<Milestone>> newlyUnlocked(@Nullable ReplicatorData previous, ReplicatorData current) {
         if (previous == null) {
             return List.of();
         }

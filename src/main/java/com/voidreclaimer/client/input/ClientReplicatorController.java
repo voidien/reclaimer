@@ -3,7 +3,8 @@ package com.voidreclaimer.client.input;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.client.screen.MilestoneToast;
 import com.voidreclaimer.client.screen.ReplicatorScreen;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.api.milestone.Milestone;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.ReplicatorData;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -19,7 +20,7 @@ public final class ClientReplicatorController {
     /** Installed as {@link ReplicatorData#clientSyncListener}. */
     public static void onSync(ReplicatorData previous, ReplicatorData current) {
         Minecraft mc = Minecraft.getInstance();
-        for (Milestone milestone : ReplicatorData.newlyUnlocked(previous, current)) {
+        for (ResourceKey<Milestone> milestone : ReplicatorData.newlyUnlocked(previous, current)) {
             mc.execute(() -> mc.getToasts().addToast(new MilestoneToast(milestone)));
         }
     }

@@ -3,7 +3,11 @@ package com.voidreclaimer.replicator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.registry.ModCodecs;
 import com.voidreclaimer.registry.ModRecipeSerializers;
+import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.registry.ModRecipeTypes;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
@@ -30,7 +34,7 @@ import net.minecraft.world.level.Level;
  * @param category  Replicator screen tab
  * @param milestone milestone that unlocks the recipe
  */
-public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Category category, Milestone milestone)
+public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Category category, ResourceKey<Milestone> milestone)
         implements Recipe<ReplicatorInput> {
 
     public enum Category implements StringRepresentable {
@@ -61,7 +65,7 @@ public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Categ
             DustCost.CODEC.fieldOf("cost").forGetter(ReplicatorRecipe::cost),
             ExtraCodecs.POSITIVE_INT.fieldOf("ticks").forGetter(ReplicatorRecipe::ticks),
             Category.CODEC.fieldOf("category").forGetter(ReplicatorRecipe::category),
-            Milestone.CODEC.fieldOf("milestone").forGetter(ReplicatorRecipe::milestone)
+            ModCodecs.key(VoidReclaimerRegistries.MILESTONE).fieldOf("milestone").forGetter(ReplicatorRecipe::milestone)
     ).apply(instance, ReplicatorRecipe::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorRecipe> STREAM_CODEC = StreamCodec.composite(
@@ -69,7 +73,7 @@ public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Categ
             DustCost.STREAM_CODEC, ReplicatorRecipe::cost,
             ByteBufCodecs.VAR_INT, ReplicatorRecipe::ticks,
             Category.STREAM_CODEC, ReplicatorRecipe::category,
-            Milestone.STREAM_CODEC, ReplicatorRecipe::milestone,
+            ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE), ReplicatorRecipe::milestone,
             ReplicatorRecipe::new);
 
     /** Affordable with the given reserve (unlocking is checked separately, per player). */

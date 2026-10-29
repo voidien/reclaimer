@@ -1,9 +1,9 @@
-package com.voidreclaimer.replicator;
+package com.voidreclaimer.api.milestone;
 
 import com.voidreclaimer.dust.DustData;
 
 /**
- * The player state milestone criteria look at. Kept to plain values so the criteria stay unit-testable.
+ * The player state milestone criteria look at. Kept to plain values so criteria stay unit-testable.
  *
  * @param dust         current dust reserve
  * @param blocksPlaced blocks the player has placed so far (by hand or with the Nanite Swarm)
@@ -16,15 +16,5 @@ public record MilestoneContext(DustData dust, int blocksPlaced, float dustCapaci
 
     public MilestoneContext(DustData dust, int blocksPlaced) {
         this(dust, blocksPlaced, Float.MAX_VALUE);
-    }
-
-    /** Whether any one kind of dust is at capacity. */
-    public boolean anyKindFull() {
-        return dust.anyKindFull(dustCapacity);
-    }
-
-    /** How many dust kinds the reserve holds any of. */
-    public int kindsHeld() {
-        return dust.kindsHeld();
     }
 }

@@ -1,5 +1,6 @@
 package com.voidreclaimer.replicator;
 
+import com.voidreclaimer.api.milestone.MilestoneContext;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustData;
@@ -120,9 +121,9 @@ public final class Replicator {
         ReplicatorData data = data(player);
         MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player));
         ReplicatorData updated = data;
-        for (Milestone milestone : Milestone.values()) {
-            if (!updated.isUnlocked(milestone) && milestone.isReached(context)) {
-                updated = updated.withUnlocked(milestone);
+        for (Milestones.Entry entry : Milestones.all(player.registryAccess())) {
+            if (!updated.isUnlocked(entry.key()) && entry.milestone().isReached(context)) {
+                updated = updated.withUnlocked(entry.key());
             }
         }
         if (updated != data) {
@@ -130,10 +131,10 @@ public final class Replicator {
         }
     }
 
-    /** Counts a block the player placed, for {@link Milestone#FIRST_STRUCTURE}. Stops counting once it's reached. */
+    /** Counts a block the player placed, for block-placing milestones. Stops once every such milestone is satisfied. */
     public static void countBlockPlaced(ServerPlayer player) {
         ReplicatorData data = data(player);
-        if (data.blocksPlaced() < Milestone.STRUCTURE_BLOCKS) {
+        if (data.blocksPlaced() < Milestones.blocksNeeded(player.registryAccess())) {
             store(player, data.withBlocksPlaced(data.blocksPlaced() + 1));
         }
     }

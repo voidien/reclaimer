@@ -8,7 +8,7 @@ import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.replicator.ReplicatorLogic;
@@ -44,8 +44,8 @@ public final class ReplicatorGameTests {
         try {
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.LOCKED, "scaffold unlocked before awakening");
             Replicator.checkMilestones(player);
-            helper.assertTrue(Replicator.data(player).isUnlocked(Milestone.AWAKENING), "awakening not granted");
-            helper.assertFalse(Replicator.data(player).isUnlocked(Milestone.FIRST_DUST), "first dust granted without dust");
+            helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.AWAKENING), "awakening not granted");
+            helper.assertFalse(Replicator.data(player).isUnlocked(Milestones.FIRST_DUST), "first dust granted without dust");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

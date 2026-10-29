@@ -2,6 +2,7 @@ package com.voidreclaimer.compat.jei;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustKinds;
+import com.voidreclaimer.replicator.Milestones;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import com.voidreclaimer.registry.ModItems;
@@ -78,7 +79,7 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
             }
         }
         graphics.drawString(font, Component.translatable("jei.void_reclaimer.time", Mth.ceil(recipe.ticks() / 20f)), 0, 20, 0xFF404040, false);
-        graphics.drawString(font, Component.translatable("jei.void_reclaimer.unlock", recipe.milestone().title()), 0, 34, 0xFF606060, false);
+        graphics.drawString(font, Component.translatable("jei.void_reclaimer.unlock", Milestones.title(Minecraft.getInstance().level.registryAccess(), recipe.milestone())), 0, 34, 0xFF606060, false);
     }
 
 }

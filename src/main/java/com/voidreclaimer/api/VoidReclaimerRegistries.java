@@ -1,7 +1,10 @@
 package com.voidreclaimer.api;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.mojang.serialization.MapCodec;
 import com.voidreclaimer.api.dust.DustKind;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.api.milestone.MilestoneCriterion;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
@@ -13,6 +16,11 @@ import net.minecraft.resources.ResourceKey;
 public final class VoidReclaimerRegistries {
     /** Synced datapack registry: what dust clouds are made of. */
     public static final ResourceKey<Registry<DustKind>> DUST_KIND = key("dust_kind");
+    /** Synced datapack registry: progression milestones that unlock Replicator recipes. */
+    public static final ResourceKey<Registry<Milestone>> MILESTONE = key("milestone");
+    /** Code registry: the codecs of milestone criterion types, by the {@code type} name used in JSON. */
+    public static final ResourceKey<Registry<MapCodec<? extends MilestoneCriterion>>> MILESTONE_CRITERION_TYPE =
+            key("milestone_criterion_type");
 
     private VoidReclaimerRegistries() {}
 

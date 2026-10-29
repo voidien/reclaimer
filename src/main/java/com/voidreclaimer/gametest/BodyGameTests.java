@@ -14,7 +14,7 @@ import com.voidreclaimer.nanite.Nanites;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.Milestone;
+import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -172,10 +172,10 @@ public final class BodyGameTests {
             float capacity = DustData.capacity(player);
             player.setData(ModAttachments.DUST, DustData.of(capacity - 1f, 0, 0, 0));
             Replicator.checkMilestones(player);
-            helper.assertFalse(Replicator.data(player).isUnlocked(Milestone.EXPANSION), "unlocked below capacity");
+            helper.assertFalse(Replicator.data(player).isUnlocked(Milestones.EXPANSION), "unlocked below capacity");
             player.setData(ModAttachments.DUST, DustData.of(capacity, 0, 0, 0));
             Replicator.checkMilestones(player);
-            helper.assertTrue(Replicator.data(player).isUnlocked(Milestone.EXPANSION), "not unlocked at capacity");
+            helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.EXPANSION), "not unlocked at capacity");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

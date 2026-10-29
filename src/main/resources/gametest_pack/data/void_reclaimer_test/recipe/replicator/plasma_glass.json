@@ -1,0 +1,8 @@
+{
+  "type": "void_reclaimer:replicator",
+  "result": {"id": "minecraft:glass_pane", "count": 4},
+  "cost": {"void_reclaimer_test:plasma": 2},
+  "ticks": 20,
+  "category": "blocks",
+  "milestone": "void_reclaimer_test:plasma_hoarder"
+}
