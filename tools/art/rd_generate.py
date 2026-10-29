@@ -864,8 +864,8 @@ def whole_model_scale(data, like):
 
 def promote_as(target, args):
     """Converts a whole .bbmodel into a standalone GeckoLib model with its animations, for an entity or a block
-    (`entity/NAME` or `block/NAME`): RD's group names become the bones, and nothing is fitted unless --fit/--scale is
-    given. Writes geo/<target>.geo.json, animations/<target>.animation.json (when there are animations) and
+    (`entity/NAME` or `block/NAME`): RD's group names become the bones, and nothing is fitted unless --fit, --scale or
+    --scale-like is given. Writes geo/<target>.geo.json, animations/<target>.animation.json (when there are animations) and
     textures/<target>.png, backing up what it replaces next to the source."""
     import bbgeo
     folder, _, name = target.partition('/')
@@ -880,11 +880,14 @@ def promote_as(target, args):
     if os.path.exists(atlas):
         with open(atlas, 'rb') as f:
             fallback = f.read()
+    scale_factor = args.scale
+    if args.scale_like and not scale_factor:
+        scale_factor = whole_model_scale(data, args.scale_like)
     info = {}
     try:
         geo, png, report = bbgeo.convert(data, name, None, fit=args.fit, scale=bool(args.fit_given),
                                          identifier='geometry.void_reclaimer.%s.%s' % (folder, name), texture=fallback,
-                                         groups=args.from_group, scale_factor=args.scale, standalone=True, out=info)
+                                         groups=args.from_group, scale_factor=scale_factor, standalone=True, out=info)
         anims, anim_report = bbgeo.convert_animations(data, info['bones_by_uuid'], info['scale'],
                                                       'animation.void_reclaimer.%s' % name)
     except (bbgeo.ConvertError, ValueError, KeyError) as e:

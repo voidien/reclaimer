@@ -54,6 +54,7 @@ public final class ModCreativeTabs {
                 for (var fluid : ModFluids.ALL) {
                     output.accept(fluid.bucket().get());
                 }
+                output.accept(ModItems.TEST_STARSHIP.get());
             })
             .build());
 

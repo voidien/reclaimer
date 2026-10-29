@@ -165,10 +165,10 @@ python3 tools/art/rd_generate.py --promote-as entity/starship --source art/rd/st
 ```
 - **Written:** `geo/entity/starship.geo.json`, `textures/entity/starship.png` and `animations/entity/starship.animation.json`. Also `entity/` or `block/`.
 - **Bones** keep RD's group names (`nose`, `wing_l`, ...) under a root bone named after the model.
-- **Size:** RD's size is kept unless you pass `--fit` or `--scale`.
+- **Size:** RD's size is kept unless you pass `--fit`, `--scale` or `--scale-like` (e.g. `--scale-like body/ship` makes it as long as the Ship rig).
 - **Animations** are converted the way Blockbench's own Bedrock export does it: rotation X/Y and position X negated, positions scaled with the model. Step keys are held until the next key, because GeckoLib reads only a keyframe's `post` value. Loop modes map to GeckoLib's (`loop`, `hold_on_last_frame`, play once).
 - **Checks:** `GeoModelLoadTest` loads every animation through GeckoLib and checks that each moved bone exists in its model. For body animations, that means the rig or any section or module.
-- The entity or block that shows the model is built in its own phase.
+- The entity or block that shows the model is built in its own phase. The exception is `entity/starship`, which the Test Starship entity already draws: re-promote over it (`--promote-as entity/starship --scale-like body/ship --source NEW.bbmodel`) and keep the animation names `ignite_prep` and `gear_cycle`.
 
 **RD's Minecraft (Java) export isn't used:** it tilts boxes freely, which needs Minecraft 1.21.11+. Always promote from the `.bbmodel`.
 - The game draws these models from Phase 5b (body rendering) on.
