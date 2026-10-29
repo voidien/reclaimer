@@ -75,6 +75,8 @@ public final class DysonGameTests {
         DysonSphereData saved = DysonSphereData.of(server);
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 75_000.5, 80, 0.5);
         try {
+            // The persistent GameTest world may hold leftover launches from an earlier (failed) run: start from tier 0.
+            Dyson.set(server, DysonSphereData.createDefault());
             Dyson.set(server, new DysonSphereData(5, 0, 0, 0));
             helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.DYSON_TIER_1), "tier 1 log missing");
             // Lock it again by hand; another launch within the same tier must not re-grant it.

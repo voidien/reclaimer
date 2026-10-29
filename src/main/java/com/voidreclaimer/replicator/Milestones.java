@@ -26,6 +26,12 @@ public final class Milestones {
     /** Any one dust kind filled to capacity. Unlocks Mk II parts and the Mech frame. */
     public static final ResourceKey<Milestone> EXPANSION = key("expansion");
 
+    /**
+     * The AI has made one item from each nebula chain (Coolant Frame Plate, Carbon Composite Plate, High-Efficiency Solar Cell,
+     * Micro-Alloy Sheet). Unlocks the Ship sections.
+     */
+    public static final ResourceKey<Milestone> STARSHIP = key("starship");
+
     /** The Dyson Sphere reached skybox tier 1 to 4. Log entries only; no recipe waits on them yet. */
     public static final ResourceKey<Milestone> DYSON_TIER_1 = key("dyson_tier_1");
     public static final ResourceKey<Milestone> DYSON_TIER_2 = key("dyson_tier_2");
@@ -75,6 +81,18 @@ public final class Milestones {
         return text(access, key, Milestone::logText);
     }
 
+    /** Ids of the items some not-yet-reached milestone asks the player to have held. */
+    public static java.util.Set<net.minecraft.resources.ResourceLocation> itemsWanted(RegistryAccess access,
+                                                                                    java.util.function.Predicate<ResourceKey<Milestone>> reached) {
+        java.util.Set<net.minecraft.resources.ResourceLocation> wanted = new java.util.HashSet<>();
+        for (Entry entry : all(access)) {
+            if (!reached.test(entry.key()) && entry.milestone().criterion() instanceof MilestoneCriteria.ItemsMade made) {
+                wanted.addAll(made.items());
+            }
+        }
+        return wanted;
+    }
+
     /** The most blocks any registered milestone asks for; placements are counted up to this. */
     public static int blocksNeeded(RegistryAccess access) {
         int needed = 0;
@@ -107,6 +125,9 @@ public final class Milestones {
         map.put(FIRST_STRUCTURE, new Milestone(new MilestoneCriteria.BlocksPlaced(STRUCTURE_BLOCKS), 2));
         map.put(DIVERSIFIED, new Milestone(new MilestoneCriteria.DustKindsHeld(3), 3));
         map.put(EXPANSION, new Milestone(new MilestoneCriteria.DustFull(Optional.empty()), 4));
+        map.put(STARSHIP, new Milestone(new MilestoneCriteria.ItemsMade(List.of(VoidReclaimer.id("coolant_frame_plate"),
+                VoidReclaimer.id("carbon_composite_plate"), VoidReclaimer.id("high_efficiency_solar_cell"),
+                VoidReclaimer.id("micro_alloy_sheet"))), 50));
         map.put(DYSON_TIER_1, new Milestone(new MilestoneCriteria.DysonTier(1), 100));
         map.put(DYSON_TIER_2, new Milestone(new MilestoneCriteria.DysonTier(2), 101));
         map.put(DYSON_TIER_3, new Milestone(new MilestoneCriteria.DysonTier(3), 102));

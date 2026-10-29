@@ -159,6 +159,12 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.title", "Replicator");
         add("recipe.void_reclaimer.drone_kit", "Drone Kit");
         add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
+        add("recipe.void_reclaimer.ship_core_kit", "Ship Core Kit");
+        add("milestone.void_reclaimer.starship", "Starship");
+        add("milestone.void_reclaimer.starship.hint", "Make a Coolant Frame Plate, a Carbon Composite Plate, a High-Efficiency Solar Cell and a Micro-Alloy Sheet");
+        add("log.void_reclaimer.starship.title", "Log: The Starship");
+        add("log.void_reclaimer.starship.text", "[Placeholder, lore text pending.] Ice, carbon, silicon and metal: one finished part from each. "
+                + "The drafts for a ship-sized body are complete.");
         add("replicator.void_reclaimer.tab.tools", "Tools");
         add("replicator.void_reclaimer.tab.modules", "Modules");
         add("replicator.void_reclaimer.tab.blocks", "Blocks");

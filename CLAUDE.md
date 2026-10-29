@@ -279,7 +279,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 |---|---|---|
 | `void_reclaimer:dust_kind` | Synced datapack registry (`api.dust.DustKind`) | `color`, `cloud_weight` (0 = never in clouds), `name`, `order` (built-ins 0–3) |
 | `void_reclaimer:milestone` | Synced datapack registry (`api.milestone.Milestone`) | `criterion`, `order`, optional `title`/`hint`/`log_title`/`log_text` |
-| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held`, `blocks_placed`, `dust_full` |
+| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held`, `blocks_placed`, `dust_full`, `dyson_tier`, `items_made` (a list of item ids the player must have held) |
 | `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
@@ -372,7 +372,7 @@ Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations,
 Act II, the Dyson Sphere (deep_space):
 - **8. Zero-G Frame and payloads (done):** Zero-G Precision Frame, Dyson Swarm Satellite Payload, Dyson Shell Truss Module, RCS Thruster, Reaction Wheel Gyroscope, Atmospheric Catalyst Core, as Create Sequenced Assembly recipes (see the Phase 8 block).
 - **9. Kinetic Mass Driver (done, see the Phase 9 block):** the 1x1x3 multiblock, its launch sequence and animations, the handoff to `Dyson.launchSatellites/launchTrusses`, the Sub-Light Quantum Receiver and the sky's power beams. Sky tier thresholds from the truss counts.
-- **10. The Starship:** the milestone that unlocks the Ship frame (one item from each nebula chain) and the Ship class's recipes.
+- **10. The Starship (done, see the Phase 10 block):** the milestone that unlocks the Ship frame (one item from each nebula chain) and the Ship class's recipes.
 Act III, Planetary Genesis (ruined_earth):
 - **11. Ruined Earth:** the dimension and its three-era sky, the Atmospheric Portal, the Planetary Grid HUD, the drop pod and Industrial Mech, Ashen Slag, smog, Acid Drizzle weather.
 - **12. Terraforming Spire:** the multiblock, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core (one per sector), the Genesis Pulse that rewrites biomes and blocks in 128 blocks.
@@ -410,3 +410,9 @@ Parallel tracks, scheduled as they fit:
 - **Replicator:** the three Mass Driver blocks (Blocks tab, Diversified milestone, toggle `massDriver`) at placeholder prices; the doc names none.
 - **Toggles** (config `dysonMachines`): `massDriver`, `quantumReceiver`; the numbers above are in the same section.
 - **Not here:** goggle tooltips, rotation animation, Ponder; Receiver tooltip shows Create's per-RPM capacity rather than the live output; the Receiver does not require sky exposure.
+
+**Phase 10: the Starship milestone and the Ship recipes (2026-10-29, defaults)**
+- **Milestone `void_reclaimer:starship`** (order 50, criterion `items_made`): reached once the AI has held one of each of Coolant Frame Plate, Carbon Composite Plate, High-Efficiency Solar Cell and Micro-Alloy Sheet (one per nebula chain). "Made" means held at some point: `ReplicatorData.itemsMade` records the ids (only those an unreached milestone asks for) from the inventory, armor, offhand and Replicator buffer, checked once a second with the other milestones. A plate that later goes into a machine still counts; a plate taken out of a Create output by hand counts when it reaches the inventory.
+- **`items_made` is a general criterion** (`MilestoneCriteria.ItemsMade`, field `items`, non-empty list of ids): datapacks can ask for any items. `MilestoneContext` carries `itemsMade`. Saves without the new field load with none.
+- **Ship recipes:** all 14 Ship sections and a **Ship Core Kit** (keel, bridge, bow) are Replicator recipes in the Parts tab gated by `starship`. The prices are placeholders (a keel is 120/90/60/80 dust, a whole Ship several times a Mech); the doc gives none. The sections were already items (tier 3); only the recipes and the unlock were missing.
+- **Not here:** the "Starship" display name (still "Ship", per the earlier decision), Ship-only materials in recipes (Replicator recipes cost dust only), the Ship's GeckoLib rendering (5b).

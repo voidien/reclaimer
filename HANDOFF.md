@@ -12,7 +12,7 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
 - **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
 - **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
-- **Next phase:** 10 (the Starship milestone) or 5b (GeckoLib rendering); see the revised plan in `CLAUDE.md`. Phases 6 to 9 are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
+- **Next phase:** 5b (GeckoLib rendering) or Act III, phase 11 (Ruined Earth); see the revised plan in `CLAUDE.md`. Phases 6 to 10 are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
 - **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
   - It's a Claude Docs project, at revision 12.
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.

@@ -334,6 +334,11 @@ From an outside audit, each checked against the code first (several claims were 
 - Placeholder textures (generated): `kinetic_drive_base`, `quantum_receiver` (side/end), `payload_chamber`, `magnetic_barrel_nozzle`, and the item `incomplete_quantum_receiver`. Sound `mass_driver_launch` uses a vanilla stand-in.
 - Not checked in a real client: the streak and beam rendering (no visual test run for this phase); verify in game: fire a payload in deep space and look towards the star, and place a running Receiver.
 
+## Phase 10: Starship milestone and Ship recipes: done
+- New milestone criterion `items_made`; milestone `starship` (one item from each nebula chain); Replicator recipes for the 14 Ship sections and a Ship Core Kit behind it. See the Phase 10 block in `CLAUDE.md`.
+- Tests: `ItemsMadeCriterionTest` (6 unit tests, including old-save loading) and 3 GameTests in `StarshipGameTests` (needs all four chains, even after giving items away; Ship recipes locked then unlocked; a datapack milestone using `items_made`). Mutation-checked: "any one item" instead of "all items" fails the unit test and two GameTests. `DysonGameTests` now resets the sphere first, because the persistent GameTest world can hold leftovers from an earlier failed run.
+- Ship section icons are real art from drop 1; prices are placeholders.
+
 ## Art drop 1 imported: done
 - From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
 - Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).

@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 35.0,
+    "void_reclaimer:ice": 25.0,
+    "void_reclaimer:metallic": 50.0,
+    "void_reclaimer:silicate": 40.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:ship_hull_segment_mk2"
+  },
+  "ticks": 2400
+}
