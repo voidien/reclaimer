@@ -1,0 +1,526 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.void_reclaimer.section.ship_hardpoint",
+        "texture_width": 128,
+        "texture_height": 128,
+        "visible_bounds_width": 8,
+        "visible_bounds_height": 4,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "ship_hardpoint",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "ship_hardpoint_casing",
+          "parent": "ship_hardpoint",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                0,
+                -1,
+                -1
+              ],
+              "size": [
+                1.5,
+                2,
+                2
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "ship_hardpoint_frame",
+          "parent": "ship_hardpoint",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                1.5,
+                -0.5,
+                -0.5
+              ],
+              "size": [
+                3,
+                1,
+                1
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    17,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    17,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    21,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                1.25,
+                -0.75,
+                -0.75
+              ],
+              "size": [
+                0.5,
+                1.5,
+                1.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    26,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    27,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    24,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    26,
+                    2
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    27,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    29,
+                    2
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                1.75,
+                0.5,
+                -0.25
+              ],
+              "size": [
+                2,
+                0.25,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    31,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    33,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    30,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    31,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    33,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    34,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "hardpoint_jaw_left",
+          "parent": "ship_hardpoint",
+          "pivot": [
+            4.5,
+            0,
+            0.5
+          ],
+          "cubes": [
+            {
+              "origin": [
+                4.5,
+                -0.5,
+                0.25
+              ],
+              "size": [
+                2,
+                1,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    37,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    39,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    36,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    37,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    39,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    40,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "hardpoint_jaw_right",
+          "parent": "ship_hardpoint",
+          "pivot": [
+            4.5,
+            0,
+            -0.5
+          ],
+          "cubes": [
+            {
+              "origin": [
+                4.5,
+                -0.5,
+                -0.75
+              ],
+              "size": [
+                2,
+                1,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    37,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    39,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    36,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    37,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    39,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    40,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "mount_tool_1",
+          "parent": "ship_hardpoint",
+          "pivot": [
+            3,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

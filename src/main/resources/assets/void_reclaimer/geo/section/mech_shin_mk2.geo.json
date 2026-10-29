@@ -1,0 +1,768 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.void_reclaimer.section.mech_shin_mk2",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "mech_shin_mk2",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mech_shin_mk2_body",
+          "parent": "mech_shin_mk2",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mech_shin_mk2_casing",
+          "parent": "mech_shin_mk2_body",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.5,
+                -5.5,
+                -1.5
+              ],
+              "size": [
+                3,
+                4.5,
+                3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "mech_shin_mk2_frame",
+          "parent": "mech_shin_mk2_body",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1,
+                -1,
+                -1
+              ],
+              "size": [
+                2,
+                1,
+                2
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    18,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    18,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    22,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -0.75,
+                -3.75,
+                1.5
+              ],
+              "size": [
+                1.5,
+                1.5,
+                0.75
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    25,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    27,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    24,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    25,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    27,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    28,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.25,
+                -5.25,
+                1.5
+              ],
+              "size": [
+                0.5,
+                4,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    31,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    32,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    30,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    31,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    32,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    33,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                0.75,
+                -5.25,
+                1.5
+              ],
+              "size": [
+                0.5,
+                4,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    31,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    32,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    30,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    31,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    32,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    33,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    4
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.75,
+                -1.5,
+                -1.75
+              ],
+              "size": [
+                3.5,
+                0.5,
+                3.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    38,
+                    0
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    42,
+                    0
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    34,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    38,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    42,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    46,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "nozzle_flap_top",
+          "parent": "mech_shin_mk2_body",
+          "pivot": [
+            0,
+            -2.25,
+            2.25
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -0.75,
+                -2.5,
+                2.25
+              ],
+              "size": [
+                1.5,
+                0.25,
+                1
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    51,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    53,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    50,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    51,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    53,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    54,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "nozzle_flap_bottom",
+          "parent": "mech_shin_mk2_body",
+          "pivot": [
+            0,
+            -3.75,
+            2.25
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -0.75,
+                -3.75,
+                2.25
+              ],
+              "size": [
+                1.5,
+                0.25,
+                1
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    51,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    53,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    50,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    51,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    53,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    54,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "cap_foot",
+          "parent": "mech_shin_mk2",
+          "pivot": [
+            0,
+            -6,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.0,
+                -6.5,
+                -1.0
+              ],
+              "size": [
+                2,
+                0.5,
+                2
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    58,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    60,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    56,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    58,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    60,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    62,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "mount_thruster_1",
+          "parent": "mech_shin_mk2",
+          "pivot": [
+            0,
+            -3,
+            1.5
+          ]
+        }
+      ]
+    }
+  ]
+}

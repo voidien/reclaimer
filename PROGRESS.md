@@ -320,6 +320,14 @@ From an outside audit, each checked against the code first (several claims were 
 - Collector part for raw items out of a cloud (the second source of raw items, besides the Replicator).
 - Everything blocked on the doc's open questions (see `CLAUDE.md`).
 
+## Art drop 1 imported: done
+- From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
+- Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).
+- **Still our placeholders (for the next art request):**
+  - 31 item icons: Mechanical Drill, Matter Harvester; the 6 fluid buckets (purified water, oxygen, hydrogen, nebulite propellant, coolant, liquid silicon); and the nebula materials: advanced sensor unit, carbon composite plate, carbon flakes, carbon paste, carbon thread, coolant frame plate, crushed cryo-ice, doped silicon ingot, fine carbon powder, high-efficiency solar cell, high-output solar sail (and its incomplete form), high-purity graphite, metallic grains, micro-alloy sheet, pure silicon dust, quartz wafer, raw ice shards, refined metal nodule, silicon-carbide coating, silicon-carbide slurry, silicon grit, thermal shielding tile.
+  - 8 block textures: the four asteroid rocks (silicate, ice, carbon, metallic), and the Electrolyzer and Spinner (side and end each).
+  - The fluids themselves reuse vanilla water textures with a tint.
+
 ## Silicon-Carbide Coating and planning decisions: done
 - New item Silicon-Carbide Coating and a Create basin-compacting recipe (Silicon-Carbide Slurry + Carbon Composite Plate, makes 2), under the `carbonChain` toggle.
 - Interview decisions recorded in `CLAUDE.md` ("Decisions after Phase 7"): ships kept as extras, `ruined_earth` stays, one Spire per sector, and a revised phase plan around the design doc's Acts.
