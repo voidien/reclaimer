@@ -213,7 +213,13 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Gear animation in Create style: cogs spin with thrust and speed, with module work (Replicator, drill, nanites), with energy level (low power winds down), and idle slowly.
 - Body colors: a casing material (Andesite, Brass, Copper, later unlocks) plus a free accent tint.
 - Phases 7–8 build on Create's machines and logistics instead of duplicating them.
-- **Create Aeronautics / Sable: not a dependency (spike, 2026-10-28).** Sable gravity can be zeroed per dimension (`data/<ns>/dimension_physics/*.json`: `base_gravity`, `base_pressure`, `universal_drag`), but in `deep_space` every sub-level was flung away or removed on its first physics tick (cause unknown; our tall dimension or zero-G systems are suspects). Revisit before Phase 8; branch `claude/aeronautics-spike` keeps the test setup.
+- **Create Aeronautics: optional support, Phase 7b (retest 2026-10-29, branch `claude/aeronautics-spike`, `AERONAUTICS_SPIKE.md`).**
+  - Sable works in `deep_space` with zero physics gravity via `data/<ns>/dimension_physics/*.json` (`base_gravity`, `base_pressure`, `universal_drag`). The first spike's "flung away" ships were falling: the zero-G file wasn't in effect. Height and f32 precision were not factors.
+  - Aeronautics propellers and balloons need air, so they give no thrust in vacuum. Our own **Space Thruster** block pushes ships through Sable's force API (Create rotation plus dust fuel).
+  - The Ship class stays the player's body; a **Helm** block lets the body pilot a block ship with WASD thrust controls. Block ships serve as mobile stations, cargo haulers, mining rigs, and can cross the Atmospheric Portal (air on Ruined Earth makes propellers work).
+  - Everything loads only when Aeronautics is installed; the mod plays fully without it.
+  - Upstream bug: an intermittent start-up deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (game, `runData`). Keep Aeronautics out of the CI datagen run.
+  - `sable64bit` (Chelovechic, AGPL, f64 Rapier) works with Sable 2.0.6 and keeps physics exact far from the origin; recommend it, don't depend on it.
 - **Ships and stations without Aeronautics:**
   - Drone, Mech and Ship are all the player's body (GeckoLib, Create style). The Ship is the 3.0-scale class: a mobile base with more storage, module slots and a faster Replicator; it docks at stations and is the class that survives the Atmospheric Portal (Phase 9).
   - Stations are fixed block structures: Create machines and belts inside, Create contraptions (bearings, pistons, gantries) for moving parts such as rotating rings, our controller blocks for multiblock bonuses (Phase 8). Between stations: helper drones and Create trains on tracks laid through space.
@@ -234,7 +240,38 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - The mesh follows the true lumpy edge (`CloudShape`): rays on a 16×32 latitude/longitude grid find the outermost point at density 0.05. Computed once per cloud on a background thread and cached.
 - Drawn unfogged (fog start restored afterwards) through `RenderLevelStageEvent`; this bends the Phase 3 "clouds are invisible" rule only for sensor owners who switch it on.
 
-**Phase order (decided after 4b):** 5a Body data → 6 Asteroids → 7 Machines → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+**Phase order (decided after 4b, 7b added 2026-10-29):** 5a Body data → extensibility + body sections → 6 Asteroids → 7 Machines → 7b Aeronautics support (optional) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+
+## Extensibility (strict)
+Void Reclaimer is built to be extended by datapack makers, addon developers and KubeJS (through datapacks and events). Every change keeps it that way:
+1. **Data first.** Content and tuning that a datapack could reasonably change lives in data files (datapack registries, recipes, tags), not code.
+2. **Registries, not enums, for open sets.** An enum is allowed only for a set that is fixed by design, and is listed under "Fixed sets" below.
+3. **Behaviour through registered interfaces.** Game logic never checks for specific items (`stack.is(ModItems.X)`); it asks a component, a tag or a registered type.
+4. **Events at key moments.** Fire a NeoForge event (in `com.voidreclaimer.api.event`) wherever an addon could reasonably want to react or change the outcome.
+5. **Public API package.** Registry keys, registry element types, extension interfaces and events live in `com.voidreclaimer.api`. Keep it small and documented.
+6. **Tags for groups, config for numbers.**
+7. **A GameTest per extension point**, using the GameTest-only datapack (`resources/gametest_pack`, namespace `void_reclaimer_test`, loaded by `GameTestPack` only on the GameTest server) and test listeners (`TestEventListeners`, acting only on tagged test players).
+8. **This list is kept current:** every new extension point is added below in the same change.
+9. **Saves and data stay loadable:** ids default to our namespace when bare (`ModCodecs.ID`), unknown ids are kept rather than dropped, and built-in values keep their meaning (e.g. dust kind order keeps cloud generation identical).
+
+### Extension points
+| Extension point | Kind | Notes |
+|---|---|---|
+| `void_reclaimer:dust_kind` | Synced datapack registry (`api.dust.DustKind`) | `color`, `cloud_weight` (0 = never in clouds), `name`, `order` (built-ins 0–3) |
+| `void_reclaimer:milestone` | Synced datapack registry (`api.milestone.Milestone`) | `criterion`, `order`, optional `title`/`hint`/`log_title`/`log_text` |
+| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held`, `blocks_placed`, `dust_full` |
+| `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
+| `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
+| `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
+| `void_reclaimer:replicator` recipes | Recipe type | `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
+| `#void_reclaimer:modules/dust_sensor` | Item tag | Items that work as a Dust Sensor in a sensor slot |
+| `#void_reclaimer:salvageable` | Block tag | Blocks the Salvage Tool refunds |
+| `DustGainEvent` | Event, modifiable + cancellable | Before cloud dust is added |
+| `MilestoneReachedEvent` | Event | After a milestone is reached in play |
+| `ReplicatorJobFinishedEvent` | Event, mutable outputs | Before a finished job's items are delivered |
+
+### Fixed sets (enums by design)
+- `PartKind`: the body's slot kinds (frame, core, thruster, storage, sensor, tool, cosmetic). Replaced by section sockets in the body sections work.
 
 ## Conventions
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.
