@@ -140,6 +140,11 @@ public final class ModCommands {
                                         .then(Commands.literal("drone").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.DRONE)))
                                         .then(Commands.literal("mech").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.MECH)))
                                         .then(Commands.literal("ship").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHIP)))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("socket", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                                .executes(ctx -> removeSection(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
+                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "socket"))))))
                         .then(Commands.literal("get")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> getBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
@@ -252,6 +257,13 @@ public final class ModCommands {
         Bodies.store(player, Bodies.preset(chassis));
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.preset", player.getDisplayName(), chassis.location().getPath()), true);
         return 1;
+    }
+
+    /** Takes a section off a socket (its mounted modules and child sections go with it), to try the body without it. */
+    private static int removeSection(CommandSourceStack source, ServerPlayer player, String socket) {
+        com.voidreclaimer.body.BodyRules.Check check = Bodies.removeSection(player, socket);
+        source.sendSuccess(() -> Component.literal(socket + ": " + check), true);
+        return check == com.voidreclaimer.body.BodyRules.Check.OK ? 1 : 0;
     }
 
     private static int getBody(CommandSourceStack source, ServerPlayer player) {
