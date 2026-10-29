@@ -1,0 +1,517 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.void_reclaimer.module.thruster_mk2",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "thruster_mk2",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "thruster_mk2_mount",
+          "parent": "thruster_mk2",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.25,
+                -0.25,
+                -1.25
+              ],
+              "size": [
+                2.5,
+                0.5,
+                2.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    19,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    22,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    19,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    22,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    25,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "thruster_nozzle",
+          "parent": "thruster_mk2",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.25,
+                -1.25,
+                0.25
+              ],
+              "size": [
+                2.5,
+                2.5,
+                1.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    30,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    33,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    28,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    3
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    30,
+                    2
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    33,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    3
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    35,
+                    2
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.5,
+                -1.5,
+                1.75
+              ],
+              "size": [
+                3.0,
+                3.0,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    39,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    42,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    38,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    3
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    39,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    42,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    3
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    43,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -0.5,
+                -0.5,
+                2.25
+              ],
+              "size": [
+                1,
+                1,
+                0.25
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    47,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    48,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    46,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    47,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    48,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    49,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "nozzle_flap_top",
+          "parent": "thruster_mk2",
+          "pivot": [
+            0,
+            1.25,
+            2.25
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.25,
+                1.25,
+                2.25
+              ],
+              "size": [
+                2.5,
+                0.25,
+                1
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    51,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    54,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    50,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    51,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    54,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    55,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "nozzle_flap_bottom",
+          "parent": "thruster_mk2",
+          "pivot": [
+            0,
+            -1.25,
+            2.25
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.25,
+                -1.5,
+                2.25
+              ],
+              "size": [
+                2.5,
+                0.25,
+                1
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    51,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    54,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    50,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    51,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    54,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    55,
+                    1
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

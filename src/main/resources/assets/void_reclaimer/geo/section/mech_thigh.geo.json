@@ -1,0 +1,367 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.void_reclaimer.section.mech_thigh",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "mech_thigh",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mech_thigh_body",
+          "parent": "mech_thigh",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "mech_thigh_casing",
+          "parent": "mech_thigh_body",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.5,
+                -5.5,
+                -1.5
+              ],
+              "size": [
+                3,
+                4.5,
+                3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    16,
+                    16
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "mech_thigh_frame",
+          "parent": "mech_thigh_body",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1,
+                -1,
+                -1
+              ],
+              "size": [
+                2,
+                1,
+                2
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    18,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    18,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    22,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.75,
+                -3.5,
+                -1.75
+              ],
+              "size": [
+                3.5,
+                0.5,
+                3.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    28,
+                    0
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    32,
+                    0
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    24,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    28,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    32,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    36,
+                    4
+                  ],
+                  "uv_size": [
+                    4,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "cap_shin",
+          "parent": "mech_thigh",
+          "pivot": [
+            0,
+            -6,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.0,
+                -6.5,
+                -1.0
+              ],
+              "size": [
+                2,
+                0.5,
+                2
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    18,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    18,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    22,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

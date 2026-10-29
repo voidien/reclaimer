@@ -1,0 +1,267 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.void_reclaimer.drone.idle": {
+      "loop": true,
+      "animation_length": 4,
+      "bones": {
+        "root_body": {
+          "position": [
+            "0",
+            "math.sin(query.anim_time * 90) * 0.5",
+            "0"
+          ]
+        },
+        "cog_internal": {
+          "rotation": [
+            "0",
+            "0",
+            "query.anim_time * 90"
+          ]
+        },
+        "crown_cog": {
+          "rotation": [
+            "0",
+            "query.anim_time * 45",
+            "0"
+          ]
+        }
+      }
+    },
+    "animation.void_reclaimer.drone.thrust": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "root_body": {
+          "rotation": [
+            -5,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "cog_internal": {
+          "rotation": [
+            "0",
+            "0",
+            "query.anim_time * 360"
+          ]
+        },
+        "crown_cog": {
+          "rotation": [
+            "0",
+            "query.anim_time * 180",
+            "0"
+          ]
+        },
+        "nozzle_flap_top": {
+          "rotation": [
+            -15,
+            0,
+            0
+          ]
+        },
+        "nozzle_flap_bottom": {
+          "rotation": [
+            15,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.void_reclaimer.drone.brake": {
+      "loop": true,
+      "animation_length": 2,
+      "bones": {
+        "root_body": {
+          "rotation": [
+            7,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "cog_internal": {
+          "rotation": [
+            "0",
+            "0",
+            "query.anim_time * -45"
+          ]
+        },
+        "nozzle_flap_top": {
+          "rotation": [
+            -35,
+            0,
+            0
+          ]
+        },
+        "nozzle_flap_bottom": {
+          "rotation": [
+            35,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.void_reclaimer.drone.low_power": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 3,
+      "bones": {
+        "root_body": {
+          "position": {
+            "0.0": {
+              "vector": [
+                0,
+                0,
+                0
+              ],
+              "easing": "easeOutSine"
+            },
+            "3.0": {
+              "vector": [
+                0,
+                -1.0,
+                0
+              ],
+              "easing": "easeOutSine"
+            }
+          },
+          "rotation": {
+            "0.0": {
+              "vector": [
+                0,
+                0,
+                0
+              ],
+              "easing": "easeOutSine"
+            },
+            "3.0": {
+              "vector": [
+                3.0,
+                0,
+                0
+              ],
+              "easing": "easeOutSine"
+            }
+          }
+        },
+        "cog_internal": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              0,
+              0,
+              41.25
+            ],
+            "1.0": [
+              0,
+              0,
+              75.0
+            ],
+            "1.5": [
+              0,
+              0,
+              101.25
+            ],
+            "2.0": [
+              0,
+              0,
+              120.0
+            ],
+            "2.5": [
+              0,
+              0,
+              131.25
+            ],
+            "3.0": [
+              0,
+              0,
+              135.0
+            ]
+          }
+        }
+      }
+    },
+    "animation.void_reclaimer.drone.module_work": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "claw_left": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.25": [
+              0,
+              -25,
+              0
+            ],
+            "0.6": [
+              0,
+              -25,
+              0
+            ],
+            "1.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "claw_right": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.25": [
+              0,
+              25,
+              0
+            ],
+            "0.6": [
+              0,
+              25,
+              0
+            ],
+            "1.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.void_reclaimer.drone.rotor_spin": {
+      "loop": true,
+      "animation_length": 0.25,
+      "bones": {
+        "rotor_spin": {
+          "rotation": [
+            "0",
+            "query.anim_time * 1440",
+            "0"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.void_reclaimer.module.thruster_mk1",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 3,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "thruster_mk1",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "thruster_mk1_mount",
+          "parent": "thruster_mk1",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -1.25,
+                -0.25,
+                -1.25
+              ],
+              "size": [
+                2.5,
+                0.5,
+                2.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    19,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    22,
+                    0
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    19,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    22,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    25,
+                    3
+                  ],
+                  "uv_size": [
+                    3,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "thruster_nozzle",
+          "parent": "thruster_mk1",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -0.75,
+                -0.75,
+                0.25
+              ],
+              "size": [
+                1.5,
+                1.5,
+                1.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    30,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    32,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    28,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    30,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    32,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    34,
+                    2
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.0,
+                -1.0,
+                1.75
+              ],
+              "size": [
+                2.0,
+                2.0,
+                0.5
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    37,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    39,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    1
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    36,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "north": {
+                  "uv": [
+                    37,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    39,
+                    1
+                  ],
+                  "uv_size": [
+                    1,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    40,
+                    1
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
