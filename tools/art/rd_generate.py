@@ -728,32 +728,50 @@ def media_tag(path, title, size):
 
 
 def write_index(state):
-    parts = ['<!doctype html><meta charset="utf-8"><title>RD staging</title><style>'
-             'body{font:14px system-ui;background:#1b1d22;color:#ddd;margin:16px}'
-             'img,video{image-rendering:pixelated;background:repeating-conic-gradient(#333 0 25%,#444 0 50%) 0 0/16px 16px;'
-             'margin:4px;vertical-align:top}.a{border-top:1px solid #333;padding:8px 0}code{color:#9fe2ff}'
-             '.f{color:#f88}</style><h1>Retro Diffusion staging</h1>'
-             '<p>Promote a variant with <code>python3 tools/art/rd_generate.py --promote &lt;asset&gt;=&lt;n&gt;</code>.</p>']
+    """The contact sheet, art/rd/index.html: one self-contained page (images embedded, picker.js and picker.css
+    inlined) where each asset gets a variant or model to promote, "keep current" or "redo", and a note. The page
+    turns the picks into the commands to paste (see picker.js)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(here, 'picker.css')) as f:
+        css = f.read()
+    with open(os.path.join(here, 'picker.js')) as f:
+        js = f.read()
+    parts = ['<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+             '<title>RD staging</title><style>%s</style><h1>Retro Diffusion staging</h1>'
+             '<p>Tap a variant to promote it (tap again to undo), or mark the asset <b>Keep current</b> or <b>Redo</b>. '
+             'Your picks stay in this browser. Copy the commands at the bottom into a terminal in the repo.</p>' % css]
     for akey in sorted(state['assets']):
         a = state['assets'][akey]
         folder = os.path.join(STAGING, akey)
-        parts.append('<div class="a"><b>%s</b> <small>%s</small><br>' % (html.escape(akey), html.escape(a['group'])))
+        files = sorted(os.listdir(folder)) if os.path.isdir(folder) else []
+        parts.append('<section class="a" data-key="%s" data-promoted="%s"><header><b>%s</b> <small>%s</small> '
+                     '<span class="state"></span></header><div class="row">'
+                     % (html.escape(akey), html.escape(str(a.get('promoted', ''))), html.escape(akey),
+                        html.escape(a['group'])))
         current = os.path.join(REPO, a['file']) if a.get('file') else ''
         if current and os.path.exists(current):
-            parts.append(media_tag(current, 'current', 'width="96"'))
-        for f in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
-            if f.startswith('v') and f.endswith('.png'):
-                parts.append(media_tag(os.path.join(folder, f), f, 'width="96"'))
+            parts.append('<figure>%s<figcaption>current</figcaption></figure>' % media_tag(current, 'current', 'width="96"'))
+        for f in files:
+            if f.startswith('v') and f.endswith('.png') and f[1:-4].isdigit():
+                parts.append('<button class="v" data-pick="%s" title="promote %s">%s<span>%s</span></button>'
+                             % (f[1:-4], f, media_tag(os.path.join(folder, f), f, 'width="96"'), f[1:-4]))
             elif f in ('render.png', 'turntable.png'):
-                parts.append(media_tag(os.path.join(folder, f), f, 'height="160"'))
-            elif f == 'model.bbmodel':
-                parts.append('<a href="%s/%s">model.bbmodel</a> ' % (html.escape(akey), f))
+                parts.append('<figure>%s<figcaption>%s</figcaption></figure>'
+                             % (media_tag(os.path.join(folder, f), f, 'height="160"'), f[:-4]))
+        parts.append('</div><div class="acts">')
+        if 'model.bbmodel' in files:
+            parts.append('<button class="model" data-pick="model">Promote model</button>')
+        parts.append('<button data-pick="keep">Keep current</button><button data-pick="redo">Redo</button></div>')
         for j in a['jobs']:
             if j['status'] not in ('done',):
                 parts.append('<div class="f">%s: %s %s</div>' % (j['kind'], j['status'], html.escape(j.get('error', ''))))
-        parts.append('</div>')
+        parts.append('<textarea class="note" rows="1" placeholder="Notes"></textarea></section>')
+    parts.append('<footer><div class="bar"><b id="count"></b><label><input type="checkbox" id="hide"> Hide decided'
+                 '</label><button id="copy">Copy commands</button><span id="copied"></span><button id="clear">Clear '
+                 'picks</button></div><textarea id="cmd" readonly rows="2" placeholder="Pick variants above; the '
+                 'commands appear here."></textarea></footer><script>%s</script>' % js)
     os.makedirs(STAGING, exist_ok=True)
-    with open(os.path.join(STAGING, 'index.html'), 'w') as f:
+    with open(os.path.join(STAGING, 'index.html'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(parts))
 
 
@@ -998,8 +1016,15 @@ def main(argv=None):
         promote_as(args.promote_as, args)
         return 0
     if args.promote:
+        state = load_state()
         for spec in args.promote:
             promote(spec, rows)
+            akey, _, n = spec.partition('=')
+            if akey in state['assets']:  # the contact sheet shows it as done
+                model = not n and os.path.exists(os.path.join(STAGING, akey, 'model.bbmodel'))
+                state['assets'][akey]['promoted'] = 'model' if model else 'v' + (n or '1')
+                save_state(state)
+        write_index(state)
         return 0
     if args.index:
         write_index(load_state())

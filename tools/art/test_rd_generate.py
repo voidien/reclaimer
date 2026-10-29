@@ -252,6 +252,36 @@ class RdGenerateTest(unittest.TestCase):
                       'a turntable that is really a video still plays')
         self.assertNotIn('src="box_model/', page, 'no links to files next to the page')
 
+    def test_contact_sheet_is_a_picker(self):
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--asset', 'quartz_wafer', '--asset', 'core_mk1_model', '--model-style', 'blocky_lite'])
+        page = self.read(self.staged('index.html')).decode()
+        wafer = page[page.index('data-key="quartz_wafer"'):page.index('</section>', page.index('data-key="quartz_wafer"'))]
+        self.assertEqual(re.findall(r'data-pick="(\w+)"', wafer), ['1', '2', '3', '4', 'keep', 'redo'],
+                         'one button per variant, then keep and redo')
+        core = page[page.index('data-key="core_mk1_model"'):]
+        self.assertIn('data-pick="model"', core[:core.index('</section>')], 'a model asset can be promoted whole')
+        self.assertIn('function buildCommands', page, 'the picker script is inlined')
+        self.assertNotIn('<script src', page)
+        self.assertNotIn('<link', page, 'nothing loads from outside the page')
+        rd.main(['--promote', 'quartz_wafer=2'])
+        self.assertEqual(rd.load_state()['assets']['quartz_wafer']['promoted'], 'v2')
+        self.assertIn('data-key="quartz_wafer" data-promoted="v2"', self.read(self.staged('index.html')).decode(),
+                      'the rebuilt page shows the promotion as done')
+
+    @unittest.skipUnless(shutil.which('node'), 'needs Node to run the page script')
+    def test_picker_builds_the_commands(self):
+        import subprocess
+        picks = {'b_icon': {'pick': '3'}, 'a_icon': {'pick': '1', 'note': 'nice'}, 'core_mk1_model': {'pick': 'model'},
+                 'ice': {'pick': 'redo'}, 'rock': {'pick': 'redo'}, 'kept': {'pick': 'keep'}, 'empty': {'pick': ''}}
+        script = ("const {buildCommands} = require(%s); process.stdout.write(JSON.stringify(buildCommands(%s)))"
+                  % (json.dumps(os.path.join(REAL_REPO, 'tools', 'art', 'picker.js')), json.dumps(picks)))
+        out = json.loads(subprocess.run(['node', '-e', script], capture_output=True, text=True, check=True).stdout)
+        self.assertEqual(out, ['python3 tools/art/rd_generate.py --promote a_icon=1 --promote b_icon=3 --promote core_mk1_model',
+                               'python3 tools/art/rd_generate.py --again --asset ice --asset rock'])
+        empty = subprocess.run(['node', '-e', script.replace(json.dumps(picks), '{}')], capture_output=True, text=True)
+        self.assertEqual(json.loads(empty.stdout), [], 'no picks, no commands')
+
     def test_no_spend_when_declined_or_over_balance(self):
         with mock.patch('builtins.input', return_value='n'):
             rd.main(['--asset', 'quartz_wafer'])
