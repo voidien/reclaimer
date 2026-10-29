@@ -26,14 +26,14 @@ public final class ToolModules {
      */
     public static final DeferredHolder<ToolModuleType, ToolModuleType> NANITE_SWARM = TYPES.register("nanite_swarm", () -> new ToolModuleType() {
         @Override
-        public boolean use(ServerPlayer player, ItemStack module, boolean onBlock) {
+        public boolean use(ServerPlayer player, ItemStack module, boolean onBlock, boolean sneak) {
             if (player.getCooldowns().isOnCooldown(module.getItem())) {
                 return false;
             }
             HitResult hit = player.pick(player.blockInteractionRange(), 1f, false);
             Nanites.Result result;
             if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK) {
-                if (!player.isShiftKeyDown()) {
+                if (!sneak) {
                     return false;
                 }
                 result = Nanites.buildAt(player, blockHit.getBlockPos().relative(blockHit.getDirection()), blockHit.getDirection());

@@ -22,7 +22,7 @@ sourceSets.main.resources {
     // Output of the data generators (recipes, loot tables, tags, lang, models).
     srcDir('src/generated/resources')
     exclude('**/*.bbmodel')
-    exclude('src/generated/**/.cache')
+    exclude('.cache/**')
 }
 
 repositories {

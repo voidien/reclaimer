@@ -46,13 +46,18 @@ public final class Modules {
 
     /** Uses the active tool module (sent by the client when right-clicking with an empty hand). */
     public static void use(ServerPlayer player) {
+        use(player, player.isShiftKeyDown());
+    }
+
+    /** As {@link #use(ServerPlayer)}, with the sneak state the client reports (thruster flight hides it from the server). */
+    public static void use(ServerPlayer player, boolean sneak) {
         ItemStack tool = Bodies.activeTool(player);
         ToolModuleType type = player.getMainHandItem().isEmpty() ? Parts.toolType(tool) : null;
         if (type == null || NeoForge.EVENT_BUS.post(new ModuleUseEvent(player, tool, type)).isCanceled()) {
             return;
         }
         HitResult hit = player.pick(player.blockInteractionRange(), 1f, false);
-        if (type.use(player, tool, hit.getType() == HitResult.Type.BLOCK)) {
+        if (type.use(player, tool, hit.getType() == HitResult.Type.BLOCK, sneak)) {
             Wear.onToolUse(player);
         }
     }

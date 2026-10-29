@@ -19,9 +19,14 @@ public final class InventoryLock {
 
     /** Whether main-inventory slot {@code index} (0..35) is locked. Other indices (armor, offhand) never are. */
     public static boolean isLocked(Player player, int index) {
+        return isLocked(player, index, Bodies.stats(player).inventorySlots());
+    }
+
+    /** As {@link #isLocked(Player, int)}, for a body that would unlock {@code slots} main-inventory slots. */
+    public static boolean isLocked(Player player, int index, int slots) {
         if (index < HOTBAR || index >= MAIN || Energy.isExempt(player)) {
             return false;
         }
-        return index >= Bodies.stats(player).inventorySlots();
+        return index >= slots;
     }
 }

@@ -28,9 +28,10 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * @param index         mount index (module actions) or tool index (select)
  * @param inventorySlot source inventory slot (installs)
  * @param cosmetics     new looks (cosmetics)
+ * @param sneak         whether the sneak key is held (tool use; the server can't see it during thruster flight)
  */
-public record BodyActionPayload(Action action, String socket, ModuleKind kind, int index, int inventorySlot, Cosmetics cosmetics)
-        implements CustomPacketPayload {
+public record BodyActionPayload(Action action, String socket, ModuleKind kind, int index, int inventorySlot, Cosmetics cosmetics,
+                                boolean sneak) implements CustomPacketPayload {
     public static final Type<BodyActionPayload> TYPE = new Type<>(VoidReclaimer.id("body_action"));
 
     public enum Action {
@@ -41,50 +42,61 @@ public record BodyActionPayload(Action action, String socket, ModuleKind kind, i
         static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
     }
 
-    public static final StreamCodec<ByteBuf, BodyActionPayload> STREAM_CODEC = StreamCodec.composite(
-            Action.STREAM_CODEC, BodyActionPayload::action,
-            ByteBufCodecs.STRING_UTF8, BodyActionPayload::socket,
-            ModuleKind.STREAM_CODEC, BodyActionPayload::kind,
-            ByteBufCodecs.VAR_INT, BodyActionPayload::index,
-            ByteBufCodecs.VAR_INT, BodyActionPayload::inventorySlot,
-            Cosmetics.STREAM_CODEC, BodyActionPayload::cosmetics,
-            BodyActionPayload::new);
+    /** Written field by field: {@code StreamCodec.composite} stops at six fields. */
+    public static final StreamCodec<ByteBuf, BodyActionPayload> STREAM_CODEC = StreamCodec.of(
+            (buf, payload) -> {
+                Action.STREAM_CODEC.encode(buf, payload.action());
+                ByteBufCodecs.STRING_UTF8.encode(buf, payload.socket());
+                ModuleKind.STREAM_CODEC.encode(buf, payload.kind());
+                ByteBufCodecs.VAR_INT.encode(buf, payload.index());
+                ByteBufCodecs.VAR_INT.encode(buf, payload.inventorySlot());
+                Cosmetics.STREAM_CODEC.encode(buf, payload.cosmetics());
+                ByteBufCodecs.BOOL.encode(buf, payload.sneak());
+            },
+            buf -> new BodyActionPayload(
+                    Action.STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf),
+                    ModuleKind.STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.VAR_INT.decode(buf),
+                    ByteBufCodecs.VAR_INT.decode(buf),
+                    Cosmetics.STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.BOOL.decode(buf)));
 
     public static BodyActionPayload installSection(String socket, int inventorySlot) {
-        return new BodyActionPayload(Action.INSTALL_SECTION, socket, ModuleKind.CORE, 0, inventorySlot, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.INSTALL_SECTION, socket, ModuleKind.CORE, 0, inventorySlot, Cosmetics.DEFAULT, false);
     }
 
     public static BodyActionPayload removeSection(String socket) {
-        return new BodyActionPayload(Action.REMOVE_SECTION, socket, ModuleKind.CORE, 0, 0, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.REMOVE_SECTION, socket, ModuleKind.CORE, 0, 0, Cosmetics.DEFAULT, false);
     }
 
     public static BodyActionPayload installModule(BodyData.Mount mount, int inventorySlot) {
-        return new BodyActionPayload(Action.INSTALL_MODULE, mount.socket(), mount.kind(), mount.index(), inventorySlot, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.INSTALL_MODULE, mount.socket(), mount.kind(), mount.index(), inventorySlot, Cosmetics.DEFAULT, false);
     }
 
     public static BodyActionPayload removeModule(BodyData.Mount mount) {
-        return new BodyActionPayload(Action.REMOVE_MODULE, mount.socket(), mount.kind(), mount.index(), 0, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.REMOVE_MODULE, mount.socket(), mount.kind(), mount.index(), 0, Cosmetics.DEFAULT, false);
     }
 
     public static BodyActionPayload selectTool(int index) {
-        return new BodyActionPayload(Action.SELECT_TOOL, "", ModuleKind.TOOL, index, 0, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.SELECT_TOOL, "", ModuleKind.TOOL, index, 0, Cosmetics.DEFAULT, false);
     }
 
     public static BodyActionPayload cosmetics(Cosmetics cosmetics) {
-        return new BodyActionPayload(Action.COSMETICS, "", ModuleKind.COSMETIC, 0, 0, cosmetics);
+        return new BodyActionPayload(Action.COSMETICS, "", ModuleKind.COSMETIC, 0, 0, cosmetics, false);
     }
 
     public static BodyActionPayload repair(String socket) {
-        return new BodyActionPayload(Action.REPAIR, socket, ModuleKind.CORE, 0, 0, Cosmetics.DEFAULT);
+        return new BodyActionPayload(Action.REPAIR, socket, ModuleKind.CORE, 0, 0, Cosmetics.DEFAULT, false);
     }
 
     /** A blueprint action on the blueprint in {@code inventorySlot}. */
     public static BodyActionPayload blueprint(Action action, int inventorySlot) {
-        return new BodyActionPayload(action, "", ModuleKind.CORE, 0, inventorySlot, Cosmetics.DEFAULT);
+        return new BodyActionPayload(action, "", ModuleKind.CORE, 0, inventorySlot, Cosmetics.DEFAULT, false);
     }
 
-    public static BodyActionPayload useTool() {
-        return new BodyActionPayload(Action.USE_TOOL, "", ModuleKind.TOOL, 0, 0, Cosmetics.DEFAULT);
+    public static BodyActionPayload useTool(boolean sneak) {
+        return new BodyActionPayload(Action.USE_TOOL, "", ModuleKind.TOOL, 0, 0, Cosmetics.DEFAULT, sneak);
     }
 
     @Override
@@ -129,7 +141,7 @@ public record BodyActionPayload(Action action, String socket, ModuleKind kind, i
             case REMOVE_MODULE -> Bodies.removeModule(player, mount);
             case SELECT_TOOL -> Bodies.selectTool(player, payload.index());
             case COSMETICS -> Bodies.setCosmetics(player, payload.cosmetics());
-            case USE_TOOL -> Modules.use(player);
+            case USE_TOOL -> Modules.use(player, payload.sneak());
             case REPAIR -> Bodies.repair(player, payload.socket());
             case BLUEPRINT_SAVE, BLUEPRINT_APPLY, BLUEPRINT_QUEUE -> blueprint(player, payload);
         }
