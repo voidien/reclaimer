@@ -46,6 +46,7 @@ public final class MaterialsGameTests {
         CHAIN_RECIPES.put("create/carbon/carbon_composite_plate", pressing);
         CHAIN_RECIPES.put("create/carbon/silicon_carbide_slurry", mixing);
         CHAIN_RECIPES.put("create/carbon/thermal_shielding_tile", pressing);
+        CHAIN_RECIPES.put("create/carbon/silicon_carbide_coating", "create:compacting");
         CHAIN_RECIPES.put("create/carbon/high_purity_graphite", pressing);
         CHAIN_RECIPES.put("create/silicon/pure_silicon_dust", "create:splashing");
         CHAIN_RECIPES.put("create/silicon/liquid_silicon", mixing);
@@ -75,17 +76,20 @@ public final class MaterialsGameTests {
     public static void itemResultsAreTheDocsItems(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         var access = server.registryAccess();
-        Map<String, net.minecraft.world.item.Item> results = Map.of(
-                "create/ice/crushing_raw_ice_shards", ModMaterials.CRUSHED_CRYO_ICE.get(),
-                "create/ice/coolant_frame_plate", ModMaterials.COOLANT_FRAME_PLATE.get(),
-                "create/carbon/milling_carbon_flakes", ModMaterials.FINE_CARBON_POWDER.get(),
-                "create/carbon/carbon_composite_plate", ModMaterials.CARBON_COMPOSITE_PLATE.get(),
-                "create/carbon/thermal_shielding_tile", ModMaterials.THERMAL_SHIELDING_TILE.get(),
-                "create/silicon/pure_silicon_dust", ModMaterials.PURE_SILICON_DUST.get(),
-                "create/silicon/advanced_sensor_unit", ModMaterials.ADVANCED_SENSOR_UNIT.get(),
-                "create/metallic/refined_metal_nodule", ModMaterials.REFINED_METAL_NODULE.get(),
-                "create/metallic/micro_alloy_sheet", ModMaterials.MICRO_ALLOY_SHEET.get(),
-                "create/sail/high_output_solar_sail", ModMaterials.HIGH_OUTPUT_SOLAR_SAIL.get());
+        Map<String, net.minecraft.world.item.Item> results = new LinkedHashMap<>();
+        results.put("create/ice/crushing_raw_ice_shards", ModMaterials.CRUSHED_CRYO_ICE.get());
+        results.put("create/ice/coolant_frame_plate", ModMaterials.COOLANT_FRAME_PLATE.get());
+        results.put("create/carbon/milling_carbon_flakes", ModMaterials.FINE_CARBON_POWDER.get());
+        results.put("create/carbon/carbon_composite_plate", ModMaterials.CARBON_COMPOSITE_PLATE.get());
+        results.put("create/carbon/thermal_shielding_tile", ModMaterials.THERMAL_SHIELDING_TILE.get());
+        results.put("create/carbon/silicon_carbide_coating", ModMaterials.SILICON_CARBIDE_COATING.get());
+        results.put("create/silicon/pure_silicon_dust", ModMaterials.PURE_SILICON_DUST.get());
+        results.put("create/silicon/advanced_sensor_unit", ModMaterials.ADVANCED_SENSOR_UNIT.get());
+        results.put("create/metallic/refined_metal_nodule", ModMaterials.REFINED_METAL_NODULE.get());
+        results.put("create/metallic/micro_alloy_sheet", ModMaterials.MICRO_ALLOY_SHEET.get());
+        results.put("create/sail/high_output_solar_sail", ModMaterials.HIGH_OUTPUT_SOLAR_SAIL.get());
+        helper.assertTrue(server.getRecipeManager().byKey(VoidReclaimer.id("create/carbon/silicon_carbide_coating")).orElseThrow().value()
+                .getResultItem(access).getCount() == 2, "the coating recipe should make 2");
         results.forEach((path, item) -> {
             RecipeHolder<?> holder = server.getRecipeManager().byKey(VoidReclaimer.id(path)).orElseThrow();
             helper.assertTrue(holder.value().getResultItem(access).is(item), path + " makes " + holder.value().getResultItem(access) + ", not " + item);

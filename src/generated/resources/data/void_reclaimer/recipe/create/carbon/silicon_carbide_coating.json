@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:silicon_carbide_slurry"
+    },
+    {
+      "item": "void_reclaimer:carbon_composite_plate"
+    }
+  ],
+  "results": [
+    {
+      "count": 2,
+      "id": "void_reclaimer:silicon_carbide_coating"
+    }
+  ]
+}

@@ -29,7 +29,17 @@ jobs:
         run: ./gradlew build --stacktrace
 
       - name: GameTests
-        run: ./gradlew runGameTestServer --stacktrace
+        # The upstream Aeronautics/Simulated/Veil start-up hang (see the datagen step) can also stall the GameTest server. A healthy
+        # run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
+        run: |
+          for attempt in 1 2 3; do
+            timeout 900 ./gradlew runGameTestServer --stacktrace && exit 0
+            status=$?
+            if [ "$status" -ne 124 ]; then exit "$status"; fi
+            echo "runGameTestServer hung (attempt $attempt)"
+            ./gradlew --stop
+          done
+          exit 1
 
       - name: Datagen output is up to date
         # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
@@ -71,7 +81,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Aeronautics GameTests
-        run: ./gradlew runGameTestAeronautics --stacktrace
+        run: |
+          for attempt in 1 2 3; do
+            timeout 900 ./gradlew runGameTestAeronautics --stacktrace && exit 0
+            status=$?
+            if [ "$status" -ne 124 ]; then exit "$status"; fi
+            echo "runGameTestAeronautics hung (attempt $attempt)"
+            ./gradlew --stop
+          done
+          exit 1
 
       - name: Upload run logs
         if: failure()

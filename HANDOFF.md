@@ -43,7 +43,7 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
   - **Riding works:** players can ride a moving ship.
   - **Removal range:** Sable removes sub-levels outside the config `sub_level_remove_min` (-10,000) / `sub_level_remove_max` (100,000).
   - **Useful commands:** `/sable spawn platform`, `/sable assemble connected x y z`, `/sable info @n`.
-  - **Startup deadlock:** there is an intermittent deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (the game and `runData`). Aeronautics is required now, so `runData` loads it: CI retries `runData` (5-minute timeout, 3 attempts), and locally `timeout 300 ./gradlew runData` and run it again if it hangs.
+  - **Startup deadlock:** there is an intermittent deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (the game and `runData`). Aeronautics is required now, so `runData` loads it (and the GameTest runs can stall the same way: one CI run sat 18 minutes in GameTests, and CI now retries a GameTest run that exceeds 15 minutes): CI retries `runData` (5-minute timeout, 3 attempts), and locally `timeout 300 ./gradlew runData` and run it again if it hangs.
 - **sable64bit** (Chelovechic/sable64bit-1.21.1, AGPL) gives f64 physics.
   - At X = 20,000,000.5 it held the position exactly; f32 lost half a block.
   - Recommend it to players; never depend on it.

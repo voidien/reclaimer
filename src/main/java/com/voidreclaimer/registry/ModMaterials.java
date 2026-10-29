@@ -27,6 +27,7 @@ public final class ModMaterials {
     public static final DeferredItem<Item> CARBON_COMPOSITE_PLATE = add("carbon_composite_plate", "Carbon Composite Plate");
     public static final DeferredItem<Item> SILICON_CARBIDE_SLURRY = add("silicon_carbide_slurry", "Silicon-Carbide Slurry");
     public static final DeferredItem<Item> THERMAL_SHIELDING_TILE = add("thermal_shielding_tile", "Thermal Shielding Tile");
+    public static final DeferredItem<Item> SILICON_CARBIDE_COATING = add("silicon_carbide_coating", "Silicon-Carbide Coating");
     public static final DeferredItem<Item> HIGH_PURITY_GRAPHITE = add("high_purity_graphite", "High-Purity Graphite");
     public static final DeferredItem<Item> CARBON_THREAD = add("carbon_thread", "Carbon Thread");
     // Silicon nebula
