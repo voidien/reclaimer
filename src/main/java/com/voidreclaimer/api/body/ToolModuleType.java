@@ -21,6 +21,15 @@ public interface ToolModuleType {
         return false;
     }
 
+    /**
+     * As {@link #use(ServerPlayer, ItemStack, boolean)}, with whether the player is holding sneak. Thruster flight
+     * clears the vanilla sneak flag (Shift is "thrust down"), so the client reports its sneak key; read this, not
+     * {@code player.isShiftKeyDown()}. Defaults to the three-argument method.
+     */
+    default boolean use(ServerPlayer player, ItemStack module, boolean onBlock, boolean sneak) {
+        return use(player, module, onBlock);
+    }
+
     /** Mining speed while this module is active and the hand is empty; return {@code speed} to leave it unchanged. */
     default float breakSpeed(Player player, ItemStack module, BlockState state, float speed) {
         return speed;

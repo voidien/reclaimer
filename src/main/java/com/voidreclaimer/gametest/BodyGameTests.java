@@ -27,6 +27,8 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -272,5 +274,79 @@ public final class BodyGameTests {
         } finally {
             TestPlayers.remove(player);
         }
+    }
+
+    /** Taking off a storage module locks its own rows again, so room is counted without them. */
+    @GameTest(template = "empty")
+    public static void removingStorageIsRefusedWhenItsRowsWereTheOnlyRoom(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 81_000.5, 80, 0.5);
+        try {
+            Inventory inventory = player.getInventory();
+            put(player, 0, new ItemStack(ModItems.STORAGE_MK1.get()));
+            helper.assertTrue(Bodies.installModule(player, HULL_STORAGE, 0) == BodyRules.Check.OK, "storage not installed");
+            helper.assertTrue(Bodies.stats(player).inventorySlots() > 18, "storage added no rows");
+            for (int i = 0; i < 18; i++) {
+                put(player, i, new ItemStack(Items.STONE, 64));
+            }
+            helper.assertTrue(Bodies.removeModule(player, HULL_STORAGE) != BodyRules.Check.OK, "removal accepted with no room left");
+            helper.assertTrue(Bodies.data(player).module(HULL_STORAGE).is(ModItems.STORAGE_MK1.get()), "module lost on a refused removal");
+            helper.assertTrue(player.serverLevel().getEntitiesOfClass(ItemEntity.class, new AABB(player.blockPosition()).inflate(8)).isEmpty(),
+                    "the module was dropped into space");
+
+            put(player, 0, ItemStack.EMPTY);
+            helper.assertTrue(Bodies.removeModule(player, HULL_STORAGE) == BodyRules.Check.OK, "removal refused with a free slot");
+            helper.assertTrue(inventory.contains(new ItemStack(ModItems.STORAGE_MK1.get())), "module not returned");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** A transient max health modifier is not saved, and vanilla clamps the saved health to the max it finds at load. */
+    @GameTest(template = "empty")
+    public static void bodyHealthModifierIsSavedWithThePlayer(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 82_000.5, 80, 0.5);
+        try {
+            Bodies.apply(player);
+            CompoundTag saved = player.saveWithoutId(new CompoundTag());
+            boolean found = false;
+            for (Tag tag : saved.getList("attributes", Tag.TAG_COMPOUND)) {
+                CompoundTag attribute = (CompoundTag) tag;
+                if (attribute.getString("id").equals("minecraft:generic.max_health")) {
+                    found = !attribute.getList("modifiers", Tag.TAG_COMPOUND).isEmpty();
+                }
+            }
+            helper.assertTrue(found, "the body's max health is not in the saved attributes: " + saved.get("attributes"));
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** Thruster flight hides the sneak key from the server, so the client reports it with the tool use. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void naniteBuildsAgainstABlockOnTheReportedSneak(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(83_000, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 8, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            try {
+                TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.NANITE_SWARM.get()));
+                put(player, 5, new ItemStack(ModItems.SCAFFOLD.get(), 4));
+                player.setYRot(0f);
+                player.setXRot(0f);
+                BlockPos wall = BlockPos.containing(player.getEyePosition().add(0, 0, 2));
+                player.serverLevel().setBlock(wall, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+                BlockPos built = wall.north();
+
+                helper.assertFalse(player.isShiftKeyDown(), "the test player is sneaking");
+                Modules.use(player, false);
+                helper.assertTrue(player.serverLevel().getBlockState(built).isAir(), "built against a block without sneak");
+                Modules.use(player, true);
+                helper.assertTrue(player.serverLevel().getBlockState(built).is(ModBlocks.SCAFFOLD.get()), "no build on the reported sneak");
+                helper.succeed();
+            } finally {
+                TestPlayers.remove(player);
+            }
+        });
     }
 }

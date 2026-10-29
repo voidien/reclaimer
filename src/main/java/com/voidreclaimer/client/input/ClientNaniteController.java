@@ -86,7 +86,7 @@ public final class ClientNaniteController {
         event.setCanceled(true);
         if (!player.getCooldowns().isOnCooldown(Bodies.activeTool(player).getItem())) {
             event.setSwingHand(true);
-            PacketDistributor.sendToServer(BodyActionPayload.useTool());
+            PacketDistributor.sendToServer(BodyActionPayload.useTool(sneakHeld(mc)));
         } else {
             event.setSwingHand(false);
         }

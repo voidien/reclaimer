@@ -25,6 +25,12 @@ public final class ClientTetherController {
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null) {
+            // Disconnected while holding the key: start clean on the next connection.
+            held = false;
+            holdTicks = 0;
+            return;
+        }
         boolean down = mc.player != null && mc.screen == null && ModKeyMappings.RECALL.isDown();
         holdTicks = down ? holdTicks + 1 : 0;
         if (down != held && mc.getConnection() != null) {
