@@ -32,9 +32,32 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterDimensionEffects);
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
         modBus.addListener(ModKeyMappings::register);
+        modBus.addListener(VoidReclaimerClient::onRegisterClientExtensions);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
+    }
+
+    /** Our fluids use vanilla water's textures, tinted. */
+    private static void onRegisterClientExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        for (var fluid : com.voidreclaimer.registry.ModFluids.ALL) {
+            event.registerFluidType(new net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions() {
+                @Override
+                public net.minecraft.resources.ResourceLocation getStillTexture() {
+                    return net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/water_still");
+                }
+
+                @Override
+                public net.minecraft.resources.ResourceLocation getFlowingTexture() {
+                    return net.minecraft.resources.ResourceLocation.withDefaultNamespace("block/water_flow");
+                }
+
+                @Override
+                public int getTintColor() {
+                    return fluid.tint();
+                }
+            }, fluid.type());
+        }
     }
 
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {

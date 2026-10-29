@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "iceChain"
+    }
+  ],
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "void_reclaimer:purified_water"
+    },
+    {
+      "item": "void_reclaimer:crushed_cryo_ice"
+    }
+  ],
+  "results": [
+    {
+      "amount": 250,
+      "id": "void_reclaimer:coolant_fluid"
+    }
+  ]
+}

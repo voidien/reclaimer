@@ -5,6 +5,8 @@ import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.replicator.ReplicatorCategory;
+import com.voidreclaimer.machine.ConfigCondition;
+import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.replicator.Milestones;
 import net.minecraft.resources.ResourceKey;
@@ -44,6 +46,13 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.BLOCKS, Milestones.FIRST_STRUCTURE);
         replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, DustCost.of(30, 20, 10, 10), 60,
                 ReplicatorCategories.BLOCKS, Milestones.DIVERSIFIED);
+
+        // Raw nebula items from dust. Amounts and times are placeholders; the design doc doesn't price them.
+        ResourceKey<ReplicatorCategory> materials = ReplicatorCategories.MATERIALS;
+        rawItems(output, "raw_ice_shards", ModMaterials.RAW_ICE_SHARDS.get(), DustCost.of(0, 0, 8, 0), materials);
+        rawItems(output, "carbon_flakes", ModMaterials.CARBON_FLAKES.get(), DustCost.of(0, 0, 0, 8), materials);
+        rawItems(output, "silicon_grit", ModMaterials.SILICON_GRIT.get(), DustCost.of(0, 8, 0, 0), materials);
+        rawItems(output, "metallic_grains", ModMaterials.METALLIC_GRAINS.get(), DustCost.of(8, 0, 0, 0), materials);
 
         // Modules. The Mk I core and thruster are also craftable as spares.
         ResourceKey<ReplicatorCategory> parts = ReplicatorCategories.PARTS;
@@ -93,6 +102,12 @@ public final class ModRecipeProvider extends RecipeProvider {
         ReplicatorRecipe recipe = new ReplicatorRecipe(results, cost, seconds * 20, category, milestone,
                 Optional.of(Component.translatable("recipe.void_reclaimer." + name)));
         output.accept(VoidReclaimer.id("replicator/" + name), recipe, null);
+    }
+
+    /** Four raw items for eight dust of their kind; off with the {@code replicatorRawItems} toggle. */
+    private static void rawItems(RecipeOutput output, String name, ItemLike result, DustCost cost, ResourceKey<ReplicatorCategory> category) {
+        ReplicatorRecipe recipe = new ReplicatorRecipe(new ItemStack(result, 4), cost, 10 * 20, category, Milestones.FIRST_DUST);
+        output.accept(VoidReclaimer.id("replicator/" + name), recipe, null, new ConfigCondition("replicatorRawItems"));
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,

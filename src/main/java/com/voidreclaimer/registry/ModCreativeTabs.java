@@ -36,6 +36,18 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.STORAGE_MK2.get());
                 output.accept(ModItems.BRASS_TRIM.get());
                 output.accept(ModItems.COGWHEEL_CROWN.get());
+                output.accept(ModItems.MECHANICAL_DRILL.get());
+                output.accept(ModItems.MATTER_HARVESTER.get());
+                output.accept(ModItems.ASTEROID_SILICATE.get());
+                output.accept(ModItems.ASTEROID_ICE.get());
+                output.accept(ModItems.ASTEROID_CARBON.get());
+                output.accept(ModItems.ASTEROID_METALLIC.get());
+                for (var material : ModMaterials.ALL) {
+                    output.accept(material.item().get());
+                }
+                for (var fluid : ModFluids.ALL) {
+                    output.accept(fluid.bucket().get());
+                }
             })
             .build());
 

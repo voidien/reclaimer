@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "siliconChain"
+    }
+  ],
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:doped_silicon_ingot"
+    },
+    {
+      "item": "create:electron_tube"
+    }
+  ],
+  "results": [
+    {
+      "id": "void_reclaimer:advanced_sensor_unit"
+    }
+  ]
+}

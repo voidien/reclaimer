@@ -12,7 +12,7 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
 - **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
 - **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
-- **Next phase:** 7 (Machines). The phase order is in `CLAUDE.md`: 7 → 7b (Aeronautics ships) → 5b → 8 → 9 → 10. Phase 6 (Asteroids) is done; see its block in `PROGRESS.md`.
+- **Next phase:** 7 part 2 (the custom machines: Electrolyzer, Spinner, fan freezing, spout casting; see `PROGRESS.md`). Part 1 (materials and Create chains) is done. The phase order is in `CLAUDE.md`: 7 → 7b (Aeronautics ships) → 5b → 8 → 9 → 10. Phase 6 (Asteroids) is done; see its block in `PROGRESS.md`.
 - **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
   - It's a Claude Docs project, at revision 12.
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.

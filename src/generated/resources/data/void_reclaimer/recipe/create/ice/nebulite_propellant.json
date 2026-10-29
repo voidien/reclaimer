@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "iceChain"
+    }
+  ],
+  "type": "create:mixing",
+  "heat_requirement": "superheated",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "void_reclaimer:oxygen_gas"
+    },
+    {
+      "type": "neoforge:single",
+      "amount": 500,
+      "fluid": "void_reclaimer:hydrogen_gas"
+    }
+  ],
+  "results": [
+    {
+      "amount": 250,
+      "id": "void_reclaimer:nebulite_propellant"
+    }
+  ]
+}
