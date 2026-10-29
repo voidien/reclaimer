@@ -163,6 +163,8 @@ public final class ReplicatorGameTests {
         ServerLevel space = TestPlayers.deepSpace(helper);
         BlockPos pos = new BlockPos(46_000, 80, 2);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        // A fresh world has to generate this chunk first; load it now instead of hoping 5 ticks are enough.
+        space.getChunk(pos);
         helper.runAfterDelay(5, () -> {
             ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY(), pos.getZ() - 1.5);
             try {
