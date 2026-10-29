@@ -8,7 +8,7 @@
   "milestone": "void_reclaimer:first_dust",
   "result": {
     "count": 1,
-    "id": "void_reclaimer:drone_frame"
+    "id": "void_reclaimer:drone_hull"
   },
   "ticks": 1200
 }

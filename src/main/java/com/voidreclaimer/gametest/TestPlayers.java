@@ -2,7 +2,9 @@ package com.voidreclaimer.gametest;
 
 import com.mojang.authlib.GameProfile;
 import com.voidreclaimer.body.Bodies;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
+import com.voidreclaimer.body.BodyData;
+import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.space.ModDimensions;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -78,9 +80,14 @@ final class TestPlayers {
         return player;
     }
 
-    /** Installs a module straight into the body (bypassing the inventory), e.g. a Dust Sensor or a tool. */
-    static void installModule(ServerPlayer player, PartKind kind, int index, ItemStack module) {
-        Bodies.store(player, Bodies.data(player).with(kind, index, module));
+    /**
+     * Installs a module straight onto the body's {@code index}-th mount of {@code kind} (bypassing the inventory and
+     * the rules), e.g. a Dust Sensor or a tool.
+     */
+    static void installModule(ServerPlayer player, ModuleKind kind, int index, ItemStack module) {
+        BodyView view = Bodies.view(player);
+        BodyData.Mount mount = view.mounts().stream().filter(m -> m.kind() == kind).toList().get(index);
+        Bodies.store(player, view.data().withModule(mount, module));
     }
 
     static ServerLevel deepSpace(GameTestHelper helper) {

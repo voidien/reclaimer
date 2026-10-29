@@ -326,6 +326,9 @@ public final class ReplicatorScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && tab == bodyTab) {
+            return bodyPanel.mouseScrolled(player, scrollY);
+        }
         if (player != null && tab < categoryTabs) {
             int max = Math.max(0, recipesForTab(player.getData(ModAttachments.REPLICATOR)).size() - VISIBLE_ROWS);
             scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, max);

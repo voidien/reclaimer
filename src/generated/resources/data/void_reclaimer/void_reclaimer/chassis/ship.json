@@ -1,0 +1,410 @@
+{
+  "core_socket": "keel",
+  "size_class": "void_reclaimer:ship",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:ship_keel"
+      ],
+      "area": "core",
+      "id": "keel",
+      "required": true
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:bow"
+      ],
+      "area": "hull",
+      "id": "bow",
+      "pivot": [
+        0.0,
+        0.0,
+        -24.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:bridge"
+      ],
+      "area": "control",
+      "id": "bridge",
+      "pivot": [
+        0.0,
+        6.0,
+        -12.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_1",
+      "pivot": [
+        6.0,
+        0.0,
+        -12.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_2",
+      "pivot": [
+        -6.0,
+        0.0,
+        -12.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_3",
+      "pivot": [
+        6.0,
+        0.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_4",
+      "pivot": [
+        -6.0,
+        0.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_5",
+      "pivot": [
+        6.0,
+        0.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:hull_segment"
+      ],
+      "area": "hull",
+      "id": "hull_6",
+      "pivot": [
+        -6.0,
+        0.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:wing"
+      ],
+      "area": "control",
+      "id": "wing_port",
+      "pivot": [
+        14.0,
+        0.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:wing"
+      ],
+      "area": "control",
+      "id": "wing_starboard",
+      "pivot": [
+        -14.0,
+        0.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:engine_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_1",
+      "pivot": [
+        8.0,
+        3.0,
+        20.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:engine_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_2",
+      "pivot": [
+        8.0,
+        -3.0,
+        20.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:engine_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_3",
+      "pivot": [
+        -8.0,
+        3.0,
+        20.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:engine_nacelle"
+      ],
+      "area": "propulsion",
+      "id": "nacelle_4",
+      "pivot": [
+        -8.0,
+        -3.0,
+        20.0
+      ]
+    },
+    {
+      "parent": "hull_1",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_1",
+      "pivot": [
+        3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull_2",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_2",
+      "pivot": [
+        -3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull_3",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_3",
+      "pivot": [
+        3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull_4",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_4",
+      "pivot": [
+        -3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull_5",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_5",
+      "pivot": [
+        3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "hull_6",
+      "accepts": [
+        "void_reclaimer:hardpoint",
+        "void_reclaimer:hand"
+      ],
+      "area": "weapons",
+      "id": "hardpoint_6",
+      "pivot": [
+        -3.0,
+        -2.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:cargo_bay"
+      ],
+      "area": "cargo",
+      "id": "cargo_1",
+      "pivot": [
+        4.0,
+        -4.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:cargo_bay"
+      ],
+      "area": "cargo",
+      "id": "cargo_2",
+      "pivot": [
+        -4.0,
+        -4.0,
+        -4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:cargo_bay"
+      ],
+      "area": "cargo",
+      "id": "cargo_3",
+      "pivot": [
+        4.0,
+        -4.0,
+        2.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:cargo_bay"
+      ],
+      "area": "cargo",
+      "id": "cargo_4",
+      "pivot": [
+        -4.0,
+        -4.0,
+        2.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:sensor_mast"
+      ],
+      "area": "sensors",
+      "id": "mast_port",
+      "pivot": [
+        6.0,
+        10.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:sensor_mast"
+      ],
+      "area": "sensors",
+      "id": "mast_starboard",
+      "pivot": [
+        -6.0,
+        10.0,
+        0.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:rcs_cluster"
+      ],
+      "area": "control",
+      "id": "rcs_fore",
+      "pivot": [
+        0.0,
+        2.0,
+        -20.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:rcs_cluster"
+      ],
+      "area": "control",
+      "id": "rcs_aft",
+      "pivot": [
+        0.0,
+        2.0,
+        16.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:dorsal_spine"
+      ],
+      "area": "hull",
+      "id": "dorsal_spine",
+      "pivot": [
+        0.0,
+        8.0,
+        4.0
+      ]
+    },
+    {
+      "parent": "keel",
+      "accepts": [
+        "void_reclaimer:ventral_fin"
+      ],
+      "area": "control",
+      "id": "ventral_fin",
+      "pivot": [
+        0.0,
+        -8.0,
+        8.0
+      ]
+    }
+  ]
+}

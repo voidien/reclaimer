@@ -145,7 +145,8 @@ public final class ModCommands {
     private static int getBody(CommandSourceStack source, ServerPlayer player) {
         BodyStats stats = Bodies.stats(player);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.body.get", player.getDisplayName(),
-                stats.size().displayName(), format(stats.mass()), format(stats.massBudget()), stats.inventorySlots(),
+                Component.translatable("body." + stats.size().location().getNamespace() + ".size." + stats.size().location().getPath()),
+                format(stats.mass()), format(stats.massBudget()), stats.inventorySlots(),
                 format((float) (stats.flight().maxSpeed() * 20))), false);
         return stats.inventorySlots();
     }

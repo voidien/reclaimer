@@ -2,7 +2,7 @@ package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
@@ -165,7 +165,7 @@ public final class ReplicatorGameTests {
                 space.setBlock(pos, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.east(), ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
                 space.setBlock(pos.west(), Blocks.STONE.defaultBlockState(), 3);
-                TestPlayers.installModule(player, PartKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
+                TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.SALVAGE_TOOL.get()));
 
                 player.gameMode.destroyBlock(pos);
                 helper.assertTrue(space.getBlockState(pos).isAir(), "scaffold not removed");

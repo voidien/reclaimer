@@ -2,7 +2,11 @@ package com.voidreclaimer.registry;
 
 import com.mojang.serialization.Codec;
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.body.PartStats;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.ModuleStats;
+import com.voidreclaimer.api.body.SectionStats;
+import com.voidreclaimer.api.body.ToolModuleType;
+import net.minecraft.resources.ResourceKey;
 import java.util.function.Supplier;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -17,9 +21,21 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<Integer>> NANITE_RANGE = COMPONENTS.registerComponentType("nanite_range",
             builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
-    /** Body part stats; set as a default component on part items. */
-    public static final Supplier<DataComponentType<PartStats>> PART_STATS = COMPONENTS.registerComponentType("part_stats",
-            builder -> builder.persistent(PartStats.CODEC).networkSynchronized(PartStats.STREAM_CODEC));
+    /** Body section stats; a default component on section items. */
+    public static final Supplier<DataComponentType<SectionStats>> SECTION = COMPONENTS.registerComponentType("section",
+            builder -> builder.persistent(SectionStats.CODEC).networkSynchronized(SectionStats.STREAM_CODEC));
+
+    /** Body module stats; a default component on module items. */
+    public static final Supplier<DataComponentType<ModuleStats>> MODULE = COMPONENTS.registerComponentType("module",
+            builder -> builder.persistent(ModuleStats.CODEC).networkSynchronized(ModuleStats.STREAM_CODEC));
+
+    /**
+     * What a tool module does: the id of an entry of {@code void_reclaimer:tool_module_type}. A key rather than the
+     * entry itself, so items can name types registered after them.
+     */
+    public static final Supplier<DataComponentType<ResourceKey<ToolModuleType>>> TOOL_MODULE = COMPONENTS.registerComponentType(
+            "tool_module", builder -> builder.persistent(ModCodecs.key(VoidReclaimerRegistries.TOOL_MODULE_TYPE))
+                    .networkSynchronized(ResourceKey.streamCodec(VoidReclaimerRegistries.TOOL_MODULE_TYPE)));
 
     private ModDataComponents() {}
 }

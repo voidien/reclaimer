@@ -7,7 +7,6 @@ import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.registry.OrderedRegistry;
 import com.voidreclaimer.body.InventoryLock;
-import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.client.screen.ModuleWheelScreen;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightPhysics;
@@ -43,7 +42,7 @@ public final class ClientBodyController {
             return;
         }
         while (ModKeyMappings.MODULE_WHEEL.consumeClick()) {
-            if (mc.screen == null && Bodies.data(player).slots(PartKind.TOOL) > 0) {
+            if (mc.screen == null && com.voidreclaimer.body.Modules.hasToolMounts(player)) {
                 mc.setScreen(new ModuleWheelScreen());
             }
         }

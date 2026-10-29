@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "void_reclaimer:item/ship_frame"
+    "layer0": "void_reclaimer:item/ship_ventral_fin"
   }
 }

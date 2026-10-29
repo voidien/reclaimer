@@ -11,7 +11,7 @@ public final class DustSensor {
      * sensors do nothing.
      */
     public static boolean has(Player player) {
-        return com.voidreclaimer.body.Bodies.data(player).hasInstalled(com.voidreclaimer.body.PartKind.SENSOR,
+        return com.voidreclaimer.body.Bodies.data(player).hasInstalled(com.voidreclaimer.api.body.ModuleKind.SENSOR,
                 stack -> stack.is(ModTags.DUST_SENSOR_MODULES));
     }
 }

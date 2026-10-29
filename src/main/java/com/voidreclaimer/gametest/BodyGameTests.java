@@ -1,13 +1,13 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyRules;
+import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.body.InventoryLock;
 import com.voidreclaimer.body.Modules;
-import com.voidreclaimer.body.PartKind;
-import com.voidreclaimer.body.SizeClass;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.flight.FlightStats;
 import com.voidreclaimer.nanite.Nanites;
@@ -19,6 +19,11 @@ import com.voidreclaimer.replicator.Replicator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -29,10 +34,13 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-/** Phase 5a: the modular body (stats, install rules, frame swap, inventory lock, modules, Expansion). */
+/** The modular body: sections and modules, install rules, chassis swap, save migration, inventory lock, Expansion. */
 @GameTestHolder(VoidReclaimer.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class BodyGameTests {
+    private static final BodyData.Mount HULL_STORAGE = new BodyData.Mount("hull", ModuleKind.STORAGE, 0);
+    private static final BodyData.Mount HULL_CORE = new BodyData.Mount("hull", ModuleKind.CORE, 0);
+
     private BodyGameTests() {}
 
     private static int put(ServerPlayer player, int slot, ItemStack stack) {
@@ -45,7 +53,9 @@ public final class BodyGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 61_000.5, 80, 0.5);
         try {
             Bodies.apply(player);
-            helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.SCALE) - SizeClass.DRONE.scale()) < 1e-6, "not drone scale");
+            helper.assertTrue(Bodies.view(player).missing().isEmpty(), "starter drone has empty sockets");
+            helper.assertTrue(Bodies.data(player).sections().size() == 7, "starter drone sections");
+            helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.SCALE) - 0.4) < 1e-6, "not drone scale");
             helper.assertTrue(player.getMaxHealth() == 12f, "drone health " + player.getMaxHealth());
             helper.assertTrue(player.getData(ModAttachments.ENERGY).capacity() == 100f, "energy capacity");
             helper.assertTrue(Bodies.stats(player).inventorySlots() == 18, "starter inventory");
@@ -59,23 +69,26 @@ public final class BodyGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void installAndRemoveMoveItemsAndApplyStats(GameTestHelper helper) {
+    public static void modulesInstallAndRemoveByMount(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 62_000.5, 80, 0.5);
         try {
             int slot = put(player, 3, new ItemStack(ModItems.STORAGE_MK1.get()));
-            helper.assertTrue(Bodies.install(player, PartKind.STORAGE, 0, slot) == BodyRules.Check.OK, "install failed");
-            helper.assertTrue(player.getInventory().items.get(slot).isEmpty(), "part not taken from the inventory");
+            helper.assertTrue(Bodies.installModule(player, HULL_STORAGE, slot) == BodyRules.Check.OK, "install failed");
+            helper.assertTrue(player.getInventory().items.get(slot).isEmpty(), "module not taken from the inventory");
             helper.assertTrue(Bodies.stats(player).inventorySlots() == 27, "storage didn't add a row");
             helper.assertTrue(DustData.capacity(player) > 200f, "storage didn't add dust capacity");
 
             put(player, 4, new ItemStack(ModItems.THRUSTER_MK1.get()));
-            helper.assertTrue(Bodies.install(player, PartKind.STORAGE, 0, 4) == BodyRules.Check.WRONG_SLOT, "thruster went into storage");
+            helper.assertTrue(Bodies.installModule(player, HULL_STORAGE, 4) == BodyRules.Check.WRONG_MOUNT, "thruster on a storage mount");
+            helper.assertTrue(Bodies.installModule(player, new BodyData.Mount("hull", ModuleKind.THRUSTER, 0), 4)
+                    == BodyRules.Check.NO_SUCH_MOUNT, "the hull has no thruster mount");
             put(player, 5, new ItemStack(ModItems.THRUSTER_MK2.get()));
-            helper.assertTrue(Bodies.install(player, PartKind.THRUSTER, 1, 5) == BodyRules.Check.TIER_TOO_HIGH, "Mk II on a Mk I core");
+            helper.assertTrue(Bodies.installModule(player, new BodyData.Mount("rotor_front_right", ModuleKind.THRUSTER, 0), 5)
+                    == BodyRules.Check.TIER_TOO_HIGH, "Mk II on a Mk I core");
 
-            helper.assertTrue(Bodies.remove(player, PartKind.STORAGE, 0) == BodyRules.Check.OK, "remove failed");
-            helper.assertTrue(player.getInventory().contains(new ItemStack(ModItems.STORAGE_MK1.get())), "removed part not returned");
-            helper.assertTrue(Bodies.remove(player, PartKind.CORE, 0) == BodyRules.Check.REQUIRED, "core removed");
+            helper.assertTrue(Bodies.removeModule(player, HULL_STORAGE) == BodyRules.Check.OK, "remove failed");
+            helper.assertTrue(player.getInventory().contains(new ItemStack(ModItems.STORAGE_MK1.get())), "removed module not returned");
+            helper.assertTrue(Bodies.removeModule(player, HULL_CORE) == BodyRules.Check.REQUIRED, "core module removed");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);
@@ -83,31 +96,110 @@ public final class BodyGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void biggerFrameTransfersPartsAndScales(GameTestHelper helper) {
-        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 63_000.5, 80, 0.5);
+    public static void sectionsComeOffWithTheirModules(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 62_500.5, 80, 0.5);
         try {
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
-            put(player, 0, new ItemStack(ModItems.MECH_FRAME.get()));
-            helper.assertTrue(Bodies.install(player, PartKind.FRAME, 0, 0) == BodyRules.Check.TIER_TOO_HIGH, "mech frame on a Mk I core");
+            helper.assertTrue(Bodies.removeSection(player, "rotor_front_left") == BodyRules.Check.OK, "remove failed");
+            helper.assertTrue(player.getInventory().contains(new ItemStack(ModItems.ROTOR_ARM.get())), "section not returned");
+            helper.assertTrue(player.getInventory().contains(new ItemStack(ModItems.THRUSTER_MK1.get())), "its thruster not returned");
+            helper.assertTrue(FlightStats.of(player).acceleration() == 0.0, "still thrusting without the arm");
+            helper.assertTrue(Bodies.view(player).missing().size() == 1, "missing count");
+            helper.assertTrue(Bodies.removeSection(player, "hull") == BodyRules.Check.REQUIRED, "core section removed");
 
-            put(player, 1, new ItemStack(ModItems.CORE_MK2.get()));
-            helper.assertTrue(Bodies.install(player, PartKind.CORE, 0, 1) == BodyRules.Check.OK, "core swap failed");
-            helper.assertTrue(player.getInventory().items.get(1).is(ModItems.CORE_MK1.get()), "old core not returned to the slot");
-            helper.assertTrue(player.getData(ModAttachments.ENERGY).capacity() == 250f, "Mk II capacity not applied");
-
-            helper.assertTrue(Bodies.install(player, PartKind.FRAME, 0, 0) == BodyRules.Check.OK, "frame swap failed");
-            BodyData body = Bodies.data(player);
-            helper.assertTrue(Bodies.stats(player).size() == SizeClass.MECH, "not a mech");
-            helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.SCALE) - SizeClass.MECH.scale()) < 1e-6, "scale not applied");
-            helper.assertTrue(player.getMaxHealth() == 20f, "mech health");
-            helper.assertTrue(body.get(PartKind.THRUSTER, 0).is(ModItems.THRUSTER_MK1.get()), "thruster not transferred");
-            helper.assertTrue(body.get(PartKind.SENSOR, 0).is(ModItems.DUST_SENSOR.get()), "sensor not transferred");
-            helper.assertTrue(body.slots(PartKind.THRUSTER) == 4, "mech thruster slots");
-            helper.assertTrue(player.getInventory().items.get(0).is(ModItems.DRONE_FRAME.get()), "old frame not returned");
+            int claw = put(player, 8, new ItemStack(ModItems.TOOL_CLAW.get()));
+            helper.assertTrue(Bodies.installSection(player, "rotor_front_left", claw) == BodyRules.Check.WRONG_SOCKET, "claw on a rotor socket");
+            int arm = player.getInventory().findSlotMatchingItem(new ItemStack(ModItems.ROTOR_ARM.get()));
+            helper.assertTrue(Bodies.installSection(player, "rotor_front_left", arm) == BodyRules.Check.OK, "arm not reinstalled");
+            helper.assertTrue(Bodies.view(player).missing().isEmpty(), "socket still empty");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);
         }
+    }
+
+    @GameTest(template = "empty")
+    public static void mechTorsoSwitchesTheLayout(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 63_000.5, 80, 0.5);
+        try {
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+            put(player, 0, new ItemStack(ModItems.MECH_TORSO.get()));
+            helper.assertTrue(Bodies.installSection(player, "hull", 0) == BodyRules.Check.TIER_TOO_HIGH, "mech torso on a Mk I core");
+
+            put(player, 1, new ItemStack(ModItems.CORE_MK2.get()));
+            helper.assertTrue(Bodies.installModule(player, HULL_CORE, 1) == BodyRules.Check.OK, "core swap failed");
+            helper.assertTrue(player.getInventory().items.get(1).is(ModItems.CORE_MK1.get()), "old core not returned to the slot");
+            helper.assertTrue(player.getData(ModAttachments.ENERGY).capacity() == 250f, "Mk II capacity not applied");
+
+            helper.assertTrue(Bodies.installSection(player, "hull", 0) == BodyRules.Check.OK, "torso swap failed");
+            BodyData body = Bodies.data(player);
+            helper.assertTrue(Bodies.stats(player).size().equals(BuiltinBodies.MECH_SIZE), "not a mech");
+            helper.assertTrue(body.coreSocket().equals("torso"), "core socket " + body.coreSocket());
+            helper.assertTrue(body.module(new BodyData.Mount("torso", ModuleKind.CORE, 0)).is(ModItems.CORE_MK2.get()), "core module lost");
+            helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.SCALE) - 1.2) < 1e-6, "scale not applied");
+            helper.assertTrue(body.sections().size() == 1, "drone sections stayed on a mech: " + body.sections().keySet());
+            Inventory inventory = player.getInventory();
+            helper.assertTrue(inventory.countItem(ModItems.ROTOR_ARM.get()) == 4, "rotor arms not returned");
+            helper.assertTrue(inventory.contains(new ItemStack(ModItems.DRONE_HULL.get())), "hull not returned");
+            helper.assertTrue(inventory.contains(new ItemStack(ModItems.DUST_SENSOR.get())), "sensor not returned with its dome");
+            helper.assertTrue(inventory.contains(new ItemStack(ModItems.THRUSTER_MK1.get())), "thruster not returned with its arm");
+            helper.assertTrue(Bodies.view(player).missing().size() == 15, "mech missing count");
+
+            // The back socket takes a Drone rotor arm as a jetpack.
+            int arm = inventory.findSlotMatchingItem(new ItemStack(ModItems.ROTOR_ARM.get()));
+            helper.assertTrue(Bodies.installSection(player, "back", arm) == BodyRules.Check.OK, "jetpack refused");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** A body saved before sections (a Mech frame and parts per kind) loads as a Mech with its parts on mounts. */
+    @GameTest(template = "empty")
+    public static void preSectionBodiesMigrate(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 63_500.5, 80, 0.5);
+        try {
+            CompoundTag old = new CompoundTag();
+            old.put("frame", item("void_reclaimer:mech_frame"));
+            CompoundTag parts = new CompoundTag();
+            parts.put("core", list(item("void_reclaimer:core_mk2")));
+            parts.put("thruster", list(item("void_reclaimer:thruster_mk1"), item("void_reclaimer:thruster_mk2"), item("void_reclaimer:thruster_mk1")));
+            parts.put("tool", list(item("void_reclaimer:salvage_tool"), item("void_reclaimer:nanite_swarm"), item("void_reclaimer:salvage_tool")));
+            old.put("parts", parts);
+            old.putInt("active_tool", 1);
+            RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, helper.getLevel().registryAccess());
+            BodyData body = BodyData.CODEC.parse(ops, old).getOrThrow();
+
+            helper.assertTrue(body.coreSocket().equals("torso"), "not migrated to a Mech: " + body.coreSocket());
+            helper.assertTrue(body.core().is(ModItems.MECH_TORSO.get()), "frame didn't become the torso");
+            helper.assertTrue(body.sections().size() == 15, "basic Mech sections: " + body.sections().size());
+            helper.assertTrue(body.module(new BodyData.Mount("torso", ModuleKind.CORE, 0)).is(ModItems.CORE_MK2.get()), "core not placed");
+            helper.assertTrue(body.modules().keySet().stream().filter(m -> m.kind() == ModuleKind.THRUSTER).count() == 3, "thrusters not placed");
+            // A basic Mech has two tool mounts (its hands): the third tool waits to be handed back.
+            helper.assertTrue(body.pending().size() == 1 && body.pending().get(0).is(ModItems.SALVAGE_TOOL.get()), "leftovers: " + body.pending());
+
+            player.setData(ModAttachments.BODY, body);
+            player.doTick();
+            helper.assertTrue(Bodies.data(player).pending().isEmpty(), "leftover not handed out");
+            helper.assertTrue(player.getInventory().contains(new ItemStack(ModItems.SALVAGE_TOOL.get())), "leftover not in the inventory");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    private static CompoundTag item(String id) {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("id", id);
+        tag.putInt("count", 1);
+        return tag;
+    }
+
+    private static ListTag list(CompoundTag... items) {
+        ListTag list = new ListTag();
+        for (CompoundTag item : items) {
+            list.add(item);
+        }
+        return list;
     }
 
     @GameTest(template = "empty")
@@ -143,7 +235,7 @@ public final class BodyGameTests {
         NaniteGameTests.inLoadedArea(helper, origin, 8, () -> {
             ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
             try {
-                TestPlayers.installModule(player, PartKind.TOOL, 0, new ItemStack(ModItems.NANITE_SWARM.get()));
+                TestPlayers.installModule(player, ModuleKind.TOOL, 0, new ItemStack(ModItems.NANITE_SWARM.get()));
                 put(player, 5, new ItemStack(ModItems.SCAFFOLD.get(), 4));
                 BlockPos target = Nanites.target(player, Modules.naniteRange(player));
 

@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:metallic": 5.0,
+    "void_reclaimer:silicate": 2.0
+  },
+  "milestone": "void_reclaimer:awakening",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:rotor_arm"
+  },
+  "ticks": 300
+}

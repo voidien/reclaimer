@@ -3,6 +3,7 @@ package com.voidreclaimer.salvage;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Modules;
+import com.voidreclaimer.body.ToolModules;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
@@ -35,7 +36,7 @@ public final class Salvage {
             return;
         }
         BlockState state = event.getState();
-        if (!state.is(ModBlocks.SALVAGEABLE) || !Modules.isActive(player, ModItems.SALVAGE_TOOL.get())) {
+        if (!state.is(ModBlocks.SALVAGEABLE) || Modules.activeType(player) != ToolModules.SALVAGE.get()) {
             return;
         }
         ServerLevel level = player.serverLevel();

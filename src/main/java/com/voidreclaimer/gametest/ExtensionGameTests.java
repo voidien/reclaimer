@@ -8,7 +8,7 @@ import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.replicator.ReplicatorCategories;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustSensor;
 import net.minecraft.world.item.ItemStack;
@@ -168,9 +168,9 @@ public final class ExtensionGameTests {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 64_000.5, 80, 0.5);
         try {
             helper.assertFalse(DustSensor.has(player), "sensor without a module");
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(Items.STICK));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(Items.STICK));
             helper.assertFalse(DustSensor.has(player), "untagged item counted as a sensor");
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(Items.SPYGLASS));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(Items.SPYGLASS));
             helper.assertTrue(DustSensor.has(player), "tagged item not counted as a sensor");
             helper.succeed();
         } finally {

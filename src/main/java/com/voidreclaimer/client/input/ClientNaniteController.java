@@ -3,12 +3,13 @@ package com.voidreclaimer.client.input;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.Modules;
+import com.voidreclaimer.body.ToolModules;
 import com.voidreclaimer.nanite.NaniteTargeting;
 import com.voidreclaimer.nanite.Nanites;
 import com.voidreclaimer.network.BodyActionPayload;
 import com.voidreclaimer.network.NaniteRangePayload;
-import com.voidreclaimer.registry.ModItems;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -43,7 +44,7 @@ public final class ClientNaniteController {
     private ClientNaniteController() {}
 
     private static boolean naniteActive(LocalPlayer player) {
-        return Modules.isActive(player, ModItems.NANITE_SWARM.get());
+        return Modules.activeType(player) == ToolModules.NANITE_SWARM.get();
     }
 
     /** Sneaking, read from the key itself: thruster flight clears the vanilla sneak flag (Shift is "thrust down"). */
@@ -74,7 +75,8 @@ public final class ClientNaniteController {
     static void onUseKey(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (!event.isUseItem() || event.getHand() != InteractionHand.MAIN_HAND || player == null || !naniteActive(player)) {
+        // Any tool module, not just the swarm: addon tools get the same empty-hand right-click.
+        if (!event.isUseItem() || event.getHand() != InteractionHand.MAIN_HAND || player == null || Modules.activeType(player) == null) {
             return;
         }
         boolean onBlock = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK;
@@ -82,7 +84,7 @@ public final class ClientNaniteController {
             return; // a plain right-click on a block uses the block
         }
         event.setCanceled(true);
-        if (!player.getCooldowns().isOnCooldown(ModItems.NANITE_SWARM.get())) {
+        if (!player.getCooldowns().isOnCooldown(Bodies.activeTool(player).getItem())) {
             event.setSwingHand(true);
             PacketDistributor.sendToServer(BodyActionPayload.useTool());
         } else {

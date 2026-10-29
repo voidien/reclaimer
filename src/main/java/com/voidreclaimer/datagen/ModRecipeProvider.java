@@ -38,10 +38,9 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, DustCost.of(30, 20, 10, 10), 60,
                 ReplicatorCategories.BLOCKS, Milestones.DIVERSIFIED);
 
-        // Body parts. The drone frame, Mk I core and Mk I thruster are also craftable as spares.
+        // Modules. The Mk I core and thruster are also craftable as spares.
         ResourceKey<ReplicatorCategory> parts = ReplicatorCategories.PARTS;
         replicator(output, "thruster_mk1", ModItems.THRUSTER_MK1.get(), 1, DustCost.of(10, 5, 0, 0), 30, parts, Milestones.AWAKENING);
-        replicator(output, "drone_frame", ModItems.DRONE_FRAME.get(), 1, DustCost.of(20, 10, 0, 0), 60, parts, Milestones.FIRST_DUST);
         replicator(output, "core_mk1", ModItems.CORE_MK1.get(), 1, DustCost.of(15, 10, 0, 5), 45, parts, Milestones.FIRST_DUST);
         replicator(output, "storage_mk1", ModItems.STORAGE_MK1.get(), 1, DustCost.of(8, 8, 0, 0), 30, parts, Milestones.FIRST_DUST);
         replicator(output, "brass_trim", ModItems.BRASS_TRIM.get(), 1, DustCost.of(5, 0, 0, 0), 10, parts, Milestones.FIRST_STRUCTURE);
@@ -49,7 +48,26 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "core_mk2", ModItems.CORE_MK2.get(), 1, DustCost.of(40, 30, 10, 20), 90, parts, Milestones.EXPANSION);
         replicator(output, "thruster_mk2", ModItems.THRUSTER_MK2.get(), 1, DustCost.of(30, 10, 0, 10), 60, parts, Milestones.EXPANSION);
         replicator(output, "storage_mk2", ModItems.STORAGE_MK2.get(), 1, DustCost.of(20, 20, 10, 0), 60, parts, Milestones.EXPANSION);
-        replicator(output, "mech_frame", ModItems.MECH_FRAME.get(), 1, DustCost.of(80, 60, 20, 40), 180, parts, Milestones.EXPANSION);
+
+        // Drone sections: the hull costs what the Drone frame did; limbs are cheap spares.
+        replicator(output, "drone_hull", ModItems.DRONE_HULL.get(), 1, DustCost.of(20, 10, 0, 0), 60, parts, Milestones.FIRST_DUST);
+        replicator(output, "rotor_arm", ModItems.ROTOR_ARM.get(), 1, DustCost.of(5, 2, 0, 0), 15, parts, Milestones.AWAKENING);
+        replicator(output, "sensor_dome", ModItems.SENSOR_DOME.get(), 1, DustCost.of(4, 4, 0, 0), 15, parts, Milestones.FIRST_DUST);
+        replicator(output, "tool_claw", ModItems.TOOL_CLAW.get(), 1, DustCost.of(5, 3, 0, 0), 15, parts, Milestones.FIRST_DUST);
+        replicator(output, "rotor_arm_mk2", ModItems.ROTOR_ARM_MK2.get(), 1, DustCost.of(15, 5, 5, 5), 40, parts, Milestones.EXPANSION);
+
+        // Mech sections: a whole Mech costs about what the Mech frame did.
+        replicator(output, "mech_torso", ModItems.MECH_TORSO.get(), 1, DustCost.of(40, 30, 10, 20), 120, parts, Milestones.EXPANSION);
+        replicator(output, "mech_head", ModItems.MECH_HEAD.get(), 1, DustCost.of(8, 6, 2, 4), 30, parts, Milestones.EXPANSION);
+        replicator(output, "mech_pelvis", ModItems.MECH_PELVIS.get(), 1, DustCost.of(8, 6, 2, 4), 30, parts, Milestones.EXPANSION);
+        replicator(output, "mech_upper_arm", ModItems.MECH_UPPER_ARM.get(), 1, DustCost.of(4, 3, 1, 2), 20, parts, Milestones.EXPANSION);
+        replicator(output, "mech_forearm", ModItems.MECH_FOREARM.get(), 1, DustCost.of(4, 3, 1, 2), 20, parts, Milestones.EXPANSION);
+        replicator(output, "mech_hand", ModItems.MECH_HAND.get(), 1, DustCost.of(3, 2, 1, 1), 15, parts, Milestones.EXPANSION);
+        replicator(output, "mech_thigh", ModItems.MECH_THIGH.get(), 1, DustCost.of(4, 3, 1, 2), 20, parts, Milestones.EXPANSION);
+        replicator(output, "mech_shin", ModItems.MECH_SHIN.get(), 1, DustCost.of(4, 3, 1, 2), 20, parts, Milestones.EXPANSION);
+        replicator(output, "mech_foot", ModItems.MECH_FOOT.get(), 1, DustCost.of(3, 2, 1, 1), 15, parts, Milestones.EXPANSION);
+        replicator(output, "mech_forearm_mk2", ModItems.MECH_FOREARM_MK2.get(), 1, DustCost.of(12, 8, 4, 6), 60, parts, Milestones.EXPANSION);
+        replicator(output, "mech_shin_mk2", ModItems.MECH_SHIN_MK2.get(), 1, DustCost.of(12, 8, 4, 6), 60, parts, Milestones.EXPANSION);
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,

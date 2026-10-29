@@ -2,11 +2,14 @@ package com.voidreclaimer.body;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.voidreclaimer.api.body.ModuleKind;
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -14,96 +17,171 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The AI's assembled body: its frame and the parts in each slot, the active tool module, and its looks. Immutable;
- * every change makes a new instance. Slot lists are kept exactly as long as the frame allows (empty stacks for empty
- * slots). Stats are derived from the parts' {@link PartStats} components ({@link BodyStats}).
+ * The AI's assembled body: section items per socket (the core section in {@link #coreSocket()}), module items per
+ * mount, the active tool module, its looks, and items waiting to be handed back. Immutable; every change makes a new
+ * instance.
+ *
+ * <p>The data doesn't depend on the chassis registry: which sockets and mounts are valid is checked against the
+ * layout by {@link BodyRules} ({@link BodyRules#normalize} moves misfits to {@link #pending()}).
+ *
+ * <p>Saves from before body sections (a {@code frame} and {@code parts} per kind) migrate on load
+ * ({@link BodyMigration}).
  */
 public final class BodyData {
+    /** A module position: mount {@code index} of {@code kind} on the section in {@code socket}. */
+    public record Mount(String socket, ModuleKind kind, int index) {
+        public static final Codec<Mount> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("socket").forGetter(Mount::socket),
+                ModuleKind.CODEC.fieldOf("kind").forGetter(Mount::kind),
+                Codec.INT.fieldOf("index").forGetter(Mount::index)
+        ).apply(instance, Mount::new));
+
+        public static final StreamCodec<io.netty.buffer.ByteBuf, Mount> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8, Mount::socket,
+                ModuleKind.STREAM_CODEC, Mount::kind,
+                ByteBufCodecs.VAR_INT, Mount::index,
+                Mount::new);
+    }
+
+    private record SectionEntry(String socket, ItemStack item) {
+        static final Codec<SectionEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("socket").forGetter(SectionEntry::socket),
+                // Lenient per entry: an item from a removed mod empties its socket instead of failing the body.
+                ItemStack.OPTIONAL_CODEC.lenientOptionalFieldOf("item", ItemStack.EMPTY).forGetter(SectionEntry::item)
+        ).apply(instance, SectionEntry::new));
+        static final StreamCodec<RegistryFriendlyByteBuf, SectionEntry> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8, SectionEntry::socket,
+                ItemStack.OPTIONAL_STREAM_CODEC, SectionEntry::item,
+                SectionEntry::new);
+    }
+
+    private record ModuleEntry(Mount mount, ItemStack item) {
+        static final Codec<ModuleEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Mount.CODEC.fieldOf("mount").forGetter(ModuleEntry::mount),
+                ItemStack.OPTIONAL_CODEC.lenientOptionalFieldOf("item", ItemStack.EMPTY).forGetter(ModuleEntry::item)
+        ).apply(instance, ModuleEntry::new));
+        static final StreamCodec<RegistryFriendlyByteBuf, ModuleEntry> STREAM_CODEC = StreamCodec.composite(
+                Mount.STREAM_CODEC, ModuleEntry::mount,
+                ItemStack.OPTIONAL_STREAM_CODEC, ModuleEntry::item,
+                ModuleEntry::new);
+    }
+
     public static final Codec<BodyData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ItemStack.OPTIONAL_CODEC.lenientOptionalFieldOf("frame", ItemStack.EMPTY).forGetter(BodyData::frame),
-            Codec.unboundedMap(PartKind.CODEC, ItemStack.OPTIONAL_CODEC.listOf()).lenientOptionalFieldOf("parts", Map.of())
-                    .forGetter(data -> data.parts),
+            Codec.STRING.optionalFieldOf("core_socket", "").forGetter(BodyData::coreSocket),
+            SectionEntry.CODEC.listOf().lenientOptionalFieldOf("sections", List.of()).forGetter(BodyData::sectionEntries),
+            ModuleEntry.CODEC.listOf().lenientOptionalFieldOf("modules", List.of()).forGetter(BodyData::moduleEntries),
             Codec.INT.optionalFieldOf("active_tool", 0).forGetter(BodyData::activeTool),
-            Cosmetics.CODEC.lenientOptionalFieldOf("cosmetics", Cosmetics.DEFAULT).forGetter(BodyData::cosmetics)
-    ).apply(instance, BodyData::new));
+            Cosmetics.CODEC.lenientOptionalFieldOf("cosmetics", Cosmetics.DEFAULT).forGetter(BodyData::cosmetics),
+            ItemStack.OPTIONAL_CODEC.listOf().lenientOptionalFieldOf("pending", List.of()).forGetter(BodyData::pending),
+            // Pre-section saves. Never written (defaults are omitted).
+            ItemStack.OPTIONAL_CODEC.lenientOptionalFieldOf("frame", ItemStack.EMPTY).forGetter(data -> ItemStack.EMPTY),
+            Codec.unboundedMap(ModuleKind.CODEC, ItemStack.OPTIONAL_CODEC.listOf()).lenientOptionalFieldOf("parts", Map.of())
+                    .forGetter(data -> Map.of())
+    ).apply(instance, BodyData::decode));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BodyData> STREAM_CODEC = StreamCodec.composite(
-            ItemStack.OPTIONAL_STREAM_CODEC, BodyData::frame,
-            ByteBufCodecs.map(HashMap::new, PartKind.STREAM_CODEC, ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list())),
-            data -> new HashMap<>(data.parts),
+            ByteBufCodecs.STRING_UTF8, BodyData::coreSocket,
+            SectionEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), BodyData::sectionEntries,
+            ModuleEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), BodyData::moduleEntries,
             ByteBufCodecs.VAR_INT, BodyData::activeTool,
             Cosmetics.STREAM_CODEC, BodyData::cosmetics,
-            BodyData::new);
+            ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list()), BodyData::pending,
+            (core, sections, modules, tool, looks, pending) -> new BodyData(core, toSectionMap(sections), toModuleMap(modules), tool, looks, pending));
 
-    private final ItemStack frame;
-    private final Map<PartKind, List<ItemStack>> parts;
+    public static final BodyData EMPTY = new BodyData("", Map.of(), Map.of(), 0, Cosmetics.DEFAULT, List.of());
+
+    private final String coreSocket;
+    private final Map<String, ItemStack> sections;
+    private final Map<Mount, ItemStack> modules;
     private final int activeTool;
     private final Cosmetics cosmetics;
+    private final List<ItemStack> pending;
     @Nullable
-    private BodyStats stats;
+    private volatile BodyStats stats;
 
-    public BodyData(ItemStack frame, Map<PartKind, List<ItemStack>> parts, int activeTool, Cosmetics cosmetics) {
-        this.frame = frame.copy();
-        PartStats.Frame spec = frameSpec(this.frame);
-        Map<PartKind, List<ItemStack>> sized = new EnumMap<>(PartKind.class);
-        for (PartKind kind : PartKind.values()) {
-            if (kind == PartKind.FRAME) {
-                continue;
+    public BodyData(String coreSocket, Map<String, ItemStack> sections, Map<Mount, ItemStack> modules, int activeTool,
+                    Cosmetics cosmetics, List<ItemStack> pending) {
+        this.coreSocket = coreSocket;
+        Map<String, ItemStack> s = new LinkedHashMap<>();
+        sections.forEach((socket, stack) -> {
+            if (!stack.isEmpty()) {
+                s.put(socket, stack.copy());
             }
-            int count = spec == null ? (kind == PartKind.CORE ? 1 : 0) : spec.slots(kind);
-            List<ItemStack> given = parts.getOrDefault(kind, List.of());
-            List<ItemStack> list = new ArrayList<>(count);
-            for (int i = 0; i < count; i++) {
-                list.add(i < given.size() ? given.get(i).copy() : ItemStack.EMPTY);
+        });
+        Map<Mount, ItemStack> m = new LinkedHashMap<>();
+        modules.forEach((mount, stack) -> {
+            if (!stack.isEmpty()) {
+                m.put(mount, stack.copy());
             }
-            sized.put(kind, List.copyOf(list));
-        }
-        this.parts = sized;
-        this.activeTool = activeTool;
+        });
+        this.sections = Collections.unmodifiableMap(s);
+        this.modules = Collections.unmodifiableMap(m);
+        this.activeTool = Math.max(0, activeTool);
         this.cosmetics = cosmetics;
+        this.pending = pending.stream().filter(stack -> !stack.isEmpty()).map(ItemStack::copy).toList();
     }
 
-    @Nullable
-    private static PartStats.Frame frameSpec(ItemStack frame) {
-        PartStats stats = Parts.stats(frame);
-        return stats == null ? null : stats.frame().orElse(null);
-    }
-
-    public ItemStack frame() {
-        return frame.copy();
-    }
-
-    /** Parts installed in slots of {@code kind} (copies; empty stacks for empty slots). For FRAME, the frame. */
-    public List<ItemStack> parts(PartKind kind) {
-        if (kind == PartKind.FRAME) {
-            return List.of(frame());
+    private static BodyData decode(String coreSocket, List<SectionEntry> sections, List<ModuleEntry> modules, int activeTool,
+                                   Cosmetics cosmetics, List<ItemStack> pending, ItemStack legacyFrame,
+                                   Map<ModuleKind, List<ItemStack>> legacyParts) {
+        if (sections.isEmpty() && !legacyFrame.isEmpty()) {
+            return BodyMigration.fromFrame(legacyFrame, legacyParts, activeTool, cosmetics);
         }
-        return parts.getOrDefault(kind, List.of()).stream().map(ItemStack::copy).toList();
+        return new BodyData(coreSocket, toSectionMap(sections), toModuleMap(modules), activeTool, cosmetics, pending);
     }
 
-    public int slots(PartKind kind) {
-        return kind == PartKind.FRAME ? 1 : parts.getOrDefault(kind, List.of()).size();
+    private static Map<String, ItemStack> toSectionMap(List<SectionEntry> entries) {
+        Map<String, ItemStack> map = new LinkedHashMap<>();
+        entries.forEach(e -> map.put(e.socket(), e.item()));
+        return map;
     }
 
-    public ItemStack get(PartKind kind, int index) {
-        if (kind == PartKind.FRAME) {
-            return frame();
-        }
-        List<ItemStack> list = parts.getOrDefault(kind, List.of());
-        return index >= 0 && index < list.size() ? list.get(index).copy() : ItemStack.EMPTY;
+    private static Map<Mount, ItemStack> toModuleMap(List<ModuleEntry> entries) {
+        Map<Mount, ItemStack> map = new LinkedHashMap<>();
+        entries.forEach(e -> map.put(e.mount(), e.item()));
+        return map;
     }
 
-    /** Every installed part except the frame, without copying (read-only use). */
-    List<ItemStack> installedParts() {
-        List<ItemStack> all = new ArrayList<>();
-        for (List<ItemStack> list : parts.values()) {
-            for (ItemStack stack : list) {
-                if (!stack.isEmpty()) {
-                    all.add(stack);
-                }
-            }
-        }
-        return all;
+    private List<SectionEntry> sectionEntries() {
+        return sections.entrySet().stream().map(e -> new SectionEntry(e.getKey(), e.getValue())).toList();
+    }
+
+    private List<ModuleEntry> moduleEntries() {
+        return modules.entrySet().stream().map(e -> new ModuleEntry(e.getKey(), e.getValue())).toList();
+    }
+
+    // ---- reading ------------------------------------------------------------------------------------------
+
+    /** Id of the socket holding the core section ("" for an empty body). */
+    public String coreSocket() {
+        return coreSocket;
+    }
+
+    /** The core section (copy), or empty. */
+    public ItemStack core() {
+        return section(coreSocket);
+    }
+
+    /** The section in {@code socket} (copy), or empty. */
+    public ItemStack section(String socket) {
+        ItemStack stack = sections.get(socket);
+        return stack == null ? ItemStack.EMPTY : stack.copy();
+    }
+
+    /** Installed sections by socket, without copying (read-only use). */
+    public Map<String, ItemStack> sections() {
+        return sections;
+    }
+
+    /** The module on {@code mount} (copy), or empty. */
+    public ItemStack module(Mount mount) {
+        ItemStack stack = modules.get(mount);
+        return stack == null ? ItemStack.EMPTY : stack.copy();
+    }
+
+    /** Installed modules by mount, without copying (read-only use). */
+    public Map<Mount, ItemStack> modules() {
+        return modules;
     }
 
     public int activeTool() {
@@ -114,63 +192,95 @@ public final class BodyData {
         return cosmetics;
     }
 
-    public BodyStats stats() {
-        BodyStats cached = stats;
-        if (cached == null) {
-            List<PartStats> partStats = new ArrayList<>();
-            for (ItemStack stack : installedParts()) {
-                PartStats s = Parts.stats(stack);
-                if (s != null) {
-                    partStats.add(s);
-                }
-            }
-            cached = BodyStats.compute(Parts.stats(frame), partStats);
-            stats = cached;
-        }
-        return cached;
+    /** Items that left the body while no inventory was at hand (save migration); handed out on the next tick. */
+    public List<ItemStack> pending() {
+        return pending;
     }
 
-    // ---- edits --------------------------------------------------------------------------------------------
-
-    public BodyData with(PartKind kind, int index, ItemStack stack) {
-        if (kind == PartKind.FRAME) {
-            return withFrame(stack);
-        }
-        Map<PartKind, List<ItemStack>> copy = new EnumMap<>(PartKind.class);
-        copy.putAll(parts);
-        List<ItemStack> list = new ArrayList<>(copy.getOrDefault(kind, List.of()));
-        if (index < 0 || index >= list.size()) {
-            return this;
-        }
-        list.set(index, stack.copy());
-        copy.put(kind, list);
-        return new BodyData(frame, copy, activeTool, cosmetics);
-    }
-
-    /** A new frame; parts are carried over as far as its slots allow (see {@link BodyRules#swapFrame}). */
-    public BodyData withFrame(ItemStack newFrame) {
-        return new BodyData(newFrame, parts, activeTool, cosmetics);
-    }
-
-    public BodyData withActiveTool(int index) {
-        return new BodyData(frame, parts, index, cosmetics);
-    }
-
-    public BodyData withCosmetics(Cosmetics value) {
-        return new BodyData(frame, parts, activeTool, value);
-    }
-
-    /** The active tool module, or empty. */
-    public ItemStack activeToolStack() {
-        return get(PartKind.TOOL, activeTool);
-    }
-
-    public boolean hasInstalled(PartKind kind, java.util.function.Predicate<ItemStack> test) {
-        for (ItemStack stack : parts.getOrDefault(kind, List.of())) {
-            if (!stack.isEmpty() && test.test(stack)) {
+    public boolean hasInstalled(ModuleKind kind, Predicate<ItemStack> test) {
+        for (Map.Entry<Mount, ItemStack> entry : modules.entrySet()) {
+            if (entry.getKey().kind() == kind && test.test(entry.getValue())) {
                 return true;
             }
         }
         return false;
+    }
+
+    // ---- stats cache --------------------------------------------------------------------------------------
+
+    @Nullable
+    BodyStats cachedStats() {
+        return stats;
+    }
+
+    void cacheStats(BodyStats value) {
+        stats = value;
+    }
+
+    // ---- edits --------------------------------------------------------------------------------------------
+
+    public BodyData withSection(String socket, ItemStack stack) {
+        Map<String, ItemStack> copy = new LinkedHashMap<>(sections);
+        copy.put(socket, stack);
+        return new BodyData(coreSocket, copy, modules, activeTool, cosmetics, pending);
+    }
+
+    public BodyData withCoreSocket(String socket) {
+        return new BodyData(socket, sections, modules, activeTool, cosmetics, pending);
+    }
+
+    public BodyData withModule(Mount mount, ItemStack stack) {
+        Map<Mount, ItemStack> copy = new LinkedHashMap<>(modules);
+        copy.put(mount, stack);
+        return new BodyData(coreSocket, sections, copy, activeTool, cosmetics, pending);
+    }
+
+    public BodyData withActiveTool(int index) {
+        return new BodyData(coreSocket, sections, modules, index, cosmetics, pending);
+    }
+
+    public BodyData withCosmetics(Cosmetics value) {
+        return new BodyData(coreSocket, sections, modules, activeTool, value, pending);
+    }
+
+    public BodyData withPending(List<ItemStack> value) {
+        return new BodyData(coreSocket, sections, modules, activeTool, cosmetics, value);
+    }
+
+    public BodyData plusPending(List<ItemStack> more) {
+        List<ItemStack> all = new ArrayList<>(pending);
+        all.addAll(more);
+        return withPending(all);
+    }
+
+    /** Same content (item stacks compared by item, count and components). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BodyData other)) {
+            return false;
+        }
+        return coreSocket.equals(other.coreSocket) && activeTool == other.activeTool && cosmetics.equals(other.cosmetics)
+                && sameStacks(sections, other.sections) && sameStacks(modules, other.modules)
+                && ItemStack.listMatches(pending, other.pending);
+    }
+
+    private static <K> boolean sameStacks(Map<K, ItemStack> a, Map<K, ItemStack> b) {
+        if (!a.keySet().equals(b.keySet())) {
+            return false;
+        }
+        for (Map.Entry<K, ItemStack> entry : a.entrySet()) {
+            if (!ItemStack.matches(entry.getValue(), b.get(entry.getKey()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashMap<>(Map.of("core", coreSocket, "sections", sections.keySet(), "modules", modules.keySet())).hashCode();
     }
 }

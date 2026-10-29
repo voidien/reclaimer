@@ -2,7 +2,7 @@ package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.body.PartKind;
+import com.voidreclaimer.api.body.ModuleKind;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
@@ -125,7 +125,7 @@ public final class DustGameTests {
             // A carried sensor does nothing: it has to be installed.
             player.getInventory().add(new ItemStack(ModItems.DUST_SENSOR.get()));
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.NO_SENSOR, "carried sensor worked");
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
             setEnergy(player, 50f, false);
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.SENT, "pulse with a sensor failed");
             float cost = 50f - player.getData(ModAttachments.ENERGY).energy();
@@ -144,7 +144,7 @@ public final class DustGameTests {
     public static void sensorPulseRefusedInLowPower(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 31_000.5, 80, 0.5);
         try {
-            TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+            TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
             setEnergy(player, 1f, true);
             helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.LOW_POWER, "pulse allowed in low power");
             helper.succeed();
@@ -156,7 +156,7 @@ public final class DustGameTests {
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void echoIsDeliveredAfterItsDelay(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 32_000.5, 80, 0.5);
-        TestPlayers.installModule(player, PartKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
+        TestPlayers.installModule(player, ModuleKind.SENSOR, 0, new ItemStack(ModItems.DUST_SENSOR.get()));
         setEnergy(player, 50f, false);
         helper.assertTrue(SensorPulse.pulse(player) == SensorPulse.Result.SENT, "pulse failed");
         helper.succeedWhen(() -> {

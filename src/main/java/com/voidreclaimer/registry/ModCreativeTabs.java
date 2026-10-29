@@ -21,9 +21,12 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.NANITE_SWARM.get());
                 output.accept(ModItems.TETHER_ANCHOR.get());
                 output.accept(ModItems.BACKUP_CORE.get());
-                output.accept(ModItems.DRONE_FRAME.get());
-                output.accept(ModItems.MECH_FRAME.get());
-                output.accept(ModItems.SHIP_FRAME.get());
+                // Sections, by chassis, then modules.
+                for (var item : ModItems.ITEMS.getEntries()) {
+                    if (item.get() instanceof com.voidreclaimer.body.part.SectionItem) {
+                        output.accept(item.get());
+                    }
+                }
                 output.accept(ModItems.CORE_MK1.get());
                 output.accept(ModItems.CORE_MK2.get());
                 output.accept(ModItems.THRUSTER_MK1.get());
