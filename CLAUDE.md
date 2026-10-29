@@ -33,6 +33,8 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 4. After a phase: run `./gradlew build` and fix all errors. Give a short in-game test checklist and commit with a message naming the phase.
 5. If unsure whether an API exists in 1.21.1, say so and check (decompiled sources / docs) instead of guessing.
 6. Keep `PROGRESS.md` updated with what was finished and any known issues.
+7. **Small pull requests (the owner's rule, 2026-10-29).** One change per PR, a few files, reviewable in minutes. A phase is split into several PRs (for example data and registry, then logic, then client rendering), each of which builds and passes tests alone. Art drops, docs and refactors are their own PRs, but a docs-only change may ride along with the nearest code PR. Never let a branch collect unrelated work. Branch from the latest `main`, and restart the branch after its PR merges.
+8. **CI cost.** Every push to a PR branch restarts CI (about 3-4 minutes, 2 jobs), so finish and check locally (`./gradlew build`, `runGameTestServer`) before pushing, and batch fixes into one push. CI runs on pull requests and on pushes to `main` only. A flaky test gets a root-cause fix, not a re-run.
 
 ## Phases
 Build order after Phase 4: 5a → 6 → 7 → 5b → 8 → 9 → 10.

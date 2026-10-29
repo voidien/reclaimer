@@ -31,7 +31,8 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
 - **"Stop listening to pull requests unless they are from me":**
   - Don't subscribe to PR activity for PRs you open.
   - Check CI the next time the user writes, and merge if it's green.
-- **One branch and one PR per phase** (or per pair of small phases). Never push to `main` directly.
+- **Small PRs (2026-10-29):** one change per PR, a few files, reviewable in minutes; split a phase into several PRs (see `CLAUDE.md` workflow rules 7 and 8). Never push to `main` directly. Restart the branch from the latest `main` after its PR merges.
+- **CI cost:** every push to a PR branch reruns CI, so check locally first and batch fixes into one push.
 - **Commits:** name the phase in the message. Keep model names out of commits, PRs and code.
 - **Testing:** every phase adds unit tests and GameTests.
   - Mutation-check each new test: break the feature, run the test, see it fail, restore.
