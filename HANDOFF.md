@@ -12,7 +12,7 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
 - **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
 - **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
-- **Next phase:** 7b (Aeronautics ships: Space Thruster, Helm). Phase 7 is done: part 1 (materials and Create chains) and part 2 (custom machines); see `PROGRESS.md`. The phase order is in `CLAUDE.md`: 7b (Aeronautics ships) → 5b → 8 → 9 → 10. Phases 6 and 7 are done.
+- **Next phase:** 9 (the Kinetic Mass Driver, Quantum Receiver and the sky's power beams; see the revised plan in `CLAUDE.md`). Phases 6, 7 and 8 are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
 - **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
   - It's a Claude Docs project, at revision 12.
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.

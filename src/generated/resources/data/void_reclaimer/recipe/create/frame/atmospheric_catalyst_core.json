@@ -1,0 +1,70 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "catalystCore"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:advanced_sensor_unit"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "void_reclaimer:atmospheric_catalyst_core"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        },
+        {
+          "item": "void_reclaimer:quartz_wafer"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "void_reclaimer:nebulite_propellant"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_atmospheric_catalyst_core"
+  }
+}

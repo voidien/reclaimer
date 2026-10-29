@@ -14,7 +14,11 @@ public final class ModMaterials {
     /** One material: its registry name, and its English name for the lang file. */
     public record Material(String id, String name, DeferredItem<Item> item) {}
 
+    /** The transitional item of a Sequenced Assembly recipe: its registry name and English name. */
+    public record Incomplete(String id, String name, DeferredItem<SequencedAssemblyItem> item) {}
+
     public static final List<Material> ALL = new ArrayList<>();
+    public static final List<Incomplete> INCOMPLETE = new ArrayList<>();
 
     // Ice nebula
     public static final DeferredItem<Item> RAW_ICE_SHARDS = add("raw_ice_shards", "Raw Ice Shards");
@@ -45,10 +49,35 @@ public final class ModMaterials {
     public static final DeferredItem<Item> HIGH_OUTPUT_SOLAR_SAIL = add("high_output_solar_sail", "High-Output Solar Sail");
 
     /** The transitional item of the solar sail's Sequenced Assembly recipe. */
-    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_SOLAR_SAIL = ModItems.ITEMS.register("incomplete_high_output_solar_sail",
-            () -> new SequencedAssemblyItem(new Item.Properties()));
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_SOLAR_SAIL =
+            incomplete("incomplete_high_output_solar_sail", "Incomplete High-Output Solar Sail");
+
+    // Zero-G Precision Frame, the base of the megastructure and machinery recipes
+    public static final DeferredItem<Item> ZERO_G_PRECISION_FRAME = add("zero_g_precision_frame", "Zero-G Precision Frame");
+    public static final DeferredItem<Item> DYSON_SWARM_SATELLITE_PAYLOAD = add("dyson_swarm_satellite_payload", "Dyson Swarm Satellite Payload");
+    public static final DeferredItem<Item> DYSON_SHELL_TRUSS_MODULE = add("dyson_shell_truss_module", "Dyson Shell Truss Module");
+    public static final DeferredItem<Item> RCS_THRUSTER = add("rcs_thruster", "RCS Thruster");
+    public static final DeferredItem<Item> REACTION_WHEEL_GYROSCOPE = add("reaction_wheel_gyroscope", "Reaction Wheel Gyroscope");
+    public static final DeferredItem<Item> ATMOSPHERIC_CATALYST_CORE = add("atmospheric_catalyst_core", "Atmospheric Catalyst Core");
+
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_FRAME = incomplete("incomplete_zero_g_precision_frame", "Incomplete Zero-G Precision Frame");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_SWARM_PAYLOAD =
+            incomplete("incomplete_dyson_swarm_satellite_payload", "Incomplete Dyson Swarm Satellite Payload");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_TRUSS_MODULE =
+            incomplete("incomplete_dyson_shell_truss_module", "Incomplete Dyson Shell Truss Module");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_RCS_THRUSTER = incomplete("incomplete_rcs_thruster", "Incomplete RCS Thruster");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_GYROSCOPE =
+            incomplete("incomplete_reaction_wheel_gyroscope", "Incomplete Reaction Wheel Gyroscope");
+    public static final DeferredItem<SequencedAssemblyItem> INCOMPLETE_CATALYST_CORE =
+            incomplete("incomplete_atmospheric_catalyst_core", "Incomplete Atmospheric Catalyst Core");
 
     private ModMaterials() {}
+
+    private static DeferredItem<SequencedAssemblyItem> incomplete(String id, String name) {
+        DeferredItem<SequencedAssemblyItem> item = ModItems.ITEMS.register(id, () -> new SequencedAssemblyItem(new Item.Properties()));
+        INCOMPLETE.add(new Incomplete(id, name, item));
+        return item;
+    }
 
     private static DeferredItem<Item> add(String id, String name) {
         DeferredItem<Item> item = ModItems.ITEMS.registerSimpleItem(id);

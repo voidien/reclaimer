@@ -12,6 +12,7 @@ import com.voidreclaimer.replicator.Milestones;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorLogic;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
@@ -97,6 +98,48 @@ public final class MaterialsGameTests {
         helper.succeed();
     }
 
+    /** One Sequenced Assembly recipe as the owner decided it: base item, result, loops and the type of each step. */
+    private record Assembly(String path, net.minecraft.world.item.Item base, net.minecraft.world.item.Item result,
+                            net.minecraft.world.item.Item transitional, int loops, List<String> steps) {}
+
+    private static final String DEPLOY = "create:deploying";
+    private static final String SPOUT = "create:filling";
+    private static final String PRESS = "create:pressing";
+
+    @GameTest(template = "empty")
+    public static void frameAndMachineryAreTheOwnersSequencedAssemblies(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var access = server.registryAccess();
+        List<Assembly> expected = List.of(
+                new Assembly("create/frame/zero_g_precision_frame", ModMaterials.MICRO_ALLOY_SHEET.get(), ModMaterials.ZERO_G_PRECISION_FRAME.get(),
+                        ModMaterials.INCOMPLETE_FRAME.get(), 2, List.of(DEPLOY, DEPLOY, PRESS)),
+                new Assembly("create/frame/dyson_swarm_satellite_payload", ModMaterials.ZERO_G_PRECISION_FRAME.get(),
+                        ModMaterials.DYSON_SWARM_SATELLITE_PAYLOAD.get(), ModMaterials.INCOMPLETE_SWARM_PAYLOAD.get(), 2, List.of(DEPLOY, DEPLOY, SPOUT, PRESS)),
+                new Assembly("create/frame/dyson_shell_truss_module", ModMaterials.ZERO_G_PRECISION_FRAME.get(),
+                        ModMaterials.DYSON_SHELL_TRUSS_MODULE.get(), ModMaterials.INCOMPLETE_TRUSS_MODULE.get(), 3, List.of(DEPLOY, DEPLOY, SPOUT, PRESS)),
+                new Assembly("create/frame/rcs_thruster", ModMaterials.ZERO_G_PRECISION_FRAME.get(), ModMaterials.RCS_THRUSTER.get(),
+                        ModMaterials.INCOMPLETE_RCS_THRUSTER.get(), 1, List.of(DEPLOY, SPOUT, DEPLOY, PRESS)),
+                new Assembly("create/frame/reaction_wheel_gyroscope", ModMaterials.ZERO_G_PRECISION_FRAME.get(),
+                        ModMaterials.REACTION_WHEEL_GYROSCOPE.get(), ModMaterials.INCOMPLETE_GYROSCOPE.get(), 1, List.of(SPOUT, DEPLOY, DEPLOY, PRESS)),
+                new Assembly("create/frame/atmospheric_catalyst_core", ModMaterials.ADVANCED_SENSOR_UNIT.get(), ModMaterials.ATMOSPHERIC_CATALYST_CORE.get(),
+                        ModMaterials.INCOMPLETE_CATALYST_CORE.get(), 1, List.of(DEPLOY, SPOUT, PRESS)));
+        for (Assembly want : expected) {
+            RecipeHolder<?> holder = server.getRecipeManager().byKey(VoidReclaimer.id(want.path())).orElse(null);
+            helper.assertTrue(holder != null, want.path() + " did not load");
+            helper.assertTrue(holder.value() instanceof com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe,
+                    want.path() + " is a " + holder.value().getClass().getSimpleName());
+            var recipe = (com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe) holder.value();
+            helper.assertTrue(recipe.getIngredient().test(new net.minecraft.world.item.ItemStack(want.base())), want.path() + " has the wrong base");
+            helper.assertTrue(recipe.getResultItem(access).is(want.result()), want.path() + " makes " + recipe.getResultItem(access));
+            helper.assertTrue(recipe.getTransitionalItem().is(want.transitional()), want.path() + " transitional " + recipe.getTransitionalItem());
+            helper.assertTrue(recipe.getLoops() == want.loops(), want.path() + " loops " + recipe.getLoops() + ", expected " + want.loops());
+            List<String> steps = recipe.getSequence().stream()
+                    .map(step -> String.valueOf(BuiltInRegistries.RECIPE_TYPE.getKey(step.getRecipe().getType()))).toList();
+            helper.assertTrue(steps.equals(want.steps()), want.path() + " steps " + steps + ", expected " + want.steps());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "empty")
     public static void fluidsAndBucketsAreRegistered(GameTestHelper helper) {
         helper.assertTrue(ModFluids.ALL.size() == 6, "expected the six chain fluids, got " + ModFluids.ALL.size());
@@ -114,7 +157,8 @@ public final class MaterialsGameTests {
     @GameTest(template = "empty")
     public static void togglesGateTheirRecipes(GameTestHelper helper) {
         helper.assertTrue(Config.TOGGLES.keySet().containsAll(java.util.List.of(
-                "replicatorRawItems", "iceChain", "carbonChain", "siliconChain", "metallicChain", "solarSail")), "toggles: " + Config.TOGGLES.keySet());
+                "replicatorRawItems", "iceChain", "carbonChain", "siliconChain", "metallicChain", "solarSail",
+                "frame", "dysonPayloads", "rcsThruster", "reactionWheel", "catalystCore")), "toggles: " + Config.TOGGLES.keySet());
         var iceChain = Config.TOGGLES.get("iceChain");
         try {
             ICondition condition = new ConfigCondition("iceChain");

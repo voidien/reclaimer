@@ -1,0 +1,86 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "dysonPayloads"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:zero_g_precision_frame"
+  },
+  "loops": 3,
+  "results": [
+    {
+      "id": "void_reclaimer:dyson_shell_truss_module"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        },
+        {
+          "item": "void_reclaimer:thermal_shielding_tile"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        },
+        {
+          "item": "void_reclaimer:micro_alloy_sheet"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "void_reclaimer:coolant_fluid"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_dyson_shell_truss_module"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_dyson_shell_truss_module"
+  }
+}

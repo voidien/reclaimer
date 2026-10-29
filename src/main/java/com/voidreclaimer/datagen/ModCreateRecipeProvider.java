@@ -24,6 +24,11 @@ public final class ModCreateRecipeProvider implements DataProvider {
     private static final String SILICON = "siliconChain";
     private static final String METALLIC = "metallicChain";
     private static final String SAIL = "solarSail";
+    private static final String FRAME = "frame";
+    private static final String PAYLOADS = "dysonPayloads";
+    private static final String RCS = "rcsThruster";
+    private static final String GYRO = "reactionWheel";
+    private static final String CATALYST = "catalystCore";
 
     private static final int BUCKET_QUARTER = 250;
 
@@ -44,6 +49,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
         silicon();
         metallic();
         solarSail();
+        frameAndMachinery();
         return CompletableFuture.allOf(pending.toArray(CompletableFuture[]::new));
     }
 
@@ -138,41 +144,91 @@ public final class ModCreateRecipeProvider implements DataProvider {
 
     /** Micro-Alloy Sheet base: Deploy Solar Cell, Deploy Carbon Composite Plate, Spout Water, Press. */
     private void solarSail() {
+        assembly("sail/high_output_solar_sail", SAIL, item("micro_alloy_sheet"), "high_output_solar_sail", 1,
+                deploy(item("high_efficiency_solar_cell")), deploy(item("carbon_composite_plate")),
+                spout("minecraft:water"), press());
+    }
+
+    /**
+     * The Zero-G Precision Frame and what is built on it. All the owner's decisions (2026-10-29); spout amounts are placeholders.
+     * Create has one press pressure, so the truss module's "max pressure" is an ordinary press.
+     */
+    private void frameAndMachinery() {
+        // Micro-Alloy Sheet base: Deploy High-Purity Graphite (bearings), Deploy Micro-Alloy Sheet, Press; twice round.
+        assembly("frame/zero_g_precision_frame", FRAME, item("micro_alloy_sheet"), "zero_g_precision_frame", 2,
+                deploy(item("high_purity_graphite")), deploy(item("micro_alloy_sheet")), press());
+        // Megastructure payloads, from a Frame.
+        assembly("frame/dyson_swarm_satellite_payload", PAYLOADS, item("zero_g_precision_frame"), "dyson_swarm_satellite_payload", 2,
+                deploy(item("carbon_composite_plate")), deploy(item("high_efficiency_solar_cell")),
+                spout("void_reclaimer:liquid_silicon"), press());
+        assembly("frame/dyson_shell_truss_module", PAYLOADS, item("zero_g_precision_frame"), "dyson_shell_truss_module", 3,
+                deploy(item("thermal_shielding_tile")), deploy(item("micro_alloy_sheet")),
+                spout("void_reclaimer:coolant_fluid"), press());
+        // Machinery, from a Frame (Precision Mechanism is Create's).
+        assembly("frame/rcs_thruster", RCS, item("zero_g_precision_frame"), "rcs_thruster", 1,
+                deploy(item("carbon_composite_plate")), spout("void_reclaimer:nebulite_propellant"),
+                deploy(vanillaItem("create:precision_mechanism")), press());
+        assembly("frame/reaction_wheel_gyroscope", GYRO, item("zero_g_precision_frame"), "reaction_wheel_gyroscope", 1,
+                spout("void_reclaimer:liquid_silicon"), deploy(item("high_purity_graphite")),
+                deploy(vanillaItem("create:precision_mechanism")), press());
+        // Atmospheric Catalyst Core: Advanced Sensor Unit base, Deploy Quartz Wafer, Spout Nebulite Propellant, Press.
+        assembly("frame/atmospheric_catalyst_core", CATALYST, item("advanced_sensor_unit"), "atmospheric_catalyst_core", 1,
+                deploy(item("quartz_wafer")), spout("void_reclaimer:nebulite_propellant"), press());
+    }
+
+    // ---- Sequenced Assembly -------------------------------------------------------------------------------
+
+    /** One step of a Sequenced Assembly recipe: what is done to the transitional item, and with what. */
+    private record Step(String type, JsonObject added) {}
+
+    private static Step deploy(JsonObject ingredient) {
+        return new Step("create:deploying", ingredient);
+    }
+
+    private static Step spout(String fluid) {
+        return new Step("create:filling", fluid(fluid, BUCKET_QUARTER));
+    }
+
+    private static Step press() {
+        return new Step("create:pressing", null);
+    }
+
+    /**
+     * A Sequenced Assembly recipe: {@code base} goes through {@code steps}, {@code loops} times, and ends as {@code result}. The
+     * transitional item is {@code incomplete_<result>}.
+     */
+    private void assembly(String path, String toggle, JsonObject base, String result, int loops, Step... steps) {
+        String transitional = "incomplete_" + result;
         JsonObject recipe = new JsonObject();
         recipe.addProperty("type", "create:sequenced_assembly");
-        recipe.add("ingredient", item("micro_alloy_sheet"));
-        recipe.addProperty("loops", 1);
+        recipe.add("ingredient", base);
+        recipe.addProperty("loops", loops);
         JsonArray results = new JsonArray();
-        results.add(result("high_output_solar_sail"));
+        results.add(result(result));
         recipe.add("results", results);
-        JsonObject transitional = new JsonObject();
-        transitional.addProperty("id", "void_reclaimer:incomplete_high_output_solar_sail");
-        recipe.add("transitional_item", transitional);
+        JsonObject transitionalItem = new JsonObject();
+        transitionalItem.addProperty("id", "void_reclaimer:" + transitional);
+        recipe.add("transitional_item", transitionalItem);
         JsonArray sequence = new JsonArray();
-        sequence.add(step("create:deploying", item("high_efficiency_solar_cell")));
-        sequence.add(step("create:deploying", item("carbon_composite_plate")));
-        sequence.add(step("create:filling", fluid("minecraft:water", BUCKET_QUARTER)));
-        sequence.add(step("create:pressing", null));
+        for (Step step : steps) {
+            JsonObject json = new JsonObject();
+            json.addProperty("type", step.type());
+            JsonArray ingredients = new JsonArray();
+            ingredients.add(item(transitional));
+            if (step.added() != null) {
+                ingredients.add(step.added());
+            }
+            json.add("ingredients", ingredients);
+            JsonArray out = new JsonArray();
+            out.add(result(transitional));
+            json.add("results", out);
+            sequence.add(json);
+        }
         recipe.add("sequence", sequence);
-        save("sail/high_output_solar_sail", SAIL, recipe);
+        save(path, toggle, recipe);
     }
 
     // ---- JSON helpers -------------------------------------------------------------------------------------
-
-    private static JsonObject step(String type, JsonObject added) {
-        JsonObject step = new JsonObject();
-        step.addProperty("type", type);
-        JsonArray ingredients = new JsonArray();
-        ingredients.add(item("incomplete_high_output_solar_sail"));
-        if (added != null) {
-            ingredients.add(added);
-        }
-        step.add("ingredients", ingredients);
-        JsonArray results = new JsonArray();
-        results.add(result("incomplete_high_output_solar_sail"));
-        step.add("results", results);
-        return step;
-    }
 
     private static JsonObject processing(String type, int time, String heat, List<JsonObject> ingredients, List<JsonObject> results) {
         JsonObject recipe = new JsonObject();

@@ -66,6 +66,21 @@ class DysonTiersTest {
     }
 
     @Test
+    void defaultsAreTheOwnersTrussCounts() {
+        assertEquals(50, DysonTiers.DEFAULT_LATTICE_START);
+        assertEquals(2000, DysonTiers.DEFAULT_SHELL_TOTAL);
+        assertEquals(50, com.voidreclaimer.Config.DYSON_LATTICE_START.getDefault());
+        assertEquals(2000, com.voidreclaimer.Config.DYSON_SHELL_TOTAL.getDefault());
+        long start = DysonTiers.DEFAULT_LATTICE_START;
+        long total = DysonTiers.DEFAULT_SHELL_TOTAL;
+        assertEquals(0, DysonTiers.tier(0, 49, start, total), "49 trusses and no satellites are still tier 0");
+        assertEquals(3, DysonTiers.tier(0, 50, start, total));
+        assertEquals(3, DysonTiers.tier(0, 1999, start, total));
+        assertEquals(4, DysonTiers.tier(0, 2000, start, total));
+        assertEquals(new DysonSphereData(0, 0, 50, 2000), DysonSphereData.createDefault());
+    }
+
+    @Test
     void dataCodecsRoundTripAndClamp() {
         DysonSphereData data = new DysonSphereData(77, 12, 10, 100);
         assertEquals(data, DysonSphereData.CODEC.parse(JsonOps.INSTANCE, DysonSphereData.CODEC.encodeStart(JsonOps.INSTANCE, data).getOrThrow()).getOrThrow());

@@ -1,0 +1,86 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "rcsThruster"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:zero_g_precision_frame"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "void_reclaimer:rcs_thruster"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_rcs_thruster"
+        },
+        {
+          "item": "void_reclaimer:carbon_composite_plate"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_rcs_thruster"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_rcs_thruster"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "void_reclaimer:nebulite_propellant"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_rcs_thruster"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_rcs_thruster"
+        },
+        {
+          "item": "create:precision_mechanism"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_rcs_thruster"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_rcs_thruster"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_rcs_thruster"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_rcs_thruster"
+  }
+}

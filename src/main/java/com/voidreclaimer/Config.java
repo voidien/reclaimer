@@ -203,6 +203,11 @@ public final class Config {
         toggle("siliconChain", "Create recipes of the Silicon nebula chain (silicon dust, liquid silicon, doped ingot, solar cell, sensor unit).");
         toggle("metallicChain", "Create recipes of the Metallic nebula chain (nodules, micro-alloy sheets).");
         toggle("solarSail", "The High-Output Solar Sail Sequenced Assembly recipe.");
+        toggle("frame", "The Zero-G Precision Frame Sequenced Assembly recipe (the base of the payloads and machinery below).");
+        toggle("dysonPayloads", "The Dyson Swarm Satellite Payload and Dyson Shell Truss Module recipes.");
+        toggle("rcsThruster", "The RCS Thruster recipe.");
+        toggle("reactionWheel", "The Reaction Wheel Gyroscope recipe.");
+        toggle("catalystCore", "The Atmospheric Catalyst Core recipe.");
         BUILDER.pop();
 
         BUILDER.comment("Custom Create machines. All amounts are placeholders until the design settles them.").push("machines");
@@ -228,7 +233,7 @@ public final class Config {
                 .defineInRange("drillDustYield", 1.0, 0.0, 1000.0);
         BUILDER.pop();
 
-        BUILDER.comment("Dyson Sphere. The defaults are stand-ins until the design settles the numbers.").push("dyson");
+        BUILDER.comment("Dyson Sphere.").push("dyson");
         DYSON_LATTICE_START = BUILDER.comment("Shell truss modules launched before the structural lattice (skybox tier 3) appears.")
                 .defineInRange("latticeStart", com.voidreclaimer.dyson.DysonTiers.DEFAULT_LATTICE_START, 1L, 1_000_000_000L);
         DYSON_SHELL_TOTAL = BUILDER.comment("Shell truss modules that complete the sphere (skybox tier 4). Never below latticeStart.")
