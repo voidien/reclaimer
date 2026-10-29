@@ -2,7 +2,9 @@ package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.dust.DustKinds;
+import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.replicator.Milestones;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +19,10 @@ public final class ModDatapackProvider extends DatapackBuiltinEntriesProvider {
     static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
             .add(VoidReclaimerRegistries.DUST_KIND, context -> DustKinds.BUILTIN.forEach((id, kind) ->
                     context.register(ResourceKey.create(VoidReclaimerRegistries.DUST_KIND, id), kind)))
-            .add(VoidReclaimerRegistries.MILESTONE, context -> Milestones.BUILTIN.forEach(context::register));
+            .add(VoidReclaimerRegistries.MILESTONE, context -> Milestones.BUILTIN.forEach(context::register))
+            .add(VoidReclaimerRegistries.REPLICATOR_CATEGORY, context -> ReplicatorCategories.BUILTIN.forEach(context::register))
+            .add(VoidReclaimerRegistries.CASING, context -> Cosmetics.BUILTIN_CASINGS.forEach(context::register))
+            .add(VoidReclaimerRegistries.TRAIL, context -> Cosmetics.BUILTIN_TRAILS.forEach(context::register));
 
     public ModDatapackProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Set.of(VoidReclaimer.MOD_ID));

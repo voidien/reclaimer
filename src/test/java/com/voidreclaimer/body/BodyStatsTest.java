@@ -86,4 +86,15 @@ class BodyStatsTest {
         assertEquals(1.2, SizeClass.MECH.scale());
         assertEquals(3.0, SizeClass.SHIP.scale());
     }
+
+    @Test
+    void oldCosmeticsWithBareNamesStillLoad() {
+        com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+        json.addProperty("casing", "brass");
+        json.addProperty("trail", "ember");
+        Cosmetics cosmetics = Cosmetics.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow();
+        assertEquals(Cosmetics.BRASS, cosmetics.casing());
+        assertEquals(Cosmetics.EMBER, cosmetics.trail());
+        assertEquals(Cosmetics.DEFAULT_ACCENT, cosmetics.accent());
+    }
 }

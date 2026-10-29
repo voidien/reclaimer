@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class ReplicatorLogicTest {
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("void_reclaimer", "replicator/test");
     private static final ReplicatorRecipe RECIPE = new ReplicatorRecipe(new ItemStack(Items.STONE, 8),
-            DustCost.of(2, 8, 0, 0), 3, ReplicatorRecipe.Category.BLOCKS, Milestones.AWAKENING);
+            DustCost.of(2, 8, 0, 0), 3, ReplicatorCategories.BLOCKS, Milestones.AWAKENING);
     private static final ReplicatorData UNLOCKED = ReplicatorData.EMPTY.withUnlocked(Milestones.AWAKENING);
     private static final DustData RICH = DustData.of(10, 10, 0, 0);
 

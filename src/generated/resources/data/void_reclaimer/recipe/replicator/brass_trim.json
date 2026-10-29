@@ -1,6 +1,6 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "parts",
+  "category": "void_reclaimer:parts",
   "cost": {
     "void_reclaimer:metallic": 5.0
   },

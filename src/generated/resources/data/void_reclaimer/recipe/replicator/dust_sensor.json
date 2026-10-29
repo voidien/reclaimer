@@ -1,6 +1,6 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "modules",
+  "category": "void_reclaimer:modules",
   "cost": {
     "void_reclaimer:carbon": 5.0,
     "void_reclaimer:metallic": 10.0,

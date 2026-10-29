@@ -2,7 +2,10 @@ package com.voidreclaimer.registry;
 
 import com.voidreclaimer.api.VoidReclaimerRegistries;
 import com.mojang.serialization.MapCodec;
+import com.voidreclaimer.api.body.Casing;
+import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.api.dust.DustKind;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.milestone.MilestoneCriterion;
 import com.voidreclaimer.replicator.MilestoneCriteria;
@@ -33,5 +36,8 @@ public final class ModRegistries {
         // Synced: the client needs them for the HUD, cloud generation and screens.
         event.dataPackRegistry(VoidReclaimerRegistries.DUST_KIND, DustKind.CODEC, DustKind.CODEC);
         event.dataPackRegistry(VoidReclaimerRegistries.MILESTONE, Milestone.CODEC, Milestone.CODEC);
+        event.dataPackRegistry(VoidReclaimerRegistries.REPLICATOR_CATEGORY, ReplicatorCategory.CODEC, ReplicatorCategory.CODEC);
+        event.dataPackRegistry(VoidReclaimerRegistries.CASING, Casing.CODEC, Casing.CODEC);
+        event.dataPackRegistry(VoidReclaimerRegistries.TRAIL, Trail.CODEC, Trail.CODEC);
     }
 }

@@ -1,24 +1,19 @@
 package com.voidreclaimer.replicator;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.voidreclaimer.api.VoidReclaimerRegistries;
 import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.registry.ModCodecs;
 import com.voidreclaimer.registry.ModRecipeSerializers;
 import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.registry.ModRecipeTypes;
-import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -31,40 +26,17 @@ import net.minecraft.world.level.Level;
  * @param result    the item produced
  * @param cost      dust paid when the job is queued (refunded if cancelled)
  * @param ticks     build time
- * @param category  Replicator screen tab
+ * @param category  Replicator screen tab (an entry of {@code void_reclaimer:replicator_category})
  * @param milestone milestone that unlocks the recipe
  */
-public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Category category, ResourceKey<Milestone> milestone)
+public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category, ResourceKey<Milestone> milestone)
         implements Recipe<ReplicatorInput> {
-
-    public enum Category implements StringRepresentable {
-        TOOLS("tools"), MODULES("modules"), PARTS("parts"), BLOCKS("blocks");
-
-        public static final Codec<Category> CODEC = StringRepresentable.fromEnum(Category::values);
-        private static final IntFunction<Category> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-        public static final StreamCodec<ByteBuf, Category> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
-
-        private final String name;
-
-        Category(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
-
-        public Component title() {
-            return Component.translatable("replicator.void_reclaimer.tab." + name);
-        }
-    }
 
     public static final MapCodec<ReplicatorRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             ItemStack.STRICT_CODEC.fieldOf("result").forGetter(ReplicatorRecipe::result),
             DustCost.CODEC.fieldOf("cost").forGetter(ReplicatorRecipe::cost),
             ExtraCodecs.POSITIVE_INT.fieldOf("ticks").forGetter(ReplicatorRecipe::ticks),
-            Category.CODEC.fieldOf("category").forGetter(ReplicatorRecipe::category),
+            ModCodecs.key(VoidReclaimerRegistries.REPLICATOR_CATEGORY).fieldOf("category").forGetter(ReplicatorRecipe::category),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).fieldOf("milestone").forGetter(ReplicatorRecipe::milestone)
     ).apply(instance, ReplicatorRecipe::new));
 
@@ -72,7 +44,7 @@ public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Categ
             ItemStack.STREAM_CODEC, ReplicatorRecipe::result,
             DustCost.STREAM_CODEC, ReplicatorRecipe::cost,
             ByteBufCodecs.VAR_INT, ReplicatorRecipe::ticks,
-            Category.STREAM_CODEC, ReplicatorRecipe::category,
+            ResourceKey.streamCodec(VoidReclaimerRegistries.REPLICATOR_CATEGORY), ReplicatorRecipe::category,
             ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE), ReplicatorRecipe::milestone,
             ReplicatorRecipe::new);
 

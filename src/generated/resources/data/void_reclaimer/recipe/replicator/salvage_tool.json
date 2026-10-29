@@ -1,6 +1,6 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "tools",
+  "category": "void_reclaimer:tools",
   "cost": {
     "void_reclaimer:metallic": 15.0,
     "void_reclaimer:silicate": 5.0

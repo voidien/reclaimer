@@ -4,7 +4,14 @@ import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyRules;
 import com.voidreclaimer.body.BodyStats;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.Casing;
+import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.body.Cosmetics;
+import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.replicator.ReplicatorData;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import com.voidreclaimer.body.PartKind;
 import com.voidreclaimer.body.Parts;
 import com.voidreclaimer.dust.DustData;
@@ -199,10 +206,20 @@ final class BodyPanel {
         return new Object[] {hovered, hoverText};
     }
 
+    private static Component casingLabel(Cosmetics cosmetics) {
+        return Component.translatable("body.void_reclaimer.casing", Cosmetics.name(Minecraft.getInstance().level.registryAccess(),
+                VoidReclaimerRegistries.CASING, cosmetics.casing()));
+    }
+
+    private static Component trailLabel(Cosmetics cosmetics) {
+        return Component.translatable("body.void_reclaimer.trail", Cosmetics.name(Minecraft.getInstance().level.registryAccess(),
+                VoidReclaimerRegistries.TRAIL, cosmetics.trail()));
+    }
+
     private void renderCosmetics(GuiGraphics graphics, Cosmetics cosmetics, int mouseX, int mouseY) {
         int cy = cosmeticsY();
-        Component casing = Component.translatable("body.void_reclaimer.casing", cosmetics.casing().displayName());
-        Component trail = Component.translatable("body.void_reclaimer.trail", cosmetics.trail().displayName());
+        Component casing = casingLabel(cosmetics);
+        Component trail = trailLabel(cosmetics);
         int casingWidth = font.width(casing) + 6;
         button(graphics, x, cy, casingWidth, casing, mouseX, mouseY);
         button(graphics, x + casingWidth + 4, cy, font.width(trail) + 6, trail, mouseX, mouseY);
@@ -249,15 +266,19 @@ final class BodyPanel {
         }
         Cosmetics cosmetics = body.cosmetics();
         int cy = cosmeticsY();
-        Component casing = Component.translatable("body.void_reclaimer.casing", cosmetics.casing().displayName());
+        Component casing = casingLabel(cosmetics);
         int casingWidth = font.width(casing) + 6;
-        Component trail = Component.translatable("body.void_reclaimer.trail", cosmetics.trail().displayName());
+        Component trail = trailLabel(cosmetics);
+        RegistryAccess access = player.registryAccess();
+        ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
         if (inside(mouseX, mouseY, x, cy, casingWidth, 12)) {
-            PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withCasing(cosmetics.casing().next())));
+            PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withCasing(Cosmetics.next(access,
+                    VoidReclaimerRegistries.CASING, Casing::order, cosmetics.casing(), replicator::isUnlocked))));
             return true;
         }
         if (inside(mouseX, mouseY, x + casingWidth + 4, cy, font.width(trail) + 6, 12)) {
-            PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withTrail(cosmetics.trail().next())));
+            PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withTrail(Cosmetics.next(access,
+                    VoidReclaimerRegistries.TRAIL, Trail::order, cosmetics.trail(), replicator::isUnlocked))));
             return true;
         }
         for (int i = 0; i < ACCENTS.length; i++) {

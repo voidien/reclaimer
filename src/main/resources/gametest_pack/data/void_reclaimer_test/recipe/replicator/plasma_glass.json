@@ -3,6 +3,6 @@
   "result": {"id": "minecraft:glass_pane", "count": 4},
   "cost": {"void_reclaimer_test:plasma": 2},
   "ticks": 20,
-  "category": "blocks",
+  "category": "void_reclaimer_test:experimental",
   "milestone": "void_reclaimer_test:plasma_hoarder"
 }

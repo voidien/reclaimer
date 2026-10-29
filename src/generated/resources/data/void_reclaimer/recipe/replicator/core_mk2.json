@@ -1,6 +1,6 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "parts",
+  "category": "void_reclaimer:parts",
   "cost": {
     "void_reclaimer:carbon": 20.0,
     "void_reclaimer:ice": 10.0,

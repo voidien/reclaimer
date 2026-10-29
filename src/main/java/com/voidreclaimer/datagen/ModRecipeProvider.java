@@ -4,6 +4,8 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
+import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.replicator.Milestones;
 import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
@@ -24,20 +26,20 @@ public final class ModRecipeProvider extends RecipeProvider {
     @Override
     protected void buildRecipes(RecipeOutput output) {
         replicator(output, "dust_sensor", ModItems.DUST_SENSOR.get(), 1, DustCost.of(10, 15, 0, 5), 20,
-                ReplicatorRecipe.Category.MODULES, Milestones.AWAKENING);
+                ReplicatorCategories.MODULES, Milestones.AWAKENING);
         replicator(output, "scaffold", ModItems.SCAFFOLD.get(), 8, DustCost.of(0, 8, 0, 0), 5,
-                ReplicatorRecipe.Category.BLOCKS, Milestones.AWAKENING);
+                ReplicatorCategories.BLOCKS, Milestones.AWAKENING);
         replicator(output, "salvage_tool", ModItems.SALVAGE_TOOL.get(), 1, DustCost.of(15, 5, 0, 0), 30,
-                ReplicatorRecipe.Category.TOOLS, Milestones.FIRST_DUST);
+                ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
         replicator(output, "nanite_swarm", ModItems.NANITE_SWARM.get(), 1, DustCost.of(20, 10, 0, 10), 40,
-                ReplicatorRecipe.Category.TOOLS, Milestones.FIRST_DUST);
+                ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
         replicator(output, "tether_anchor", ModItems.TETHER_ANCHOR.get(), 1, DustCost.of(15, 5, 0, 0), 20,
-                ReplicatorRecipe.Category.BLOCKS, Milestones.FIRST_STRUCTURE);
+                ReplicatorCategories.BLOCKS, Milestones.FIRST_STRUCTURE);
         replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, DustCost.of(30, 20, 10, 10), 60,
-                ReplicatorRecipe.Category.BLOCKS, Milestones.DIVERSIFIED);
+                ReplicatorCategories.BLOCKS, Milestones.DIVERSIFIED);
 
         // Body parts. The drone frame, Mk I core and Mk I thruster are also craftable as spares.
-        ReplicatorRecipe.Category parts = ReplicatorRecipe.Category.PARTS;
+        ResourceKey<ReplicatorCategory> parts = ReplicatorCategories.PARTS;
         replicator(output, "thruster_mk1", ModItems.THRUSTER_MK1.get(), 1, DustCost.of(10, 5, 0, 0), 30, parts, Milestones.AWAKENING);
         replicator(output, "drone_frame", ModItems.DRONE_FRAME.get(), 1, DustCost.of(20, 10, 0, 0), 60, parts, Milestones.FIRST_DUST);
         replicator(output, "core_mk1", ModItems.CORE_MK1.get(), 1, DustCost.of(15, 10, 0, 5), 45, parts, Milestones.FIRST_DUST);
@@ -51,7 +53,7 @@ public final class ModRecipeProvider extends RecipeProvider {
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,
-                                   ReplicatorRecipe.Category category, ResourceKey<Milestone> milestone) {
+                                   ResourceKey<ReplicatorCategory> category, ResourceKey<Milestone> milestone) {
         ReplicatorRecipe recipe = new ReplicatorRecipe(new ItemStack(result, count), cost, seconds * 20, category, milestone);
         output.accept(VoidReclaimer.id("replicator/" + name), recipe, null);
     }

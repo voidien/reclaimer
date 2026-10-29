@@ -1,0 +1,6 @@
+{
+  "order": 10,
+  "name": {"text": "Obsidian"},
+  "texture": "minecraft:block/obsidian",
+  "requires": "void_reclaimer_test:plasma_hoarder"
+}

@@ -3,7 +3,14 @@ package com.voidreclaimer.body;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.energy.EnergyData;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.Casing;
+import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.registry.OrderedRegistry;
+import com.voidreclaimer.replicator.Replicator;
+import com.voidreclaimer.replicator.ReplicatorData;
+import net.minecraft.core.RegistryAccess;
 import com.voidreclaimer.registry.ModItems;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +144,16 @@ public final class Bodies {
         return BodyRules.Check.OK;
     }
 
+    /** Applies a look if its casing and trail are registered and unlocked; otherwise keeps the old one. */
     public static void setCosmetics(ServerPlayer player, Cosmetics cosmetics) {
+        RegistryAccess access = player.registryAccess();
+        ReplicatorData replicator = Replicator.data(player);
+        Casing casing = OrderedRegistry.get(access, VoidReclaimerRegistries.CASING, cosmetics.casing());
+        Trail trail = OrderedRegistry.get(access, VoidReclaimerRegistries.TRAIL, cosmetics.trail());
+        if (casing == null || trail == null || !Cosmetics.isAvailable(casing, replicator::isUnlocked)
+                || !Cosmetics.isAvailable(trail, replicator::isUnlocked)) {
+            return;
+        }
         store(player, data(player).withCosmetics(cosmetics));
     }
 

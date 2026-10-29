@@ -1,6 +1,6 @@
 {
   "type": "void_reclaimer:replicator",
-  "category": "blocks",
+  "category": "void_reclaimer:blocks",
   "cost": {
     "void_reclaimer:silicate": 8.0
   },

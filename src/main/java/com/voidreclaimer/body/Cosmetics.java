@@ -2,35 +2,65 @@ package com.voidreclaimer.body;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.Casing;
+import com.voidreclaimer.api.body.Cosmetic;
+import com.voidreclaimer.api.body.Trail;
+import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.registry.ModCodecs;
+import com.voidreclaimer.registry.OrderedRegistry;
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * How the body looks: a Create-style casing material, a free accent tint (lights, trim, pipes) and a thruster trail.
- * Chosen in the Body tab; rendered on the model in Phase 5b (trails are drawn already).
+ * Casings and trails are entries of their datapack registries. Chosen in the Body tab; rendered on the model in
+ * Phase 5b (trails are drawn already).
  */
-public record Cosmetics(Casing casing, int accent, Trail trail) {
-    public static final int DEFAULT_ACCENT = 0x7FD4FF;
-    public static final Cosmetics DEFAULT = new Cosmetics(Casing.ANDESITE, DEFAULT_ACCENT, Trail.STANDARD);
+public record Cosmetics(ResourceKey<Casing> casing, int accent, ResourceKey<Trail> trail) {
+    public static final ResourceKey<Casing> ANDESITE = casingKey("andesite");
+    public static final ResourceKey<Casing> BRASS = casingKey("brass");
+    public static final ResourceKey<Casing> COPPER = casingKey("copper");
 
+    public static final ResourceKey<Trail> NO_TRAIL = trailKey("none");
+    public static final ResourceKey<Trail> STANDARD = trailKey("standard");
+    public static final ResourceKey<Trail> EMBER = trailKey("ember");
+    public static final ResourceKey<Trail> PLASMA = trailKey("plasma");
+    public static final ResourceKey<Trail> ACCENT = trailKey("accent");
+
+    public static final Map<ResourceKey<Casing>, Casing> BUILTIN_CASINGS = builtinCasings();
+    public static final Map<ResourceKey<Trail>, Trail> BUILTIN_TRAILS = builtinTrails();
+
+    public static final int DEFAULT_ACCENT = 0x7FD4FF;
+    public static final Cosmetics DEFAULT = new Cosmetics(ANDESITE, DEFAULT_ACCENT, STANDARD);
+
+    /** Older saves wrote bare names ("andesite"); {@link ModCodecs#key} reads them as ours. */
     public static final Codec<Cosmetics> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Casing.CODEC.optionalFieldOf("casing", Casing.ANDESITE).forGetter(Cosmetics::casing),
+            ModCodecs.key(VoidReclaimerRegistries.CASING).optionalFieldOf("casing", ANDESITE).forGetter(Cosmetics::casing),
             Codec.INT.optionalFieldOf("accent", DEFAULT_ACCENT).forGetter(Cosmetics::accent),
-            Trail.CODEC.optionalFieldOf("trail", Trail.STANDARD).forGetter(Cosmetics::trail)
+            ModCodecs.key(VoidReclaimerRegistries.TRAIL).optionalFieldOf("trail", STANDARD).forGetter(Cosmetics::trail)
     ).apply(instance, Cosmetics::new));
 
     public static final StreamCodec<ByteBuf, Cosmetics> STREAM_CODEC = StreamCodec.composite(
-            Casing.STREAM_CODEC, Cosmetics::casing,
+            ResourceKey.streamCodec(VoidReclaimerRegistries.CASING), Cosmetics::casing,
             ByteBufCodecs.INT, Cosmetics::accent,
-            Trail.STREAM_CODEC, Cosmetics::trail,
+            ResourceKey.streamCodec(VoidReclaimerRegistries.TRAIL), Cosmetics::trail,
             Cosmetics::new);
 
-    public Cosmetics withCasing(Casing value) {
+    public Cosmetics withCasing(ResourceKey<Casing> value) {
         return new Cosmetics(value, accent, trail);
     }
 
@@ -38,70 +68,84 @@ public record Cosmetics(Casing casing, int accent, Trail trail) {
         return new Cosmetics(casing, value & 0xFFFFFF, trail);
     }
 
-    public Cosmetics withTrail(Trail value) {
+    public Cosmetics withTrail(ResourceKey<Trail> value) {
         return new Cosmetics(casing, accent, value);
     }
 
-    /** Casing materials, after Create's casings. Later phases unlock more. */
-    public enum Casing implements StringRepresentable {
-        ANDESITE("andesite"), BRASS("brass"), COPPER("copper");
-
-        public static final Codec<Casing> CODEC = StringRepresentable.fromEnum(Casing::values);
-        private static final IntFunction<Casing> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-        public static final StreamCodec<ByteBuf, Casing> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
-
-        private final String name;
-
-        Casing(String name) {
-            this.name = name;
-        }
-
-        public Casing next() {
-            return values()[(ordinal() + 1) % values().length];
-        }
-
-        public Component displayName() {
-            return Component.translatable("body.void_reclaimer.casing." + name);
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
+    public static List<OrderedRegistry.Entry<Casing>> casings(RegistryAccess access) {
+        return OrderedRegistry.sorted(access, VoidReclaimerRegistries.CASING, Casing::order);
     }
 
-    /** Thruster exhaust particles, tinted per style. */
-    public enum Trail implements StringRepresentable {
-        NONE("none", 0), STANDARD("standard", 0xDDE6EE), EMBER("ember", 0xFF8A3D), PLASMA("plasma", 0x7FD4FF), ACCENT("accent", -1);
+    public static List<OrderedRegistry.Entry<Trail>> trails(RegistryAccess access) {
+        return OrderedRegistry.sorted(access, VoidReclaimerRegistries.TRAIL, Trail::order);
+    }
 
-        public static final Codec<Trail> CODEC = StringRepresentable.fromEnum(Trail::values);
-        private static final IntFunction<Trail> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-        public static final StreamCodec<ByteBuf, Trail> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
-
-        private final String name;
-        private final int color;
-
-        Trail(String name, int color) {
-            this.name = name;
-            this.color = color;
+    /**
+     * The entry after {@code current} in the registry's order that the player may pick, wrapping around.
+     * Returns {@code current} when nothing else is available.
+     */
+    public static <T extends Cosmetic> ResourceKey<T> next(RegistryAccess access, ResourceKey<? extends Registry<T>> registry,
+                                                           ToIntFunction<T> order, ResourceKey<T> current,
+                                                           Predicate<ResourceKey<Milestone>> unlocked) {
+        List<OrderedRegistry.Entry<T>> entries = OrderedRegistry.sorted(access, registry, order);
+        int start = 0;
+        for (int i = 0; i < entries.size(); i++) {
+            if (entries.get(i).key().equals(current)) {
+                start = i + 1;
+                break;
+            }
         }
-
-        /** Particle color; {@link #ACCENT} uses the body's accent tint. */
-        public int color(int accent) {
-            return this == ACCENT ? accent : color;
+        for (int step = 0; step < entries.size(); step++) {
+            OrderedRegistry.Entry<T> entry = entries.get((start + step) % entries.size());
+            if (isAvailable(entry.value(), unlocked)) {
+                return entry.key();
+            }
         }
+        return current;
+    }
 
-        public Trail next() {
-            return values()[(ordinal() + 1) % values().length];
-        }
+    public static boolean isAvailable(Cosmetic cosmetic, Predicate<ResourceKey<Milestone>> unlocked) {
+        return cosmetic.requires().map(unlocked::test).orElse(true);
+    }
 
-        public Component displayName() {
-            return Component.translatable("body.void_reclaimer.trail." + name);
-        }
+    /** Display name of a casing or trail; the bare id if it's no longer registered. */
+    public static <T extends Cosmetic> Component name(RegistryAccess access, ResourceKey<? extends Registry<T>> registry, ResourceKey<T> key) {
+        T value = OrderedRegistry.get(access, registry, key);
+        return value == null ? Component.literal(key.location().getPath()) : value.displayName(key.location());
+    }
 
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
+    private static ResourceKey<Casing> casingKey(String name) {
+        return ResourceKey.create(VoidReclaimerRegistries.CASING, VoidReclaimer.id(name));
+    }
+
+    private static ResourceKey<Trail> trailKey(String name) {
+        return ResourceKey.create(VoidReclaimerRegistries.TRAIL, VoidReclaimer.id(name));
+    }
+
+    private static Map<ResourceKey<Casing>, Casing> builtinCasings() {
+        Map<ResourceKey<Casing>, Casing> map = new LinkedHashMap<>();
+        map.put(ANDESITE, casing(0, "andesite_casing"));
+        map.put(BRASS, casing(1, "brass_casing"));
+        map.put(COPPER, casing(2, "copper_casing"));
+        return Map.copyOf(map);
+    }
+
+    private static Casing casing(int order, String createTexture) {
+        return new Casing(order, Optional.empty(), Optional.of(ResourceLocation.fromNamespaceAndPath("create", "block/" + createTexture)),
+                Optional.empty());
+    }
+
+    private static Map<ResourceKey<Trail>, Trail> builtinTrails() {
+        Map<ResourceKey<Trail>, Trail> map = new LinkedHashMap<>();
+        map.put(NO_TRAIL, new Trail(Optional.empty(), false, 0, Optional.empty(), Optional.empty()));
+        map.put(STANDARD, trail(1, 0xDDE6EE));
+        map.put(EMBER, trail(2, 0xFF8A3D));
+        map.put(PLASMA, trail(3, 0x7FD4FF));
+        map.put(ACCENT, new Trail(Optional.empty(), true, 4, Optional.empty(), Optional.empty()));
+        return Map.copyOf(map);
+    }
+
+    private static Trail trail(int order, int color) {
+        return new Trail(Optional.of(color), true, order, Optional.empty(), Optional.empty());
     }
 }

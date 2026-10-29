@@ -2,7 +2,12 @@ package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.VoidReclaimerRegistries;
+import com.voidreclaimer.api.body.Casing;
 import com.voidreclaimer.api.milestone.Milestone;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.Cosmetics;
+import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.registry.ModAttachments;
@@ -28,7 +33,35 @@ public final class ExtensionGameTests {
             ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "plasma_hoarder"));
     private static final ResourceLocation PLASMA_GLASS = ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "replicator/plasma_glass");
 
+    private static final ResourceKey<ReplicatorCategory> EXPERIMENTAL = ResourceKey.create(VoidReclaimerRegistries.REPLICATOR_CATEGORY,
+            ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "experimental"));
+    private static final ResourceKey<Casing> OBSIDIAN = ResourceKey.create(VoidReclaimerRegistries.CASING,
+            ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "obsidian"));
+
     private ExtensionGameTests() {}
+
+    /** A datapack casing that requires a milestone can only be picked once it is reached; unknown ids are refused. */
+    @GameTest(template = "empty")
+    public static void datapackCasingIsLockedBehindItsMilestone(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 61_000.5, 80, 0.5);
+        try {
+            Cosmetics start = Bodies.data(player).cosmetics();
+            Bodies.setCosmetics(player, start.withCasing(OBSIDIAN));
+            helper.assertTrue(Bodies.data(player).cosmetics().equals(start), "locked casing applied");
+            Bodies.setCosmetics(player, start.withCasing(ResourceKey.create(VoidReclaimerRegistries.CASING,
+                    ResourceLocation.fromNamespaceAndPath(GameTestPack.NAMESPACE, "missing"))));
+            helper.assertTrue(Bodies.data(player).cosmetics().equals(start), "unregistered casing applied");
+
+            Replicator.store(player, Replicator.data(player).withUnlocked(PLASMA_HOARDER));
+            Bodies.setCosmetics(player, start.withCasing(OBSIDIAN));
+            helper.assertTrue(Bodies.data(player).cosmetics().casing().equals(OBSIDIAN), "unlocked casing refused");
+            helper.assertTrue(Cosmetics.next(player.registryAccess(), VoidReclaimerRegistries.CASING, Casing::order,
+                    Cosmetics.COPPER, Replicator.data(player)::isUnlocked).equals(OBSIDIAN), "cycle skips the datapack casing");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
 
     /** A datapack dust kind is registered after the built-in ones, keeps its name, and stays out of clouds at weight 0. */
     @GameTest(template = "empty")
@@ -56,6 +89,9 @@ public final class ExtensionGameTests {
             helper.assertTrue(Replicator.data(player).isUnlocked(PLASMA_HOARDER), "milestone not reached at 5 plasma");
             helper.assertTrue(Replicator.queue(player, PLASMA_GLASS) == ReplicatorLogic.QueueResult.QUEUED, "recipe not queued");
             helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(PLASMA) - 3f) < 1e-4, "plasma not paid");
+            helper.assertTrue(Replicator.recipe(player, PLASMA_GLASS).category().equals(EXPERIMENTAL), "recipe category not read");
+            helper.assertTrue(ReplicatorCategories.all(player.registryAccess()).getLast().key().equals(EXPERIMENTAL),
+                    "datapack tab not after the built-in ones");
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

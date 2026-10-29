@@ -2,7 +2,10 @@ package com.voidreclaimer.api;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.mojang.serialization.MapCodec;
+import com.voidreclaimer.api.body.Casing;
+import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.api.dust.DustKind;
+import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.milestone.MilestoneCriterion;
 import net.minecraft.core.Registry;
@@ -18,6 +21,12 @@ public final class VoidReclaimerRegistries {
     public static final ResourceKey<Registry<DustKind>> DUST_KIND = key("dust_kind");
     /** Synced datapack registry: progression milestones that unlock Replicator recipes. */
     public static final ResourceKey<Registry<Milestone>> MILESTONE = key("milestone");
+    /** Synced datapack registry: Replicator screen tabs. */
+    public static final ResourceKey<Registry<ReplicatorCategory>> REPLICATOR_CATEGORY = key("replicator_category");
+    /** Synced datapack registry: body casing materials. */
+    public static final ResourceKey<Registry<Casing>> CASING = key("casing");
+    /** Synced datapack registry: thruster trail styles. */
+    public static final ResourceKey<Registry<Trail>> TRAIL = key("trail");
     /** Code registry: the codecs of milestone criterion types, by the {@code type} name used in JSON. */
     public static final ResourceKey<Registry<MapCodec<? extends MilestoneCriterion>>> MILESTONE_CRITERION_TYPE =
             key("milestone_criterion_type");
