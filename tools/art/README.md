@@ -134,6 +134,35 @@ Everything goes to `art/rd/`, which is gitignored:
   - Everything is inside the one file (images embedded, script `picker.js` and styles `picker.css` inlined), so it opens anywhere, a phone included, and can be sent on.
   - `--index` rebuilds it from what is staged, without sending anything.
 
+## Moving staging between devices (phone, PC, or a session that needs to see it)
+`art/rd/` is gitignored, so a normal push carries nothing. Push it on a throwaway branch with `-f`. In the repo root:
+```
+git checkout -B art-staging
+git add -f art/rd
+git rm -r -q --cached --ignore-unmatch art/rd/index.html
+git add src
+git status --short | head -20
+git commit -m "RD staging: promoted art and variants"
+git push -u origin art-staging
+```
+- `git add src` picks up what you promoted into the mod; the page `index.html` is left out because `--index` rebuilds it.
+- Check the `git status` output: lines starting with `A` or `M` mean something will be committed. An empty list means nothing was added, and the push would carry nothing.
+- If the push is rejected, `git push -u --force-with-lease origin art-staging` (only for this branch).
+
+On the other device (or for someone reviewing):
+```
+git checkout main && git pull
+git fetch origin art-staging
+git checkout origin/art-staging -- art/rd src
+git reset -q art/rd src
+python3 tools/art/rd_generate.py --index
+```
+That leaves the staged variants and the promoted files as plain changes on `main`, and rebuilds the picker. Commit the `src` changes on a normal branch and open a PR. **Never merge `art-staging` and never commit `art/rd`.**
+
+The picker's picks live in one browser's storage, so they do not move with the branch: run the copied commands before switching devices, or pick again.
+
+`--promote` also records each promoted texture in `docs/art/promoted.txt`. Commit that file with the art, then run `python3 tools/art/asset_list.py` so `ASSETS.md` and `assets.csv` show those assets as `RD art (promoted)`.
+
 ## Promoting
 **Images:** `--promote asset=n` copies variant n into the mod after checking its size. Assets without a single target file yet (future blocks named with `*` or `{...}`) are copied by hand once their block exists.
 

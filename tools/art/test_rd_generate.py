@@ -237,6 +237,12 @@ class RdGenerateTest(unittest.TestCase):
         self.assertIn(self.read(current), embedded, 'the current texture is shown next to the variants')
         rd.main(['--promote', 'quartz_wafer=3'])
         self.assertTrue(os.path.exists(os.path.join(self.tmp, rd.TEXTURES, 'item', 'quartz_wafer.png')))
+        listed = os.path.join(self.tmp, 'docs', 'art', 'promoted.txt')
+        self.assertEqual(self.read(listed).decode().split(), ['item/quartz_wafer.png'], 'a promotion is recorded for the asset list')
+        rd.record_promoted(rd.TEXTURES + 'block/asteroid_ice.png')
+        rd.record_promoted(rd.TEXTURES + 'item/quartz_wafer.png')
+        self.assertEqual(self.read(listed).decode().split(), ['block/asteroid_ice.png', 'item/quartz_wafer.png'],
+                         'sorted, and recording twice adds nothing')
 
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')
@@ -254,12 +260,12 @@ class RdGenerateTest(unittest.TestCase):
 
     def test_contact_sheet_is_a_picker(self):
         with mock.patch('builtins.input', return_value='y'):
-            rd.main(['--asset', 'quartz_wafer', '--asset', 'core_mk1_model', '--model-style', 'blocky_lite'])
+            rd.main(['--asset', 'quartz_wafer', '--asset', 'core_mk2_model', '--model-style', 'blocky_lite'])
         page = self.read(self.staged('index.html')).decode()
         wafer = page[page.index('data-key="quartz_wafer"'):page.index('</section>', page.index('data-key="quartz_wafer"'))]
         self.assertEqual(re.findall(r'data-pick="(\w+)"', wafer), ['1', '2', '3', '4', 'keep', 'redo'],
                          'one button per variant, then keep and redo')
-        core = page[page.index('data-key="core_mk1_model"'):]
+        core = page[page.index('data-key="core_mk2_model"'):]
         self.assertIn('data-pick="model"', core[:core.index('</section>')], 'a model asset can be promoted whole')
         self.assertIn('function buildCommands', page, 'the picker script is inlined')
         self.assertNotIn('<script src', page)
@@ -272,12 +278,12 @@ class RdGenerateTest(unittest.TestCase):
     @unittest.skipUnless(shutil.which('node'), 'needs Node to run the page script')
     def test_picker_builds_the_commands(self):
         import subprocess
-        picks = {'b_icon': {'pick': '3'}, 'a_icon': {'pick': '1', 'note': 'nice'}, 'core_mk1_model': {'pick': 'model'},
+        picks = {'b_icon': {'pick': '3'}, 'a_icon': {'pick': '1', 'note': 'nice'}, 'core_mk2_model': {'pick': 'model'},
                  'ice': {'pick': 'redo'}, 'rock': {'pick': 'redo'}, 'kept': {'pick': 'keep'}, 'empty': {'pick': ''}}
         script = ("const {buildCommands} = require(%s); process.stdout.write(JSON.stringify(buildCommands(%s)))"
                   % (json.dumps(os.path.join(REAL_REPO, 'tools', 'art', 'picker.js')), json.dumps(picks)))
         out = json.loads(subprocess.run(['node', '-e', script], capture_output=True, text=True, check=True).stdout)
-        self.assertEqual(out, ['python3 tools/art/rd_generate.py --promote a_icon=1 --promote b_icon=3 --promote core_mk1_model',
+        self.assertEqual(out, ['python3 tools/art/rd_generate.py --promote a_icon=1 --promote b_icon=3 --promote core_mk2_model',
                                'python3 tools/art/rd_generate.py --again --asset ice --asset rock'])
         empty = subprocess.run(['node', '-e', script.replace(json.dumps(picks), '{}')], capture_output=True, text=True)
         self.assertEqual(json.loads(empty.stdout), [], 'no picks, no commands')
@@ -337,7 +343,7 @@ class RdGenerateTest(unittest.TestCase):
     def test_model_style_blocky_or_lite(self):
         # Without --model-style a model batch prices both styles and asks; picking Lite is the go-ahead.
         with mock.patch('builtins.input', return_value='l') as ask:
-            rd.main(['--asset', 'core_mk1_model'])
+            rd.main(['--asset', 'core_mk2_model'])
         self.assertEqual(ask.call_count, 1, 'one question: the style choice')
         self.assertIn('blocky [l]ite', ask.call_args[0][0])
         gen = [c for c in Fake.state['calls'] if c[1] == '/v2/lowpoly/generate']
@@ -346,10 +352,11 @@ class RdGenerateTest(unittest.TestCase):
         self.assertEqual(sorted(set(estimates)), ['rd_lowpoly__blocky', 'rd_lowpoly__blocky_lite'], 'both priced')
         # Declining sends nothing; --yes without a style refuses rather than guessing.
         charged = Fake.state['charged']
-        with mock.patch('builtins.input', return_value='n'):
-            rd.main(['--asset', 'core_mk2_model'])
+        with mock.patch('builtins.input', return_value='n') as decline:
+            rd.main(['--asset', 'core_mk2_model', '--again'])  # --again: it was generated above, so plan it afresh
+        self.assertEqual(decline.call_count, 1, 'the style question was asked')
         with self.assertRaises(SystemExit):
-            rd.main(['--asset', 'core_mk2_model', '--yes'])
+            rd.main(['--asset', 'core_mk2_model', '--again', '--yes'])
         self.assertEqual(Fake.state['charged'], charged)
         # Blocky and Blocky Lite are the only choices (Detailed builds cylinders and spheres).
         with self.assertRaises(SystemExit), mock.patch('sys.stderr'):
@@ -366,21 +373,21 @@ class RdGenerateTest(unittest.TestCase):
 
     def test_promote_new_module_model(self):
         import bbgeo
-        self.stage_model('core_mk1_model', bbmodel())
-        rd.main(['--promote', 'core_mk1_model'])
-        geo = self.geo('module/core_mk1.geo.json')
+        self.stage_model('core_mk2_model', bbmodel())
+        rd.main(['--promote', 'core_mk2_model'])
+        geo = self.geo('module/core_mk2.geo.json')
         bones = {b['name']: b for b in geo['bones']}
-        self.assertEqual(list(bones)[:2], ['core_mk1', 'core_mk1_mount'], 'module skeleton')
-        self.assertEqual(bones['core_mk1_body']['parent'], 'core_mk1_mount')
-        self.assertEqual(bones['core_mk1_blade']['parent'], 'core_mk1_body')
-        self.assertEqual(len(bones['core_mk1_mount']['cubes']), 1, 'the loose box sits on the mount')
+        self.assertEqual(list(bones)[:2], ['core_mk2', 'core_mk2_mount'], 'module skeleton')
+        self.assertEqual(bones['core_mk2_body']['parent'], 'core_mk2_mount')
+        self.assertEqual(bones['core_mk2_blade']['parent'], 'core_mk2_body')
+        self.assertEqual(len(bones['core_mk2_mount']['cubes']), 1, 'the loose box sits on the mount')
         lo, hi = bbgeo.cubes_bbox(geo['bones'])
         self.assertAlmostEqual(max(h - l for l, h in zip(lo, hi)), 4.0, 3, 'fitted to 4 px')
         self.assertAlmostEqual(lo[1], 0.0, 3, 'stands on the mount')
         self.assertEqual((geo['description']['texture_width'], geo['description']['texture_height']), (32, 32))
         tex = os.path.join(self.tmp, rd.TEXTURES, 'entity/body')
-        self.assertEqual(rd.png_read(self.read(os.path.join(tex, 'core_mk1.png'))), rd.png_read(checker(32, 32, False)))
-        accent = rd.png_read(self.read(os.path.join(tex, 'core_mk1_accent.png')))
+        self.assertEqual(rd.png_read(self.read(os.path.join(tex, 'core_mk2.png'))), rd.png_read(checker(32, 32, False)))
+        accent = rd.png_read(self.read(os.path.join(tex, 'core_mk2_accent.png')))
         self.assertTrue(all(px[3] == 0 for row in accent for px in row), 'empty accent mask to paint')
 
     def test_bedrock_coordinates_match_blockbench(self):
@@ -582,7 +589,7 @@ class RdGenerateTest(unittest.TestCase):
             tail = style['categories'][cat]['prompt_template'].replace('{prompt}', '')
             self.assertTrue(b['prompt'].endswith(tail), b['prompt'])
         with mock.patch('builtins.input', return_value='l'):
-            rd.main(['--asset', 'core_mk1_model'])
+            rd.main(['--asset', 'core_mk2_model'])
         gen = self.posted('/v2/lowpoly/generate')[0]
         self.assertTrue(gen['input_palette'].startswith('data:image/png;base64,'))
         self.assertEqual(rd.png_read(base64.b64decode(gen['input_palette'].split(',', 1)[1]))[0],

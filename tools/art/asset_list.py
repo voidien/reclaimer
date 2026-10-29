@@ -11,6 +11,10 @@ os.chdir(ROOT)
 drop = set(p.replace(T, '') for p in subprocess.run(
     ['git', 'diff', '--name-only', '0df8a88^1', '0df8a88', '--', T], capture_output=True, text=True).stdout.split())
 
+# Textures promoted from RD (tools/art/rd_generate.py --promote records them in docs/art/promoted.txt).
+PROMOTED = os.path.join('docs', 'art', 'promoted.txt')
+promoted = set(open(PROMOTED).read().split()) if os.path.exists(PROMOTED) else set()
+
 def size_of(rel):
     p = T + rel
     if not os.path.exists(p):
@@ -19,6 +23,8 @@ def size_of(rel):
     return '%dx%d' % struct.unpack('>II', d[16:24])
 
 def status(rel):
+    if rel in promoted:
+        return 'RD art (promoted)'
     if rel in drop:
         return 'art drop 1 (redo optional)'
     if os.path.exists(T + rel):
@@ -235,7 +241,8 @@ for sub in ['body', 'first_person', 'section', 'module']:
             prompt = desc.get(name, name) + '; single body part, boxy Minecraft-style model'
             note = RIG_NOTE
         rows.append(dict(group=G, asset=name + ' (' + sub.replace('_', ' ') + ')', file='', size='%sx%s tex' % (tex, tex),
-                         tileable='no', method='RD 3D blocky', status='art drop 1 (redo optional)', phase='now',
+                         tileable='no', method='RD 3D blocky', phase='now',
+                         status='RD art (promoted)' if 'entity/body/%s.png' % name in promoted else 'art drop 1 (redo optional)',
                          model=path, prompt=prompt,
                          notes=note + ' Bones: ' + ', '.join(bones)))
 anims = {}
@@ -269,10 +276,12 @@ for f in sorted(os.listdir(T + 'entity/body')):
 G = 'Missing module models'
 for m in ['dust_sensor', 'nanite_swarm', 'salvage_tool', 'mechanical_drill', 'matter_harvester', 'core_mk1', 'core_mk2',
           'storage_mk1', 'storage_mk2']:
+    if os.path.exists(A + '/geo/module/%s.geo.json' % m):
+        continue  # already modelled: listed under Body models
     rows.append(dict(group=G, asset=m, file=T + 'entity/body/%s.png' % m, size='64x64 tex', tileable='no',
                      method='RD 3D blocky', status='missing', phase='now (5b)', model=A + '/geo/module/%s.geo.json' % m,
                      prompt=desc.get(m, m) + '; small module that mounts on a robot body, boxy Minecraft-style model',
-                     notes='Only thruster_mk1/2, brass_trim and cogwheel_crown have module models. Bones like thruster_mk1: '
+                     notes='Only thruster_mk1/2, brass_trim, cogwheel_crown and core_mk1 have module models. Bones like thruster_mk1: '
                            '<id> (root), <id>_mount (attach point), then its own parts. Cores and storage may stay hidden inside the body. '
                            + RIG_NOTE))
 
