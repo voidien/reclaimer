@@ -38,13 +38,13 @@ def add(group, asset, rel, size, tile, method, prompt, notes='', phase='now', mo
                      phase=phase, model=model, prompt=prompt, notes=notes))
 
 def item(group, iid, desc, notes='', phase='now'):
-    add(group, iid, 'item/%s.png' % iid, '16x16', 'no', 'Retro Diffusion', ITEM + desc, notes, phase)
+    add(group, iid, 'item/%s.png' % iid, '16x16', 'no', 'RD image', ITEM + desc, notes, phase)
 
 # ---------- items: tools and modules ----------
 G = 'Tools & modules'
 item(G, 'dust_sensor', 'handheld brass sensor with a round cyan glass lens and small antenna')
 item(G, 'nanite_swarm', 'swirling cloud of tiny silver-cyan nanite specks around a small emitter',
-     'Animated in the art drop (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). Generate 4 frames and stack them top to bottom.')
+     'Animated (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). RD VFX animation as a sprite sheet, then stack 4 frames top to bottom.')
 item(G, 'salvage_tool', 'compact cutting tool with a copper handle and glowing orange cutting edge')
 item(G, 'mechanical_drill', 'industrial drill module: andesite casing, brass collar, spiral steel drill bit')
 item(G, 'matter_harvester', 'mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill')
@@ -151,7 +151,8 @@ for k, (d, c) in fluids.items():
 # ---------- blocks ----------
 G = 'Blocks'
 def block(asset, rel, desc, tile='yes', notes='', phase='now', model=''):
-    add(G, asset, rel, '16x16', tile, 'Retro Diffusion', (BLOCK if tile == 'yes' else BLOCK_FACE) + desc, notes, phase, model)
+    add(G, asset, rel, '16x16', tile, 'RD image', (BLOCK if tile == 'yes' else BLOCK_FACE) + desc,
+        (notes + ' ' + model).strip(), phase, model)
 
 for k, (d, c) in {'silicate': ('sandy tan porous space rock', '#D9B38C'),
                   'ice': ('pale cyan frozen space rock with frost cracks', '#9FE2FF'),
@@ -165,17 +166,17 @@ block('backup_core', 'block/backup_core.png', 'brass machine casing with a glowi
 block('tether_anchor', 'block/tether_anchor.png', 'heavy andesite anchor block with a brass ring in the middle',
       tile='no', notes='All six faces use this one texture now.')
 block('electrolyzer_side', 'block/electrolyzer_side.png', 'machine side: copper tank with glass window showing bubbling water',
-      tile='no', model='Wants a real Create-style model (shaft through two faces, tank).')
+      tile='no', model='Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends (Create draws the turning shaft).')
 block('electrolyzer_end', 'block/electrolyzer_end.png', 'machine end face: andesite casing with a shaft hole in the middle', tile='no')
 block('spinner_side', 'block/spinner_side.png', 'machine side: brass casing with a spinning spool of black thread visible',
-      tile='no', model='Wants a real Create-style model (shaft, visible spool).')
+      tile='no', model='Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib).')
 block('spinner_end', 'block/spinner_end.png', 'machine end face: brass casing with a shaft hole in the middle', tile='no')
 
 # ---------- HUD and GUI (larger, mixed sizes) ----------
 G = 'HUD & GUI'
 for k, d in {'energy_full': 'full segment', 'energy_half': 'half-filled segment', 'energy_empty': 'empty segment',
              'energy_empty_warning': 'empty segment flashing red warning'}.items():
-    add(G, k, 'gui/sprites/hud/%s.png' % k, '90x9', 'no', 'Retro Diffusion',
+    add(G, k, 'gui/sprites/hud/%s.png' % k, '90x9', 'no', 'RD image',
         'pixel art HUD energy bar, 90x9, ten cyan battery cells in a row, ' + d + ', transparent background',
         'Replaces the hunger bar slot. Must stay exactly 90x9.')
 gui = [
@@ -196,12 +197,61 @@ gui = [
      'For neoforge.mods.toml logoFile (not set yet).'),
 ]
 for asset, rel, size, prompt, notes in gui:
-    add(G, asset, rel, size, 'no', 'Retro Diffusion', prompt, notes, 'optional')
+    add(G, asset, rel, size, 'no', 'RD image', prompt, notes, 'optional')
 
 G = 'Sky'
-add(G, 'sun', 'environment/sun.png', '64x64', 'no', 'Retro Diffusion',
+add(G, 'sun', 'environment/sun.png', '64x64', 'no', 'RD image',
     'pixel art distant pale star on transparent background, soft glow, small bright core',
     'Deep space draws vanilla\'s sun texture now (DeepSpaceEffects). A custom one needs a one-line code change.', 'optional')
+
+# ---------- 3D models (GeckoLib), redo with RD's blocky 3D mode ----------
+G = 'Body models (GeckoLib)'
+RIG_NOTE = ('RD 3D style rd_lowpoly__blocky -> export .bbmodel -> in Blockbench convert to a GeckoLib model and export '
+            '.geo.json. Keep the bone names and pivots listed here (they are the socket contract with the chassis JSON), '
+            'keep the texture size, then repaint or regenerate the _accent mask.')
+def geo_bones(path):
+    import json
+    g = json.load(open(path))['minecraft:geometry'][0]
+    return g['description'].get('texture_width'), [b['name'] for b in g['bones']]
+desc = dict(sections)
+desc.update({k: v.replace(ITEM, '') for k, v in [(r['asset'], r['prompt']) for r in rows if r['group'] == 'Tools & modules']})
+rig_desc = {
+    'drone': 'complete small hovering robot drone: round andesite hull, four rotor arms, sensor dome on top, small claw underneath',
+    'mech': 'complete humanoid robot mech: andesite and brass plating, cyan visor, piston limbs, Create mod style',
+    'ship': 'complete small starship: keel spine, pointed bow, bridge canopy, engine nacelles, short wings, Create mod style',
+}
+for sub in ['body', 'first_person', 'section', 'module']:
+    for f in sorted(os.listdir(A + '/geo/' + sub)):
+        name = f.replace('.geo.json', '')
+        path = A + '/geo/%s/%s' % (sub, f)
+        tex, bones = geo_bones(path)
+        if sub == 'body':
+            prompt = rig_desc[name] + '; boxy Minecraft-style model'
+            note = 'Full rig: every socket is a bone named after the chassis socket id. ' + RIG_NOTE
+        elif sub == 'first_person':
+            prompt = 'first-person view of the ' + name + "'s arms/front: " + rig_desc[name] + '; boxy Minecraft-style model'
+            note = 'Shown in first person (5b). ' + RIG_NOTE
+        else:
+            prompt = desc.get(name, name) + '; single body part, boxy Minecraft-style model'
+            note = RIG_NOTE
+        rows.append(dict(group=G, asset=name + ' (' + sub.replace('_', ' ') + ')', file='', size='%sx%s tex' % (tex, tex),
+                         tileable='no', method='RD 3D blocky', status='art drop 1 (redo optional)', phase='now',
+                         model=path, prompt=prompt,
+                         notes=note + ' Bones: ' + ', '.join(bones)))
+anims = {}
+import json
+for f in sorted(os.listdir(A + '/animations/body')):
+    anims[f.split('.')[0]] = list(json.load(open(A + '/animations/body/' + f))['animations'].keys())
+anim_desc = {'idle': 'gentle hover bob, cogs turning slowly', 'thrust': 'leaning into thrust, cogs spinning fast',
+             'brake': 'pitching back to brake', 'low_power': 'drooping, cogs winding down', 'module_work': 'tool arm working, cogs spinning',
+             'rotor_spin': 'rotors spinning'}
+for rig, names in anims.items():
+    for n in names:
+        short = n.split('.')[-1]
+        rows.append(dict(group='Body animations', asset=n, file='', size='-', tileable='no', method='RD 3D animate',
+                         status='art drop 1 (redo optional)', phase='now', model=A + '/animations/body/%s.animation.json' % rig,
+                         prompt='%s: %s' % (rig, anim_desc.get(short, short)),
+                         notes='Animate the RD model by prompt, export with the .bbmodel, then keep this exact animation name and our bone names (RD auto-rigs its own bones, so retarget in Blockbench).'))
 
 # ---------- entity skins (GeckoLib) ----------
 G = 'Body skins (GeckoLib)'
@@ -209,76 +259,74 @@ for f in sorted(os.listdir(T + 'entity/body')):
     rel = 'entity/body/' + f
     name = f[:-4]
     accent = name.endswith('_accent')
-    add(G, name, rel, size_of(rel), 'no', 'Blockbench (UV-mapped)',
+    add(G, name, rel, size_of(rel), 'no', 'Blockbench (paint mask)' if accent else 'comes with the RD 3D model',
         ('accent mask: white where the player\'s accent color shows, transparent elsewhere' if accent else
-         'Create-style casing material for this part: andesite metal, brass trim, cyan lights (concept/swatch only)'),
-        'UV-mapped to its .geo.json. Paint in Blockbench over the UV template; RD only for material swatches or concept art.'
-        + (' The accent layer is tinted in code, so keep it greyscale/white.' if accent else ''))
+         'the texture atlas exported with the RD 3D model of this part'),
+        ('Paint over the base texture in Blockbench: RD does not make masks. Tinted in code, so keep it white/greyscale.' if accent else
+         'RD exports a texture atlas with the model. Set its size to this one (or tell me if it changes).'))
 
-# ---------- models that exist / are missing ----------
-G = 'Models (Blockbench)'
-def model(asset, file, prompt, notes, phase='now'):
-    add(G, asset, '', '-', 'no', 'Blockbench', prompt, notes, phase, model=file)
-    rows[-1]['status'] = 'missing' if 'missing' in notes.lower() or phase != 'now' else 'art drop 1'
+# ---------- models that are missing ----------
+G = 'Missing module models'
 for m in ['dust_sensor', 'nanite_swarm', 'salvage_tool', 'mechanical_drill', 'matter_harvester', 'core_mk1', 'core_mk2',
           'storage_mk1', 'storage_mk2']:
-    model(m + ' (on-body model)', A + '/geo/module/%s.geo.json' % m,
-          'concept art: ' + (dict((k, v) for k, v in [(r['asset'], r['prompt'].replace(ITEM, '')) for r in rows]).get(m, m)) + ', mounted on a small robot',
-          'Missing: only thruster_mk1/2, brass_trim and cogwheel_crown have module models. Needed in 5b if the module shows on the body (cores and storage may stay hidden).')
+    rows.append(dict(group=G, asset=m, file=T + 'entity/body/%s.png' % m, size='64x64 tex', tileable='no',
+                     method='RD 3D blocky', status='missing', phase='now (5b)', model=A + '/geo/module/%s.geo.json' % m,
+                     prompt=desc.get(m, m) + '; small module that mounts on a robot body, boxy Minecraft-style model',
+                     notes='Only thruster_mk1/2, brass_trim and cogwheel_crown have module models. Bones like thruster_mk1: '
+                           '<id> (root), <id>_mount (attach point), then its own parts. Cores and storage may stay hidden inside the body. '
+                           + RIG_NOTE))
 
 # ---------- future phases ----------
 G = 'Future phases'
 fut = [
-    ('7b', 'space_thruster', 'block + model', 'block/space_thruster_*.png',
+    ('7b', 'space_thruster', 'block model', 'block/space_thruster_*.png', 'RD 3D blocky -> Minecraft Java',
      'Create-style space thruster block: andesite casing, copper bell nozzle on one face, shaft input on the back',
-     'Kinetic block (shaft in), pushes Aeronautics ships. Model in Blockbench; textures 16x16.'),
-    ('7b', 'helm', 'block + model', 'block/helm_*.png',
-     'ship helm console: brass control panel with levers and a small cyan screen',
-     'Player sits/stands here to steer a block ship.'),
-    ('9', 'kinetic_mass_driver', 'multiblock (1x1x3) + model', 'block/mass_driver_{base,barrel,muzzle}.png',
+     'Kinetic block: Create draws the turning shaft itself, so leave a shaft hole. Static block model: Java export.'),
+    ('7b', 'helm', 'block model', 'block/helm_*.png', 'RD 3D blocky -> Minecraft Java',
+     'ship helm console: brass control panel with levers and a small cyan screen', 'Steers a block ship.'),
+    ('9', 'kinetic_mass_driver', 'animated multiblock (1x1x3)', 'block/mass_driver_*.png', 'RD 3D blocky + animate (GeckoLib)',
      'long electromagnetic launch rail: base with copper coils, barrel with brass rings, muzzle with a cyan glow',
-     'Launch sequence and animations planned: likely GeckoLib block entity (geo + animation).'),
-    ('9', 'quantum_receiver_dish', 'block + model', 'block/quantum_receiver_*.png',
-     'large receiver dish on a brass mount, cyan energy focus at the center', 'Big dish model; receives the sky power beams.'),
-    ('9', 'power_beam', 'sky/effect texture', 'environment/power_beam.png',
+     'Animations: charge, launch, cool down. GeckoLib block entity, so export .bbmodel, not Java.'),
+    ('9', 'quantum_receiver_dish', 'animated block', 'block/quantum_receiver_*.png', 'RD 3D blocky + animate (GeckoLib)',
+     'large receiver dish on a brass mount, cyan energy focus at the center', 'Turns to track the beam; bigger than one block.'),
+    ('9', 'power_beam', 'effect texture', 'environment/power_beam.png', 'RD image (VFX animation)',
      'vertical beam of soft cyan-white light, fading at the edges, 16x64 strip', 'Drawn from the Dyson swarm to the receiver.'),
-    ('9', 'dyson_swarm_sprites', 'sky texture', 'environment/dyson_{swarm,lattice,shell}.png',
+    ('9', 'dyson_swarm_sprites', 'sky textures', 'environment/dyson_{swarm,lattice,shell}.png', 'RD image',
      'tiny satellites / lattice segments / shell panels around a sun, pixel art, transparent',
      'DysonSky draws these procedurally now; textures optional.'),
-    ('11', 'ruined_earth sky', 'sky textures', 'environment/ruined_*.png',
+    ('11', 'ruined_earth sky', 'sky textures', 'environment/ruined_*.png', 'RD image',
      'smoggy brown-orange sky, three eras: choked, clearing, healed', 'Three-era sky.'),
-    ('11', 'atmospheric_portal', 'block + portal surface', 'block/atmospheric_portal_{frame,surface}.png',
+    ('11', 'atmospheric_portal', 'block + animated surface', 'block/atmospheric_portal_{frame,surface}.png', 'RD image (VFX animation)',
      'portal frame of brass and andesite; swirling pale-blue atmosphere surface',
-     'Surface likely animated (vertical strip of 16x16 frames, like the nether portal).'),
-    ('11', 'ashen_slag', 'block', 'block/ashen_slag.png', 'grey-black ashen slag ground with cinders', 'Tileable 16x16.'),
-    ('11', 'acid_drizzle', 'weather texture', 'environment/acid_rain.png',
+     'Surface is a vertical strip of 16x16 frames, like the nether portal: RD sprite-sheet output, restacked.'),
+    ('11', 'ashen_slag', 'block', 'block/ashen_slag.png', 'RD image', 'grey-black ashen slag ground with cinders', 'Tileable 16x16.'),
+    ('11', 'acid_drizzle', 'weather texture', 'environment/acid_rain.png', 'RD image',
      'sickly yellow-green rain streaks, vanilla rain layout 64x256', 'Weather replacement texture.'),
-    ('11', 'drop_pod', 'entity model + texture', 'entity/drop_pod.png',
-     'scorched landing pod, brass ribs and heat shield underside', 'GeckoLib entity; texture is UV-mapped (Blockbench).'),
-    ('11', 'industrial_mech', 'body/entity', 'entity/industrial_mech.png',
-     'heavy industrial mech, copper and andesite, hazard stripes', 'Defined in the design doc; GeckoLib, UV-mapped.'),
-    ('11', 'planetary_grid_hud', 'GUI', 'gui/planetary_grid.png',
+    ('11', 'drop_pod', 'animated entity', 'entity/drop_pod.png', 'RD 3D blocky + animate (GeckoLib)',
+     'scorched landing pod, brass ribs and heat shield underside', 'Animations: fall, land, open.'),
+    ('11', 'industrial_mech', 'body or entity', 'entity/industrial_mech.png', 'RD 3D blocky + animate (GeckoLib)',
+     'heavy industrial mech, copper and andesite, hazard stripes', 'Defined in the design doc; if it is a body chassis it follows the socket contract.'),
+    ('11', 'planetary_grid_hud', 'GUI', 'gui/planetary_grid.png', 'RD image',
      'pixel art 4x4 planetary sector map, dark screen with cyan grid lines', '256x256 GUI sprite.'),
-    ('12', 'terraforming_spire', 'multiblock + model', 'block/spire_{base,column,emitter}.png',
-     'tall terraforming spire: heavy base, ribbed column, glowing green emitter top', 'Multiblock; the emitter likely animated.'),
-    ('12', 'bio_nutrient_slurry', 'fluid + bucket', 'item/bio_nutrient_slurry_bucket.png',
+    ('12', 'terraforming_spire', 'animated multiblock', 'block/spire_*.png', 'RD 3D blocky + animate (GeckoLib)',
+     'tall terraforming spire: heavy base, ribbed column, glowing green emitter top', 'Genesis Pulse animation on the emitter.'),
+    ('12', 'bio_nutrient_slurry', 'fluid + bucket', 'item/bio_nutrient_slurry_bucket.png', 'RD image',
      'bucket of thick green bio-nutrient slurry', 'Fluid can reuse tinted water like the others.'),
-    ('13', 'data_monolith', 'block/multiblock + model', 'block/data_monolith_*.png',
+    ('13', 'data_monolith', 'block model', 'block/data_monolith_*.png', 'RD 3D blocky',
      'tall black monolith with faint cyan circuit lines and an output drawer', 'Design not settled in the doc yet.'),
-    ('14', 'restoration_hud', 'GUI', 'gui/restoration.png',
+    ('14', 'restoration_hud', 'GUI', 'gui/restoration.png', 'RD image',
      'pixel art planet restoration progress panel, green and blue', '256x256 GUI sprite.'),
-    ('later', 'helper_drone', 'entity model + texture', 'entity/helper_drone.png',
-     'small cargo drone with a claw and rotors, Create style', 'Stations track; GeckoLib, UV-mapped.'),
-    ('later', 'asteroid ores', 'blocks', 'block/asteroid_<kind>_ore.png',
+    ('later', 'helper_drone', 'animated entity', 'entity/helper_drone.png', 'RD 3D blocky + animate (GeckoLib)',
+     'small cargo drone with a claw and rotors, Create style', 'Animations: fly, pick up, drop off.'),
+    ('later', 'asteroid ores', 'blocks', 'block/asteroid_<kind>_ore.png', 'RD image',
      'asteroid rock with embedded crystal veins, one per dust kind', 'Polish track: ore veins in asteroids. Four tileable textures.'),
-    ('later', 'cloud_collector', 'module item + model', 'item/cloud_collector.png',
+    ('later', 'cloud_collector', 'module item + model', 'item/cloud_collector.png', 'RD image + RD 3D blocky',
      'module with a wide scoop that pulls particles from a dust cloud', 'Raw-item collector part (polish track).'),
 ]
-for phase, asset, kind, rel, prompt, notes in fut:
+for phase, asset, kind, rel, method, prompt, notes in fut:
     rows.append(dict(group=G, asset=asset, file=T + rel, size='16x16' if kind.startswith('block') else '-',
                      tileable='yes' if asset in ('ashen_slag', 'asteroid ores') else 'no',
-                     method='Blockbench + Retro Diffusion' if 'model' in kind or 'entity' in kind else 'Retro Diffusion',
-                     status='missing (future)', phase=phase, model=kind, prompt=prompt, notes=notes))
+                     method=method, status='missing (future)', phase=phase, model=kind, prompt=prompt, notes=notes))
 
 # ---------- write CSV ----------
 os.makedirs('docs/art', exist_ok=True)
@@ -301,18 +349,24 @@ for g in order:
     rs = [r for r in rows if r['group'] == g]
     out.append('### %s (%d)\n' % (g, len(rs)))
     if g == 'Body skins (GeckoLib)':
-        out.append('All 80 come from art drop 1 and are UV-mapped to their `.geo.json` rigs: paint them in Blockbench, not Retro Diffusion. '
-                   'Each part has a base texture and an `_accent` mask (tinted in code). Sizes: 128x128 for the Ship rig and ship parts, '
-                   '64x64 for everything else. The full list is in `assets.csv`.\n')
+        out.append('All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate a model with RD 3D, its base '
+                   'texture comes with it. The `_accent` masks are painted by hand in Blockbench (white where the accent '
+                   'color shows). Sizes: 128x128 for the Ship rig and ship parts, 64x64 for the rest. Full list in `assets.csv`.\n')
         continue
     if g == 'Future phases':
-        out.append('| Phase | Asset | What | Files (planned) | Prompt idea | Notes |\n|---|---|---|---|---|---|')
+        out.append('| Phase | Asset | What | Method | Prompt idea | Notes |\n|---|---|---|---|---|---|')
         for r in rs:
-            out.append('| %s | %s | %s | `%s` | %s | %s |' % (r['phase'], r['asset'], r['model'], r['file'].replace(T, ''), esc(r['prompt']), esc(r['notes'])))
-    elif g == 'Models (Blockbench)':
-        out.append('| Asset | File | Status | Notes |\n|---|---|---|---|')
+            out.append('| %s | %s | %s | %s | %s | %s |' % (r['phase'], r['asset'], r['model'], r['method'], esc(r['prompt']), esc(r['notes'])))
+    elif g in ('Body models (GeckoLib)', 'Missing module models'):
+        out.append('| Model | File | Texture | Status | Prompt | Bones to keep |\n|---|---|---|---|---|---|')
         for r in rs:
-            out.append('| %s | `%s` | %s | %s |' % (r['asset'], r['model'].replace(A + '/', ''), r['status'], esc(r['notes'])))
+            bones = r['notes'].split('Bones: ')[-1] if 'Bones: ' in r['notes'] else '`<id>`, `<id>_mount`, own parts'
+            out.append('| %s | `%s` | %s | %s | %s | %s |' % (r['asset'], r['model'].replace(A + '/', ''), r['size'], r['status'],
+                                                           esc(r['prompt']), esc(bones)))
+    elif g == 'Body animations':
+        out.append('| Animation (exact name) | File | Prompt |\n|---|---|---|')
+        for r in rs:
+            out.append('| `%s` | `%s` | %s |' % (r['asset'], r['model'].replace(A + '/', ''), esc(r['prompt'])))
     else:
         out.append('| Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |\n|---|---|---|---|---|---|---|')
         for r in rs:
