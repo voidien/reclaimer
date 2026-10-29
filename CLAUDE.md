@@ -19,7 +19,7 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 
 ## Technical constraints (follow exactly)
 - Namespace `void_reclaimer`. NeoForge 21.1.x, Java 21, **ModDevGradle** with Parchment mappings.
-- Dependencies: **Create** (required) for kinetics, machines and the art style; **GeckoLib** for body, part, and helper-drone models/animations. **JEI** for recipe categories for the replicator and machines. Look up current compatible versions; don't guess.
+- Dependencies: **Create** (required) for kinetics, machines and the art style; **Create Aeronautics** (required, bundles Simulated and Offroad) and **Sable** (required, its physics engine) for ships and sub-levels; **GeckoLib** for body, part, and helper-drone models/animations. **JEI** for recipe categories for the replicator and machines. Look up current compatible versions; don't guess.
 - Modern 1.21.1 APIs: **Data Attachments** for per-player body/part/dust data, **Data Components** for item data, **block entities**, `CustomPacketPayload` networking, datagen for recipes, loot tables, tags, lang, and models.
 - Body scale uses the vanilla `generic.scale` attribute — no custom hitbox hacks.
 - Flight: player movement is client-side, so thrust and drag run on the client. A payload syncs input to the server, which validates speed against body stats and handles dust gain. Keep the logical client/server split correct even though the mod is singleplayer.
@@ -62,6 +62,8 @@ Build order after Phase 4: 5a → 6 → 7 → 5b → 8 → 9 → 10.
 | GeckoLib | 4.9.3 (`geckolib-neoforge-1.21.1`) | dl.cloudsmith.io/public/geckolib3 |
 | JEI | 19.70.0.464 (`jei-1.21.1-*`) | maven.blamejared.com |
 | Create (required) | 6.0.10 (`maven.modrinth:create:6.0.10+mc1.21.1`, range `[6.0.10,6.1)`) | api.modrinth.com/maven; bundles Flywheel 1.0.x, Ponder, Registrate |
+| Create Aeronautics (required) | 1.3.2 (`maven.modrinth:create-aeronautics:1.3.2+mc1.21.1`, range `[1.3.2,1.4)`, mod id `aeronautics`) | api.modrinth.com/maven; jar-in-jar bundle of aeronautics, simulated, offroad; needs Create and Veil |
+| Sable (required) | 2.0.6 (`maven.modrinth:sable:2.0.6+mc1.21.1`, range `[2.0.6,2.1)`) | api.modrinth.com/maven |
 | Gradle wrapper | 9.2.1 | matches official NeoForge 1.21.1 MDK |
 | Sodium (dev run only) | mc1.21.1-0.8.13-neoforge | api.modrinth.com/maven |
 | ModernFix (dev run only) | 5.27.27+mc1.21.1 | api.modrinth.com/maven |
@@ -217,12 +219,13 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Gear animation in Create style: cogs spin with thrust and speed, with module work (Replicator, drill, nanites), with energy level (low power winds down), and idle slowly.
 - Body colors: a casing material (Andesite, Brass, Copper, later unlocks) plus a free accent tint.
 - Phases 7–8 build on Create's machines and logistics instead of duplicating them.
-- **Create Aeronautics: optional support, Phase 7b (retest 2026-10-29, branch `claude/aeronautics-spike`, `AERONAUTICS_SPIKE.md`).**
+- **Create Aeronautics: required (decided 2026-10-29; spike results in `AERONAUTICS_SPIKE.md` on branch `claude/aeronautics-spike`, never merged).**
   - Sable works in `deep_space` with zero physics gravity via `data/<ns>/dimension_physics/*.json` (`base_gravity`, `base_pressure`, `universal_drag`). The first spike's "flung away" ships were falling: the zero-G file wasn't in effect. Height and f32 precision were not factors.
   - Aeronautics propellers and balloons need air, so they give no thrust in vacuum. Our own **Space Thruster** block pushes ships through Sable's force API (Create rotation plus dust fuel).
   - The Ship class stays the player's body; a **Helm** block lets the body pilot a block ship with WASD thrust controls. Block ships serve as mobile stations, cargo haulers, mining rigs, and can cross the Atmospheric Portal (air on Ruined Earth makes propellers work).
-  - Everything loads only when Aeronautics is installed; the mod plays fully without it.
-  - Upstream bug: an intermittent start-up deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (game, `runData`). Keep Aeronautics out of the CI datagen run.
+  - Aeronautics and Sable are required dependencies (`neoforge.mods.toml`); they are `localRuntime` + `testRuntimeOnly`, so our code doesn't compile against them yet. Add them as `implementation` when the first code needs their API.
+  - `data/void_reclaimer/dimension_physics/deep_space.json` gives deep space zero physics gravity, pressure and drag. `AeronauticsGameTests` (own namespace `void_reclaimer_aero`, run `./gradlew runGameTestAeronautics`, own CI job) checks a platform stays put and a propeller gives no thrust in vacuum.
+  - Upstream bug: an intermittent start-up deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (game, `runData`). Required Aeronautics means `runData` loads it too, so CI wraps `runData` in a 5-minute timeout with up to 3 attempts.
   - `sable64bit` (Chelovechic, AGPL, f64 Rapier) works with Sable 2.0.6 and keeps physics exact far from the origin; recommend it, don't depend on it.
 - **Ships and stations without Aeronautics:**
   - Drone, Mech and Ship are all the player's body (GeckoLib, Create style). The Ship is the 3.0-scale class: a mobile base with more storage, module slots and a faster Replicator; it docks at stations and is the class that survives the Atmospheric Portal (Phase 9).
@@ -254,7 +257,7 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - The mesh follows the true lumpy edge (`CloudShape`): rays on a 16×32 latitude/longitude grid find the outermost point at density 0.05. Computed once per cloud on a background thread and cached.
 - Drawn unfogged (fog start restored afterwards) through `RenderLevelStageEvent`; this bends the Phase 3 "clouds are invisible" rule only for sensor owners who switch it on.
 
-**Phase order (decided after 4b, 7b added 2026-10-29):** 5a Body data → extensibility + body sections → 6 Asteroids → 7 Machines → 7b Aeronautics support (optional) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
+**Phase order (decided after 4b, revised 2026-10-29):** 5a Body data → extensibility + body sections → **Foundations (Aeronautics + Dyson Sphere counters and sky)** → 6 Asteroids → 7 Machines → 7b Aeronautics ships (Space Thruster, Helm; Aeronautics is required now) → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
 
 ## Extensibility (strict)
 Void Reclaimer is built to be extended by datapack makers, addon developers and KubeJS (through datapacks and events). Every change keeps it that way:
@@ -299,3 +302,19 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - Use `VoidReclaimer.id(path)` for every `ResourceLocation` in our namespace.
 - Client-only classes stay under `client/` and are reached only from `VoidReclaimerClient` or `@EventBusSubscriber(value = Dist.CLIENT)`.
 - Prefer datagen over hand-written JSON for recipes, loot tables, tags, lang, block states, and item models. Dimension/worldgen JSON can be hand-written datapack files.
+
+**Design doc "Nebulae to Planetary Genesis" (decided 2026-10-29)**
+- The doc extends this plan; it is an idea framework, not a bible. The repo's systems stay (Replicator from the start, body, energy, dust). Where they disagree, ask before changing anything.
+- Nebulae are the existing dust clouds: Ice, Carbon, Silicon (`silicate` in code), Metallic. Raw items (Ice Shards, Carbon Flakes, Silicon Grit, Metallic Grains) come from (a) the Replicator turning stored dust into raw items and (b) a collector part that pulls items out of a cloud. Neither is built yet.
+- The 33 existing Replicator recipes keep their dust prices until told otherwise.
+- Body size classes stay Drone, Mech, Ship; the doc's Starship is the Ship class. Display strings still say "Ship".
+- The Overworld lock and the planned `ruined_earth` dimension are unchanged for now (Act II's return home is undecided).
+- Lore and recipes come only from the user's doc. Placeholder texts are marked `[Placeholder, lore text pending.]` in lang.
+
+**Dyson Sphere (foundations, 2026-10-29)**
+- `dyson.DysonSphereData` (saved, synced attachment on the deep space level): satellites and truss modules launched, plus the server's `latticeStart` and `shellTotal` thresholds so clients can draw the shell. `DysonSphereData.of(level)` works from any dimension on the server.
+- `dyson.DysonTiers` (config-free): tier 1 = 1-50 satellites, tier 2 = 51+, tier 3 = `latticeStart` trusses, tier 4 = `shellTotal` trusses. Config `dyson.latticeStart` (default 1) and `dyson.shellTotal` (default 1000) are placeholders: the doc leaves both open.
+- `dyson.Dyson.launchSatellites/launchTrusses/set` is the one entry point for launchers (the Mass Driver later). A tier change re-checks milestones for every player.
+- Milestones `dyson_tier_1..4` (criterion `dyson_tier`, order 100-103) write the AI log entries. Their texts are placeholders.
+- `/void_reclaimer dyson get|set satellites|trusses <n>` for testing.
+- Sky: `client/render/DysonSky` draws the swarm and shell in the sun's frame, and tints/dims the sun. Power beams to the Quantum Receiver Dish wait for that block. The sun's dimming is visual only: solar charging does not use `DysonTiers.sunlight` yet, because a dark star would also cut off the AI's power before the Dyson power beam exists.

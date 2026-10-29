@@ -10,7 +10,9 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
   - paint, wear and repair, Body Blueprints;
   - kits (multi-output Replicator recipes).
 - **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
-- **Next phase:** 6 (Asteroids). The phase order is in `CLAUDE.md`: 6 → 7 → 7b (optional Aeronautics) → 5b → 8 → 9 → 10.
+- **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
+- **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
+- **Next phase:** 6 (Asteroids). The phase order is in `CLAUDE.md`: 6 → 7 → 7b (Aeronautics ships) → 5b → 8 → 9 → 10.
 - **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
   - It's a Claude Docs project, at revision 12.
   - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.
@@ -34,14 +36,14 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
 - **Phase 7b planning details** are still open: Space Thruster stats, the Helm block, docking. The overall 7b design is settled in `CLAUDE.md`.
 
 ## Create Aeronautics spike (branch `claude/aeronautics-spike`, never merge)
-- Full results are in `AERONAUTICS_SPIKE.md` on that branch. The decision is in `CLAUDE.md`: optional support in Phase 7b.
+- Full results are in `AERONAUTICS_SPIKE.md` on that branch. The decision is in `CLAUDE.md`: superseded: Aeronautics is a required dependency since the Foundations phase (2026-10-29); ships come in Phase 7b.
 - **Key facts:**
   - **Gravity:** Sable needs a `data/<ns>/dimension_physics/*.json` with `base_gravity` 0 for zero-G. Without it, ships fall; that was the first spike's "flung away" bug.
   - **No thrust in vacuum:** propellers and balloons need `base_pressure` > 0, so they give no thrust in deep space.
   - **Riding works:** players can ride a moving ship.
   - **Removal range:** Sable removes sub-levels outside the config `sub_level_remove_min` (-10,000) / `sub_level_remove_max` (100,000).
   - **Useful commands:** `/sable spawn platform`, `/sable assemble connected x y z`, `/sable info @n`.
-  - **Startup deadlock:** there is an intermittent deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (the game and `runData`). This is why Aeronautics is kept out of the CI datagen run.
+  - **Startup deadlock:** there is an intermittent deadlock between Aeronautics/Simulated/Veil and Create's render classes in client-dist runs (the game and `runData`). Aeronautics is required now, so `runData` loads it: CI retries `runData` (5-minute timeout, 3 attempts), and locally `timeout 300 ./gradlew runData` and run it again if it hangs.
 - **sable64bit** (Chelovechic/sable64bit-1.21.1, AGPL) gives f64 physics.
   - At X = 20,000,000.5 it held the position exactly; f32 lost half a block.
   - Recommend it to players; never depend on it.
