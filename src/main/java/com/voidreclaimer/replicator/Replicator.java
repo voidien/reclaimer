@@ -1,6 +1,13 @@
 package com.voidreclaimer.replicator;
 
+import com.voidreclaimer.api.event.MilestoneReachedEvent;
+import com.voidreclaimer.api.event.ReplicatorJobFinishedEvent;
+import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.milestone.MilestoneContext;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.neoforge.common.NeoForge;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustData;
@@ -98,16 +105,20 @@ public final class Replicator {
         if (data.jobs().isEmpty()) {
             return;
         }
+        ReplicatorJob job = data.current();
         ReplicatorLogic.Tick tick = ReplicatorLogic.tick(data, Energy.canPowerSystems(player));
         if (tick.worked()) {
             Energy.consume(player, (float) (Config.REPLICATOR_ENERGY.get() / 20.0));
         }
         ReplicatorData updated = tick.data();
-        if (!tick.finished().isEmpty()) {
-            ItemStack output = tick.finished();
-            Component name = output.getHoverName();
-            player.getInventory().add(output); // shrinks output to whatever didn't fit
-            updated = ReplicatorLogic.toBuffer(updated, output);
+        if (!tick.finished().isEmpty() && job != null) {
+            Component name = tick.finished().getHoverName();
+            ReplicatorJobFinishedEvent finished = NeoForge.EVENT_BUS.post(
+                    new ReplicatorJobFinishedEvent(player, job.recipe(), List.of(tick.finished())));
+            for (ItemStack output : finished.getOutputs()) {
+                player.getInventory().add(output); // shrinks output to whatever didn't fit
+                updated = ReplicatorLogic.toBuffer(updated, output);
+            }
             player.displayClientMessage(Component.translatable("message.void_reclaimer.replicator.done", name)
                     .withStyle(ChatFormatting.AQUA), true);
         }
@@ -121,13 +132,18 @@ public final class Replicator {
         ReplicatorData data = data(player);
         MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player));
         ReplicatorData updated = data;
+        List<ResourceKey<Milestone>> reached = new ArrayList<>();
         for (Milestones.Entry entry : Milestones.all(player.registryAccess())) {
             if (!updated.isUnlocked(entry.key()) && entry.milestone().isReached(context)) {
                 updated = updated.withUnlocked(entry.key());
+                reached.add(entry.key());
             }
         }
         if (updated != data) {
             store(player, updated);
+        }
+        for (ResourceKey<Milestone> milestone : reached) {
+            NeoForge.EVENT_BUS.post(new MilestoneReachedEvent(player, milestone));
         }
     }
 

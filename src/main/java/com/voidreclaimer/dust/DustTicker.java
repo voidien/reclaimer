@@ -2,7 +2,9 @@ package com.voidreclaimer.dust;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.event.DustGainEvent;
 import com.voidreclaimer.registry.ModAttachments;
+import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -38,7 +40,11 @@ public final class DustTicker {
                 * com.voidreclaimer.body.Bodies.stats(player).dustIntake();
         DustData old = player.getData(ModAttachments.DUST);
         ResourceLocation kind = sample.cloud().kind();
-        DustData updated = old.add(kind, gain, DustData.capacity(player));
+        DustGainEvent gainEvent = NeoForge.EVENT_BUS.post(new DustGainEvent(player, kind, sample.density(), gain));
+        if (gainEvent.isCanceled()) {
+            return;
+        }
+        DustData updated = old.add(kind, gainEvent.getAmount(), DustData.capacity(player));
         if (updated.equals(old)) {
             return;
         }

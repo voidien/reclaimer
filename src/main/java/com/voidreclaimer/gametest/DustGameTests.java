@@ -167,7 +167,7 @@ public final class DustGameTests {
         });
     }
 
-    private static DustField field(GameTestHelper helper) {
+    static DustField field(GameTestHelper helper) {
         DustField field = DustField.of(TestPlayers.deepSpace(helper));
         if (field == null) {
             throw new IllegalStateException("no dust field in deep space");
@@ -176,7 +176,7 @@ public final class DustGameTests {
     }
 
     /** A cloud with its center comfortably inside the world height, searched outward from the origin. */
-    private static DustCloud findCloud(DustField field) {
+    static DustCloud findCloud(DustField field) {
         for (int r = 0; r < 40; r++) {
             for (int x = -r; x <= r; x++) {
                 for (int z = -r; z <= r; z++) {
@@ -208,7 +208,7 @@ public final class DustGameTests {
     }
 
     /** Moves the player in a straight line at a legal speed, one player tick per step. */
-    private static void moveAndTick(ServerPlayer player, int ticks) {
+    static void moveAndTick(ServerPlayer player, int ticks) {
         double x = player.getX();
         for (int i = 0; i < ticks; i++) {
             x += STEP;
