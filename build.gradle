@@ -69,6 +69,8 @@ neoForge {
         gameTestServer {
             type = 'gameTestServer'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Spike only: ./gradlew runGameTestServer -PspikeNoZeroG=true
+            systemProperty 'void_reclaimer.spike.noZeroG', project.findProperty('spikeNoZeroG') ?: 'false'
         }
 
         data {

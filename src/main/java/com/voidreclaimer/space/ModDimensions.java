@@ -16,9 +16,13 @@ public final class ModDimensions {
     public static final ResourceKey<Biome> DEEP_SPACE_BIOME =
             ResourceKey.create(Registries.BIOME, VoidReclaimer.id("deep_space"));
 
+    /** Spike only: a vanilla-height copy of deep space for the Aeronautics retest. */
+    public static final ResourceKey<Level> SPIKE_SHORT =
+            ResourceKey.create(Registries.DIMENSION, VoidReclaimer.id("spike_short"));
+
     private ModDimensions() {}
 
     public static boolean isDeepSpace(Level level) {
-        return level.dimension() == DEEP_SPACE;
+        return level.dimension() == DEEP_SPACE || level.dimension() == SPIKE_SHORT;
     }
 }

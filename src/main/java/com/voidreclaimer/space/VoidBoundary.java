@@ -24,7 +24,7 @@ public final class VoidBoundary {
     static void onEntityTick(EntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         Level level = entity.level();
-        if (!ModDimensions.isDeepSpace(level) || entity.isPassenger()) {
+        if (ZeroGravity.SPIKE_NO_ZERO_G || !ModDimensions.isDeepSpace(level) || entity.isPassenger()) {
             return;
         }
         if (entity instanceof Player player) {

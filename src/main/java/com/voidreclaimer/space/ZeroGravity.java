@@ -34,11 +34,14 @@ public final class ZeroGravity {
     private static final AttributeModifier ZERO_GRAVITY = new AttributeModifier(
             GRAVITY_MODIFIER_ID, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
+    /** Spike only: -Dvoid_reclaimer.spike.noZeroG=true turns our zero-G systems off. */
+    public static final boolean SPIKE_NO_ZERO_G = Boolean.getBoolean("void_reclaimer.spike.noZeroG");
+
     private ZeroGravity() {}
 
     /** Whether gravity is off at this position. Gravity generators (later phases) will hook in here. */
     public static boolean isZeroG(Level level, BlockPos pos) {
-        return ModDimensions.isDeepSpace(level);
+        return !SPIKE_NO_ZERO_G && ModDimensions.isDeepSpace(level);
     }
 
     @SubscribeEvent

@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:spike_short",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "void_reclaimer:spike_short",
+      "layers": [],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}
