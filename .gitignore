@@ -43,3 +43,4 @@ run-aero/
 
 # Retro Diffusion staging (tools/art/rd_generate.py): review here, --promote picks into the mod
 art/rd/
+__pycache__/
