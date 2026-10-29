@@ -113,4 +113,44 @@ class BodyLookTest {
         assertArrayEquals(base, BodyLook.paintCasing(base, 2, new int[0], 0));
         assertArrayEquals(base, BodyLook.paintCasing(base, 2, new int[4], 2), "a texture smaller than the swatch area is left alone");
     }
+
+    @Test
+    void forwardAndLateralFollowTheFacing() {
+        // Yaw 0 faces +Z (south); the body's right hand is -X (west).
+        assertEquals(1.0, BodyLook.forward(0, 1, 0f), 1e-9);
+        assertEquals(-1.0, BodyLook.forward(0, -1, 0f), 1e-9);
+        assertEquals(1.0, BodyLook.lateral(-1, 0, 0f), 1e-9);
+        assertEquals(-1.0, BodyLook.lateral(1, 0, 0f), 1e-9);
+        // Facing west (yaw 90): ahead is -X, right is +Z... checked against the same rotation.
+        assertEquals(1.0, BodyLook.forward(-1, 0, 90f), 1e-9);
+        assertEquals(1.0, BodyLook.lateral(0, -1, 90f), 1e-9);
+    }
+
+    @Test
+    void sidewaysMotionIsAStrafeBackwardMotionIsFlyingBack() {
+        assertEquals(BodyLook.Pose.STRAFE_RIGHT, BodyLook.pose(0.1, 0.1, false, 0.0, 0.1));
+        assertEquals(BodyLook.Pose.STRAFE_LEFT, BodyLook.pose(0.1, 0.1, false, 0.0, -0.1));
+        assertEquals(BodyLook.Pose.BACK, BodyLook.pose(0.1, 0.1, false, -0.1, 0.0));
+        assertEquals(BodyLook.Pose.THRUST, BodyLook.pose(0.1, 0.05, false, 0.1, 0.0));
+    }
+
+    @Test
+    void aSlightDriftSidewaysIsNotAStrafe() {
+        assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.1, 0.1, false, 0.09, 0.04));
+        assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.005, 0.005, false, 0.0, 0.005), "too slow to count");
+    }
+
+    @Test
+    void lowPowerBeatsStrafing() {
+        assertEquals(BodyLook.Pose.LOW_POWER, BodyLook.pose(0.1, 0.1, true, 0.0, 0.1));
+    }
+
+    @Test
+    void missingPosesFallBackToThrustThenIdle() {
+        assertEquals(java.util.List.of("strafe_left", "thrust", "idle"), BodyLook.fallbacks(BodyLook.Pose.STRAFE_LEFT));
+        assertEquals(java.util.List.of("back", "thrust", "idle"), BodyLook.fallbacks(BodyLook.Pose.BACK));
+        assertEquals(java.util.List.of("brake", "idle"), BodyLook.fallbacks(BodyLook.Pose.BRAKE));
+        assertEquals(java.util.List.of("low_power", "idle"), BodyLook.fallbacks(BodyLook.Pose.LOW_POWER));
+        assertEquals(java.util.List.of("idle"), BodyLook.fallbacks(BodyLook.Pose.IDLE));
+    }
 }

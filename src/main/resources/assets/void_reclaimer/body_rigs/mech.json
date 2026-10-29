@@ -1,0 +1,31 @@
+{
+  "model": "void_reclaimer:geo/entity/mech_suit.geo.json",
+  "texture": "void_reclaimer:textures/entity/mech_suit.png",
+  "animations": "void_reclaimer:animations/entity/mech_suit.animation.json",
+  "animation_prefix": "animation.void_reclaimer.mech_suit.",
+  "grounded": true,
+  "sockets": {
+    "head": ["neck"],
+    "back": ["backpack"],
+    "left_upper_arm": ["arm_l"],
+    "right_upper_arm": ["arm_r"],
+    "left_forearm": ["elbow_l"],
+    "right_forearm": ["elbow_r"],
+    "left_hand": ["hand_l"],
+    "right_hand": ["hand_r"],
+    "left_thigh": ["hip_l"],
+    "right_thigh": ["hip_r"],
+    "left_shin": ["knee_l"],
+    "right_shin": ["knee_r"],
+    "left_foot": ["foot_l"],
+    "right_foot": ["foot_r"]
+  },
+  "poses": {
+    "idle": "fly",
+    "thrust": "zoom_flight",
+    "back": "fly_back",
+    "strafe_left": "fly_left",
+    "strafe_right": "fly_right",
+    "module_work": "swing_tool"
+  }
+}

@@ -34,7 +34,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
     public void renderForBone(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, RenderType renderType,
                               MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
         BodyRenderer.Frame frame = BodyRenderer.frame();
-        if (frame == null) {
+        if (frame == null || frame.spec() != null) {
             return;
         }
         BodyView view = frame.view();

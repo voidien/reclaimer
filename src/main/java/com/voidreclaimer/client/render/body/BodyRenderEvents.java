@@ -26,6 +26,7 @@ public final class BodyRenderEvents {
         @SubscribeEvent
         static void onReloadListeners(RegisterClientReloadListenersEvent event) {
             event.registerReloadListener(BodyTextures.INSTANCE);
+            event.registerReloadListener(BodyRigSpec.Loader.INSTANCE);
         }
     }
 }

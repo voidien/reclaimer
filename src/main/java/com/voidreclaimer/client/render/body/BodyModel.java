@@ -9,7 +9,8 @@ import software.bernie.geckolib.renderer.GeoRenderer;
 public final class BodyModel extends GeoModel<BodyAnimatable> {
     @Override
     public ResourceLocation getModelResource(BodyAnimatable animatable) {
-        return VoidReclaimer.id("geo/body/" + BodyRenderer.currentRig() + ".geo.json");
+        BodyRenderer.Frame frame = BodyRenderer.frame();
+        return frame == null ? VoidReclaimer.id("geo/body/" + BodyLook.DEFAULT_RIG + ".geo.json") : frame.modelResource();
     }
 
     @Override
@@ -25,6 +26,7 @@ public final class BodyModel extends GeoModel<BodyAnimatable> {
 
     @Override
     public ResourceLocation getAnimationResource(BodyAnimatable animatable) {
-        return VoidReclaimer.id("animations/body/" + BodyRenderer.currentRig() + ".animation.json");
+        BodyRenderer.Frame frame = BodyRenderer.frame();
+        return frame == null ? VoidReclaimer.id("animations/body/" + BodyLook.DEFAULT_RIG + ".animation.json") : frame.animationResource();
     }
 }

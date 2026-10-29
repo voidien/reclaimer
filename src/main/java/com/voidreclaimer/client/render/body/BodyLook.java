@@ -2,6 +2,8 @@ package com.voidreclaimer.client.render.body;
 
 import com.voidreclaimer.api.body.Chassis;
 import com.voidreclaimer.body.BodyData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
@@ -57,9 +59,10 @@ public final class BodyLook {
         return socket;
     }
 
-    /** What the body is doing, for the animation controller. */
+    /** What the body is doing, for the animation controller. {@link #animation()} is the pose key in rig files and specs. */
     public enum Pose {
-        IDLE("idle"), THRUST("thrust"), BRAKE("brake"), LOW_POWER("low_power");
+        IDLE("idle"), THRUST("thrust"), BRAKE("brake"), LOW_POWER("low_power"), BACK("back"),
+        STRAFE_LEFT("strafe_left"), STRAFE_RIGHT("strafe_right");
 
         private final String animation;
 
@@ -72,18 +75,63 @@ public final class BodyLook {
         }
     }
 
+    /** Pose key of the tool animation, played while the player swings. */
+    public static final String MODULE_WORK = "module_work";
+
+    /**
+     * Pose keys to try, in order, for a pose a rig may not have an animation for: sideways and backward flight fall back to
+     * thrust, everything falls back to idle.
+     */
+    public static List<String> fallbacks(Pose pose) {
+        List<String> keys = new ArrayList<>();
+        keys.add(pose.animation());
+        if (pose == Pose.STRAFE_LEFT || pose == Pose.STRAFE_RIGHT || pose == Pose.BACK) {
+            keys.add(Pose.THRUST.animation());
+        }
+        if (pose != Pose.IDLE) {
+            keys.add(Pose.IDLE.animation());
+        }
+        return keys;
+    }
+
     /** Change in speed (blocks per tick, per tick) that counts as thrusting or braking; below it the body just coasts. */
     public static final double ACCEL_THRESHOLD = 0.002;
     /** Speed (blocks per tick) below which braking has nothing left to slow. */
     public static final double REST_SPEED = 0.01;
+    /** How much of the motion must be sideways or backward for the strafe and back poses. */
+    public static final double DIRECTION_SHARE = 0.6;
+
+    /** Part of a step ({@code dx, dz}) that points where the body faces ({@code yaw} in degrees); negative when moving backward. */
+    public static double forward(double dx, double dz, float yaw) {
+        double r = Math.toRadians(yaw);
+        return -Math.sin(r) * dx + Math.cos(r) * dz;
+    }
+
+    /** Part of a step that points to the body's right; negative when moving left. */
+    public static double lateral(double dx, double dz, float yaw) {
+        double r = Math.toRadians(yaw);
+        return -Math.cos(r) * dx - Math.sin(r) * dz;
+    }
 
     /**
-     * Picks the pose from how the speed changed since the last tick. Low power wins over everything; speeding up is thrust,
-     * slowing down is braking, and a steady drift (or standing still) is idle.
+     * Picks the pose from how the body moves. Low power wins over everything; mostly sideways motion is a strafe, mostly
+     * backward motion is flying back; otherwise speeding up is thrust, slowing down is braking, and a steady drift (or
+     * standing still) is idle.
+     *
+     * @param forward the motion's part along the facing, per tick
+     * @param lateral the motion's part to the right, per tick
      */
-    public static Pose pose(double speed, double previousSpeed, boolean lowPower) {
+    public static Pose pose(double speed, double previousSpeed, boolean lowPower, double forward, double lateral) {
         if (lowPower) {
             return Pose.LOW_POWER;
+        }
+        if (speed > REST_SPEED) {
+            if (Math.abs(lateral) > DIRECTION_SHARE * speed) {
+                return lateral > 0 ? Pose.STRAFE_RIGHT : Pose.STRAFE_LEFT;
+            }
+            if (-forward > DIRECTION_SHARE * speed) {
+                return Pose.BACK;
+            }
         }
         double change = speed - previousSpeed;
         if (change > ACCEL_THRESHOLD) {
@@ -93,6 +141,11 @@ public final class BodyLook {
             return Pose.BRAKE;
         }
         return Pose.IDLE;
+    }
+
+    /** {@link #pose(double, double, boolean, double, double)} for a body moving straight ahead. */
+    public static Pose pose(double speed, double previousSpeed, boolean lowPower) {
+        return pose(speed, previousSpeed, lowPower, speed, 0.0);
     }
 
     /** Animation id inside a body rig's animation file: {@code animation.void_reclaimer.<rig>.<state>}. */

@@ -1,8 +1,11 @@
 package com.voidreclaimer.client.render.body;
 
 import com.voidreclaimer.energy.Energy;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +17,8 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.cache.GeckoLibCache;
+import software.bernie.geckolib.loading.object.BakedAnimations;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -57,10 +62,29 @@ public final class BodyAnimatable implements GeoReplacedEntity {
         if (!(entity instanceof Player player)) {
             return PlayState.STOP;
         }
-        String rig = BodyRenderer.currentRig();
+        BodyRenderer.Frame frame = BodyRenderer.frame();
+        if (frame == null) {
+            return PlayState.STOP;
+        }
         BodyLook.Pose pose = pose(player);
-        String name = player.swinging && pose != BodyLook.Pose.LOW_POWER ? "module_work" : pose.animation();
-        return state.setAndContinue(RawAnimation.begin().thenLoop(BodyLook.animationName(rig, name)));
+        List<String> keys = new ArrayList<>();
+        if (player.swinging && pose != BodyLook.Pose.LOW_POWER) {
+            keys.add(BodyLook.MODULE_WORK);
+        }
+        keys.addAll(BodyLook.fallbacks(pose));
+        ResourceLocation file = frame.animationResource();
+        for (String key : keys) {
+            String name = frame.spec() != null ? frame.spec().animation(key) : BodyLook.animationName(frame.rig(), key);
+            if (name != null && hasAnimation(file, name)) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop(name));
+            }
+        }
+        return PlayState.STOP;
+    }
+
+    private static boolean hasAnimation(ResourceLocation file, String name) {
+        BakedAnimations animations = GeckoLibCache.getBakedAnimations().get(file);
+        return animations != null && animations.getAnimation(name) != null;
     }
 
     private BodyLook.Pose pose(Player player) {
@@ -70,7 +94,9 @@ public final class BodyAnimatable implements GeoReplacedEntity {
             motion.previousSpeed = motion.speed;
             motion.speed = step.length();
             motion.tick = player.tickCount;
-            BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, !Energy.canPowerSystems(player));
+            float yaw = player.getYRot();
+            BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, !Energy.canPowerSystems(player),
+                    BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw));
             if (now != motion.pose && (player.tickCount >= motion.heldUntil || now == BodyLook.Pose.LOW_POWER)) {
                 motion.pose = now;
                 motion.heldUntil = player.tickCount + HOLD_TICKS;
