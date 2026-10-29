@@ -444,6 +444,8 @@ From an outside audit, each checked against the code first (several claims were 
 - Everything the Art drop 1 section lists as "still our placeholders" is replaced except these.
 - Colour notes for the owner to judge: `asteroid_silicate` is orange (style guide: sand-tan); `carbon_flakes` reads as a dagger; `dyson_shell_truss_module` reads as a hooked tool.
 
+## Config screen: done
+- The client and common settings (`ClientConfig`, `Config`) now open from Mods > Void Reclaimer > Config, through NeoForge's `ConfigurationScreen`. Labels and sections use the automatic names and the config comments as tooltips; no custom lang keys yet. Not yet opened in a real client. Recipe toggles still need a restart or `/reload`.
 ## Body minimum brightness: done
 - `BodyLight.atLeast` (pure, `BodyLightTest`) lifts the light the body rig is drawn with to client config `body.minLight` (default 8). Not yet compared in a real client.
 
