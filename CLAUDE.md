@@ -211,7 +211,17 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - Create is a required dependency. Bodies, cosmetics, machines and stations use Create's look: andesite/brass/copper casings, cogwheels and shafts. Our models may reference Create's textures (`create:block/...`) from the player's installed Create; never copy Create's assets into our jar (its `assets/` are All Rights Reserved; its code is MIT).
 - Gear animation in Create style: cogs spin with thrust and speed, with module work (Replicator, drill, nanites), with energy level (low power winds down), and idle slowly.
 - Body colors: a casing material (Andesite, Brass, Copper, later unlocks) plus a free accent tint.
-- Phases 7–8 build on Create's machines and logistics instead of duplicating them. Create Aeronautics (with Sable) is under evaluation; not a dependency.
+- Phases 7–8 build on Create's machines and logistics instead of duplicating them.
+- **Create Aeronautics / Sable: not a dependency (spike, 2026-10-28).** Sable gravity can be zeroed per dimension (`data/<ns>/dimension_physics/*.json`: `base_gravity`, `base_pressure`, `universal_drag`), but in `deep_space` every sub-level was flung away or removed on its first physics tick (cause unknown; our tall dimension or zero-G systems are suspects). Revisit before Phase 8; branch `claude/aeronautics-spike` keeps the test setup.
+- **Ships and stations without Aeronautics:**
+  - Drone, Mech and Ship are all the player's body (GeckoLib, Create style). The Ship is the 3.0-scale class: a mobile base with more storage, module slots and a faster Replicator; it docks at stations and is the class that survives the Atmospheric Portal (Phase 9).
+  - Stations are fixed block structures: Create machines and belts inside, Create contraptions (bearings, pistons, gantries) for moving parts such as rotating rings, our controller blocks for multiblock bonuses (Phase 8). Between stations: helper drones and Create trains on tracks laid through space.
+  - Keep a block-built Ship and movable stations possible as optional Aeronautics support later: don't design station controllers or a Ship Core in ways that rule it out.
+
+**Cloud scanner (after 4b)**
+- With a Dust Sensor, key N toggles (client config `cloudScanner`, default on) a wire mesh with a faint tint, in the kind's color, for every cloud whose edge is within 512 blocks.
+- The mesh follows the true lumpy edge (`CloudShape`): rays on a 16×32 latitude/longitude grid find the outermost point at density 0.05. Computed once per cloud on a background thread and cached.
+- Drawn unfogged (fog start restored afterwards) through `RenderLevelStageEvent`; this bends the Phase 3 "clouds are invisible" rule only for sensor owners who switch it on.
 
 **Phase order (decided after 4b):** 5a Body data → 6 Asteroids → 7 Machines → 5b Body rendering → 8 → 9 → 10. Gameplay comes before the GeckoLib rendering phase.
 
