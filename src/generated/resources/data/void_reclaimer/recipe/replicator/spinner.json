@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "spinner"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 15.0,
+    "void_reclaimer:metallic": 25.0,
+    "void_reclaimer:silicate": 15.0
+  },
+  "milestone": "void_reclaimer:diversified",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:spinner"
+  },
+  "ticks": 1200
+}
