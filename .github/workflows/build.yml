@@ -1,8 +1,11 @@
 name: Build
 
 on:
+  # Pushes to a PR branch would run the same commit twice (push and pull_request), so push runs only on main.
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
