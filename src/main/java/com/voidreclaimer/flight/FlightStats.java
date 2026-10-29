@@ -1,6 +1,5 @@
 package com.voidreclaimer.flight;
 
-import com.voidreclaimer.Config;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -14,13 +13,9 @@ import net.minecraft.world.entity.player.Player;
 public record FlightStats(double mass, double thrust, double brakeForce, double maxSpeed) {
     public static final double TICKS_PER_SECOND = 20.0;
 
-    /** Current stats for a player. Phase 5 computes these from the assembled frame and parts. */
+    /** Current handling for a player, from the assembled body (both sides; the client has the synced body). */
     public static FlightStats of(Player player) {
-        return new FlightStats(
-                Config.STARTER_MASS.get(),
-                Config.STARTER_THRUST.get(),
-                Config.STARTER_BRAKE_THRUST.get(),
-                Config.STARTER_MAX_SPEED.get() / TICKS_PER_SECOND);
+        return com.voidreclaimer.body.Bodies.stats(player).flight();
     }
 
     public double acceleration() {

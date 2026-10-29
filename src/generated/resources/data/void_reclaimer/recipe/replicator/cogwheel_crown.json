@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "carbon": 4.0,
+    "metallic": 8.0
+  },
+  "milestone": "diversified",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:cogwheel_crown"
+  },
+  "ticks": 300
+}

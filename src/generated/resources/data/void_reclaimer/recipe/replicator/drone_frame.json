@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "metallic": 20.0,
+    "silicate": 10.0
+  },
+  "milestone": "first_dust",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:drone_frame"
+  },
+  "ticks": 1200
+}

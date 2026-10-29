@@ -116,9 +116,10 @@ src/main/java/com/voidreclaimer/
 ├── nanite/                       Phase 4: Nanite Swarm (build in empty space)
 ├── tether/                       Phase 4: Tether Anchor leash and recall
 ├── core/                         Phase 4: Backup Cores, respawn choice, death marker
-├── body/                         Phase 5: SizeClass, Frame/Part definitions, BodyData attachment,
-│   ├── part/                     part types & stats
-│   └── assembly/                 assembly menu/logic
+├── body/                         Phase 5: SizeClass, PartKind, PartStats, BodyData attachment, BodyStats,
+│   │                             BodyRules, Bodies (server), InventoryLock, Modules
+│   ├── part/                     PartItem
+│   └── assembly/                 (5b) 3D assembly view logic
 ├── asteroid/                     Phase 6: worldgen features, drill gating
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
 ├── station/                      Phase 8: multiblock validation & controllers
@@ -217,6 +218,16 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
   - Drone, Mech and Ship are all the player's body (GeckoLib, Create style). The Ship is the 3.0-scale class: a mobile base with more storage, module slots and a faster Replicator; it docks at stations and is the class that survives the Atmospheric Portal (Phase 9).
   - Stations are fixed block structures: Create machines and belts inside, Create contraptions (bearings, pistons, gantries) for moving parts such as rotating rings, our controller blocks for multiblock bonuses (Phase 8). Between stations: helper drones and Create trains on tracks laid through space.
   - Keep a block-built Ship and movable stations possible as optional Aeronautics support later: don't design station controllers or a Ship Core in ways that rule it out.
+
+**Phase 5a**
+- **Parts:** items with a default `part_stats` component. The body (`BodyData` attachment) holds a frame, a core, and per-kind slot lists sized by the frame. Stats are computed purely in `BodyStats`.
+- **Size classes:** Drone 0.4 / Mech 1.2 / Ship 3.0 (`generic.scale`). The frame also sets max health, reach, dust intake, base inventory rows, mass budget and slot counts.
+- **Mass is a soft limit** (handling and energy penalty over budget). **Tier gate:** part tier ≤ core tier.
+- **Inventory:** hotbar + frame base rows + storage rows (max 36). Locked slots take nothing new but can be emptied; creative is exempt.
+- **Modules:** sensor and tool modules work only when installed. Tools are used with an empty main hand; the module wheel (hold Left Alt) picks the active one. Nanite: right-click space, or sneak + right-click a block.
+- **Install UI:** the Body tab in the Replicator (5b adds the 3D assembly view).
+- **Cosmetics:** casing material + accent tint + thruster trail (drawn now as particles), plus cosmetic part slots (drawn in 5b).
+- **Mech frame and Mk II parts** unlock with the Expansion milestone (any dust kind at capacity). The Ship frame waits for Phase 6 materials.
 
 **Cloud scanner (after 4b)**
 - With a Dust Sensor, key N toggles (client config `cloudScanner`, default on) a wire mesh with a faint tint, in the kind's color, for every cloud whose edge is within 512 blocks.

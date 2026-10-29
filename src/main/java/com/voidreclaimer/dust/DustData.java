@@ -26,9 +26,9 @@ public record DustData(float metallic, float silicate, float ice, float carbon) 
             ByteBufCodecs.FLOAT, DustData::carbon,
             DustData::new);
 
-    /** Storage per kind. Phase 5a's storage parts raise it; for now it's the config starter capacity. */
+    /** Storage per kind: the config base plus the body's storage parts. */
     public static float capacity(Player player) {
-        return Config.DUST_CAPACITY.get().floatValue();
+        return Config.DUST_CAPACITY.get().floatValue() + com.voidreclaimer.body.Bodies.stats(player).dustCapacity();
     }
 
     public float get(DustKind kind) {

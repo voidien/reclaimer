@@ -1,6 +1,5 @@
 package com.voidreclaimer.tether;
 
-import com.voidreclaimer.nanite.NaniteSwarmItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,11 +20,11 @@ public final class TetherAnchorBlock extends Block {
         super(properties);
     }
 
-    /** Holding a block or the Nanite Swarm builds against this block instead of using it, like any other block. */
+    /** Holding a block places it against this block instead of using it, like any other block. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                               InteractionHand hand, BlockHitResult hit) {
-        if (stack.getItem() instanceof BlockItem || stack.getItem() instanceof NaniteSwarmItem) {
+        if (stack.getItem() instanceof BlockItem) {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hit);

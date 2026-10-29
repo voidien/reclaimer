@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "carbon": 10.0,
+    "metallic": 30.0,
+    "silicate": 10.0
+  },
+  "milestone": "expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:thruster_mk2"
+  },
+  "ticks": 1200
+}

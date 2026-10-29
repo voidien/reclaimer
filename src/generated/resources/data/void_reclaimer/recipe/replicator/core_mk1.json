@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "carbon": 5.0,
+    "metallic": 15.0,
+    "silicate": 10.0
+  },
+  "milestone": "first_dust",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:core_mk1"
+  },
+  "ticks": 900
+}

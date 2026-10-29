@@ -1,0 +1,14 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "parts",
+  "cost": {
+    "metallic": 8.0,
+    "silicate": 8.0
+  },
+  "milestone": "first_dust",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:storage_mk1"
+  },
+  "ticks": 600
+}

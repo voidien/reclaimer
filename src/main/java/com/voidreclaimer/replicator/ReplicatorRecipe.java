@@ -34,7 +34,7 @@ public record ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, Categ
         implements Recipe<ReplicatorInput> {
 
     public enum Category implements StringRepresentable {
-        TOOLS("tools"), MODULES("modules"), BLOCKS("blocks");
+        TOOLS("tools"), MODULES("modules"), PARTS("parts"), BLOCKS("blocks");
 
         public static final Codec<Category> CODEC = StringRepresentable.fromEnum(Category::values);
         private static final IntFunction<Category> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);

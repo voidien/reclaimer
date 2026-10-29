@@ -82,7 +82,7 @@ public final class ServerFlightHandler {
         } else {
             return;
         }
-        Energy.consume(player, (float) perTick);
+        Energy.consume(player, (float) perTick * com.voidreclaimer.body.Bodies.stats(player).energyUse());
     }
 
     /** Returns true if the player was corrected. */

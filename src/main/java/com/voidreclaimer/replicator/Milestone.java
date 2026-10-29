@@ -22,7 +22,9 @@ public enum Milestone implements StringRepresentable {
     /** Placed {@link #STRUCTURE_BLOCKS} blocks. */
     FIRST_STRUCTURE("first_structure", context -> context.blocksPlaced() >= Milestone.STRUCTURE_BLOCKS),
     /** Holding three different kinds of dust at once. */
-    DIVERSIFIED("diversified", context -> context.kindsHeld() >= 3);
+    DIVERSIFIED("diversified", context -> context.kindsHeld() >= 3),
+    /** Any one dust kind filled to capacity: the drone outgrows its storage. Unlocks Mk II parts and the Mech frame. */
+    EXPANSION("expansion", MilestoneContext::anyKindFull);
 
     /** Blocks to place for {@link #FIRST_STRUCTURE}. */
     public static final int STRUCTURE_BLOCKS = 10;

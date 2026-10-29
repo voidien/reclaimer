@@ -6,7 +6,9 @@
   "mixins": [
     "FallingBlockMixin",
     "LivingEntityTravelMixin",
-    "GameTestServerMixin"
+    "GameTestServerMixin",
+    "InventoryLockMixin",
+    "SlotLockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

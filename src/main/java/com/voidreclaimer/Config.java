@@ -22,10 +22,6 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue ENERGY_RESERVE_FRACTION;
     public static final ModConfigSpec.DoubleValue ENERGY_RESTART_FRACTION;
 
-    public static final ModConfigSpec.DoubleValue STARTER_MASS;
-    public static final ModConfigSpec.DoubleValue STARTER_THRUST;
-    public static final ModConfigSpec.DoubleValue STARTER_BRAKE_THRUST;
-    public static final ModConfigSpec.DoubleValue STARTER_MAX_SPEED;
     public static final ModConfigSpec.DoubleValue THRUST_ENERGY_COST;
     public static final ModConfigSpec.DoubleValue BRAKE_ENERGY_COST;
     public static final ModConfigSpec.DoubleValue SPEED_CHECK_TOLERANCE;
@@ -70,7 +66,9 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("The AI's internal energy (shown in place of the hunger bar). Rates are per second.").push("energy");
-        ENERGY_CAPACITY = BUILDER.comment("Base energy capacity.").defineInRange("capacity", 100.0, 1.0, 100_000.0);
+        ENERGY_CAPACITY = BUILDER
+                .comment("Energy capacity before the body is applied (the installed core sets the real capacity).")
+                .defineInRange("capacity", 100.0, 1.0, 100_000.0);
         ENERGY_IDLE_DRAIN = BUILDER
                 .comment("Passive drain while above the emergency reserve.")
                 .defineInRange("idleDrain", 0.2, 0.0, 1000.0);
@@ -88,14 +86,7 @@ public final class Config {
                 .defineInRange("restartFraction", 0.05, 0.0, 1.0);
         BUILDER.pop();
 
-        BUILDER.comment("Thruster flight. Acceleration is thrust / mass, in blocks per tick per tick.",
-                "Phase 5's modular body replaces these starter drone stats with values from its parts.").push("flight");
-        STARTER_MASS = BUILDER.comment("Starter drone mass.").defineInRange("starterMass", 1.0, 0.01, 10_000.0);
-        STARTER_THRUST = BUILDER.comment("Starter drone thruster force.").defineInRange("starterThrust", 0.03, 0.0, 10.0);
-        STARTER_BRAKE_THRUST = BUILDER
-                .comment("Starter drone inertial dampener force (braking when no thrust key is held).")
-                .defineInRange("starterBrakeThrust", 0.04, 0.0, 10.0);
-        STARTER_MAX_SPEED = BUILDER.comment("Starter drone top speed in blocks per second.").defineInRange("starterMaxSpeed", 10.0, 0.1, 100.0);
+        BUILDER.comment("Thruster flight. Handling (mass, thrust, top speed) comes from the body's parts.").push("flight");
         THRUST_ENERGY_COST = BUILDER.comment("Energy per second while any thruster fires.").defineInRange("thrustEnergyCost", 2.0, 0.0, 1000.0);
         BRAKE_ENERGY_COST = BUILDER.comment("Energy per second while the dampener is braking.").defineInRange("brakeEnergyCost", 1.0, 0.0, 1000.0);
         SPEED_CHECK_TOLERANCE = BUILDER
