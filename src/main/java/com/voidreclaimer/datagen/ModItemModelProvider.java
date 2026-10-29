@@ -18,6 +18,7 @@ public final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.DUST_SENSOR.get());
         basicItem(ModItems.SALVAGE_TOOL.get());
         basicItem(ModItems.NANITE_SWARM.get());
+        basicItem(ModItems.BODY_BLUEPRINT.get());
         for (var item : ModItems.ITEMS.getEntries()) {
             if (item.get() instanceof SectionItem || item.get() instanceof ModuleItem && item != ModItems.DUST_SENSOR
                     && item != ModItems.SALVAGE_TOOL && item != ModItems.NANITE_SWARM) {

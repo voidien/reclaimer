@@ -43,6 +43,7 @@ public final class Salvage {
         BlockPos pos = event.getPos();
         event.setCanceled(true);
         level.destroyBlock(pos, false, player);
+        com.voidreclaimer.body.Wear.onToolUse(player);
 
         DustCost refund = refundFor(level.getRecipeManager(), state.getBlock().asItem(), Config.SALVAGE_REFUND.get().floatValue());
         if (!refund.isFree()) {

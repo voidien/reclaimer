@@ -13,6 +13,8 @@ import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.body.Parts;
+import com.voidreclaimer.body.Wear;
+import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.network.BodyActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
@@ -266,7 +268,12 @@ final class BodyPanel {
                         () -> PacketDistributor.sendToServer(BodyActionPayload.removeSection(socketId))));
             }
         }
-        ty += 18;
+        ty += 13;
+        if (!section.isEmpty()) {
+            ty = renderCondition(graphics, player, socketId, section, tx, ty, mouseX, mouseY);
+            ty = renderPaint(graphics, player, view.data().cosmetics(), socketId, tx, ty, mouseX, mouseY);
+        }
+        ty += 3;
 
         // Mounts on the section.
         List<BodyData.Mount> mounts = view.mounts(socketId);
@@ -351,9 +358,117 @@ final class BodyPanel {
         }
     }
 
+    /** "Condition 63%  [Repair: M3 S2]" for a worn section; nothing for a new one. Returns the next line's y. */
+    private int renderCondition(GuiGraphics graphics, LocalPlayer player, String socketId, ItemStack section, int tx, int ty,
+                                int mouseX, int mouseY) {
+        float condition = Wear.condition(section);
+        if (condition >= 1f) {
+            return ty;
+        }
+        int color = condition >= Wear.FULL_EFFECT ? 0xFFE0B050 : WARN;
+        Component label = Component.translatable("body.void_reclaimer.condition", Math.round(condition * 100));
+        graphics.drawString(font, label, tx, ty, color, false);
+        DustCost cost = Wear.repairCost(player.level().getRecipeManager(), section);
+        boolean affordable = cost.canAfford(player.getData(ModAttachments.DUST));
+        Component repair = Component.translatable("body.void_reclaimer.repair", costText(player, cost));
+        int rx = tx + font.width(label) + 6;
+        boolean over = inside(mouseX, mouseY, rx, ty - 1, font.width(repair), 10);
+        graphics.drawString(font, repair, rx, ty, !affordable ? 0xFF5A6570 : over ? ACCENT : TEXT, false);
+        regions.add(new Region(rx, ty - 1, font.width(repair), 10, () -> PacketDistributor.sendToServer(BodyActionPayload.repair(socketId))));
+        return ty + 11;
+    }
+
+    private static String costText(LocalPlayer player, DustCost cost) {
+        StringBuilder text = new StringBuilder();
+        for (var kind : com.voidreclaimer.dust.DustKinds.ordered(player.registryAccess(), cost.amounts().keySet())) {
+            String name = com.voidreclaimer.dust.DustKinds.name(player.registryAccess(), kind).getString();
+            text.append(text.isEmpty() ? "" : " ").append(name.isEmpty() ? "?" : name.substring(0, 1)).append(Mth.ceil(cost.get(kind)));
+        }
+        return text.isEmpty() ? "-" : text.toString();
+    }
+
+    /** The section's own casing (cycles through Default and the available casings) and accent. Returns the next y. */
+    private int renderPaint(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, String socketId, int tx, int ty,
+                            int mouseX, int mouseY) {
+        RegistryAccess access = player.registryAccess();
+        ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
+        Cosmetics.SectionPaint paint = cosmetics.paint(socketId);
+        Component casingName = paint.casing().isPresent()
+                ? Cosmetics.name(access, VoidReclaimerRegistries.CASING, paint.casing().get())
+                : Component.translatable("body.void_reclaimer.paint.default");
+        Component casing = Component.translatable("body.void_reclaimer.paint", casingName);
+        int w = font.width(casing) + 6;
+        chip(graphics, tx, ty, w, casing, false, mouseX, mouseY);
+        regions.add(new Region(tx, ty, w, 11, () -> {
+            // Default -> each available casing in order -> Default.
+            List<com.voidreclaimer.registry.OrderedRegistry.Entry<Casing>> casings = Cosmetics.casings(access).stream()
+                    .filter(e -> Cosmetics.isAvailable(e.value(), replicator::isUnlocked)).toList();
+            int index = paint.casing().map(key -> {
+                for (int i = 0; i < casings.size(); i++) {
+                    if (casings.get(i).key().equals(key)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }).orElse(-1);
+            java.util.Optional<net.minecraft.resources.ResourceKey<Casing>> next = index + 1 < casings.size()
+                    ? java.util.Optional.of(casings.get(index + 1).key()) : java.util.Optional.empty();
+            PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withPaint(socketId,
+                    new Cosmetics.SectionPaint(next, paint.accent()))));
+        }));
+        ty += 13;
+        int sx = tx;
+        // "Default" swatch, then the palette.
+        graphics.renderOutline(sx, ty, 9, 9, paint.accent().isEmpty() ? 0xFFFFFFFF : 0xFF3A4A5A);
+        graphics.drawString(font, "-", sx + 2, ty, DIM, false);
+        regions.add(new Region(sx, ty, 9, 9, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
+                cosmetics.withPaint(socketId, new Cosmetics.SectionPaint(paint.casing(), java.util.Optional.empty()))))));
+        sx += 11;
+        for (int color : ACCENTS) {
+            graphics.fill(sx, ty, sx + 9, ty + 9, 0xFF000000 | color);
+            if (paint.accent().isPresent() && paint.accent().get() == color) {
+                graphics.renderOutline(sx - 1, ty - 1, 11, 11, 0xFFFFFFFF);
+            }
+            regions.add(new Region(sx, ty, 9, 9, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
+                    cosmetics.withPaint(socketId, new Cosmetics.SectionPaint(paint.casing(), java.util.Optional.of(color)))))));
+            sx += 11;
+        }
+        return ty + 12;
+    }
+
+    /** Save / Apply / Queue missing for the first blueprint in the inventory, if any. */
+    private void renderBlueprint(GuiGraphics graphics, LocalPlayer player, int bx, int by, int mouseX, int mouseY) {
+        var items = player.getInventory().items;
+        int slot = -1;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).is(com.voidreclaimer.registry.ModItems.BODY_BLUEPRINT.get())) {
+                slot = i;
+                break;
+            }
+        }
+        if (slot < 0) {
+            return;
+        }
+        int blueprintSlot = slot;
+        boolean saved = items.get(slot).has(com.voidreclaimer.registry.ModDataComponents.BLUEPRINT.get());
+        graphics.renderItem(items.get(slot), bx, by - 3);
+        int x0 = bx + 18;
+        for (BodyActionPayload.Action action : List.of(BodyActionPayload.Action.BLUEPRINT_SAVE, BodyActionPayload.Action.BLUEPRINT_APPLY,
+                BodyActionPayload.Action.BLUEPRINT_QUEUE)) {
+            if (action != BodyActionPayload.Action.BLUEPRINT_SAVE && !saved) {
+                continue;
+            }
+            Component label = Component.translatable("body.void_reclaimer.blueprint." + action.name().substring(10).toLowerCase(Locale.ROOT));
+            int w = font.width(label) + 6;
+            chip(graphics, x0, by, w, label, false, mouseX, mouseY);
+            regions.add(new Region(x0, by, w, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.blueprint(action, blueprintSlot))));
+            x0 += w + 3;
+        }
+    }
+
     private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, int mouseX, int mouseY) {
         int cx = rightX() + 2;
-        int cy = y + 118;
+        int cy = y + 106;
         RegistryAccess access = player.registryAccess();
         ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
         Component casing = Component.translatable("body.void_reclaimer.casing", Cosmetics.name(access, VoidReclaimerRegistries.CASING, cosmetics.casing()));
@@ -380,6 +495,7 @@ final class BodyPanel {
             regions.add(new Region(sx, sy, 10, 10, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withAccent(color)))));
             sx += 12;
         }
+        renderBlueprint(graphics, player, cx, sy + 16, mouseX, mouseY);
     }
 
     private void chip(GuiGraphics graphics, int bx, int by, int bw, Component label, boolean active, int mouseX, int mouseY) {

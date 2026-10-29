@@ -54,6 +54,8 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "rotor_arm", ModItems.ROTOR_ARM.get(), 1, DustCost.of(5, 2, 0, 0), 15, parts, Milestones.AWAKENING);
         replicator(output, "sensor_dome", ModItems.SENSOR_DOME.get(), 1, DustCost.of(4, 4, 0, 0), 15, parts, Milestones.FIRST_DUST);
         replicator(output, "tool_claw", ModItems.TOOL_CLAW.get(), 1, DustCost.of(5, 3, 0, 0), 15, parts, Milestones.FIRST_DUST);
+        replicator(output, "body_blueprint", ModItems.BODY_BLUEPRINT.get(), 1, DustCost.of(2, 3, 0, 0), 10, ReplicatorCategories.TOOLS,
+                Milestones.FIRST_DUST);
         replicator(output, "rotor_arm_mk2", ModItems.ROTOR_ARM_MK2.get(), 1, DustCost.of(15, 5, 5, 5), 40, parts, Milestones.EXPANSION);
 
         // Mech sections: a whole Mech costs about what the Mech frame did.

@@ -345,6 +345,24 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.body.unknown_chassis", "That core section's layout isn't loaded.");
         add("message.void_reclaimer.body.inventory_full", "No free inventory slot for the parts that would come off.");
         add("message.void_reclaimer.body.returned", "Parts that no longer fit your body were returned to your inventory.");
+        add("body.void_reclaimer.condition", "Condition %s%%");
+        add("body.void_reclaimer.repair", "[Repair: %s]");
+        add("body.void_reclaimer.paint", "Casing: %s");
+        add("body.void_reclaimer.paint.default", "Body default");
+        add("body.void_reclaimer.blueprint.save", "Save");
+        add("body.void_reclaimer.blueprint.apply", "Apply");
+        add("body.void_reclaimer.blueprint.queue", "Queue missing");
+        add("message.void_reclaimer.body.not_worn", "That section isn't worn.");
+        add("message.void_reclaimer.body.repair_dust", "Not enough dust to repair it.");
+        add(ModItems.BODY_BLUEPRINT.get(), "Body Blueprint");
+        add("item.void_reclaimer.body_blueprint.empty", "Empty. Use it to save your current body.");
+        add("item.void_reclaimer.body_blueprint.saved", "%s design · %s sections · %s modules");
+        add("item.void_reclaimer.body_blueprint.usage", "Use to build it from your inventory; sneak-use to save over it.");
+        add("message.void_reclaimer.blueprint.saved", "Body saved to the blueprint.");
+        add("message.void_reclaimer.blueprint.applied", "Blueprint built: nothing missing.");
+        add("message.void_reclaimer.blueprint.missing", "Blueprint built where possible. Missing: %s");
+        add("message.void_reclaimer.blueprint.count", "%s× %s");
+        add("message.void_reclaimer.blueprint.queued", "Queued %s Replicator jobs for missing parts.");
         add("key.void_reclaimer.module_wheel", "Module Wheel (hold)");
         add("screen.void_reclaimer.module_wheel", "Tool modules");
 

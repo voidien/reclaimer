@@ -115,6 +115,10 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> SHIP_VENTRAL_FIN = section("ship_ventral_fin", BuiltinBodies.VENTRAL_FIN, 3,
             s -> s.mass(0.3f).health(1f).stability(0.1f).mount(ModuleKind.COSMETIC, 1));
 
+    /** A saved body design: save, rebuild from the inventory, queue what's missing. */
+    public static final DeferredItem<com.voidreclaimer.body.part.BlueprintItem> BODY_BLUEPRINT = ITEMS.register("body_blueprint",
+            () -> new com.voidreclaimer.body.part.BlueprintItem(new Item.Properties().stacksTo(1)));
+
     // ---- blocks -------------------------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> SCAFFOLD = ITEMS.registerSimpleBlockItem(ModBlocks.SCAFFOLD);

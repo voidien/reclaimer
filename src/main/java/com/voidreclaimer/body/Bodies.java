@@ -11,7 +11,9 @@ import com.voidreclaimer.api.body.SizeClass;
 import com.voidreclaimer.api.body.Trail;
 import com.voidreclaimer.api.event.BodyChangedEvent;
 import com.voidreclaimer.api.event.BodyStatsEvent;
+import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModItems;
@@ -105,21 +107,22 @@ public final class Bodies {
         if (size == null) {
             size = BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.DRONE_SIZE);
         }
-        List<SectionStats> sections = new ArrayList<>();
+        List<BodyStats.Installed<SectionStats>> sections = new ArrayList<>();
         for (ItemStack stack : body.sections().values()) {
             SectionStats section = Parts.section(stack);
             if (section != null) {
-                sections.add(section);
+                sections.add(new BodyStats.Installed<>(section, Wear.efficiency(Wear.condition(stack))));
             }
         }
-        List<ModuleStats> modules = new ArrayList<>();
-        for (ItemStack stack : body.modules().values()) {
-            ModuleStats module = Parts.module(stack);
+        List<BodyStats.Installed<ModuleStats>> modules = new ArrayList<>();
+        for (Map.Entry<BodyData.Mount, ItemStack> entry : body.modules().entrySet()) {
+            ModuleStats module = Parts.module(entry.getValue());
             if (module != null) {
-                modules.add(module);
+                ItemStack host = body.sections().getOrDefault(entry.getKey().socket(), ItemStack.EMPTY);
+                modules.add(new BodyStats.Installed<>(module, Wear.efficiency(Wear.condition(host))));
             }
         }
-        return BodyStats.compute(chassis.sizeClass(), size, sections, modules);
+        return BodyStats.computeWorn(chassis.sizeClass(), size, sections, modules);
     }
 
     /** The layout named by the core section; the built-in Drone if it is missing or unknown. */
@@ -255,6 +258,26 @@ public final class Bodies {
         return BodyRules.Check.OK;
     }
 
+    /** Repairs the section in {@code socket} to full condition, paying {@link Wear#repairCost} from the dust reserve. */
+    public static boolean repair(ServerPlayer player, String socket) {
+        BodyData body = data(player);
+        ItemStack section = body.section(socket);
+        if (section.isEmpty() || Wear.condition(section) >= 1f) {
+            reply(player, "message.void_reclaimer.body.not_worn");
+            return false;
+        }
+        DustCost cost = Wear.repairCost(player.serverLevel().getRecipeManager(), section);
+        DustData dust = player.getData(ModAttachments.DUST);
+        if (!cost.canAfford(dust)) {
+            reply(player, "message.void_reclaimer.body.repair_dust");
+            return false;
+        }
+        player.setData(ModAttachments.DUST, cost.takeFrom(dust));
+        player.syncData(ModAttachments.DUST);
+        store(player, body.withSection(socket, Wear.withCondition(section, 1f)));
+        return true;
+    }
+
     // ---- looks and tools ----------------------------------------------------------------------------------
 
     /** Applies a look if its casing and trail are registered and unlocked; otherwise keeps the old one. */
@@ -266,6 +289,14 @@ public final class Bodies {
         if (casing == null || trail == null || !Cosmetics.isAvailable(casing, replicator::isUnlocked)
                 || !Cosmetics.isAvailable(trail, replicator::isUnlocked)) {
             return;
+        }
+        for (Cosmetics.SectionPaint paint : cosmetics.sections().values()) {
+            if (paint.casing().isPresent()) {
+                Casing override = OrderedRegistry.get(access, VoidReclaimerRegistries.CASING, paint.casing().get());
+                if (override == null || !Cosmetics.isAvailable(override, replicator::isUnlocked)) {
+                    return;
+                }
+            }
         }
         store(player, data(player).withCosmetics(cosmetics));
     }

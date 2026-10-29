@@ -40,6 +40,11 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue SALVAGE_REFUND;
     public static final ModConfigSpec.DoubleValue NANITE_ENERGY;
 
+    public static final ModConfigSpec.BooleanValue WEAR_ENABLED;
+    public static final ModConfigSpec.DoubleValue WEAR_PER_THRUST_MINUTE;
+    public static final ModConfigSpec.DoubleValue WEAR_PER_TOOL_USE;
+    public static final ModConfigSpec.DoubleValue REPAIR_COST_FRACTION;
+
     public static final ModConfigSpec.DoubleValue TETHER_LENGTH;
     public static final ModConfigSpec.DoubleValue RECALL_SPEED_FACTOR;
     public static final ModConfigSpec.DoubleValue RECALL_PULL_RANGE;
@@ -136,6 +141,16 @@ public final class Config {
         RECALL_PULL_ENERGY = BUILDER.comment("Energy per second while the recall pulls.").defineInRange("recallPullEnergy", 3.0, 0.0, 1000.0);
         RECALL_TELEPORT_ENERGY = BUILDER.comment("Energy for a long-range recall teleport.").defineInRange("recallTeleportEnergy", 25.0, 0.0, 1000.0);
         RECALL_TELEPORT_COOLDOWN = BUILDER.comment("Seconds between recall teleports.").defineInRange("recallTeleportCooldown", 60, 0, 3600);
+        BUILDER.pop();
+
+        BUILDER.comment("Body section wear: light and repairable; sections never break. No wear in creative.").push("wear");
+        WEAR_ENABLED = BUILDER.comment("Whether sections wear at all.").define("enabled", true);
+        WEAR_PER_THRUST_MINUTE = BUILDER.comment("Condition lost per minute of thrust by each section carrying a thruster (1.0 = all of it).")
+                .defineInRange("perThrustMinute", 0.012, 0.0, 1.0);
+        WEAR_PER_TOOL_USE = BUILDER.comment("Condition lost per tool module use by the section holding the tool.")
+                .defineInRange("perToolUse", 0.002, 0.0, 1.0);
+        REPAIR_COST_FRACTION = BUILDER.comment("Repairing a section from 0% costs this fraction of its recipe's dust (less when less worn).")
+                .defineInRange("repairCostFraction", 0.2, 0.0, 10.0);
         BUILDER.pop();
 
         BUILDER.comment("Backup Cores.").push("backupCore");

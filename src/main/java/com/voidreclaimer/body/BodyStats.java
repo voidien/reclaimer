@@ -49,8 +49,22 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
     static final float MIN_HEALTH = 2f;
     static final float MIN_BUDGET = 0.1f;
 
+    /** Stats of an installed section or module with its effectiveness (1, or less for a worn section, see {@link Wear}). */
+    public record Installed<T>(T stats, float efficiency) {}
+
+    /** All parts at full effectiveness. */
     public static BodyStats compute(ResourceKey<SizeClass> sizeKey, SizeClass size, List<SectionStats> sections,
                                     List<ModuleStats> modules) {
+        return computeWorn(sizeKey, size, sections.stream().map(s -> new Installed<>(s, 1f)).toList(),
+                modules.stream().map(m -> new Installed<>(m, 1f)).toList());
+    }
+
+    /**
+     * Sections' contributions (except mass and rows) scale with their effectiveness; so do the thrusters mounted on
+     * them (a module's effectiveness is its section's).
+     */
+    public static BodyStats computeWorn(ResourceKey<SizeClass> sizeKey, SizeClass size, List<Installed<SectionStats>> sections,
+                                        List<Installed<ModuleStats>> modules) {
         float mass = 0f;
         float budget = 0f;
         float health = 0f;
@@ -59,15 +73,17 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
         int rows = 0;
         float stability = 0f;
         float turnRate = 0f;
-        for (SectionStats section : sections) {
+        for (Installed<SectionStats> installed : sections) {
+            SectionStats section = installed.stats();
+            float e = installed.efficiency();
             mass += section.mass();
-            budget += section.massBudget();
-            health += section.maxHealth();
-            reach += section.reach();
-            intake += section.dustIntake();
+            budget += section.massBudget() * e;
+            health += section.maxHealth() * e;
+            reach += section.reach() * e;
+            intake += section.dustIntake() * e;
             rows += section.baseRows();
-            stability += section.stability();
-            turnRate += section.turnRate();
+            stability += section.stability() * e;
+            turnRate += section.turnRate() * e;
         }
         float thrust = 0f;
         float brake = 0f;
@@ -76,13 +92,15 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
         float solarRate = 1f;
         int coreTier = 0;
         float dustCapacity = 0f;
-        for (ModuleStats module : modules) {
+        for (Installed<ModuleStats> installed : modules) {
+            ModuleStats module = installed.stats();
+            float e = installed.efficiency();
             mass += module.mass();
             if (module.thruster().isPresent()) {
                 ModuleStats.Thruster t = module.thruster().get();
-                thrust += t.thrust();
-                brake += t.brake();
-                topSpeed = Math.max(topSpeed, t.topSpeed());
+                thrust += t.thrust() * e;
+                brake += t.brake() * e;
+                topSpeed = Math.max(topSpeed, t.topSpeed() * e);
             }
             if (module.core().isPresent()) {
                 energyCapacity = module.core().get().energyCapacity();

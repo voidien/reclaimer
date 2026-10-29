@@ -25,6 +25,15 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<SectionStats>> SECTION = COMPONENTS.registerComponentType("section",
             builder -> builder.persistent(SectionStats.CODEC).networkSynchronized(SectionStats.STREAM_CODEC));
 
+    /** A body section's condition, 1 (new) to 0 (worn out); absent means new. See {@code body.Wear}. */
+    public static final Supplier<DataComponentType<Float>> CONDITION = COMPONENTS.registerComponentType("condition",
+            builder -> builder.persistent(Codec.floatRange(0f, 1f)).networkSynchronized(ByteBufCodecs.FLOAT));
+
+    /** A saved body design on a Body Blueprint. */
+    public static final Supplier<DataComponentType<com.voidreclaimer.body.Blueprint>> BLUEPRINT = COMPONENTS.registerComponentType(
+            "blueprint", builder -> builder.persistent(com.voidreclaimer.body.Blueprint.CODEC)
+                    .networkSynchronized(com.voidreclaimer.body.Blueprint.STREAM_CODEC));
+
     /** Body module stats; a default component on module items. */
     public static final Supplier<DataComponentType<ModuleStats>> MODULE = COMPONENTS.registerComponentType("module",
             builder -> builder.persistent(ModuleStats.CODEC).networkSynchronized(ModuleStats.STREAM_CODEC));

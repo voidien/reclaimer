@@ -19,6 +19,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.SCAFFOLD.get());
                 output.accept(ModItems.SALVAGE_TOOL.get());
                 output.accept(ModItems.NANITE_SWARM.get());
+                output.accept(ModItems.BODY_BLUEPRINT.get());
                 output.accept(ModItems.TETHER_ANCHOR.get());
                 output.accept(ModItems.BACKUP_CORE.get());
                 // Sections, by chassis, then modules.

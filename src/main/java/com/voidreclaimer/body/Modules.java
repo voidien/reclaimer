@@ -52,7 +52,9 @@ public final class Modules {
             return;
         }
         HitResult hit = player.pick(player.blockInteractionRange(), 1f, false);
-        type.use(player, tool, hit.getType() == HitResult.Type.BLOCK);
+        if (type.use(player, tool, hit.getType() == HitResult.Type.BLOCK)) {
+            Wear.onToolUse(player);
+        }
     }
 
     @SubscribeEvent
