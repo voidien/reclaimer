@@ -320,6 +320,14 @@ From an outside audit, each checked against the code first (several claims were 
 - Collector part for raw items out of a cloud (the second source of raw items, besides the Replicator).
 - Everything blocked on the doc's open questions (see `CLAUDE.md`).
 
+## Phase 8: Zero-G Frame, payloads and machinery recipes: done
+- 6 items + 6 transitional items and 6 Create Sequenced Assembly recipes (frame, swarm payload, truss module, RCS Thruster, Reaction Wheel Gyroscope, Atmospheric Catalyst Core), each with the owner's steps and a config toggle (`frame`, `dysonPayloads`, `rcsThruster`, `reactionWheel`, `catalystCore`). See the Phase 8 block in `CLAUDE.md`.
+- The provider's Sequenced Assembly code is now one generic builder; the existing solar sail recipe regenerates byte-identical.
+- Dyson sky thresholds default to 50 (lattice) and 2000 (shell complete).
+- Tests: `frameAndMachineryAreTheOwnersSequencedAssemblies` (checks base, result, transitional item, loops and the type of every step through Create's own recipe class), `defaultsAreTheOwnersTrussCounts` and the extended toggle test. Mutation-checked: a wrong loop count, a swapped step and a wrong result each fail the GameTest; a reverted tier default fails the unit test.
+- Placeholder icons for the 12 new items (generated). Art ids to deliver: `zero_g_precision_frame`, `dyson_swarm_satellite_payload`, `dyson_shell_truss_module`, `rcs_thruster`, `reaction_wheel_gyroscope`, `atmospheric_catalyst_core` and their `incomplete_` twins.
+- Not here: the Mass Driver (Phase 9), the Quantum Receiver, the Starship milestone (Phase 10), placeable RCS Thruster and Gyroscope (Phase 7b).
+
 ## Art drop 1 imported: done
 - From the owner's art repo (`void-reclaimer-art`, branch `art/tier-c-pilot`, supplied as a zip): 49 placeholder textures replaced by real art (the 3 original block textures, the 4 HUD energy sprites, 42 item icons including all Ship sections, an animated 16x64 Nanite Swarm icon with its `.mcmeta`), plus 124 new files: 3 body rigs, 30 section models, 4 module models, 3 first-person pieces, 3 animation files and 80 entity textures (base + accent). No code uses the models, animations or entity textures yet: they are for Phase 5b.
 - Checked: its socket ids and relative pivots equal our Drone, Mech and Ship chassis JSON (0 mismatches); PNG sizes and modes are as documented. Not run: its Python generators (we don't need them) and Blockbench (the sources there for non-ship pieces are stubs, per its README).
@@ -365,7 +373,8 @@ Original plan, with where each stands (the revised plan for what is left is in `
 - [x] 7. Machines (part 1 materials and Create chains, part 2 custom machines)
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 7b. Create Aeronautics ships (Space Thruster, Helm)
-- [ ] 8-14 (revised): Zero-G Frame and payloads, Mass Driver, Starship, Ruined Earth, Spire, Monolith and villagers, Restoration
+- [x] 8. Zero-G Frame, payloads and machinery recipes
+- [ ] 9-14 (revised): Mass Driver, Starship, Ruined Earth, Spire, Monolith and villagers, Restoration
 
 ## Known issues
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.

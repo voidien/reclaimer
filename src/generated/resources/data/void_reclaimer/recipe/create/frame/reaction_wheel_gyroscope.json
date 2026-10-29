@@ -1,0 +1,86 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "reactionWheel"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:zero_g_precision_frame"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "void_reclaimer:reaction_wheel_gyroscope"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "void_reclaimer:liquid_silicon"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        },
+        {
+          "item": "void_reclaimer:high_purity_graphite"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        },
+        {
+          "item": "create:precision_mechanism"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_reaction_wheel_gyroscope"
+  }
+}

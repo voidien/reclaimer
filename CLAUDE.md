@@ -323,7 +323,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 
 **Dyson Sphere (foundations, 2026-10-29)**
 - `dyson.DysonSphereData` (saved, synced attachment on the deep space level): satellites and truss modules launched, plus the server's `latticeStart` and `shellTotal` thresholds so clients can draw the shell. `DysonSphereData.of(level)` works from any dimension on the server.
-- `dyson.DysonTiers` (config-free): tier 1 = 1-50 satellites, tier 2 = 51+, tier 3 = `latticeStart` trusses, tier 4 = `shellTotal` trusses. Config `dyson.latticeStart` (default 1) and `dyson.shellTotal` (default 1000) are placeholders: the doc leaves both open.
+- `dyson.DysonTiers` (config-free): tier 1 = 1-50 satellites, tier 2 = 51+, tier 3 = `latticeStart` trusses, tier 4 = `shellTotal` trusses. Config `dyson.latticeStart` (default 50) and `dyson.shellTotal` (default 2000) are the owner's numbers (2026-10-29).
 - `dyson.Dyson.launchSatellites/launchTrusses/set` is the one entry point for launchers (the Mass Driver later). A tier change re-checks milestones for every player.
 - Milestones `dyson_tier_1..4` (criterion `dyson_tier`, order 100-103) write the AI log entries. Their texts are placeholders.
 - `/void_reclaimer dyson get|set satellites|trusses <n>` for testing.
@@ -344,7 +344,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Recipes** are written by `ModCreateRecipeProvider` as plain JSON (20 recipes under `data/void_reclaimer/recipe/create/`): crushing, milling, mixing (basin, heated, superheated), pressing, splashing (fan washing), vanilla blasting (fan blasting), deploying, and the solar sail's Sequenced Assembly. The Replicator turns 8 dust of a kind into 4 raw items of that kind (tab "Raw").
 - **Toggles** (config `materials`): `replicatorRawItems`, `iceChain`, `carbonChain`, `siliconChain`, `metallicChain`, `solarSail`. Recipes carry the condition `void_reclaimer:config` (`machine.ConfigCondition`, key = toggle name), checked when recipes load, so a change needs a restart or `/reload`. New features should get a toggle the same way (`Config.toggle`).
 - **Assumptions the doc left open (all placeholders; change them in the provider):** fluid amounts (250 mB steps, 2:1 hydrogen to oxygen) and times; "Packed Ice Block" is vanilla Packed Ice; "Electron Tube" and "Precision Mechanism" are Create's items (`create:electron_tube`, `create:precision_mechanism`); "high pressure" pressing is a normal press (Create has one pressure); Silicon-Carbide Slurry is an item (it feeds a press); fan blasting uses vanilla `minecraft:blasting`, so a blast furnace also makes nodules.
-- **Blocked on open questions in the doc** (not implemented): everything on the Zero-G Precision Frame (RCS Thruster, Reaction Wheel Gyroscope, both Dyson payloads, Data Monolith; the frame's steps are open), the Atmospheric Catalyst Core step order, and "standard Create crafting" of shafts and gears from Micro-Alloy Sheet (which recipes?). Collector part (b) for raw items from a cloud is also not built.
+- **Blocked on open questions in the doc** (not implemented): the Data Monolith (Act III; its frame step is now known, the rest of its design is not built), and "standard Create crafting" of shafts and gears from Micro-Alloy Sheet (which recipes?). Collector part (b) for raw items from a cloud is also not built.
 
 **Machines, part 2: the custom Create machines (Phase 7, 2026-10-29)**
 - Built on Create 6's addon API (checked against the jar, not memory): `RotatedPillarKineticBlock` + `IBE` for blocks, `KineticBlockEntity` for block entities, `BlockStressValues.IMPACTS` for stress, `FanProcessingType` in `CreateBuiltInRegistries.FAN_PROCESSING_TYPE`, `BlockSpoutingBehaviour.BY_BLOCK`. Registration is plain NeoForge `DeferredRegister`s (no Registrate); `machine/MachineSetup` does the hooks that need Create's registries.
@@ -362,14 +362,14 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Act II setting:** the planet is `ruined_earth`; the Overworld, Nether and End stay locked. The Dyson Sphere work stays in `deep_space`.
 - **Sectors:** each of the 16 cells of the 4x4 grid is one Spire's area: 256x256 centered on its 128-block pulse, so 16 Spires cover the planet.
 - **Silicon-Carbide Coating:** Silicon-Carbide Slurry + Carbon Composite Plate in a Basin, then a Press (Create basin compacting) makes 2 coatings (`carbonChain` toggle).
-- **Still open (asked, not answered):** the Zero-G Precision Frame's Sequenced Assembly steps, which upgrades make the Starship, the truss counts for sky tiers 3 and 4, the Catalyst Core step order. Work that depends on them waits.
+- **Answered later the same day:** the Zero-G Precision Frame steps (Graphite, sheet, press; 2 loops), the truss counts (tier 3 at 50, tier 4 at 2000), the Catalyst Core order (sensor base, wafer, propellant, press), and the Starship: one milestone from the nebula chains (the Ship frame unlocks when the AI has made one item from each of the four chains: Coolant Frame Plate, Carbon Composite Plate, High-Efficiency Solar Cell, Micro-Alloy Sheet). Not yet built: the Starship milestone (Phase 10).
 
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
 Act II, the Dyson Sphere (deep_space):
-- **8. Zero-G Frame and payloads:** Zero-G Precision Frame, Dyson Swarm Satellite Payload, Dyson Shell Truss Module, RCS Thruster, Reaction Wheel Gyroscope. *Blocked on the frame's steps.*
+- **8. Zero-G Frame and payloads (done):** Zero-G Precision Frame, Dyson Swarm Satellite Payload, Dyson Shell Truss Module, RCS Thruster, Reaction Wheel Gyroscope, Atmospheric Catalyst Core, as Create Sequenced Assembly recipes (see the Phase 8 block).
 - **9. Kinetic Mass Driver:** the 1x1x3 multiblock, its launch sequence and animations, the handoff to `Dyson.launchSatellites/launchTrusses`, the Sub-Light Quantum Receiver and the sky's power beams. Sky tier thresholds from the truss counts.
-- **10. The Starship:** the Ship class upgrades and what unlocks its frame. *Blocked on the upgrade answers.*
+- **10. The Starship:** the milestone that unlocks the Ship frame (one item from each nebula chain) and the Ship class's recipes.
 Act III, Planetary Genesis (ruined_earth):
 - **11. Ruined Earth:** the dimension and its three-era sky, the Atmospheric Portal, the Planetary Grid HUD, the drop pod and Industrial Mech, Ashen Slag, smog, Acid Drizzle weather.
 - **12. Terraforming Spire:** the multiblock, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core (one per sector), the Genesis Pulse that rewrites biomes and blocks in 128 blocks.
@@ -380,3 +380,17 @@ Parallel tracks, scheduled as they fit:
 - **7b. Aeronautics ships** (Space Thruster, Helm).
 - **Stations and helper drones** (the old Phase 8): the sphere's logistics may need them; revisit after Phase 9.
 - **Polish:** goggle tooltips and rotation animation for the machines, a JEI category for freezing, Ponder scenes, the raw-item collector part (cloud to item), ore veins in asteroids, the "Starship" display name.
+
+**Phase 8: Zero-G Frame, payloads and machinery recipes (2026-10-29)**
+- Six items (`ModMaterials`, names as in the doc) with a transitional `incomplete_<id>` twin each, all made by Create Sequenced Assembly recipes that `ModCreateRecipeProvider.assembly(...)` writes. Spouts are 250 mB (placeholder).
+  - **Zero-G Precision Frame:** Micro-Alloy Sheet base; Deploy High-Purity Graphite, Deploy Micro-Alloy Sheet, Press; 2 loops. Toggle `frame`.
+  - **Dyson Swarm Satellite Payload:** Frame base; Deploy Carbon Composite Plate, Deploy High-Efficiency Solar Cell, Spout Liquid Silicon, Press; 2 loops. Toggle `dysonPayloads`.
+  - **Dyson Shell Truss Module:** Frame base; Deploy Thermal Shielding Tile, Deploy Micro-Alloy Sheet, Spout Coolant Fluid, Press (Create has one press pressure); 3 loops. Toggle `dysonPayloads`.
+  - **RCS Thruster:** Frame base; Deploy Carbon Composite Plate, Spout Nebulite Propellant, Deploy Create's Precision Mechanism, Press. Toggle `rcsThruster`.
+  - **Reaction Wheel Gyroscope:** Frame base; Spout Liquid Silicon, Deploy High-Purity Graphite, Deploy Precision Mechanism, Press. Toggle `reactionWheel`.
+  - **Atmospheric Catalyst Core:** Advanced Sensor Unit base; Deploy Quartz Wafer, Spout Nebulite Propellant, Press. Toggle `catalystCore`.
+- The RCS Thruster and the Gyroscope are plain items for now; placing them and pushing ships with them belongs to Phase 7b. The Catalyst Core is an Act III item; it is here because its recipe was decided.
+- The doc's intermediate names (Reinforced Satellite Chassis, ...) are not used: Create shows one transitional item per recipe.
+- Dyson sky thresholds now default to 50 and 2000 (`DysonTiers`, config `dyson`).
+- Not here: the Mass Driver, the Quantum Receiver, the Starship milestone.
+

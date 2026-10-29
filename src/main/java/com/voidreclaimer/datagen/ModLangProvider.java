@@ -85,7 +85,9 @@ public final class ModLangProvider extends LanguageProvider {
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             add(material.item().get(), material.name());
         }
-        add(com.voidreclaimer.registry.ModMaterials.INCOMPLETE_SOLAR_SAIL.get(), "Incomplete High-Output Solar Sail");
+        for (var incomplete : com.voidreclaimer.registry.ModMaterials.INCOMPLETE) {
+            add(incomplete.item().get(), incomplete.name());
+        }
         for (var fluid : com.voidreclaimer.registry.ModFluids.ALL) {
             add("fluid_type.void_reclaimer." + fluid.id(), fluid.name());
             add(fluid.bucket().get(), fluid.name() + " Bucket");

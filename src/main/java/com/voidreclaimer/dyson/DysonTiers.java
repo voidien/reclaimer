@@ -15,9 +15,9 @@ public final class DysonTiers {
     /** Satellites at which the swarm is drawn at full density. */
     public static final int SWARM_FULL = 500;
 
-    /** Stand-ins until the design doc settles the numbers; the server config overrides both. */
-    public static final long DEFAULT_LATTICE_START = 1;
-    public static final long DEFAULT_SHELL_TOTAL = 1000;
+    /** The owner's numbers (2026-10-29): the lattice appears after 50 trusses, the shell is complete at 2000. The server config overrides both. */
+    public static final long DEFAULT_LATTICE_START = 50;
+    public static final long DEFAULT_SHELL_TOTAL = 2000;
 
     /** Sunlight left when the lattice first appears ("about 50% occluded"), and with the swarm at its densest. */
     private static final float LATTICE_SUNLIGHT = 0.5f;

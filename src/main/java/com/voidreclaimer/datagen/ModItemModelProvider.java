@@ -22,7 +22,9 @@ public final class ModItemModelProvider extends ItemModelProvider {
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             basicItem(material.item().get());
         }
-        basicItem(com.voidreclaimer.registry.ModMaterials.INCOMPLETE_SOLAR_SAIL.get());
+        for (var incomplete : com.voidreclaimer.registry.ModMaterials.INCOMPLETE) {
+            basicItem(incomplete.item().get());
+        }
         for (var fluid : com.voidreclaimer.registry.ModFluids.ALL) {
             basicItem(fluid.bucket().get());
         }
