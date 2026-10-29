@@ -65,6 +65,46 @@ public final class SableSpikeGameTests {
         runWithPlayer(helper, ModDimensions.SPIKE_SHORT, new BlockPos(3_200, 200, 3_000), 0.0);
     }
 
+    @GameTest(template = "empty", timeoutTicks = 400, required = false)
+    public static void propellerShipVacuum(GameTestHelper helper) {
+        runPropeller(helper, ModDimensions.DEEP_SPACE, new BlockPos(3_400, 200, 3_000));
+    }
+
+    /** spike_short has air pressure 1.0 (see dimension_physics/spike_spike_short.json). */
+    @GameTest(template = "empty", timeoutTicks = 400, required = false)
+    public static void propellerShipAir(GameTestHelper helper) {
+        runPropeller(helper, ModDimensions.SPIKE_SHORT, new BlockPos(3_400, 200, 3_000));
+    }
+
+    /** A 3x3 stone deck with a creative motor driving an andesite propeller, assembled into a sub-level. */
+    private static void runPropeller(GameTestHelper helper, ResourceKey<Level> key, BlockPos pos) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel level = server.getLevel(key);
+        String tag = "[SableSpike propeller " + key.location() + "]";
+        level.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            VoidReclaimer.LOGGER.info("{} build: {} {} {}", tag,
+                    command(server, level, pos, "fill " + (x - 1) + " " + y + " " + (z - 1) + " " + (x + 1) + " " + y + " " + (z + 1) + " minecraft:stone"),
+                    command(server, level, pos, "setblock " + x + " " + (y + 1) + " " + z + " create:creative_motor[facing=up]"),
+                    command(server, level, pos, "setblock " + x + " " + (y + 2) + " " + z + " aeronautics:andesite_propeller[facing=up]"));
+            helper.runAfterDelay(10, () -> {
+                VoidReclaimer.LOGGER.info("{} assemble: {}", tag,
+                        command(server, level, pos, "sable assemble connected " + x + " " + y + " " + z));
+                for (int t = 10; t <= WATCH_TICKS; t += 10) {
+                    int tick = t;
+                    helper.runAfterDelay(tick, () -> {
+                        List<String> info = command(server, level, pos, "sable info @n");
+                        VoidReclaimer.LOGGER.info("{} t={} info: {}", tag, tick, String.join(" | ", info));
+                        if (tick == WATCH_TICKS) {
+                            helper.succeed();
+                        }
+                    });
+                }
+            });
+        });
+    }
+
     /** As {@link #run}, with a survival test player ticking at the platform (dy above its centre). */
     private static void runWithPlayer(GameTestHelper helper, ResourceKey<Level> key, BlockPos pos, double dy) {
         ServerLevel level = helper.getLevel().getServer().getLevel(key);

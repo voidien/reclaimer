@@ -29,9 +29,23 @@ With `data/void_reclaimer/dimension_physics/*.json` shipped in the mod (gravity 
   only (not reachable from this container) and predates Sable 2.0's change to native loading, so it may not
   fit 2.0.6. Worth a look if very distant stations ever jitter.
 
-## Not tested yet
-- A moving ship (propellers / thrusters) and riding it with our flight.
-- CI datagen with Sable loaded (it hung in the first spike).
+## Moving ship
+A 3x3 stone deck with a Create creative motor driving an Aeronautics andesite propeller, assembled with
+`/sable assemble connected`.
+
+| Test | Result |
+|---|---|
+| Propeller in deep_space (air pressure 0) | No thrust at all: the ship never moves |
+| Propeller in the test dimension with pressure 1.0 | Accelerates smoothly to a steady speed (GameTest and client) |
+| Propeller facing sideways | Ship also spins (~1.9 rad/s) from the propeller's torque |
+| Real client: player standing on the deck while it climbs | Carried along at the same speed; motor and propeller draw correctly |
+| `runData` with Sable loaded | Finishes in 16 s. The earlier hang was a test client still running in the same run folder |
+
+So Aeronautics' own propulsion (propellers, balloons) needs air and does nothing in deep space. Ships in
+space would need our own thruster block that pushes the sub-level through Sable's force API
+(`BlockEntitySubLevelPropellerActor` / force groups), or a little air pressure inside stations.
+
+`data/void_reclaimer/function/spike_ride.mcfunction` builds the riding test in one tick.
 
 ## How to rerun
 `./gradlew runGameTestServer` (tests `SableSpikeGameTests`, logs `[SableSpike ...]`), optionally with
