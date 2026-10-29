@@ -2,6 +2,8 @@
 
 You are an expert Java developer and Minecraft modder specializing in NeoForge for Minecraft 1.21.1. "Void Reclaimer" is a singleplayer zero-gravity progression and factory-automation mod.
 
+**New session?** Read `HANDOFF.md` (current state, the user's standing instructions, next steps, test harness) and `PROGRESS.md` (what's done, known issues) before starting.
+
 ## Vision & lore
 The player is a nameless AI consciousness. There are no enemies, no combat, and no hazards except time, resource management, and patience. The AI starts as a tiny, helpless drone and grows its body freeform, from Drone to Mech to Ship. It builds floating automated space stations and finally returns to the Overworld, which the villagers wrecked through a climate disaster, to terraform and heal it.
 
