@@ -41,6 +41,16 @@ public final class ModBlocks {
     public static final DeferredBlock<AsteroidBlock> ASTEROID_CARBON = asteroid("asteroid_carbon", DustKinds.CARBON, MapColor.COLOR_BLACK);
     public static final DeferredBlock<AsteroidBlock> ASTEROID_METALLIC = asteroid("asteroid_metallic", DustKinds.METALLIC, MapColor.RAW_IRON);
 
+    /** SU-driven machines of the nebula chains. Their stress impact is registered in {@code MachineSetup}. */
+    public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.ElectrolyzerBlockEntity>> ELECTROLYZER =
+            BLOCKS.registerBlock("electrolyzer", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
+                    com.voidreclaimer.machine.ElectrolyzerBlockEntity.class, ModBlockEntities.ELECTROLYZER::get),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+    public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.SpinnerBlockEntity>> SPINNER =
+            BLOCKS.registerBlock("spinner", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
+                    com.voidreclaimer.machine.SpinnerBlockEntity.class, ModBlockEntities.SPINNER::get),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+
     private static DeferredBlock<AsteroidBlock> asteroid(String name, ResourceLocation kind, MapColor color) {
         return BLOCKS.registerBlock(name, properties -> new AsteroidBlock(kind, properties),
                 BlockBehaviour.Properties.of().mapColor(color).strength(3.0f, 12.0f).sound(SoundType.STONE));

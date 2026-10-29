@@ -74,6 +74,17 @@ public final class Config {
         TOGGLES.put(key, BUILDER.comment(comment, "Recipes read this when they load: restart or /reload after changing it.").define(key, true));
     }
 
+    public static final ModConfigSpec.DoubleValue ELECTROLYZER_STRESS;
+    public static final ModConfigSpec.DoubleValue SPINNER_STRESS;
+    public static final ModConfigSpec.IntValue MACHINE_MIN_RPM;
+    public static final ModConfigSpec.IntValue MACHINE_CYCLE_TICKS;
+    public static final ModConfigSpec.IntValue ELECTROLYZER_TANK;
+    public static final ModConfigSpec.IntValue ELECTROLYZER_WATER;
+    public static final ModConfigSpec.IntValue ELECTROLYZER_OXYGEN;
+    public static final ModConfigSpec.IntValue ELECTROLYZER_HYDROGEN;
+    public static final ModConfigSpec.IntValue SPINNER_THREADS;
+    public static final ModConfigSpec.IntValue CASTING_AMOUNT;
+
     public static final ModConfigSpec.DoubleValue DRILL_ENERGY;
     public static final ModConfigSpec.DoubleValue DRILL_DUST_YIELD;
 
@@ -192,6 +203,23 @@ public final class Config {
         toggle("siliconChain", "Create recipes of the Silicon nebula chain (silicon dust, liquid silicon, doped ingot, solar cell, sensor unit).");
         toggle("metallicChain", "Create recipes of the Metallic nebula chain (nodules, micro-alloy sheets).");
         toggle("solarSail", "The High-Output Solar Sail Sequenced Assembly recipe.");
+        BUILDER.pop();
+
+        BUILDER.comment("Custom Create machines. All amounts are placeholders until the design settles them.").push("machines");
+        toggle("electrolyzer", "The Electrolyzer block (water into oxygen and hydrogen) works and the Replicator can make it.");
+        toggle("spinner", "The Spinner block (graphite into carbon thread) works and the Replicator can make it.");
+        toggle("fanFreezing", "Encased Fans blowing through powder snow freeze items (Water Bucket into Packed Ice).");
+        toggle("spoutCasting", "Spouts can cast Liquid Silicon into a Quartz Wafer on an empty Depot.");
+        ELECTROLYZER_STRESS = BUILDER.comment("Stress the Electrolyzer needs, in SU per RPM.").defineInRange("electrolyzerStress", 4.0, 0.0, 1024.0);
+        SPINNER_STRESS = BUILDER.comment("Stress the Spinner needs, in SU per RPM.").defineInRange("spinnerStress", 2.0, 0.0, 1024.0);
+        MACHINE_MIN_RPM = BUILDER.comment("Slowest rotation at which the Electrolyzer and the Spinner work.").defineInRange("minRpm", 16, 1, 256);
+        MACHINE_CYCLE_TICKS = BUILDER.comment("Ticks per cycle at 64 RPM; faster rotation shortens it in proportion.").defineInRange("cycleTicks", 60, 1, 24000);
+        ELECTROLYZER_TANK = BUILDER.comment("Capacity in mB of each Electrolyzer tank.").defineInRange("electrolyzerTank", 4000, 250, 100000);
+        ELECTROLYZER_WATER = BUILDER.comment("Water in mB used per Electrolyzer cycle.").defineInRange("electrolyzerWater", 250, 1, 10000);
+        ELECTROLYZER_OXYGEN = BUILDER.comment("Oxygen Gas in mB made per Electrolyzer cycle.").defineInRange("electrolyzerOxygen", 125, 0, 10000);
+        ELECTROLYZER_HYDROGEN = BUILDER.comment("Hydrogen Gas in mB made per Electrolyzer cycle.").defineInRange("electrolyzerHydrogen", 250, 0, 10000);
+        SPINNER_THREADS = BUILDER.comment("Carbon Thread made from one High-Purity Graphite.").defineInRange("spinnerThreads", 2, 1, 64);
+        CASTING_AMOUNT = BUILDER.comment("Liquid Silicon in mB cast into one Quartz Wafer.").defineInRange("castingAmount", 250, 1, 10000);
         BUILDER.pop();
 
         BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");

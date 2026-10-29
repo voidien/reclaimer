@@ -108,6 +108,20 @@ neoForge {
 // Dev-only runtime mods (e.g. full JEI), not published as dependencies.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    // Only used to find Create's jar for extractCreateLibs.
+    createJar {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+tasks.register('extractCreateLibs', Sync) {
+    from({ configurations.createJar.files.collect { zipTree(it) } }) {
+        include 'META-INF/jarjar/*.jar'
+        eachFile { path = name }
+    }
+    includeEmptyDirs = false
+    into layout.buildDirectory.dir('create-libs')
 }
 
 dependencies {
@@ -119,8 +133,14 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
-    // Create: required dependency. The Modrinth release jar bundles Flywheel, Ponder and Registrate.
+    // Create: required dependency. The Modrinth release jar bundles Flywheel, Ponder and Registrate as nested jars, which javac
+    // can't see: extractCreateLibs unpacks them (the exact versions Create runs with) for compiling only.
     implementation "maven.modrinth:create:${create_version}"
+    createJar "maven.modrinth:create:${create_version}"
+    compileOnly fileTree(layout.buildDirectory.dir('create-libs')) {
+        builtBy 'extractCreateLibs'
+        include '*.jar'
+    }
 
     // Create Aeronautics (required) and its physics engine Sable. Runtime only: our code doesn't compile against them yet.
     localRuntime "maven.modrinth:sable:${sable_version}"

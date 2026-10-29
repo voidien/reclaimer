@@ -36,6 +36,8 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.STORAGE_MK2.get());
                 output.accept(ModItems.BRASS_TRIM.get());
                 output.accept(ModItems.COGWHEEL_CROWN.get());
+                output.accept(ModItems.ELECTROLYZER.get());
+                output.accept(ModItems.SPINNER.get());
                 output.accept(ModItems.MECHANICAL_DRILL.get());
                 output.accept(ModItems.MATTER_HARVESTER.get());
                 output.accept(ModItems.ASTEROID_SILICATE.get());

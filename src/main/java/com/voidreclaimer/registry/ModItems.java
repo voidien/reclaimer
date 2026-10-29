@@ -128,6 +128,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> ASTEROID_ICE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_ICE);
     public static final DeferredItem<BlockItem> ASTEROID_CARBON = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_CARBON);
     public static final DeferredItem<BlockItem> ASTEROID_METALLIC = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_METALLIC);
+    public static final DeferredItem<BlockItem> ELECTROLYZER = ITEMS.registerSimpleBlockItem(ModBlocks.ELECTROLYZER);
+    public static final DeferredItem<BlockItem> SPINNER = ITEMS.registerSimpleBlockItem(ModBlocks.SPINNER);
     public static final DeferredItem<BlockItem> TETHER_ANCHOR = ITEMS.registerSimpleBlockItem(ModBlocks.TETHER_ANCHOR);
     public static final DeferredItem<BlockItem> BACKUP_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.BACKUP_CORE);
 

@@ -54,6 +54,15 @@ public final class ModRecipeProvider extends RecipeProvider {
         rawItems(output, "silicon_grit", ModMaterials.SILICON_GRIT.get(), DustCost.of(0, 8, 0, 0), materials);
         rawItems(output, "metallic_grains", ModMaterials.METALLIC_GRAINS.get(), DustCost.of(8, 0, 0, 0), materials);
 
+        // Machines. Prices are placeholders; the design doc gives no recipe for them.
+        machineRecipe(output, "electrolyzer", ModItems.ELECTROLYZER.get(), DustCost.of(30, 20, 10, 10), "electrolyzer");
+        machineRecipe(output, "spinner", ModItems.SPINNER.get(), DustCost.of(25, 15, 0, 15), "spinner");
+        // Encased Fan freezing: a Water Bucket carried through powder snow becomes Packed Ice (the bucket comes back empty).
+        output.accept(VoidReclaimer.id("freezing/water_bucket"), new com.voidreclaimer.machine.FreezingRecipe(
+                net.minecraft.world.item.crafting.Ingredient.of(net.minecraft.world.item.Items.WATER_BUCKET),
+                List.of(new ItemStack(net.minecraft.world.item.Items.PACKED_ICE), new ItemStack(net.minecraft.world.item.Items.BUCKET))),
+                null, new ConfigCondition("fanFreezing"));
+
         // Modules. The Mk I core and thruster are also craftable as spares.
         ResourceKey<ReplicatorCategory> parts = ReplicatorCategories.PARTS;
         replicator(output, "thruster_mk1", ModItems.THRUSTER_MK1.get(), 1, DustCost.of(10, 5, 0, 0), 30, parts, Milestones.AWAKENING);
@@ -102,6 +111,11 @@ public final class ModRecipeProvider extends RecipeProvider {
         ReplicatorRecipe recipe = new ReplicatorRecipe(results, cost, seconds * 20, category, milestone,
                 Optional.of(Component.translatable("recipe.void_reclaimer." + name)));
         output.accept(VoidReclaimer.id("replicator/" + name), recipe, null);
+    }
+
+    private static void machineRecipe(RecipeOutput output, String name, ItemLike result, DustCost cost, String toggle) {
+        ReplicatorRecipe recipe = new ReplicatorRecipe(new ItemStack(result), cost, 60 * 20, ReplicatorCategories.BLOCKS, Milestones.DIVERSIFIED);
+        output.accept(VoidReclaimer.id("replicator/" + name), recipe, null, new ConfigCondition(toggle));
     }
 
     /** Four raw items for eight dust of their kind; off with the {@code replicatorRawItems} toggle. */

@@ -320,6 +320,24 @@ From an outside audit, each checked against the code first (several claims were 
 - Collector part for raw items out of a cloud (the second source of raw items, besides the Replicator).
 - Everything blocked on the doc's open questions (see `CLAUDE.md`).
 
+## Phase 7, part 2: custom Create machines: done
+- **Electrolyzer** (water to oxygen and hydrogen) and **Spinner** (graphite to carbon thread): SU-driven kinetic blocks with a shaft axis, tanks and inventories that pipes, funnels and belts use, Replicator recipes (Blocks tab).
+- **Encased Fan freezing** (powder snow, Water Bucket to Packed Ice and an empty Bucket) and **spout casting** (Liquid Silicon into a Quartz Wafer on an empty Depot).
+- These close the gaps from part 1: Quartz Wafer, Carbon Thread, Oxygen and Hydrogen can now be made, so the solar cell, the propellant and the solar sail are reachable.
+- Config toggles and values under `machines` (see the "Machines, part 2" block in `CLAUDE.md`).
+- `build.gradle` gained `extractCreateLibs` so code can compile against Create's nested Flywheel, Ponder and Registrate.
+- Tests: `MachineGameTests` (8: Electrolyzer, Spinner, stress impact, fan type and its registry, spout casting, recipes) and `MachineMathTest` (3). Mutation-checked: no stress registration, a fan that accepts air, casting onto an occupied depot and ignoring the minimum speed each fail a test. A real Create motor drives the machines in a real client (see below).
+
+### Placeholder assets and numbers
+- Block textures `electrolyzer_side/end.png`, `spinner_side/end.png` (generated programmer art; the end shows the shaft). Static models: no rotation animation yet.
+- Fluid amounts, 60-tick cycles, 16 RPM minimum, 4 and 2 SU per RPM, 2 threads per graphite and the Replicator prices are placeholders.
+
+### Assumption to confirm
+- The doc's freezing input is just "Water": it is a Water Bucket here (returning the empty bucket).
+
+### Not done yet
+- Goggle tooltips, rotation animation, a JEI category for freezing, Ponder scenes, the collector part for raw items from a cloud, and the items blocked on the doc's open questions (see part 1).
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight

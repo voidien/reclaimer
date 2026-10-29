@@ -80,6 +80,8 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ASTEROID_CARBON.get(), "Carbon Asteroid Rock");
         add(ModItems.ASTEROID_METALLIC.get(), "Metallic Asteroid Rock");
         add("replicator.void_reclaimer.tab.materials", "Raw");
+        add(ModItems.ELECTROLYZER.get(), "Electrolyzer");
+        add(ModItems.SPINNER.get(), "Spinner");
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             add(material.item().get(), material.name());
         }

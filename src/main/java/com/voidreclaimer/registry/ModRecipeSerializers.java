@@ -14,5 +14,8 @@ public final class ModRecipeSerializers {
     public static final Supplier<RecipeSerializer<ReplicatorRecipe>> REPLICATOR = RECIPE_SERIALIZERS.register("replicator",
             ReplicatorRecipe.Serializer::new);
 
+    public static final Supplier<RecipeSerializer<com.voidreclaimer.machine.FreezingRecipe>> FREEZING = RECIPE_SERIALIZERS.register("freezing",
+            com.voidreclaimer.machine.FreezingRecipe.Serializer::new);
+
     private ModRecipeSerializers() {}
 }

@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "fanFreezing"
+    }
+  ],
+  "type": "void_reclaimer:freezing",
+  "ingredient": {
+    "item": "minecraft:water_bucket"
+  },
+  "results": [
+    {
+      "count": 1,
+      "id": "minecraft:packed_ice"
+    },
+    {
+      "count": 1,
+      "id": "minecraft:bucket"
+    }
+  ]
+}
