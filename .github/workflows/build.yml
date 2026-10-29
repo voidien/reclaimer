@@ -28,6 +28,9 @@ jobs:
       - name: Build and unit tests
         run: ./gradlew build --stacktrace
 
+      - name: Art tool tests (offline, fake Retro Diffusion server)
+        run: python3 tools/art/test_rd_generate.py
+
       - name: GameTests
         # The upstream Aeronautics/Simulated/Veil start-up hang (see the datagen step) can also stall the GameTest server. A healthy
         # run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.

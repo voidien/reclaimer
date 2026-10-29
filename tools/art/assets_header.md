@@ -46,10 +46,14 @@ The body is built in code from separate part models. Each part attaches to its p
 RD's blocky style "tilts where needed", so check tilted boxes in Blockbench; a block that needs free angles should be a GeckoLib block entity instead. Kinetic blocks (Space Thruster, Electrolyzer, Spinner) leave a hole for the shaft, because Create draws the turning shaft itself.
 
 ## How to use it
-1. Pick rows in `assets.csv` (filter by `status` and `method`).
-2. Generate with the `prompt` column, in the mode the `method` column names.
-3. Save at exactly the `file` path (textures) or `model` path (`.geo.json`, `.animation.json`), at the listed size. Same file name = no code change: the game picks it up.
-4. Tell me when a batch is in. I'll check sizes, transparency and bone names in game, and drop the files from the placeholder list in `PROGRESS.md`.
+**Automatically (recommended):** `tools/art/rd_generate.py` sends the rows to Retro Diffusion's API, so no prompt is typed by hand. Setup and options are in `tools/art/README.md`. In short:
+1. `export RD_API_KEY=rdpk-...` (your key; it is never written to a file).
+2. `python3 tools/art/rd_generate.py --status placeholder --dry-run` shows the jobs and an offline price. Without `--dry-run` it prices them with RD's free estimates, checks your balance and asks before spending.
+3. Results land in `art/rd/` (not committed): 4 variants per image, 1 model per 3D asset, and a contact sheet `art/rd/index.html`.
+4. `python3 tools/art/rd_generate.py --promote quartz_wafer=2` copies a picked variant into the mod (size-checked). 3D models still go through Blockbench (workflow above).
+5. Tell me when a batch is promoted. I'll check it in game and update `PROGRESS.md`.
+
+**By hand:** take the `prompt` column into RD's web app, in the mode the `method` column names, and save the result at exactly the `file` (or `model`) path and size.
 
 Rows marked "code change needed" (GUI skins, the sun, dust meter icons, toast icon, logo) have no slot in the game yet. They need a small change from me before they show up. The same goes for new models from future phases: their blocks and entities don't exist yet.
 
