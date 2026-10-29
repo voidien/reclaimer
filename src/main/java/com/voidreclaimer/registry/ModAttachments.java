@@ -11,6 +11,7 @@ import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustFieldSeed;
 import com.voidreclaimer.dust.SensorState;
 import com.voidreclaimer.dust.StarterNebula;
+import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightSettings;
@@ -74,6 +75,13 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<StarterNebula.Locked>> STARTER_NEBULA = ATTACHMENT_TYPES.register("starter_nebula",
             () -> AttachmentType.builder(() -> new StarterNebula.Locked(false))
                     .serialize(StarterNebula.Locked.CODEC)
+                    .build());
+
+    /** Deep space level only: Dyson Sphere progress. Saved with the level and synced to every client in it. */
+    public static final Supplier<AttachmentType<DysonSphereData>> DYSON_SPHERE = ATTACHMENT_TYPES.register("dyson_sphere",
+            () -> AttachmentType.builder(DysonSphereData::createDefault)
+                    .serialize(DysonSphereData.CODEC)
+                    .sync(DysonSphereData.STREAM_CODEC)
                     .build());
 
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */

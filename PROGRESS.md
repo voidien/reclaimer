@@ -181,7 +181,7 @@
 - Tests: 54 unit tests (+2, `CloudShapeTest`: no dust beyond the edge, dust at the edge, lumpy, deterministic, closed seam). Mutation-checked: returning the outer bisection bound fails the test.
 - Verified in a real client: an Ice cloud seen from inside (grid around you) and from outside (lumpy globe); N turns it off and on, and the setting persists.
 
-## Create Aeronautics spike: optional support planned (Phase 7b)
+## Create Aeronautics spike (superseded: Aeronautics is now required, see Foundations)
 - Retested on branch `claude/aeronautics-spike` (never merged; results in `AERONAUTICS_SPIKE.md` there).
 - The first spike's "flung away" ships were falling: the zero-G `dimension_physics` file wasn't in effect. With it, platforms rest in `deep_space`, players can ride moving ships, and height and f32 precision were not factors.
 - Propellers and balloons need air, so they give no thrust in vacuum. Phase 7b adds our own Space Thruster and a Helm block.
@@ -257,6 +257,27 @@
 ### Placeholder assets
 - Item textures for all section items (`drone_hull`, `rotor_arm`, `rotor_arm_mk2`, `sensor_dome`, `tool_claw`, `mech_*`, `ship_keel`) and `body_blueprint`. They are 16x16 programmer art.
 
+## Foundations: Aeronautics required, Dyson Sphere counters and sky: done
+- Create Aeronautics 1.3.2 and Sable 2.0.6 are required (`neoforge.mods.toml`, `gradle.properties`); runtime and test-runtime only.
+- `dimension_physics/deep_space.json`: zero physics gravity, pressure and drag, so Sable sub-levels don't fall.
+- `dyson` package: `DysonSphereData` attachment (saved, synced), `DysonTiers` (pure math), `Dyson` (launch entry point), config `dyson.latticeStart` / `dyson.shellTotal` (placeholders, the doc leaves them open).
+- Milestone criterion `dyson_tier` and milestones `dyson_tier_1..4` for the AI log; `MilestoneContext` gained `dysonTier`.
+- Command `/void_reclaimer dyson get|set satellites|trusses <n>`.
+- Sky (`DysonSky`): swarm points, lattice, shell, corona and conduits, sun tint and dimming.
+- Tests: unit (`DysonTiersTest`, `DysonTierCriterionTest`), GameTests (`DysonGameTests`, 3), separate Aeronautics GameTests (`AeronauticsGameTests`, 2, `./gradlew runGameTestAeronautics`, own CI job). Mutation-checked: removing the physics file makes both Aeronautics tests fail; removing the milestone check makes two Dyson tests fail.
+- CI: `runData` now runs with a timeout and up to 3 attempts because required Aeronautics brings the upstream start-up deadlock into it.
+- Merged the unmerged `claude/handoff-notes` commit (`HANDOFF.md`, `tools/client-test/`).
+
+### Placeholder assets and texts
+- The Dyson sky uses untextured coloured quads (no texture files).
+- Log texts and titles for `dyson_tier_1..4` in lang are placeholders awaiting the user's lore.
+- `dyson.latticeStart` = 1 and `dyson.shellTotal` = 1000 are stand-in numbers.
+
+### Not done yet
+- Power beams to the Quantum Receiver Dish (needs that block).
+- Solar charging is not reduced by the Dyson tier (see `CLAUDE.md`).
+- Display strings still say "Ship", not "Starship".
+
 ## Audit fixes: done
 From an outside audit, each checked against the code first (several claims were stale or wrong).
 - **Nanite Swarm against blocks in flight:** thruster flight clears the vanilla sneak flag, so the server's `isShiftKeyDown()` was always false and block-targeted builds never worked in deep space. `BodyActionPayload` now carries the client's sneak key; `Modules.use(player, sneak)` and a new `ToolModuleType.use(..., sneak)` overload (defaults to the old method) use it.
@@ -278,7 +299,8 @@ From an outside audit, each checked against the code first (several claims were 
 - [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
 - [ ] 6. Asteroids
 - [ ] 7. Machines
-- [ ] 7b. Create Aeronautics support (optional)
+- [x] Foundations: Aeronautics required, Dyson counters and sky
+- [ ] 7b. Create Aeronautics ships (Space Thruster, Helm)
 - [ ] 8. Stations & Helpers
 - [ ] 9. Ruined Earth
 - [ ] 10. Terraforming

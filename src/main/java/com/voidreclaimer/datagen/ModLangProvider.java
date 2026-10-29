@@ -113,6 +113,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.core", "%s (%s)");
         add("hud.void_reclaimer.death_marker", "DROPS %sm");
 
+        add("commands.void_reclaimer.dyson.get", "Dyson Sphere: %s satellites, %s truss modules (shell complete at %s), skybox tier %s");
+        add("commands.void_reclaimer.dyson.set", "Dyson Sphere: %s satellites, %s truss modules, skybox tier %s");
         add("commands.void_reclaimer.milestone.unknown", "Unknown milestone: %s");
         add("commands.void_reclaimer.body.reset", "Reset %s to the starter drone");
         add("commands.void_reclaimer.body.get", "%s: %s, mass %s / %s, %s inventory slots, top speed %s m/s");
@@ -171,6 +173,22 @@ public final class ModLangProvider extends LanguageProvider {
         add("log.void_reclaimer.diversified.text", "Metal, glass, ice, carbon: enough variety to copy myself. "
                 + "If this chassis fails, a backup core can hold my pattern and rebuild me where I left it.");
 
+        add("milestone.void_reclaimer.dyson_tier_1", "First Launches");
+        add("milestone.void_reclaimer.dyson_tier_1.hint", "Raise the Dyson Sphere to sky tier 1");
+        add("log.void_reclaimer.dyson_tier_1.title", "Dyson Sphere: First Launches");
+        add("log.void_reclaimer.dyson_tier_1.text", "[Placeholder, lore text pending.] Dyson Sphere sky tier 1 reached.");
+        add("milestone.void_reclaimer.dyson_tier_2", "Dense Swarm");
+        add("milestone.void_reclaimer.dyson_tier_2.hint", "Raise the Dyson Sphere to sky tier 2");
+        add("log.void_reclaimer.dyson_tier_2.title", "Dyson Sphere: Dense Swarm");
+        add("log.void_reclaimer.dyson_tier_2.text", "[Placeholder, lore text pending.] Dyson Sphere sky tier 2 reached.");
+        add("milestone.void_reclaimer.dyson_tier_3", "Structural Lattice");
+        add("milestone.void_reclaimer.dyson_tier_3.hint", "Raise the Dyson Sphere to sky tier 3");
+        add("log.void_reclaimer.dyson_tier_3.title", "Dyson Sphere: Structural Lattice");
+        add("log.void_reclaimer.dyson_tier_3.text", "[Placeholder, lore text pending.] Dyson Sphere sky tier 3 reached.");
+        add("milestone.void_reclaimer.dyson_tier_4", "Complete Shell");
+        add("milestone.void_reclaimer.dyson_tier_4.hint", "Raise the Dyson Sphere to sky tier 4");
+        add("log.void_reclaimer.dyson_tier_4.title", "Dyson Sphere: Complete Shell");
+        add("log.void_reclaimer.dyson_tier_4.text", "[Placeholder, lore text pending.] Dyson Sphere sky tier 4 reached.");
         add("milestone.void_reclaimer.expansion", "Expansion");
         add("milestone.void_reclaimer.expansion.hint", "Fill one kind of dust to capacity");
         add("log.void_reclaimer.expansion.title", "Log 0005: Outgrown");

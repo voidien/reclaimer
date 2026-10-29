@@ -17,6 +17,9 @@ import com.voidreclaimer.replicator.ReplicatorData;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
+import com.mojang.brigadier.arguments.LongArgumentType;
+import com.voidreclaimer.dyson.Dyson;
+import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.dust.DustKinds;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.energy.EnergyData;
@@ -48,6 +51,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer milestone grant|revoke <player> <milestone>} (a revoked milestone whose condition
  *       still holds is granted again at the next check)</li>
  *   <li>{@code /void_reclaimer core charge <player>}: fill every Backup Core the player owns</li>
+ *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  * </ul>
  */
@@ -91,6 +95,15 @@ public final class ModCommands {
                                 .executes(ctx -> locate(ctx.getSource(), DEFAULT_LOCATE_RANGE))
                                 .then(Commands.argument("range", IntegerArgumentType.integer(1, 100_000))
                                         .executes(ctx -> locate(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "range"))))))
+                .then(Commands.literal("dyson")
+                        .then(Commands.literal("get").executes(ctx -> getDyson(ctx.getSource())))
+                        .then(Commands.literal("set")
+                                .then(Commands.literal("satellites")
+                                        .then(Commands.argument("count", LongArgumentType.longArg(0))
+                                                .executes(ctx -> setDyson(ctx.getSource(), true, LongArgumentType.getLong(ctx, "count")))))
+                                .then(Commands.literal("trusses")
+                                        .then(Commands.argument("count", LongArgumentType.longArg(0))
+                                                .executes(ctx -> setDyson(ctx.getSource(), false, LongArgumentType.getLong(ctx, "count")))))))
                 .then(Commands.literal("milestone")
                         .then(milestoneAction("grant", true))
                         .then(milestoneAction("revoke", false)))
@@ -115,6 +128,21 @@ public final class ModCommands {
                                         Milestones.all(ctx.getSource().registryAccess()).stream().map(e -> e.key().location()), builder))
                                 .executes(ctx -> setMilestone(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
                                         ResourceLocationArgument.getId(ctx, "milestone"), grant))));
+    }
+
+    private static int getDyson(CommandSourceStack source) {
+        DysonSphereData data = DysonSphereData.of(source.getServer());
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dyson.get", data.satellites(), data.trusses(),
+                data.shellTotal(), data.tier()), false);
+        return data.tier();
+    }
+
+    private static int setDyson(CommandSourceStack source, boolean satellites, long count) {
+        DysonSphereData data = DysonSphereData.of(source.getServer());
+        DysonSphereData updated = Dyson.set(source.getServer(), satellites ? data.withSatellites(count) : data.withTrusses(count));
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dyson.set", updated.satellites(), updated.trusses(),
+                updated.tier()), true);
+        return updated.tier();
     }
 
     private static int setMilestone(CommandSourceStack source, ServerPlayer player, ResourceLocation id, boolean grant) {

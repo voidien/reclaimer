@@ -54,6 +54,9 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue CORE_SUN_TICKS;
 
+    public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
+    public static final ModConfigSpec.LongValue DYSON_SHELL_TOTAL;
+
     static {
         BUILDER.comment("Where new and respawning players appear in void_reclaimer:deep_space.").push("spawn");
         SPAWN_X = BUILDER.defineInRange("x", 0, -29_000_000, 29_000_000);
@@ -157,6 +160,13 @@ public final class Config {
         CORE_SUN_TICKS = BUILDER
                 .comment("Ticks of full sunlight per respawn charge (deep space's distant sun is about 2/3 as fast).")
                 .defineInRange("sunTicksPerCharge", 12_000, 20, 1_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("Dyson Sphere. The defaults are stand-ins until the design settles the numbers.").push("dyson");
+        DYSON_LATTICE_START = BUILDER.comment("Shell truss modules launched before the structural lattice (skybox tier 3) appears.")
+                .defineInRange("latticeStart", com.voidreclaimer.dyson.DysonTiers.DEFAULT_LATTICE_START, 1L, 1_000_000_000L);
+        DYSON_SHELL_TOTAL = BUILDER.comment("Shell truss modules that complete the sphere (skybox tier 4). Never below latticeStart.")
+                .defineInRange("shellTotal", com.voidreclaimer.dyson.DysonTiers.DEFAULT_SHELL_TOTAL, 1L, 1_000_000_000L);
         BUILDER.pop();
     }
 

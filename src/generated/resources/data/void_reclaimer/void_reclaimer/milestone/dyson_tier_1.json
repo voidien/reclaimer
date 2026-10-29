@@ -1,0 +1,6 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:dyson_tier",
+    "tier": 1
+  }
+}

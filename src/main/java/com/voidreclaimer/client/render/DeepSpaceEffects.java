@@ -12,6 +12,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.dyson.DysonSphereData;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -104,7 +105,9 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
         stars.drawWithShader(pose.last().pose(), projectionMatrix, GameRenderer.getPositionShader());
         VertexBuffer.unbind();
 
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        DysonSphereData dyson = DysonSphereData.of(level);
+        float[] tint = DysonSky.sunTint(dyson);
+        RenderSystem.setShaderColor(tint[0], tint[1], tint[2], tint[3]);
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees(SUN_TILT_X_DEGREES));
         pose.mulPose(Axis.ZP.rotationDegrees(SUN_TILT_Z_DEGREES));
@@ -117,6 +120,9 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
         builder.addVertex(sun, SUN_HALF_SIZE, SKY_RADIUS, SUN_HALF_SIZE).setUv(1f, 1f);
         builder.addVertex(sun, -SUN_HALF_SIZE, SKY_RADIUS, SUN_HALF_SIZE).setUv(0f, 1f);
         BufferUploader.drawWithShader(builder.buildOrThrow());
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        DysonSky.render(sun, dyson, ticks + partialTick);
         pose.popPose();
 
         setupFog.run();
