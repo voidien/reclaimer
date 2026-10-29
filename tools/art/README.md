@@ -55,6 +55,7 @@ Rows that are hand work are never sent: the `_accent` masks, and the skins that 
 ```
 python3 tools/art/rd_generate.py --status placeholder --dry-run
 python3 tools/art/rd_generate.py --group Materials --variants 2
+python3 tools/art/rd_generate.py --group "Missing module models"                 # asks: Blocky or Blocky Lite
 python3 tools/art/rd_generate.py --group "Missing module models" --model-style blocky_lite
 python3 tools/art/rd_generate.py --asset "drone (body)" --asset "animation.void_reclaimer.drone.*"
 python3 tools/art/rd_generate.py --resume          # poll jobs from an interrupted run
@@ -81,7 +82,9 @@ python3 tools/art/rd_generate.py --balance
 - The tool cuts the sheet into 4 frames, scales each to 16x16 and stacks them into the vertical strip Minecraft's `.mcmeta` expects.
 
 **3D models**
-- Style: `rd_lowpoly__blocky` by default; `--model-style` changes it.
+- Style: RD's **Blocky** (`rd_lowpoly__blocky`, $0.25–3.00 by size) or **Blocky Lite** (`rd_lowpoly__blocky_lite`, $0.10 flat, simpler builds, good for drafts). Both are box-only, so they fit GeckoLib and Minecraft. Detailed is not offered: it adds cylinders and spheres.
+- Pick one with `--model-style blocky` or `--model-style blocky_lite`. Without the flag, a run that makes models prices both and asks `Model style: [b]locky $X, blocky [l]ite $Y, or [n]othing`. The answer is the go-ahead. With `--yes` the flag is required.
+- Animations follow the rig's style (Lite animations cost $0.08).
 - The asset's current item icon is sent as a reference image, so model and icon match (`--no-refs` turns this off).
 - Saved files: `model.bbmodel` (with every animation), `atlas.png`, `render.png` and `turntable.png`.
 - RD's `minecraft` export is not used: it needs Minecraft 1.21.11+ for tilted boxes, and the mod is on 1.21.1.

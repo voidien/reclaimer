@@ -17,7 +17,7 @@ Everything the mod draws, as of `main` on 2026-10-29 (after Phase 8 and art drop
 ## Retro Diffusion's modes used here
 - **RD image:** pixel images. Item icons, tileable block textures (its tiling option is best at 16x16 or 32x32), block faces, HUD/GUI and sky sprites.
 - **RD image, VFX/animation:** sprite-sheet animations. Used for the Nanite Swarm icon, the portal surface and the power beam. Minecraft wants the frames stacked in one vertical strip.
-- **RD 3D, blocky style** (`rd_lowpoly__blocky`): boxes only, with pixel-art textures. It exports to Blockbench (`.bbmodel`, with animations) and as a Minecraft Java resource pack.
+- **RD 3D, Blocky or Blocky Lite** (`rd_lowpoly__blocky`, `rd_lowpoly__blocky_lite`): boxes only, with pixel-art textures. Lite is $0.10 a model with simpler builds, good for drafts; Blocky costs $0.25–3.00 by size. The Detailed styles add cylinders and spheres, which GeckoLib and Minecraft can't use. It exports to Blockbench (`.bbmodel`, with animations) and as a Minecraft Java resource pack.
   - Static blocks (Space Thruster, Helm, Electrolyzer, Spinner, Monolith): use the **Java** export.
   - Anything rigged or animated (body parts, Mass Driver, Spire, drop pod, helper drone): use **`.bbmodel`**, then convert to GeckoLib.
 - **RD 3D animate:** animations from a prompt. The first one rigs the model automatically. They come along in the `.bbmodel` export.

@@ -12,7 +12,8 @@ written anywhere.
 Examples:
   python3 tools/art/rd_generate.py --status placeholder --dry-run          # plan + offline price, no key needed
   python3 tools/art/rd_generate.py --status placeholder                    # price with RD, ask, generate
-  python3 tools/art/rd_generate.py --asset 'mech_*' --method 3d --model-style blocky_lite   # cheap draft models
+  python3 tools/art/rd_generate.py --asset 'mech_*' --method 3d                 # asks: Blocky or Blocky Lite
+  python3 tools/art/rd_generate.py --asset 'mech_*' --method 3d --model-style blocky_lite --yes
   python3 tools/art/rd_generate.py --promote quartz_wafer=2                # copy variant 2 into the mod
   python3 tools/art/rd_generate.py --balance
 
@@ -64,6 +65,8 @@ IMAGE_PRICE = {'rd_fast': 0.03, 'rd_plus': 0.06, 'rd_mini': 0.06, 'rd_pro': 0.18
 LOWPOLY_PRICE = {16: 0.25, 32: 0.50, 64: 0.85, 128: 1.20, 256: 3.00}
 LOWPOLY_ANIMATE_PRICE = {16: 0.15, 32: 0.25, 64: 0.35, 128: 0.50, 256: 1.00}
 LITE_GENERATE, LITE_OTHER = 0.10, 0.08
+# RD's box-only 3D styles: the only ones whose models fit GeckoLib and Minecraft (Detailed adds cylinders and spheres).
+MODEL_STYLES = {'blocky': 'rd_lowpoly__blocky', 'blocky_lite': 'rd_lowpoly__blocky_lite'}
 
 # Rows whose CSV size is '-' or that need a fixed size.
 SIZE_OVERRIDES = {
@@ -341,7 +344,7 @@ def jobs_for(row, args, limits):
                          variants=1 if frames else args.variants))
     if '3D blocky' in method:
         size = args.model_size or MODEL_SIZE.get(row['asset'], 'auto')
-        jobs.append(dict(kind='model', style='rd_lowpoly__' + args.model_style,
+        jobs.append(dict(kind='model', style=MODEL_STYLES[args.model_style or 'blocky'],
                          prompt=subject(row['prompt'])[:250], size=size, variants=args.model_variants))
     if method == 'RD 3D animate':
         rig = os.path.basename(row['model']).split('.')[0]
@@ -380,7 +383,7 @@ def offline_price(job):
             return LITE_GENERATE * job['variants']
         size = job['size'] if job['size'] != 'auto' else 32
         return LOWPOLY_PRICE.get(size, 0.85) * job['variants']
-    return LOWPOLY_ANIMATE_PRICE[64]
+    return LITE_OTHER if job.get('style', '').endswith('_lite') else LOWPOLY_ANIMATE_PRICE[64]
 
 
 def image_body(job, row, seed=None):
@@ -455,6 +458,12 @@ def live_limits(key):
             limits[it['prompt_style']] = (it.get('min_width') or 16, it.get('max_width') or 384,
                                           it.get('max_number_of_images') or 1)
     return limits
+
+
+def set_model_style(plan, name):
+    for _, job in plan:
+        if job['kind'] in ('model', 'animate'):
+            job['style'] = MODEL_STYLES[name]
 
 
 def price(plan, key):
@@ -722,9 +731,9 @@ def main(argv=None):
     p.add_argument('--variants', type=int, default=4, help='images per asset (default 4)')
     p.add_argument('--model-variants', type=int, default=1, help='3D models per asset (default 1)')
     p.add_argument('--model-size', type=int, choices=[16, 32, 64, 128, 256], help='3D size in texels (default: auto)')
-    p.add_argument('--model-style', default='blocky', choices=['blocky', 'blocky_lite', 'detailed', 'detailed_lite'],
-                   help='3D style (default blocky, $0.25-3.00; blocky_lite is $0.10 flat, good for drafts). '
-                        'The detailed styles use cylinders and spheres, which GeckoLib/Minecraft cannot use.')
+    p.add_argument('--model-style', choices=sorted(MODEL_STYLES),
+                   help='3D style: blocky ($0.25-3.00 by size) or blocky_lite ($0.10 flat, simpler; animations $0.08). '
+                        'Without it, a run that makes models shows both prices and asks.')
     p.add_argument('--image-tier', choices=['plus', 'fast', 'mini'], default='plus', help='Minecraft image styles tier')
     p.add_argument('--no-refs', action='store_true', help="don't send the item icon as a 3D reference image")
     p.add_argument('--again', action='store_true', help='new jobs even for assets generated before')
@@ -771,10 +780,32 @@ def main(argv=None):
     if not plan:
         print('Nothing to do (no matching rows, or all generated already; --again makes new ones).')
         return 0
-    if args.model_style.startswith('detailed') and any(j['kind'] == 'model' for _, j in plan):
-        print('Note: detailed styles build cylinders and spheres; GeckoLib and Minecraft models are boxes only.')
-    total = price(plan, None if args.dry_run else key)
-    print_plan(plan, total)
+    # 3D jobs can use Blocky or Blocky Lite. Without --model-style, price both and let the user pick.
+    has_models = any(j['kind'] in ('model', 'animate') for _, j in plan)
+    styles = [args.model_style] if args.model_style or not has_models else ['blocky', 'blocky_lite']
+    totals = {}
+    for name in styles:
+        set_model_style(plan, name)
+        totals[name] = price(plan, None if args.dry_run else key)
+    print_plan(plan, totals[styles[-1]])
+    chosen = styles[0]
+    if len(styles) > 1:
+        print('3D style: Blocky about $%.2f in total, Blocky Lite about $%.2f (Lite: $0.10 a model, simpler builds).'
+              % (totals['blocky'], totals['blocky_lite']))
+        if args.dry_run:
+            return 0
+        if args.yes:
+            sys.exit('This batch makes 3D models: choose --model-style blocky or blocky_lite to run it with --yes.')
+        answer = input('Model style: [b]locky $%.2f, blocky [l]ite $%.2f, or [n]othing: '
+                       % (totals['blocky'], totals['blocky_lite'])).strip().lower()
+        if answer not in ('b', 'blocky', 'l', 'lite', 'blocky_lite'):
+            print('Nothing sent.')
+            return 0
+        chosen = 'blocky' if answer.startswith('b') else 'blocky_lite'
+        set_model_style(plan, chosen)
+        print('Using %s.' % chosen)
+        args.yes = True  # picking a priced style is the go-ahead
+    total = totals[chosen]
     if args.dry_run:
         return 0
     balance = account_balance(key)

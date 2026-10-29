@@ -212,7 +212,7 @@ class RdGenerateTest(unittest.TestCase):
 
     def test_animated_icon_becomes_a_vertical_strip(self):
         with mock.patch('builtins.input', return_value='y'):
-            rd.main(['--asset', 'nanite_swarm'])
+            rd.main(['--asset', 'nanite_swarm', '--method', 'image'])
         body = next(c[2] for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/inferences'
                     and not c[2].get('check_cost'))
         self.assertEqual(body['prompt_style'], 'rd_animation__vfx')
@@ -232,13 +232,34 @@ class RdGenerateTest(unittest.TestCase):
         # An animation without its rig is skipped, not charged.
         charged = Fake.state['charged']
         with mock.patch('builtins.input', return_value='y'):
-            rd.main(['--asset', 'animation.void_reclaimer.mech.idle'])
+            rd.main(['--asset', 'animation.void_reclaimer.mech.idle', '--model-style', 'blocky'])
         self.assertEqual(Fake.state['charged'], charged)
         # With the rig generated, it animates and re-exports the rig's .bbmodel.
-        with mock.patch('builtins.input', return_value='y'):
+        with mock.patch('builtins.input', return_value='b'):
             rd.main(['--asset', 'drone (body)', '--asset', 'animation.void_reclaimer.drone.idle'])
         self.assertTrue(any(c[1].endswith('/animate') for c in Fake.state['calls']))
         self.assertTrue(os.path.exists(self.staged('drone_body', 'model.bbmodel')))
+
+    def test_model_style_blocky_or_lite(self):
+        # Without --model-style a model batch prices both styles and asks; picking Lite is the go-ahead.
+        with mock.patch('builtins.input', return_value='l') as ask:
+            rd.main(['--asset', 'core_mk1_model'])
+        self.assertEqual(ask.call_count, 1, 'one question: the style choice')
+        self.assertIn('blocky [l]ite', ask.call_args[0][0])
+        gen = [c for c in Fake.state['calls'] if c[1] == '/v2/lowpoly/generate']
+        self.assertEqual([c[2]['style'] for c in gen], ['rd_lowpoly__blocky_lite'])
+        estimates = [c[2]['style'] for c in Fake.state['calls'] if c[1] == '/v2/lowpoly/estimate']
+        self.assertEqual(sorted(set(estimates)), ['rd_lowpoly__blocky', 'rd_lowpoly__blocky_lite'], 'both priced')
+        # Declining sends nothing; --yes without a style refuses rather than guessing.
+        charged = Fake.state['charged']
+        with mock.patch('builtins.input', return_value='n'):
+            rd.main(['--asset', 'core_mk2_model'])
+        with self.assertRaises(SystemExit):
+            rd.main(['--asset', 'core_mk2_model', '--yes'])
+        self.assertEqual(Fake.state['charged'], charged)
+        # Blocky and Blocky Lite are the only choices (Detailed builds cylinders and spheres).
+        with self.assertRaises(SystemExit), mock.patch('sys.stderr'):
+            rd.main(['--asset', 'core_mk2_model', '--model-style', 'detailed'])
 
     def test_dry_run_needs_no_key_and_sends_nothing(self):
         os.environ.pop('RD_API_KEY')
