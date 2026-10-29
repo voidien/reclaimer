@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -78,23 +79,50 @@ public final class Bodies {
      * and storage pod on every mount that takes one. For tests and the {@code /void_reclaimer body preset} command.
      */
     public static BodyData preset(ResourceKey<Chassis> key) {
+        return preset(key, false);
+    }
+
+    /**
+     * {@link #preset(ResourceKey)}, and with {@code full} also the rest of the modules, to see them on the body: a Mk II core,
+     * Mk I and Mk II storage pods in turn, a Dust Sensor on every sensor mount, and the four tool modules in turn on the
+     * tool mounts.
+     */
+    public static BodyData preset(ResourceKey<Chassis> key, boolean full) {
         ResourceKey<Chassis> chassisKey = BuiltinBodies.CHASSIS.containsKey(key) ? key : BuiltinBodies.DRONE;
         Chassis chassis = BuiltinBodies.CHASSIS.get(chassisKey);
         Map<String, ItemStack> sections = BodyMigration.basicSections(chassisKey);
         if (chassisKey.equals(BuiltinBodies.MECH)) {
             sections.put("back", new ItemStack(ModItems.ROTOR_ARM.get())); // the jetpack: a Drone rotor arm
         }
+        List<Supplier<? extends net.minecraft.world.item.Item>> tools = List.of(ModItems.MECHANICAL_DRILL, ModItems.MATTER_HARVESTER,
+                ModItems.SALVAGE_TOOL, ModItems.NANITE_SWARM);
+        int storage = 0;
+        int tool = 0;
         Map<BodyData.Mount, ItemStack> modules = new java.util.LinkedHashMap<>();
         for (Socket socket : chassis.sockets()) {
             SectionStats section = Parts.section(sections.getOrDefault(socket.id(), ItemStack.EMPTY));
-            for (int i = 0; section != null && i < section.mounts(ModuleKind.CORE); i++) {
-                modules.put(new BodyData.Mount(socket.id(), ModuleKind.CORE, i), new ItemStack(ModItems.CORE_MK1.get()));
+            if (section == null) {
+                continue;
             }
-            for (int i = 0; section != null && i < section.mounts(ModuleKind.THRUSTER); i++) {
+            for (int i = 0; i < section.mounts(ModuleKind.CORE); i++) {
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.CORE, i),
+                        new ItemStack(full ? ModItems.CORE_MK2.get() : ModItems.CORE_MK1.get()));
+            }
+            for (int i = 0; i < section.mounts(ModuleKind.THRUSTER); i++) {
                 modules.put(new BodyData.Mount(socket.id(), ModuleKind.THRUSTER, i), new ItemStack(ModItems.THRUSTER_MK1.get()));
             }
-            for (int i = 0; section != null && i < section.mounts(ModuleKind.STORAGE); i++) {
-                modules.put(new BodyData.Mount(socket.id(), ModuleKind.STORAGE, i), new ItemStack(ModItems.STORAGE_MK1.get()));
+            for (int i = 0; i < section.mounts(ModuleKind.STORAGE); i++) {
+                boolean mk2 = full && storage++ % 2 == 1;
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.STORAGE, i),
+                        new ItemStack(mk2 ? ModItems.STORAGE_MK2.get() : ModItems.STORAGE_MK1.get()));
+            }
+            if (full) {
+                for (int i = 0; i < section.mounts(ModuleKind.SENSOR); i++) {
+                    modules.put(new BodyData.Mount(socket.id(), ModuleKind.SENSOR, i), new ItemStack(ModItems.DUST_SENSOR.get()));
+                }
+                for (int i = 0; i < section.mounts(ModuleKind.TOOL); i++) {
+                    modules.put(new BodyData.Mount(socket.id(), ModuleKind.TOOL, i), new ItemStack(tools.get(tool++ % tools.size()).get()));
+                }
             }
         }
         return new BodyData(chassis.coreSocket(), sections, modules, 0, Cosmetics.DEFAULT, List.of());

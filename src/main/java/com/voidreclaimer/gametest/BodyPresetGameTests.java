@@ -19,11 +19,11 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class BodyPresetGameTests {
     private BodyPresetGameTests() {}
 
-    private static void check(GameTestHelper helper, ResourceKey<Chassis> key, double x) {
+    private static void check(GameTestHelper helper, ResourceKey<Chassis> key, double x, boolean full) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, x, 80, 0.5);
         try {
             Chassis chassis = BuiltinBodies.CHASSIS.get(key);
-            BodyData preset = Bodies.preset(key);
+            BodyData preset = Bodies.preset(key, full);
             helper.assertTrue(BodyRules.normalize(preset, chassis).returned().isEmpty(), key.location() + " preset has parts that don't fit");
             Bodies.store(player, preset);
             helper.assertTrue(Bodies.view(player).missing().isEmpty(), key.location() + " preset leaves sockets empty");
@@ -38,17 +38,17 @@ public final class BodyPresetGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 60)
     public static void dronePresetIsComplete(GameTestHelper helper) {
-        check(helper, BuiltinBodies.DRONE, 89_000.5);
+        check(helper, BuiltinBodies.DRONE, 89_000.5, false);
     }
 
     @GameTest(template = "empty", timeoutTicks = 60)
     public static void mechPresetIsComplete(GameTestHelper helper) {
-        check(helper, BuiltinBodies.MECH, 89_020.5);
+        check(helper, BuiltinBodies.MECH, 89_020.5, false);
     }
 
     @GameTest(template = "empty", timeoutTicks = 60)
     public static void shipPresetIsComplete(GameTestHelper helper) {
-        check(helper, BuiltinBodies.SHIP, 89_040.5);
+        check(helper, BuiltinBodies.SHIP, 89_040.5, false);
     }
 
     /** The Mech's jetpack is a rotor arm on its back, with a thruster. */
@@ -75,5 +75,21 @@ public final class BodyPresetGameTests {
         } finally {
             TestPlayers.remove(player);
         }
+    }
+
+    /** The full presets put every kind of module on the body, and all of them fit the chassis. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void fullPresetsCarryEveryModuleAndAllFit(GameTestHelper helper) {
+        java.util.Set<String> expected = java.util.Set.of("dust_sensor", "mechanical_drill", "matter_harvester", "salvage_tool",
+                "nanite_swarm", "core_mk2", "storage_mk1", "storage_mk2");
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (ResourceKey<Chassis> key : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP)) {
+            BodyData preset = Bodies.preset(key, true);
+            helper.assertTrue(BodyRules.normalize(preset, BuiltinBodies.CHASSIS.get(key)).returned().isEmpty(),
+                    key.location() + " full preset has parts that don't fit");
+            preset.modules().values().forEach(m -> seen.add(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(m.getItem()).getPath()));
+        }
+        helper.assertTrue(seen.containsAll(expected), "missing modules on the full presets: " + expected.stream().filter(e -> !seen.contains(e)).toList());
+        helper.succeed();
     }
 }
