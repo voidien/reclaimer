@@ -36,6 +36,10 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
         replicator(output, "nanite_swarm", ModItems.NANITE_SWARM.get(), 1, DustCost.of(20, 10, 0, 10), 40,
                 ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
+        replicator(output, "mechanical_drill", ModItems.MECHANICAL_DRILL.get(), 1, DustCost.of(25, 15, 0, 10), 40,
+                ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
+        replicator(output, "matter_harvester", ModItems.MATTER_HARVESTER.get(), 1, DustCost.of(40, 25, 10, 20), 60,
+                ReplicatorCategories.TOOLS, Milestones.FIRST_DUST);
         replicator(output, "tether_anchor", ModItems.TETHER_ANCHOR.get(), 1, DustCost.of(15, 5, 0, 0), 20,
                 ReplicatorCategories.BLOCKS, Milestones.FIRST_STRUCTURE);
         replicator(output, "backup_core", ModItems.BACKUP_CORE.get(), 1, DustCost.of(30, 20, 10, 10), 60,

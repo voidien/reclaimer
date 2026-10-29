@@ -18,6 +18,11 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.SCAFFOLD.get());
         dropSelf(ModBlocks.TETHER_ANCHOR.get());
         dropSelf(ModBlocks.BACKUP_CORE.get());
+        // What the Matter Harvester takes out whole; the Mechanical Drill grinds the block to dust instead.
+        dropSelf(ModBlocks.ASTEROID_SILICATE.get());
+        dropSelf(ModBlocks.ASTEROID_ICE.get());
+        dropSelf(ModBlocks.ASTEROID_CARBON.get());
+        dropSelf(ModBlocks.ASTEROID_METALLIC.get());
     }
 
     @Override

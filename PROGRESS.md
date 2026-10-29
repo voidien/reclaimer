@@ -288,6 +288,22 @@ From an outside audit, each checked against the code first (several claims were 
 - Tests: three GameTests and a payload codec unit test, mutation-checked (reverting each fix fails its test).
 - Not done: shift-click onto a partial stack in a locked slot, Create's nested libraries on the compile classpath (do it with the first code that imports Registrate, Ponder or Flywheel), the GitHub default branch (a repo setting).
 
+## Phase 6: Asteroids: done
+- `AsteroidChunkGenerator` (`void_reclaimer:asteroids`, replaces `minecraft:flat` in `deep_space.json`), `AsteroidField` and `AsteroidBody` (pure, unit-tested): sparse clusters on a 1024-block grid, small rock fields, large bodies, rare giants up to about 300 blocks wide, spawn kept clear, kind from the nearest dust cloud.
+- Blocks `asteroid_silicate`, `asteroid_ice`, `asteroid_carbon`, `asteroid_metallic`, tag `#void_reclaimer:asteroid_blocks`.
+- **Mechanical Drill** (dust refund, no drop) and **Matter Harvester** (block drops whole): tool modules, Replicator recipes in the Tools tab, unlocked by First Dust. Asteroid rock cannot be broken without one, and neither works in low power mode. Config `asteroids.drillEnergy`, `asteroids.drillDustYield`.
+- Tests: `AsteroidFieldTest` (8 unit tests) and `AsteroidGameTests` (6 GameTests: real chunk generation, clear spawn, no break without a drill, drill refund, harvester drop, low power). Mutation-checked from a fresh world: the flat generator fails the generation test, a disabled speed gate and a drill that doesn't cancel fail the drill tests. The unit tests also caught a real cache-key collision while writing them.
+- Fixed a flaky existing test: `salvageToolDismantlesForDustWithoutDrops` now loads its chunk before waiting (it failed in about half of fresh worlds).
+- Generation cost: about 65 ms per chunk column through the middle of a 195-wide giant.
+- Worlds made before this phase keep their flat deep space (the generator is saved with the world). Delete `run/world` locally before running GameTests after changing the generator, or the old one is used.
+
+### Placeholder assets
+- Block textures `asteroid_silicate.png`, `asteroid_ice.png`, `asteroid_carbon.png`, `asteroid_metallic.png` (noisy 16x16 programmer art) and item textures `mechanical_drill.png`, `matter_harvester.png`.
+- Recipe prices for the drill and harvester are guesses.
+
+### Not done yet
+- Ship frame unlock (waits on the Starship upgrade order), ore veins inside asteroids, faster interior fill for giants.
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight

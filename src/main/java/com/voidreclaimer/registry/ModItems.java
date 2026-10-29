@@ -24,6 +24,8 @@ public final class ModItems {
 
     public static final DeferredItem<ModuleItem> DUST_SENSOR = module("dust_sensor", ModuleStats.simple(ModuleKind.SENSOR, 1, 0.1f));
     public static final DeferredItem<ModuleItem> SALVAGE_TOOL = tool("salvage_tool", ModuleStats.simple(ModuleKind.TOOL, 1, 0.1f), "salvage");
+    public static final DeferredItem<ModuleItem> MECHANICAL_DRILL = tool("mechanical_drill", ModuleStats.simple(ModuleKind.TOOL, 1, 0.2f), "drill");
+    public static final DeferredItem<ModuleItem> MATTER_HARVESTER = tool("matter_harvester", ModuleStats.simple(ModuleKind.TOOL, 1, 0.25f), "harvester");
     public static final DeferredItem<ModuleItem> NANITE_SWARM = tool("nanite_swarm", ModuleStats.simple(ModuleKind.TOOL, 1, 0.15f), "nanite_swarm");
 
     public static final DeferredItem<ModuleItem> CORE_MK1 = module("core_mk1", ModuleStats.core(1, 0.2f, new ModuleStats.Core(100f, 1.0f)));
@@ -122,6 +124,10 @@ public final class ModItems {
     // ---- blocks -------------------------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> SCAFFOLD = ITEMS.registerSimpleBlockItem(ModBlocks.SCAFFOLD);
+    public static final DeferredItem<BlockItem> ASTEROID_SILICATE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_SILICATE);
+    public static final DeferredItem<BlockItem> ASTEROID_ICE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_ICE);
+    public static final DeferredItem<BlockItem> ASTEROID_CARBON = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_CARBON);
+    public static final DeferredItem<BlockItem> ASTEROID_METALLIC = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_METALLIC);
     public static final DeferredItem<BlockItem> TETHER_ANCHOR = ITEMS.registerSimpleBlockItem(ModBlocks.TETHER_ANCHOR);
     public static final DeferredItem<BlockItem> BACKUP_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.BACKUP_CORE);
 

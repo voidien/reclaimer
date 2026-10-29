@@ -126,7 +126,7 @@ src/main/java/com/voidreclaimer/
 │   │                             ToolModules, Modules, InventoryLock, Cosmetics
 │   ├── part/                     SectionItem, ModuleItem
 │   └── assembly/                 (5b) 3D assembly view logic
-├── asteroid/                     Phase 6: worldgen features, drill gating
+├── asteroid/                     Phase 6: AsteroidField/AsteroidBody (pure), AsteroidChunkGenerator, AsteroidBlock, Drilling
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
 ├── station/                      Phase 8: multiblock validation & controllers
 ├── helper/                       Phase 8: helper drone entity, steering, task logic
@@ -157,7 +157,7 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 
 ## Settled design decisions
 **Phase 1**
-- Deep space is an empty void (flat generator, no layers). Height is the vanilla maximum, Y -2032..2031. A soft push-back starts 96 blocks from either limit (config), so nothing reaches void damage.
+- Deep space is an empty void (flat generator, no layers; since Phase 6 the custom asteroid generator on top of that, see the Asteroids block). Height is the vanilla maximum, Y -2032..2031. A soft push-back starts 96 blocks from either limit (config), so nothing reaches void damage.
 - The Overworld, Nether, and End are locked for good. Endgame travel goes to `ruined_earth`. Creative and spectator players may bypass the lock (ops can switch modes). Nether portals can't be lit in deep space.
 - Light: real darkness, with sky light from a fixed, dim, distant sun (`fixed_time` 12800 gives effective sky light 10/15). Vanilla sky light only travels downward, so the sun is drawn near the zenith. Undersides and enclosed spaces stay dark.
 - Zero-G covers everything: players and mobs via a `generic.gravity` modifier, other entities via NoGravity plus a tag, and falling blocks via a mixin. Fluids still flow. Thrown or hit things keep vanilla's light drag. Gravity generators (later) hook into `ZeroGravity.isZeroG(level, pos)`.
@@ -318,3 +318,13 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - Milestones `dyson_tier_1..4` (criterion `dyson_tier`, order 100-103) write the AI log entries. Their texts are placeholders.
 - `/void_reclaimer dyson get|set satellites|trusses <n>` for testing.
 - Sky: `client/render/DysonSky` draws the swarm and shell in the sun's frame, and tints/dims the sun. Power beams to the Quantum Receiver Dish wait for that block. The sun's dimming is visual only: solar charging does not use `DysonTiers.sunlight` yet, because a dark star would also cut off the AI's power before the Dyson power beam exists.
+
+**Asteroids (Phase 6, 2026-10-29)**
+- **Generation:** `deep_space.json` uses the custom generator `void_reclaimer:asteroids` (`AsteroidChunkGenerator`, a `FlatLevelSource` subclass) instead of `minecraft:flat`. It is not a structure: structures only reach about 128 blocks from their start chunk, and giants are up to about 300 blocks wide. It captures the world seed in `createState`, then each chunk asks `AsteroidField` about its own cell.
+- **`AsteroidField` (pure, unit-tested):** space is cut into 1024-block cells (like the dust field). About 35% of cells hold a cluster: a small-rock field (most), a large body (18-40 half-width) with satellites, or a rare giant (4% of clusters, 100-150 half-width, so up to about 300 wide) with satellites. No body ever leaves its cell. The spawn keeps 300 blocks clear from any body's edge.
+- **Kinds:** a cluster is made of the dust kind of the nearest cloud within 1500 blocks (85% of the time), otherwise a weighted pick. Blocks: `asteroid_silicate`, `asteroid_ice`, `asteroid_carbon`, `asteroid_metallic` (tag `#void_reclaimer:asteroid_blocks`).
+- **Mining:** asteroid rock cannot be broken by hand or by other tools (break speed 0, and the break is cancelled server-side). The **Mechanical Drill** (tool module type `drill`, Replicator, Tools tab) breaks it fast, drops nothing and refunds `asteroids.drillDustYield` dust of the block's kind. The **Matter Harvester** (`harvester`) is slower and lets the block drop as an item. Both cost `asteroids.drillEnergy` per block and go offline in low power mode. Creative breaks anything. Drilling only reads the active tool, so the sneak-flag fix for flight is not involved.
+- **Existing worlds:** the generator is saved with the world, so a world made before this phase keeps its flat deep space (and chunks already generated stay empty). New worlds get asteroids.
+- **Measured:** about 65 ms per chunk column through the middle of a 195-wide giant (synchronous, in a GameTest). Giants are rare, so this is accepted; the interior could be filled faster if it becomes a problem.
+- Not in this phase: the Ship frame stays locked (the Starship upgrade order is open in the design doc); no ores or veins inside asteroids; no rotation of bodies.
+

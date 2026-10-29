@@ -1,7 +1,7 @@
 {
   "type": "void_reclaimer:deep_space",
   "generator": {
-    "type": "minecraft:flat",
+    "type": "void_reclaimer:asteroids",
     "settings": {
       "biome": "void_reclaimer:deep_space",
       "layers": [],
