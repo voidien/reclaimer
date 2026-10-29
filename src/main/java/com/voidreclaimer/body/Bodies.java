@@ -159,7 +159,13 @@ public final class Bodies {
     public static void apply(LivingEntity entity) {
         BodyStats stats = stats(entity);
         modifier(entity, Attributes.SCALE, SCALE, stats.scale() - 1.0);
-        modifier(entity, Attributes.MAX_HEALTH, HEALTH, stats.maxHealth() - VANILLA_MAX_HEALTH);
+        // Permanent, so it is in the saved attributes: vanilla clamps the saved health to the max health it finds at load,
+        // before PlayerLoggedInEvent, and a transient modifier would cut a bigger body's health back to 20 on every relog.
+        AttributeInstance health = entity.getAttribute(Attributes.MAX_HEALTH);
+        if (health != null) {
+            health.addOrReplacePermanentModifier(
+                    new AttributeModifier(HEALTH, stats.maxHealth() - VANILLA_MAX_HEALTH, AttributeModifier.Operation.ADD_VALUE));
+        }
         modifier(entity, Attributes.BLOCK_INTERACTION_RANGE, BLOCK_REACH, stats.reach());
         modifier(entity, Attributes.ENTITY_INTERACTION_RANGE, ENTITY_REACH, stats.reach());
         if (entity.getHealth() > entity.getMaxHealth()) {
@@ -243,7 +249,10 @@ public final class Bodies {
      * Refused when the inventory can't take the returned items.
      */
     private static BodyRules.Check commit(ServerPlayer player, BodyRules.Change change, ItemStack source, int sourceSlot) {
-        int room = freeSlots(player) + (source != null && source.getCount() == 1 ? 1 : 0);
+        // Room is counted under the new body's slot limit: removing a storage module locks its own rows again.
+        int newSlots = compute(change.body(), player.registryAccess()).inventorySlots();
+        int room = freeSlots(player, newSlots)
+                + (source != null && source.getCount() == 1 && !InventoryLock.isLocked(player, sourceSlot, newSlots) ? 1 : 0);
         if (room < change.returned().size()) {
             reply(player, "message.void_reclaimer.body.inventory_full");
             return BodyRules.Check.EMPTY;
@@ -328,11 +337,11 @@ public final class Bodies {
         }
     }
 
-    private static int freeSlots(ServerPlayer player) {
+    private static int freeSlots(ServerPlayer player, int slots) {
         Inventory inventory = player.getInventory();
         int free = 0;
         for (int i = 0; i < inventory.items.size(); i++) {
-            if (inventory.items.get(i).isEmpty() && !InventoryLock.isLocked(player, i)) {
+            if (inventory.items.get(i).isEmpty() && !InventoryLock.isLocked(player, i, slots)) {
                 free++;
             }
         }

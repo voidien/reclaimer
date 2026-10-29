@@ -176,6 +176,13 @@ public final class Tether {
             return;
         }
         BlockPos anchorPos = data.anchor().orElseThrow().pos();
+        // validate() skips unloaded chunks, so the anchor may have been removed while its owner was away.
+        ServerLevel anchorLevel = player.server.getLevel(data.anchor().get().dimension());
+        if (anchorLevel == null || !anchorLevel.getBlockState(anchorPos).is(ModBlocks.TETHER_ANCHOR.get())) {
+            store(player, TetherData.NONE.withTeleportReadyAt(data.teleportReadyAt()));
+            message(player, "message.void_reclaimer.tether.lost", ChatFormatting.GOLD);
+            return;
+        }
         BlockPos spot = freeSpotNear(player.level(), anchorPos);
         if (spot == null) {
             message(player, "message.void_reclaimer.tether.blocked", ChatFormatting.GRAY);

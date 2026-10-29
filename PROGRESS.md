@@ -257,6 +257,16 @@
 ### Placeholder assets
 - Item textures for all section items (`drone_hull`, `rotor_arm`, `rotor_arm_mk2`, `sensor_dome`, `tool_claw`, `mech_*`, `ship_keel`) and `body_blueprint`. They are 16x16 programmer art.
 
+## Audit fixes: done
+From an outside audit, each checked against the code first (several claims were stale or wrong).
+- **Nanite Swarm against blocks in flight:** thruster flight clears the vanilla sneak flag, so the server's `isShiftKeyDown()` was always false and block-targeted builds never worked in deep space. `BodyActionPayload` now carries the client's sneak key; `Modules.use(player, sneak)` and a new `ToolModuleType.use(..., sneak)` overload (defaults to the old method) use it.
+- **Removing a storage module:** room is now counted under the new body's slot limit, so a removal that would leave no room is refused instead of dropping the item into space.
+- **Max health on relog:** the body's max health modifier is permanent, so it is saved and vanilla doesn't clamp a bigger body's health on login.
+- **Tether recall:** the teleport checks the anchor block still exists (the chunk may have been unloaded when it was removed) and clears a stale anchor. The client's held-key flag resets on disconnect. Not covered by a test: it needs an unloaded chunk.
+- **Build:** `exclude('.cache/**')` (the old pattern never matched, so the datagen cache shipped in the jar).
+- Tests: three GameTests and a payload codec unit test, mutation-checked (reverting each fix fails its test).
+- Not done: shift-click onto a partial stack in a locked slot, Create's nested libraries on the compile classpath (do it with the first code that imports Registrate, Ponder or Flywheel), the GitHub default branch (a repo setting).
+
 ## Phases
 - [x] 1. Deep Space & Spawn
 - [x] 2. Zero-G Flight

@@ -1,0 +1,183 @@
+#Where new and respawning players appear in void_reclaimer:deep_space.
+[spawn]
+	# Default: 0
+	# Range: -29000000 ~ 29000000
+	x = 0
+	# Default: 64
+	# Range: -2000 ~ 2000
+	y = 64
+	# Default: 0
+	# Range: -29000000 ~ 29000000
+	z = 0
+
+#Soft push-back near the top and bottom of deep space.
+[boundary]
+	#Distance in blocks from the build limit where the push-back starts.
+	# Default: 96.0
+	# Range: 8.0 ~ 512.0
+	margin = 96.0
+	#Acceleration in blocks/tick^2 at the build limit; it scales up linearly from 0 at the margin.
+	# Default: 0.04
+	# Range: 0.001 ~ 1.0
+	push = 0.04
+
+#The AI's internal energy (shown in place of the hunger bar). Rates are per second.
+[energy]
+	#Energy capacity before the body is applied (the installed core sets the real capacity).
+	# Default: 100.0
+	# Range: 1.0 ~ 100000.0
+	capacity = 100.0
+	#Passive drain while above the emergency reserve.
+	# Default: 0.2
+	# Range: 0.0 ~ 1000.0
+	idleDrain = 0.2
+	#Charge under full, unobstructed sunlight. Deep space's distant sun gives about 2/3 of this.
+	# Default: 1.5
+	# Range: 0.0 ~ 1000.0
+	sunCharge = 1.5
+	#Always-on trickle charge while below the emergency reserve, even in darkness.
+	# Default: 0.1
+	# Range: 0.0 ~ 1000.0
+	emergencyCharge = 0.1
+	#Fraction of capacity below which idle drain stops and the emergency trickle starts.
+	# Default: 0.1
+	# Range: 0.0 ~ 1.0
+	reserveFraction = 0.1
+	#Fraction of capacity needed to leave low power mode after hitting zero.
+	# Default: 0.05
+	# Range: 0.0 ~ 1.0
+	restartFraction = 0.05
+
+#Thruster flight. Handling (mass, thrust, top speed) comes from the body's parts.
+[flight]
+	#Energy per second while any thruster fires.
+	# Default: 2.0
+	# Range: 0.0 ~ 1000.0
+	thrustEnergyCost = 2.0
+	#Energy per second while the dampener is braking.
+	# Default: 1.0
+	# Range: 0.0 ~ 1000.0
+	brakeEnergyCost = 1.0
+	#Server speed check: movement over one second may exceed top speed by this factor before it is corrected.
+	# Default: 1.5
+	# Range: 1.0 ~ 10.0
+	speedCheckTolerance = 1.5
+
+#Cosmic dust. Cloud placement and shape are fixed by the world seed and not configurable.
+[dust]
+	#Starter storage per dust kind.
+	# Default: 200.0
+	# Range: 1.0 ~ 1000000.0
+	capacity = 200.0
+	#Dust per second collected at full density while not moving.
+	# Default: 0.1
+	# Range: 0.0 ~ 1000.0
+	trickle = 0.1
+	#Dust per block travelled at full density (flying through a cloud scoops dust).
+	# Default: 0.1
+	# Range: 0.0 ~ 1000.0
+	scoop = 0.1
+	#Fraction of velocity lost per tick at full density (applies with the dampener off too).
+	# Default: 0.04
+	# Range: 0.0 ~ 1.0
+	drag = 0.04
+	#Top speed reduction at full density (0.6 = 60% slower in the densest core).
+	# Default: 0.6
+	# Range: 0.0 ~ 0.95
+	speedPenalty = 0.6
+
+#Dust Sensor.
+[sensor]
+	#Energy per sensor pulse.
+	# Default: 5.0
+	# Range: 0.0 ~ 1000.0
+	pulseEnergyCost = 5.0
+	#Seconds between pulses.
+	# Default: 10
+	# Range: 0 ~ 600
+	pulseCooldown = 10
+	#How far a pulse can detect a cloud, in blocks.
+	# Default: 2048.0
+	# Range: 64.0 ~ 16384.0
+	pulseRange = 2048.0
+	#Range of the directional hum, in blocks from a cloud's edge.
+	# Default: 512.0
+	# Range: 16.0 ~ 4096.0
+	humRange = 512.0
+
+#Replicator and tools. Recipe costs and times are data-driven (datapack recipes).
+[replicator]
+	#Energy per second while the Replicator is working.
+	# Default: 1.5
+	# Range: 0.0 ~ 1000.0
+	energy = 1.5
+	#Fraction of a block's Replicator dust cost refunded when the Salvage Tool dismantles it.
+	# Default: 0.5
+	# Range: 0.0 ~ 1.0
+	salvageRefund = 0.5
+	#Energy per block built by the Nanite Swarm.
+	# Default: 1.0
+	# Range: 0.0 ~ 1000.0
+	naniteEnergy = 1.0
+
+#Tether Anchor: leash and recall.
+[tether]
+	#How far you can drift from a clipped anchor, in blocks.
+	# Default: 16.0
+	# Range: 2.0 ~ 256.0
+	length = 16.0
+	#Recall pull speed as a multiple of top speed.
+	# Default: 2.0
+	# Range: 1.0 ~ 10.0
+	recallSpeedFactor = 2.0
+	#Within this distance recall pulls you in; farther away it teleports.
+	# Default: 256.0
+	# Range: 8.0 ~ 100000.0
+	recallPullRange = 256.0
+	#Energy per second while the recall pulls.
+	# Default: 3.0
+	# Range: 0.0 ~ 1000.0
+	recallPullEnergy = 3.0
+	#Energy for a long-range recall teleport.
+	# Default: 25.0
+	# Range: 0.0 ~ 1000.0
+	recallTeleportEnergy = 25.0
+	#Seconds between recall teleports.
+	# Default: 60
+	# Range: 0 ~ 3600
+	recallTeleportCooldown = 60
+
+#Body section wear: light and repairable; sections never break. No wear in creative.
+[wear]
+	#Whether sections wear at all.
+	enabled = true
+	#Condition lost per minute of thrust by each section carrying a thruster (1.0 = all of it).
+	# Default: 0.012
+	# Range: 0.0 ~ 1.0
+	perThrustMinute = 0.012
+	#Condition lost per tool module use by the section holding the tool.
+	# Default: 0.002
+	# Range: 0.0 ~ 1.0
+	perToolUse = 0.002
+	#Repairing a section from 0% costs this fraction of its recipe's dust (less when less worn).
+	# Default: 0.2
+	# Range: 0.0 ~ 10.0
+	repairCostFraction = 0.2
+
+#Backup Cores.
+[backupCore]
+	#Ticks of full sunlight per respawn charge (deep space's distant sun is about 2/3 as fast).
+	# Default: 12000
+	# Range: 20 ~ 1000000
+	sunTicksPerCharge = 12000
+
+#Dyson Sphere. The defaults are stand-ins until the design settles the numbers.
+[dyson]
+	#Shell truss modules launched before the structural lattice (skybox tier 3) appears.
+	# Default: 1
+	# Range: 1 ~ 1000000000
+	latticeStart = 1
+	#Shell truss modules that complete the sphere (skybox tier 4). Never below latticeStart.
+	# Default: 1000
+	# Range: 1 ~ 1000000000
+	shellTotal = 1000
