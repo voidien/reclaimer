@@ -475,6 +475,11 @@ class RdGenerateTest(unittest.TestCase):
         self.assertEqual(len(created), 1, 'only categories with reference images get a custom style')
         self.assertEqual(created[0]['user_prompt_template'].count('{prompt}'), 1)
         self.assertEqual(len(created[0]['reference_images']), 4)
+        ref = rd.png_read(base64.b64decode(created[0]['reference_images'][0]))
+        self.assertEqual((len(ref[0]), len(ref)), (256, 256), '64x64 references are enlarged to the 256x256 RD needs')
+        import style_guide
+        self.assertEqual(created[0]['llm_instructions'], style_guide.instructions(style_guide.load_style(), 'items'))
+        self.assertTrue(created[0]['force_bg_removal'], 'item styles remove the background')
         self.assertIn('cyan', created[0]['llm_instructions'])
         # Item jobs now use the custom style (RD Pro limits: 16x16 is fine); block jobs keep the base style.
         with mock.patch('builtins.input', return_value='y'):
@@ -490,6 +495,19 @@ class RdGenerateTest(unittest.TestCase):
         patches = [c[2] for c in Fake.state['calls'] if c[0] == 'PATCH']
         self.assertEqual([len(p['reference_images']) for p in patches[-2:]], [4, 1])
         self.assertEqual(len([c for c in Fake.state['calls'] if c[1] == '/v2/styles']), 1)
+
+    def test_reference_images_are_256_square(self):
+        import style_guide
+        icon = checker(16, 16)
+        big = rd.png_read(style_guide.reference_png(icon))
+        self.assertEqual((len(big[0]), len(big)), (256, 256))
+        self.assertEqual(big[0:16], [[px for px in rd.png_read(icon)[0] for _ in range(16)]] * 16, 'no smoothing')
+        self.assertEqual(len(rd.png_read(style_guide.reference_png(checker(512, 512)))), 256)
+        same = checker(256, 256)
+        self.assertIs(style_guide.reference_png(same), same)
+        for bad in (checker(100, 100), checker(64, 32)):
+            with self.assertRaises(ValueError):
+                style_guide.reference_png(bad)
 
     def test_style_guide_files_are_up_to_date(self):
         import style_guide

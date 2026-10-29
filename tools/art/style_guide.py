@@ -12,11 +12,12 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pngutil import png_write  # noqa: E402
+from pngutil import png_read, png_write  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 STYLE_PATH = os.path.join(REPO, 'docs', 'art', 'style.json')
 MAX_REFERENCES = 4  # RD custom styles take up to 4 reference images
+REFERENCE_SIZE = 256  # ...each exactly 256x256 (RD's app: square, 256 at native resolution)
 IMAGE_TYPES = ('.png', '.jpg', '.jpeg', '.webp')
 
 
@@ -37,6 +38,30 @@ def reference_files(repo, category_def):
         return [], []
     files = sorted(os.path.join(folder, f) for f in os.listdir(folder) if f.lower().endswith(IMAGE_TYPES))
     return files[:MAX_REFERENCES], files[MAX_REFERENCES:]
+
+
+def instructions(style, category):
+    """The custom style's "Style Guidelines" (the API's llm_instructions): how RD should rewrite each prompt."""
+    c = style['categories'][category]
+    return ' '.join([style['mood'], c['background']] + c['rules'] + style['rules'])
+
+
+def reference_png(data):
+    """A reference image as RD wants it: square and exactly 256x256. Smaller squares that divide 256 (16x16 icons,
+    64x64 skins) are enlarged without smoothing; exact multiples (512, 1024) are reduced. Raises ValueError otherwise."""
+    pixels = png_read(data)
+    w, h = len(pixels[0]), len(pixels)
+    if w != h:
+        raise ValueError('%dx%d is not square' % (w, h))
+    if w == REFERENCE_SIZE:
+        return data
+    if w < REFERENCE_SIZE and REFERENCE_SIZE % w == 0:
+        k = REFERENCE_SIZE // w
+        return png_write([[px for px in row for _ in range(k)] for row in pixels for _ in range(k)])
+    if w > REFERENCE_SIZE and w % REFERENCE_SIZE == 0:
+        k = w // REFERENCE_SIZE
+        return png_write([row[::k] for row in pixels[::k]])
+    raise ValueError('%dx%d is neither a divisor nor a multiple of %d' % (w, h, REFERENCE_SIZE))
 
 
 def palette(style, category):
@@ -67,6 +92,34 @@ def preview_png(style, category, cell=16):
         out.append([(30, 32, 40, 255)] * width)
     return png_write(out)
 
+
+def form_markdown(style, key):
+    """Copy-paste values for RD's "Create New Style" form (Based on RD Pro)."""
+    c = style['categories'][key]
+    yes = lambda b: 'tick' if b else 'leave unticked'  # noqa: E731
+    return [
+        '#### Make it in RD\'s app (My Styles, Create New Style, based on RD Pro)',
+        '| Field | Value |',
+        '|---|---|',
+        '| Style Name | `%s %s` |' % (style['name'], c['title']),
+        '| Description | %s |' % c['covers'],
+        '| Style Icon | `%s` (or any) |' % c['icon'],
+        '| Reference Images | 1 to %d square images, exactly %dx%d (`python3 tools/art/style_guide.py --reference IMAGE` '
+        'makes one from an icon or a render). Use the images in `%s`. |' % (MAX_REFERENCES, REFERENCE_SIZE,
+                                                                          REFERENCE_SIZE, c['references']),
+        '| AI Prompt Enhancement | tick |',
+        '| Style Guidelines | (the text below) |',
+        '| User Prompt Template | `%s` |' % c['prompt_template'],
+        '| Force color palette | tick, and upload `docs/art/palettes/%s.png` |' % key,
+        '| Force Background Removal | %s |' % yes(c['remove_background']),
+        '| Force width and height | leave unticked (sizes differ per asset) |',
+        '',
+        'Style Guidelines:',
+        '```',
+        instructions(style, key),
+        '```',
+        '',
+    ]
 
 def guide_markdown(style):
     cats = style['categories']
@@ -99,6 +152,7 @@ def guide_markdown(style):
                   '- **Prompt template:** `%s`' % c['prompt_template'],
                   '- **Reference images (for an RD custom style):** up to %d in `%s`' % (MAX_REFERENCES, c['references']),
                   '']
+        lines += form_markdown(style, key)
     lines += [
         '## How the tool applies it',
         '`rd_generate.py` puts every row in a category: item icons in `items`, block textures and block models in '
@@ -119,7 +173,18 @@ def guide_markdown(style):
     return '\n'.join(lines)
 
 
-def main():
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ['--reference']:
+        # Turn icons or renders into RD reference images: square, exactly 256x256, next to the originals.
+        for path in argv[1:]:
+            with open(path, 'rb') as f:
+                data = reference_png(f.read())
+            out = os.path.splitext(path)[0] + '_ref256.png'
+            with open(out, 'wb') as f:
+                f.write(data)
+            print('wrote', out)
+        return
     style = load_style()
     out_dir = os.path.join(REPO, 'docs', 'art', 'palettes')
     os.makedirs(out_dir, exist_ok=True)

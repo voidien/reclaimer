@@ -12,21 +12,110 @@
     "Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye."
   ],
   "ramps": {
-    "andesite": ["#1E2124", "#2E3236", "#43484D", "#5B6166", "#767C80", "#959A9C", "#B6BAB9"],
-    "space_iron": ["#0E0F13", "#16181E", "#20232B", "#2C3039", "#3A3F4A"],
-    "brass": ["#4A3214", "#6E4B1C", "#96682A", "#BF8B3A", "#E0B054", "#F5D88A"],
-    "copper": ["#3B1E14", "#5E2E1D", "#8A4428", "#B65E36", "#D98250", "#F0A97A"],
-    "ai_cyan": ["#0A2E3D", "#10536B", "#1A86A6", "#2FC0E0", "#8BE8F7", "#E6FBFF"],
-    "dust_metallic": ["#3C444C", "#5F6A74", "#8A949D", "#B8C2CC", "#DCE3EA"],
-    "dust_silicon": ["#5A4128", "#8A6740", "#B58C61", "#D9B38C", "#F0D8BC"],
-    "dust_ice": ["#2A5D70", "#4C93AD", "#74C0DA", "#9FE2FF", "#D6F4FF"],
-    "dust_carbon": ["#24222D", "#3A3746", "#534F62", "#6E6A80", "#948FA6"],
-    "fluids": ["#A8DCFF", "#B4C8FF", "#FFC8C8", "#FF9638", "#78DCE6", "#D0D8EE"],
-    "status": ["#C8363B", "#F2A33A", "#5BD16A"],
-    "light": ["#F4F6F7"],
-    "sky": ["#020306", "#05070D", "#0B0F1A", "#141B2C"],
-    "sun": ["#FFF6D8", "#FFE29A", "#F7B955"],
-    "smog": ["#2B1E16", "#4A3324", "#6E4A2E", "#97663C", "#C08A4E", "#7A7F4A", "#A8AE5C"]
+    "andesite": [
+      "#1E2124",
+      "#2E3236",
+      "#43484D",
+      "#5B6166",
+      "#767C80",
+      "#959A9C",
+      "#B6BAB9"
+    ],
+    "space_iron": [
+      "#0E0F13",
+      "#16181E",
+      "#20232B",
+      "#2C3039",
+      "#3A3F4A"
+    ],
+    "brass": [
+      "#4A3214",
+      "#6E4B1C",
+      "#96682A",
+      "#BF8B3A",
+      "#E0B054",
+      "#F5D88A"
+    ],
+    "copper": [
+      "#3B1E14",
+      "#5E2E1D",
+      "#8A4428",
+      "#B65E36",
+      "#D98250",
+      "#F0A97A"
+    ],
+    "ai_cyan": [
+      "#0A2E3D",
+      "#10536B",
+      "#1A86A6",
+      "#2FC0E0",
+      "#8BE8F7",
+      "#E6FBFF"
+    ],
+    "dust_metallic": [
+      "#3C444C",
+      "#5F6A74",
+      "#8A949D",
+      "#B8C2CC",
+      "#DCE3EA"
+    ],
+    "dust_silicon": [
+      "#5A4128",
+      "#8A6740",
+      "#B58C61",
+      "#D9B38C",
+      "#F0D8BC"
+    ],
+    "dust_ice": [
+      "#2A5D70",
+      "#4C93AD",
+      "#74C0DA",
+      "#9FE2FF",
+      "#D6F4FF"
+    ],
+    "dust_carbon": [
+      "#24222D",
+      "#3A3746",
+      "#534F62",
+      "#6E6A80",
+      "#948FA6"
+    ],
+    "fluids": [
+      "#A8DCFF",
+      "#B4C8FF",
+      "#FFC8C8",
+      "#FF9638",
+      "#78DCE6",
+      "#D0D8EE"
+    ],
+    "status": [
+      "#C8363B",
+      "#F2A33A",
+      "#5BD16A"
+    ],
+    "light": [
+      "#F4F6F7"
+    ],
+    "sky": [
+      "#020306",
+      "#05070D",
+      "#0B0F1A",
+      "#141B2C"
+    ],
+    "sun": [
+      "#FFF6D8",
+      "#FFE29A",
+      "#F7B955"
+    ],
+    "smog": [
+      "#2B1E16",
+      "#4A3324",
+      "#6E4A2E",
+      "#97663C",
+      "#C08A4E",
+      "#7A7F4A",
+      "#A8AE5C"
+    ]
   },
   "categories": {
     "items": {
@@ -38,9 +127,25 @@
         "Unfinished items are the finished icon with parts missing and the frame showing.",
         "Buckets keep vanilla's iron bucket; only the contents change."
       ],
-      "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon", "fluids", "status", "light"],
+      "ramps": [
+        "andesite",
+        "space_iron",
+        "brass",
+        "copper",
+        "ai_cyan",
+        "dust_metallic",
+        "dust_silicon",
+        "dust_ice",
+        "dust_carbon",
+        "fluids",
+        "status",
+        "light"
+      ],
       "prompt_template": "{prompt}, dark industrial sci-fi, andesite grey and dark iron with brass trim, cyan glow accents",
-      "references": "docs/art/style/items/"
+      "references": "docs/art/style/items/",
+      "background": "Describe the object alone on a plain, empty, flat background; the background is removed afterwards.",
+      "remove_background": true,
+      "icon": "rocket"
     },
     "blocks": {
       "title": "Block textures",
@@ -51,9 +156,23 @@
         "Machine faces follow Create: an andesite or brass casing border 1-2 pixels wide, the working part inside, a round shaft hole where a shaft enters.",
         "Lower contrast than items, so large areas stay calm."
       ],
-      "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon", "status"],
+      "ramps": [
+        "andesite",
+        "space_iron",
+        "brass",
+        "copper",
+        "ai_cyan",
+        "dust_metallic",
+        "dust_silicon",
+        "dust_ice",
+        "dust_carbon",
+        "status"
+      ],
       "prompt_template": "{prompt}, Create mod style block, dark cool tones",
-      "references": "docs/art/style/blocks/"
+      "references": "docs/art/style/blocks/",
+      "background": "Describe a flat, square surface that fills the whole image edge to edge, seen straight on, with no background and no perspective.",
+      "remove_background": false,
+      "icon": "cube"
     },
     "body": {
       "title": "The AI's body and other models",
@@ -64,9 +183,20 @@
         "Leave plain areas where the player's casing and accent colour will show; the accent mask is painted afterwards.",
         "Thrusters and moving joints show their mechanism: nozzles, pistons, cogs."
       ],
-      "ramps": ["andesite", "space_iron", "brass", "copper", "ai_cyan", "status", "light"],
+      "ramps": [
+        "andesite",
+        "space_iron",
+        "brass",
+        "copper",
+        "ai_cyan",
+        "status",
+        "light"
+      ],
       "prompt_template": "{prompt}, blocky Minecraft-style robot part, Create mod machinery, dark iron and andesite with brass joints, cyan lights",
-      "references": "docs/art/style/body/"
+      "references": "docs/art/style/body/",
+      "background": "Describe the part alone on a plain, empty, flat background, seen from the front at a slight angle.",
+      "remove_background": true,
+      "icon": "robot"
     },
     "gui": {
       "title": "HUD and screens",
@@ -76,9 +206,23 @@
         "Cyan for active, selected and energy; amber for warnings; red only for empty or broken.",
         "Flat shading, crisp 1-pixel lines; panels are 9-slice friendly (plain middles, detail in the corners and edges)."
       ],
-      "ramps": ["space_iron", "andesite", "brass", "ai_cyan", "status", "light", "dust_metallic", "dust_silicon", "dust_ice", "dust_carbon"],
+      "ramps": [
+        "space_iron",
+        "andesite",
+        "brass",
+        "ai_cyan",
+        "status",
+        "light",
+        "dust_metallic",
+        "dust_silicon",
+        "dust_ice",
+        "dust_carbon"
+      ],
       "prompt_template": "{prompt}, sci-fi machine interface, dark panel, cyan highlights",
-      "references": "docs/art/style/gui/"
+      "references": "docs/art/style/gui/",
+      "background": "Describe the interface element alone on a plain, empty, flat background; the background is removed afterwards.",
+      "remove_background": true,
+      "icon": "layout"
     },
     "sky": {
       "title": "Sky and effects",
@@ -88,9 +232,19 @@
         "Energy (beams, portal, Dyson glints) uses the cyan ramp with brass glints; it is the brightest thing on screen.",
         "Ruined Earth uses the smog ramp: brown-orange haze and sickly yellow-green for acid."
       ],
-      "ramps": ["sky", "sun", "ai_cyan", "brass", "smog", "light"],
+      "ramps": [
+        "sky",
+        "sun",
+        "ai_cyan",
+        "brass",
+        "smog",
+        "light"
+      ],
       "prompt_template": "{prompt}, deep space, cold dark blues, glowing cyan energy",
-      "references": "docs/art/style/sky/"
+      "references": "docs/art/style/sky/",
+      "background": "Describe the effect or sky element on a near-black deep-space background, or alone on an empty background for sprites.",
+      "remove_background": false,
+      "icon": "star"
     }
   }
 }

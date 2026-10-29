@@ -351,11 +351,18 @@ def setup_styles(key):
         images = []
         for ref in refs:
             with open(ref, 'rb') as f:
-                images.append(base64.b64encode(f.read()).decode())
+                data = f.read()
+            if data[:8] == b'\x89PNG\r\n\x1a\n':
+                try:
+                    data = style_guide.reference_png(data)  # RD wants exactly 256x256
+                except ValueError as e:
+                    sys.exit('%s: %s; RD needs square 256x256 references' % (os.path.relpath(ref, REPO), e))
+            images.append(base64.b64encode(data).decode())
         body = {'name': '%s %s' % (style['name'], c['title']), 'reference_images': images,
                 'description': c['covers'][:300],
-                'llm_instructions': ' '.join([style['mood']] + style['rules'] + c['rules']),
-                'user_prompt_template': c['prompt_template'], 'force_palette': False}
+                'llm_instructions': style_guide.instructions(style, cat),
+                'user_prompt_template': c['prompt_template'], 'force_palette': False,
+                'force_bg_removal': bool(c.get('remove_background'))}
         old = registered.get(cat)
 
         def send(b):

@@ -51,6 +51,25 @@ Everything in the inventory: tools and modules, body section icons, raw material
 - **Prompt template:** `{prompt}, dark industrial sci-fi, andesite grey and dark iron with brass trim, cyan glow accents`
 - **Reference images (for an RD custom style):** up to 4 in `docs/art/style/items/`
 
+#### Make it in RD's app (My Styles, Create New Style, based on RD Pro)
+| Field | Value |
+|---|---|
+| Style Name | `Void Reclaimer Item icons` |
+| Description | Everything in the inventory: tools and modules, body section icons, raw materials and intermediates, unfinished Sequenced Assembly items, buckets. |
+| Style Icon | `rocket` (or any) |
+| Reference Images | 1 to 4 square images, exactly 256x256 (`python3 tools/art/style_guide.py --reference IMAGE` makes one from an icon or a render). Use the images in `docs/art/style/items/`. |
+| AI Prompt Enhancement | tick |
+| Style Guidelines | (the text below) |
+| User Prompt Template | `{prompt}, dark industrial sci-fi, andesite grey and dark iron with brass trim, cyan glow accents` |
+| Force color palette | tick, and upload `docs/art/palettes/items.png` |
+| Force Background Removal | tick |
+| Force width and height | leave unticked (sizes differ per asset) |
+
+Style Guidelines:
+```
+Industrial sci-fi: Create's andesite, brass and copper machinery, made colder and spacier. Dark metals, rivets, cogs and shafts, with the AI's cyan glow as the one bright accent. Clean, readable pixel art at Minecraft's 16x16 scale. Describe the object alone on a plain, empty, flat background; the background is removed afterwards. 16x16, transparent background, the object centered with a 1-pixel margin. Raw materials are small heaps or shards in their dust colour; processed materials are clean plates, ingots, wafers and spools. Unfinished items are the finished icon with parts missing and the frame showing. Buckets keep vanilla's iron bucket; only the contents change. Light comes from the top-left. Shade with 3 to 5 steps of one ramp; no gradients, no soft airbrush, no dithering on items. Readable at 16x16: one clear silhouette, at most two materials per object, details at least 1 pixel wide. Metal is andesite grey (structure) or dark space iron (heavy plating); brass and copper are trims, bands, rivets and moving parts, not whole objects. Cyan is the AI's colour: lights, cores, lenses, screens and energy. It glows: a bright core pixel with one darker ring, never more. Dust kinds keep their colours everywhere: Metallic silver-grey, Silicon sand-tan, Ice pale cyan, Carbon violet-grey. No text, letters, numbers, logos, faces or creatures on any texture. No pure black outlines inside a texture; outlines use the darkest step of the object's own ramp. Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye.
+```
+
 ### Block textures (`blocks`)
 Asteroid rock, machine faces, scaffold, and the textures of block models (Space Thruster, Helm, Mass Driver, Spire, Monolith).
 
@@ -62,6 +81,25 @@ Asteroid rock, machine faces, scaffold, and the textures of block models (Space 
 - **Palette:** 53 colours from andesite, space_iron, brass, copper, ai_cyan, dust_metallic, dust_silicon, dust_ice, dust_carbon, status: `docs/art/palettes/blocks.png` (swatches: `blocks_preview.png`).
 - **Prompt template:** `{prompt}, Create mod style block, dark cool tones`
 - **Reference images (for an RD custom style):** up to 4 in `docs/art/style/blocks/`
+
+#### Make it in RD's app (My Styles, Create New Style, based on RD Pro)
+| Field | Value |
+|---|---|
+| Style Name | `Void Reclaimer Block textures` |
+| Description | Asteroid rock, machine faces, scaffold, and the textures of block models (Space Thruster, Helm, Mass Driver, Spire, Monolith). |
+| Style Icon | `cube` (or any) |
+| Reference Images | 1 to 4 square images, exactly 256x256 (`python3 tools/art/style_guide.py --reference IMAGE` makes one from an icon or a render). Use the images in `docs/art/style/blocks/`. |
+| AI Prompt Enhancement | tick |
+| Style Guidelines | (the text below) |
+| User Prompt Template | `{prompt}, Create mod style block, dark cool tones` |
+| Force color palette | tick, and upload `docs/art/palettes/blocks.png` |
+| Force Background Removal | leave unticked |
+| Force width and height | leave unticked (sizes differ per asset) |
+
+Style Guidelines:
+```
+Industrial sci-fi: Create's andesite, brass and copper machinery, made colder and spacier. Dark metals, rivets, cogs and shafts, with the AI's cyan glow as the one bright accent. Clean, readable pixel art at Minecraft's 16x16 scale. Describe a flat, square surface that fills the whole image edge to edge, seen straight on, with no background and no perspective. 16x16. Rock and other surfaces that cover large areas tile seamlessly and avoid any single feature that would repeat visibly. Asteroid rock is in its dust kind's ramp only, with a few darker pits; no ores (ore veins come later as separate blocks). Machine faces follow Create: an andesite or brass casing border 1-2 pixels wide, the working part inside, a round shaft hole where a shaft enters. Lower contrast than items, so large areas stay calm. Light comes from the top-left. Shade with 3 to 5 steps of one ramp; no gradients, no soft airbrush, no dithering on items. Readable at 16x16: one clear silhouette, at most two materials per object, details at least 1 pixel wide. Metal is andesite grey (structure) or dark space iron (heavy plating); brass and copper are trims, bands, rivets and moving parts, not whole objects. Cyan is the AI's colour: lights, cores, lenses, screens and energy. It glows: a bright core pixel with one darker ring, never more. Dust kinds keep their colours everywhere: Metallic silver-grey, Silicon sand-tan, Ice pale cyan, Carbon violet-grey. No text, letters, numbers, logos, faces or creatures on any texture. No pure black outlines inside a texture; outlines use the darkest step of the object's own ramp. Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye.
+```
 
 ### The AI's body and other models (`body`)
 GeckoLib body rigs, sections and modules made in RD 3D, plus entity models (drop pod, helper drone, Industrial Mech).
@@ -75,6 +113,25 @@ GeckoLib body rigs, sections and modules made in RD 3D, plus entity models (drop
 - **Prompt template:** `{prompt}, blocky Minecraft-style robot part, Create mod machinery, dark iron and andesite with brass joints, cyan lights`
 - **Reference images (for an RD custom style):** up to 4 in `docs/art/style/body/`
 
+#### Make it in RD's app (My Styles, Create New Style, based on RD Pro)
+| Field | Value |
+|---|---|
+| Style Name | `Void Reclaimer The AI's body and other models` |
+| Description | GeckoLib body rigs, sections and modules made in RD 3D, plus entity models (drop pod, helper drone, Industrial Mech). |
+| Style Icon | `robot` (or any) |
+| Reference Images | 1 to 4 square images, exactly 256x256 (`python3 tools/art/style_guide.py --reference IMAGE` makes one from an icon or a render). Use the images in `docs/art/style/body/`. |
+| AI Prompt Enhancement | tick |
+| Style Guidelines | (the text below) |
+| User Prompt Template | `{prompt}, blocky Minecraft-style robot part, Create mod machinery, dark iron and andesite with brass joints, cyan lights` |
+| Force color palette | tick, and upload `docs/art/palettes/body.png` |
+| Force Background Removal | tick |
+| Force width and height | leave unticked (sizes differ per asset) |
+
+Style Guidelines:
+```
+Industrial sci-fi: Create's andesite, brass and copper machinery, made colder and spacier. Dark metals, rivets, cogs and shafts, with the AI's cyan glow as the one bright accent. Clean, readable pixel art at Minecraft's 16x16 scale. Describe the part alone on a plain, empty, flat background, seen from the front at a slight angle. Built from boxes only (RD Blocky or Blocky Lite). A part reads as one machine: a dark iron or andesite core, brass or copper joints and bands, cyan lights only where the AI senses or thinks (eyes, cores, sensors). Leave plain areas where the player's casing and accent colour will show; the accent mask is painted afterwards. Thrusters and moving joints show their mechanism: nozzles, pistons, cogs. Light comes from the top-left. Shade with 3 to 5 steps of one ramp; no gradients, no soft airbrush, no dithering on items. Readable at 16x16: one clear silhouette, at most two materials per object, details at least 1 pixel wide. Metal is andesite grey (structure) or dark space iron (heavy plating); brass and copper are trims, bands, rivets and moving parts, not whole objects. Cyan is the AI's colour: lights, cores, lenses, screens and energy. It glows: a bright core pixel with one darker ring, never more. Dust kinds keep their colours everywhere: Metallic silver-grey, Silicon sand-tan, Ice pale cyan, Carbon violet-grey. No text, letters, numbers, logos, faces or creatures on any texture. No pure black outlines inside a texture; outlines use the darkest step of the object's own ramp. Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye.
+```
+
 ### HUD and screens (`gui`)
 The energy bar, Replicator panels and tabs, the module wheel, HUD icons, toasts, the mod logo.
 
@@ -86,6 +143,25 @@ The energy bar, Replicator panels and tabs, the module wheel, HUD icons, toasts,
 - **Prompt template:** `{prompt}, sci-fi machine interface, dark panel, cyan highlights`
 - **Reference images (for an RD custom style):** up to 4 in `docs/art/style/gui/`
 
+#### Make it in RD's app (My Styles, Create New Style, based on RD Pro)
+| Field | Value |
+|---|---|
+| Style Name | `Void Reclaimer HUD and screens` |
+| Description | The energy bar, Replicator panels and tabs, the module wheel, HUD icons, toasts, the mod logo. |
+| Style Icon | `layout` (or any) |
+| Reference Images | 1 to 4 square images, exactly 256x256 (`python3 tools/art/style_guide.py --reference IMAGE` makes one from an icon or a render). Use the images in `docs/art/style/gui/`. |
+| AI Prompt Enhancement | tick |
+| Style Guidelines | (the text below) |
+| User Prompt Template | `{prompt}, sci-fi machine interface, dark panel, cyan highlights` |
+| Force color palette | tick, and upload `docs/art/palettes/gui.png` |
+| Force Background Removal | tick |
+| Force width and height | leave unticked (sizes differ per asset) |
+
+Style Guidelines:
+```
+Industrial sci-fi: Create's andesite, brass and copper machinery, made colder and spacier. Dark metals, rivets, cogs and shafts, with the AI's cyan glow as the one bright accent. Clean, readable pixel art at Minecraft's 16x16 scale. Describe the interface element alone on a plain, empty, flat background; the background is removed afterwards. Dark translucent-looking space-iron panels with a thin andesite frame and brass corners. Cyan for active, selected and energy; amber for warnings; red only for empty or broken. Flat shading, crisp 1-pixel lines; panels are 9-slice friendly (plain middles, detail in the corners and edges). Light comes from the top-left. Shade with 3 to 5 steps of one ramp; no gradients, no soft airbrush, no dithering on items. Readable at 16x16: one clear silhouette, at most two materials per object, details at least 1 pixel wide. Metal is andesite grey (structure) or dark space iron (heavy plating); brass and copper are trims, bands, rivets and moving parts, not whole objects. Cyan is the AI's colour: lights, cores, lenses, screens and energy. It glows: a bright core pixel with one darker ring, never more. Dust kinds keep their colours everywhere: Metallic silver-grey, Silicon sand-tan, Ice pale cyan, Carbon violet-grey. No text, letters, numbers, logos, faces or creatures on any texture. No pure black outlines inside a texture; outlines use the darkest step of the object's own ramp. Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye.
+```
+
 ### Sky and effects (`sky`)
 The distant sun, Dyson swarm and shell sprites, power beams, launch streaks, the Atmospheric Portal surface, Ruined Earth's smoggy skies and acid rain.
 
@@ -96,6 +172,25 @@ The distant sun, Dyson swarm and shell sprites, power beams, launch streaks, the
 - **Palette:** 27 colours from sky, sun, ai_cyan, brass, smog, light: `docs/art/palettes/sky.png` (swatches: `sky_preview.png`).
 - **Prompt template:** `{prompt}, deep space, cold dark blues, glowing cyan energy`
 - **Reference images (for an RD custom style):** up to 4 in `docs/art/style/sky/`
+
+#### Make it in RD's app (My Styles, Create New Style, based on RD Pro)
+| Field | Value |
+|---|---|
+| Style Name | `Void Reclaimer Sky and effects` |
+| Description | The distant sun, Dyson swarm and shell sprites, power beams, launch streaks, the Atmospheric Portal surface, Ruined Earth's smoggy skies and acid rain. |
+| Style Icon | `star` (or any) |
+| Reference Images | 1 to 4 square images, exactly 256x256 (`python3 tools/art/style_guide.py --reference IMAGE` makes one from an icon or a render). Use the images in `docs/art/style/sky/`. |
+| AI Prompt Enhancement | tick |
+| Style Guidelines | (the text below) |
+| User Prompt Template | `{prompt}, deep space, cold dark blues, glowing cyan energy` |
+| Force color palette | tick, and upload `docs/art/palettes/sky.png` |
+| Force Background Removal | leave unticked |
+| Force width and height | leave unticked (sizes differ per asset) |
+
+Style Guidelines:
+```
+Industrial sci-fi: Create's andesite, brass and copper machinery, made colder and spacier. Dark metals, rivets, cogs and shafts, with the AI's cyan glow as the one bright accent. Clean, readable pixel art at Minecraft's 16x16 scale. Describe the effect or sky element on a near-black deep-space background, or alone on an empty background for sprites. Deep space is near-black blue, never pure black, with a pale distant star. Energy (beams, portal, Dyson glints) uses the cyan ramp with brass glints; it is the brightest thing on screen. Ruined Earth uses the smog ramp: brown-orange haze and sickly yellow-green for acid. Light comes from the top-left. Shade with 3 to 5 steps of one ramp; no gradients, no soft airbrush, no dithering on items. Readable at 16x16: one clear silhouette, at most two materials per object, details at least 1 pixel wide. Metal is andesite grey (structure) or dark space iron (heavy plating); brass and copper are trims, bands, rivets and moving parts, not whole objects. Cyan is the AI's colour: lights, cores, lenses, screens and energy. It glows: a bright core pixel with one darker ring, never more. Dust kinds keep their colours everywhere: Metallic silver-grey, Silicon sand-tan, Ice pale cyan, Carbon violet-grey. No text, letters, numbers, logos, faces or creatures on any texture. No pure black outlines inside a texture; outlines use the darkest step of the object's own ramp. Space is dark: textures are a little darker and cooler than vanilla Minecraft, so the cyan glow and brass catch the eye.
+```
 
 ## How the tool applies it
 `rd_generate.py` puts every row in a category: item icons in `items`, block textures and block models in `blocks`, body parts and entity models in `body`, HUD and screens in `gui`, sky and effects in `sky`. Then, on every job:
