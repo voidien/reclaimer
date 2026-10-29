@@ -90,4 +90,5 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 7. **Stopping:** `kill $(clientpid)`. Rebuild by relaunching. There is no sound in the container, so check sound changes on a real machine.
 
 ### Placeholder art
+- **Art pipeline:** `docs/art/ASSETS.md` + `assets.csv` list every asset with Retro Diffusion prompts. The owner generates them with `tools/art/rd_generate.py` on their own computer (their key; never ask for it or store it). When they say a batch is promoted, check it in game and update the placeholder list in `PROGRESS.md`. GeckoLib models from RD need the bone-contract step in `ASSETS.md`.
 Item textures are 16×16 programmer art, written by small Python PNG scripts (zlib + struct, no PIL). Every placeholder must be listed in `PROGRESS.md`.
