@@ -12,6 +12,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.DoubleValue SWAY_STRENGTH;
     public static final ModConfigSpec.DoubleValue THRUSTER_VOLUME;
     public static final ModConfigSpec.BooleanValue CLOUD_SCANNER;
+    public static final ModConfigSpec.IntValue BODY_MIN_LIGHT;
 
     static {
         BUILDER.comment("Sense of motion in deep space.").push("motion");
@@ -29,6 +30,12 @@ public final class ClientConfig {
         CLOUD_SCANNER = BUILDER
                 .comment("Dust Sensor scanner view: outline nearby dust clouds in the world (toggle in game with the scanner key).")
                 .define("cloudScanner", true);
+        BUILDER.pop();
+
+        BUILDER.push("body");
+        BODY_MIN_LIGHT = BUILDER
+                .comment("Lowest light level (0-15) a body is drawn with, so the dark textures read in deep space. 0 uses only the world light.")
+                .defineInRange("minLight", 8, 0, 15);
         BUILDER.pop();
 
         BUILDER.push("sound");

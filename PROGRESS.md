@@ -446,6 +446,10 @@ From an outside audit, each checked against the code first (several claims were 
 
 ## CI savings: done
 - `build.yml`: docs/art-only PRs skip CI; drafts run build + unit tests only; client-only/test/tools/docs/asset PRs skip GameTests, datagen and Aeronautics; PR runs read the Gradle cache and only `main` saves it. Pushes to `main` always run everything. Untested until the PR itself runs. If `main` has required checks, skipped jobs count as passing but a fully skipped workflow (docs-only) does not.
+## Config screen: done
+- The client and common settings (`ClientConfig`, `Config`) now open from Mods > Void Reclaimer > Config, through NeoForge's `ConfigurationScreen`. Labels and sections use the automatic names and the config comments as tooltips; no custom lang keys yet. Not yet opened in a real client. Recipe toggles still need a restart or `/reload`.
+## Body minimum brightness: done
+- `BodyLight.atLeast` (pure, `BodyLightTest`) lifts the light the body rig is drawn with to client config `body.minLight` (default 8). Not yet compared in a real client.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
