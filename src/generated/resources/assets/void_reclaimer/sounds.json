@@ -9,6 +9,17 @@
     ],
     "subtitle": "subtitles.void_reclaimer.dampener"
   },
+  "mass_driver_launch": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "entity.generic.explode",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.mass_driver_launch"
+  },
   "nanite_build": {
     "sounds": [
       {

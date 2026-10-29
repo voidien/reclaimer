@@ -1,6 +1,10 @@
 {
   "values": [
     "void_reclaimer:electrolyzer",
-    "void_reclaimer:spinner"
+    "void_reclaimer:spinner",
+    "void_reclaimer:kinetic_drive_base",
+    "void_reclaimer:payload_chamber",
+    "void_reclaimer:magnetic_barrel_nozzle",
+    "void_reclaimer:quantum_receiver"
   ]
 }

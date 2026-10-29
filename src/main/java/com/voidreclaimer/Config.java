@@ -77,6 +77,13 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue ELECTROLYZER_STRESS;
     public static final ModConfigSpec.DoubleValue SPINNER_STRESS;
     public static final ModConfigSpec.IntValue MACHINE_MIN_RPM;
+    public static final ModConfigSpec.DoubleValue MASS_DRIVER_STRESS;
+    public static final ModConfigSpec.IntValue MASS_DRIVER_MIN_RPM;
+    public static final ModConfigSpec.IntValue MASS_DRIVER_FAST_RPM;
+    public static final ModConfigSpec.IntValue MASS_DRIVER_SLOW_TICKS;
+    public static final ModConfigSpec.IntValue MASS_DRIVER_FAST_TICKS;
+    public static final ModConfigSpec.IntValue RECEIVER_RPM;
+    public static final ModConfigSpec.DoubleValue RECEIVER_MAX_STRESS;
     public static final ModConfigSpec.IntValue MACHINE_CYCLE_TICKS;
     public static final ModConfigSpec.IntValue ELECTROLYZER_TANK;
     public static final ModConfigSpec.IntValue ELECTROLYZER_WATER;
@@ -225,6 +232,19 @@ public final class Config {
         ELECTROLYZER_HYDROGEN = BUILDER.comment("Hydrogen Gas in mB made per Electrolyzer cycle.").defineInRange("electrolyzerHydrogen", 250, 0, 10000);
         SPINNER_THREADS = BUILDER.comment("Carbon Thread made from one High-Purity Graphite.").defineInRange("spinnerThreads", 2, 1, 64);
         CASTING_AMOUNT = BUILDER.comment("Liquid Silicon in mB cast into one Quartz Wafer.").defineInRange("castingAmount", 250, 1, 10000);
+        BUILDER.pop();
+
+        BUILDER.comment("Dyson launch and power: the Kinetic Mass Driver and the Sub-Light Quantum Receiver. Placeholder numbers.").push("dysonMachines");
+        toggle("massDriver", "The Kinetic Mass Driver launches payloads into the Dyson Sphere, and the Replicator can make its blocks.");
+        toggle("quantumReceiver", "The Sub-Light Quantum Receiver turns launched trusses into stress, and its Sequenced Assembly recipe exists.");
+        MASS_DRIVER_STRESS = BUILDER.comment("Stress the Kinetic Drive Base needs, in SU per RPM.").defineInRange("massDriverStress", 32.0, 0.0, 4096.0);
+        MASS_DRIVER_MIN_RPM = BUILDER.comment("Slowest rotation at which the Mass Driver launches.").defineInRange("massDriverMinRpm", 64, 1, 256);
+        MASS_DRIVER_FAST_RPM = BUILDER.comment("Rotation at which the Mass Driver launches at its fastest.").defineInRange("massDriverFastRpm", 256, 1, 256);
+        MASS_DRIVER_SLOW_TICKS = BUILDER.comment("Ticks between launches at the minimum speed (400 = 20 s).").defineInRange("massDriverSlowTicks", 400, 1, 24000);
+        MASS_DRIVER_FAST_TICKS = BUILDER.comment("Ticks between launches at the fastest speed (60 = 3 s).").defineInRange("massDriverFastTicks", 60, 1, 24000);
+        RECEIVER_RPM = BUILDER.comment("Rotation speed the Quantum Receiver outputs.").defineInRange("receiverRpm", 128, 1, 256);
+        RECEIVER_MAX_STRESS = BUILDER.comment("Stress in SU the Receiver gives once the shell is complete; before that it is proportional to the trusses launched.")
+                .defineInRange("receiverMaxStress", 262_144.0, 0.0, 100_000_000.0);
         BUILDER.pop();
 
         BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");

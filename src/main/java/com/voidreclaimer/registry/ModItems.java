@@ -130,6 +130,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> ASTEROID_METALLIC = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_METALLIC);
     public static final DeferredItem<BlockItem> ELECTROLYZER = ITEMS.registerSimpleBlockItem(ModBlocks.ELECTROLYZER);
     public static final DeferredItem<BlockItem> SPINNER = ITEMS.registerSimpleBlockItem(ModBlocks.SPINNER);
+    public static final DeferredItem<BlockItem> KINETIC_DRIVE_BASE = ITEMS.registerSimpleBlockItem(ModBlocks.KINETIC_DRIVE_BASE);
+    public static final DeferredItem<BlockItem> PAYLOAD_CHAMBER = ITEMS.registerSimpleBlockItem(ModBlocks.PAYLOAD_CHAMBER);
+    public static final DeferredItem<BlockItem> MAGNETIC_BARREL_NOZZLE = ITEMS.registerSimpleBlockItem(ModBlocks.MAGNETIC_BARREL_NOZZLE);
+    public static final DeferredItem<BlockItem> QUANTUM_RECEIVER = ITEMS.registerSimpleBlockItem(ModBlocks.QUANTUM_RECEIVER);
     public static final DeferredItem<BlockItem> TETHER_ANCHOR = ITEMS.registerSimpleBlockItem(ModBlocks.TETHER_ANCHOR);
     public static final DeferredItem<BlockItem> BACKUP_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.BACKUP_CORE);
 

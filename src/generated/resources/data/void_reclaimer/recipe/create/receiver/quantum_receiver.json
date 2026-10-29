@@ -1,0 +1,89 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "quantumReceiver"
+    }
+  ],
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "void_reclaimer:micro_alloy_sheet"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "void_reclaimer:quantum_receiver"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_quantum_receiver"
+        },
+        {
+          "item": "void_reclaimer:high_efficiency_solar_cell"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_quantum_receiver"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_quantum_receiver"
+        },
+        {
+          "item": "void_reclaimer:carbon_composite_plate"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_quantum_receiver"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_quantum_receiver"
+        },
+        {
+          "item": "create:precision_mechanism"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_quantum_receiver"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "void_reclaimer:incomplete_quantum_receiver"
+        },
+        {
+          "type": "neoforge:single",
+          "amount": 250,
+          "fluid": "void_reclaimer:coolant_fluid"
+        }
+      ],
+      "results": [
+        {
+          "id": "void_reclaimer:incomplete_quantum_receiver"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "void_reclaimer:incomplete_quantum_receiver"
+  }
+}

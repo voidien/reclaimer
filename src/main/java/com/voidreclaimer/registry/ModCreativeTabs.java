@@ -38,6 +38,10 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.COGWHEEL_CROWN.get());
                 output.accept(ModItems.ELECTROLYZER.get());
                 output.accept(ModItems.SPINNER.get());
+                output.accept(ModItems.KINETIC_DRIVE_BASE.get());
+                output.accept(ModItems.PAYLOAD_CHAMBER.get());
+                output.accept(ModItems.MAGNETIC_BARREL_NOZZLE.get());
+                output.accept(ModItems.QUANTUM_RECEIVER.get());
                 output.accept(ModItems.MECHANICAL_DRILL.get());
                 output.accept(ModItems.MATTER_HARVESTER.get());
                 output.accept(ModItems.ASTEROID_SILICATE.get());

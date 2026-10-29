@@ -33,6 +33,9 @@ public final class ModSoundDefinitionsProvider extends SoundDefinitionsProvider 
         add(ModSounds.NANITE_BUILD, definition()
                 .subtitle("subtitles.void_reclaimer.nanite_build")
                 .with(vanilla("block.amethyst_cluster.place").pitch(1.5).volume(0.7)));
+        add(ModSounds.MASS_DRIVER_LAUNCH, definition()
+                .subtitle("subtitles.void_reclaimer.mass_driver_launch")
+                .with(vanilla("entity.generic.explode").pitch(0.7).volume(0.6)));
     }
 
     private static SoundDefinition.Sound vanilla(String event) {

@@ -108,6 +108,7 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
         DysonSphereData dyson = DysonSphereData.of(level);
         float[] tint = DysonSky.sunTint(dyson);
         RenderSystem.setShaderColor(tint[0], tint[1], tint[2], tint[3]);
+        Matrix4f view = new Matrix4f(pose.last().pose());
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees(SUN_TILT_X_DEGREES));
         pose.mulPose(Axis.ZP.rotationDegrees(SUN_TILT_Z_DEGREES));
@@ -122,7 +123,7 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
         BufferUploader.drawWithShader(builder.buildOrThrow());
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        DysonSky.render(sun, dyson, ticks + partialTick);
+        DysonSky.render(sun, view, camera.getPosition(), dyson, ticks + partialTick);
         pose.popPose();
 
         setupFog.run();
@@ -164,5 +165,13 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
             builder.addVertex(new Vector3f(center).add(new Vector3f(-size, -size, 0f).rotate(rotation)));
         }
         return builder.buildOrThrow();
+    }
+
+    /** Installed as {@link com.voidreclaimer.network.LaunchStreakPayload#clientHandler}: draws a streak if the player is in deep space. */
+    public static void onLaunchStreak(com.voidreclaimer.network.LaunchStreakPayload payload) {
+        net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+        if (level != null && com.voidreclaimer.space.ModDimensions.isDeepSpace(level)) {
+            DysonSky.addStreak(payload.from(), payload.truss());
+        }
     }
 }

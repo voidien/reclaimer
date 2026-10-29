@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "void_reclaimer:block/quantum_receiver_end",
+    "side": "void_reclaimer:block/quantum_receiver_side"
+  }
+}
