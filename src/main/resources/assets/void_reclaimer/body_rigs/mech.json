@@ -4,21 +4,178 @@
   "animations": "void_reclaimer:animations/entity/mech_suit.animation.json",
   "animation_prefix": "animation.void_reclaimer.mech_suit.",
   "grounded": true,
+  "yaw": 180,
   "sockets": {
-    "head": ["neck"],
-    "back": ["backpack"],
-    "left_upper_arm": ["arm_l"],
-    "right_upper_arm": ["arm_r"],
-    "left_forearm": ["elbow_l"],
-    "right_forearm": ["elbow_r"],
-    "left_hand": ["hand_l"],
-    "right_hand": ["hand_r"],
-    "left_thigh": ["hip_l"],
-    "right_thigh": ["hip_r"],
-    "left_shin": ["knee_l"],
-    "right_shin": ["knee_r"],
-    "left_foot": ["foot_l"],
-    "right_foot": ["foot_r"]
+    "head": [
+      "neck"
+    ],
+    "back": [
+      "backpack"
+    ],
+    "left_upper_arm": [
+      "arm_l"
+    ],
+    "right_upper_arm": [
+      "arm_r"
+    ],
+    "left_forearm": [
+      "elbow_l"
+    ],
+    "right_forearm": [
+      "elbow_r"
+    ],
+    "left_hand": [
+      "hand_l"
+    ],
+    "right_hand": [
+      "hand_r"
+    ],
+    "left_thigh": [
+      "hip_l"
+    ],
+    "right_thigh": [
+      "hip_r"
+    ],
+    "left_shin": [
+      "knee_l"
+    ],
+    "right_shin": [
+      "knee_r"
+    ],
+    "left_foot": [
+      "foot_l"
+    ],
+    "right_foot": [
+      "foot_r"
+    ]
+  },
+  "mounts": {
+    "mount_core_1": {
+      "bone": "chest",
+      "offset": [
+        0,
+        1.0,
+        3.3
+      ],
+      "yaw": 0
+    },
+    "mount_storage_1": {
+      "bone": "backpack",
+      "offset": [
+        -2.2,
+        -0.5,
+        -2.5
+      ],
+      "yaw": 180
+    },
+    "mount_storage_2": {
+      "bone": "backpack",
+      "offset": [
+        2.2,
+        -0.5,
+        -2.5
+      ],
+      "yaw": 180
+    },
+    "head__mount_sensor_1": {
+      "bone": "head",
+      "offset": [
+        -3.0,
+        1.2,
+        0.4
+      ],
+      "yaw": 180
+    },
+    "head__mount_sensor_2": {
+      "bone": "head",
+      "offset": [
+        3.0,
+        1.2,
+        0.4
+      ],
+      "yaw": 180
+    },
+    "back__mount_thruster_1": {
+      "bone": "backpack",
+      "offset": [
+        0,
+        0,
+        -2.4
+      ],
+      "yaw": 180
+    },
+    "left_forearm__mount_tool_1": {
+      "bone": "elbow_l",
+      "offset": [
+        -2.0,
+        -1.5,
+        0.6
+      ],
+      "yaw": 0
+    },
+    "left_hand__mount_tool_1": {
+      "bone": "hand_l",
+      "offset": [
+        0,
+        -0.8,
+        1.2
+      ],
+      "yaw": 0
+    },
+    "left_shin__mount_thruster_1": {
+      "bone": "knee_l",
+      "offset": [
+        0,
+        -1.0,
+        -2.3
+      ],
+      "yaw": 180
+    },
+    "left_foot__mount_thruster_1": {
+      "bone": "foot_l",
+      "offset": [
+        0,
+        0.3,
+        -2.7
+      ],
+      "yaw": 180
+    },
+    "right_forearm__mount_tool_1": {
+      "bone": "elbow_r",
+      "offset": [
+        2.0,
+        -1.5,
+        0.6
+      ],
+      "yaw": 0
+    },
+    "right_hand__mount_tool_1": {
+      "bone": "hand_r",
+      "offset": [
+        0,
+        -0.8,
+        1.2
+      ],
+      "yaw": 0
+    },
+    "right_shin__mount_thruster_1": {
+      "bone": "knee_r",
+      "offset": [
+        0,
+        -1.0,
+        -2.3
+      ],
+      "yaw": 180
+    },
+    "right_foot__mount_thruster_1": {
+      "bone": "foot_r",
+      "offset": [
+        0,
+        0.3,
+        -2.7
+      ],
+      "yaw": 180
+    }
   },
   "poses": {
     "idle": "fly",

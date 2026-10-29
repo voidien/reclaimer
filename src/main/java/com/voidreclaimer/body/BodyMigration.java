@@ -56,6 +56,17 @@ public final class BodyMigration {
             put(sections, "rcs_aft", ModItems.SHIP_RCS_CLUSTER.get());
             put(sections, "dorsal_spine", ModItems.SHIP_DORSAL_SPINE.get());
             put(sections, "ventral_fin", ModItems.SHIP_VENTRAL_FIN.get());
+        } else if (chassis.equals(BuiltinBodies.TITAN)) {
+            put(sections, "saucer", ModItems.TITAN_SAUCER.get());
+            put(sections, "neck", ModItems.TITAN_NECK.get());
+            put(sections, "bridge", ModItems.TITAN_BRIDGE.get());
+            put(sections, "sensor", ModItems.TITAN_SENSOR_ARRAY.get());
+            put(sections, "deflector", ModItems.TITAN_DEFLECTOR.get());
+            put(sections, "bay_door", ModItems.TITAN_BAY_DOOR.get());
+            for (String side : List.of("l", "r")) {
+                put(sections, "pylon_" + side, ModItems.TITAN_PYLON.get());
+                put(sections, "nacelle_" + side, ModItems.TITAN_NACELLE.get());
+            }
         } else {
             put(sections, "hull", ModItems.DRONE_HULL.get());
             put(sections, "sensor_dome", ModItems.SENSOR_DOME.get());

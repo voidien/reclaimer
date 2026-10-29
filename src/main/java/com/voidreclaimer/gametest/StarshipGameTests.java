@@ -100,4 +100,28 @@ public final class StarshipGameTests {
             TestPlayers.remove(player);
         }
     }
+
+    /** The Titan's sections and Core Mk IV wait for the Titan milestone (a Dyson tier for now); Core Mk III waits for the Starship. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void titanAndCoreRecipesWaitForTheirMilestones(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 88_060.5, 80, 0.5);
+        try {
+            Replicator.checkMilestones(player);
+            player.setData(ModAttachments.DUST, DustData.of(100_000, 100_000, 100_000, 100_000));
+            for (String recipe : java.util.List.of("titan_saucer", "titan_nacelle", "titan_core_kit", "core_mk4", "core_mk3")) {
+                helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/" + recipe)) == ReplicatorLogic.QueueResult.LOCKED,
+                        recipe + " unlocked too early");
+            }
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.STARSHIP));
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/core_mk3")) == ReplicatorLogic.QueueResult.QUEUED, "Core Mk III still locked");
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/titan_saucer")) == ReplicatorLogic.QueueResult.LOCKED,
+                    "the Starship milestone must not open the Titan");
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.DYSON_TIER_3));
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/titan_saucer")) == ReplicatorLogic.QueueResult.QUEUED, "Titan saucer still locked");
+            helper.assertTrue(Replicator.queue(player, VoidReclaimer.id("replicator/core_mk4")) == ReplicatorLogic.QueueResult.QUEUED, "Core Mk IV still locked");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
 }

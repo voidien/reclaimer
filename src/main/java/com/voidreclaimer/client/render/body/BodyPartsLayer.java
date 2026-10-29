@@ -34,7 +34,11 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
     public void renderForBone(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, RenderType renderType,
                               MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
         BodyRenderer.Frame frame = BodyRenderer.frame();
-        if (frame == null || frame.spec() != null) {
+        if (frame == null) {
+            return;
+        }
+        if (frame.spec() != null) {
+            renderSpecMounts(poseStack, animatable, bone, frame, bufferSource, partialTick, packedLight, packedOverlay);
             return;
         }
         BodyView view = frame.view();
@@ -56,6 +60,29 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
                 drawPart("module", module, mount.socket(), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
                 poseStack.popPose();
             }
+        }
+    }
+
+    /** Modules on a whole-model rig: at the bone the spec names for their mount, moved by its offset and turned by its yaw. */
+    private void renderSpecMounts(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, BodyRenderer.Frame frame,
+                                  MultiBufferSource bufferSource, float partialTick, int light, int overlay) {
+        java.util.List<BodyRenderer.PlacedMount> placed = frame.specMounts().get(bone.getName());
+        if (placed == null) {
+            return;
+        }
+        for (BodyRenderer.PlacedMount entry : placed) {
+            ItemStack module = frame.view().data().module(entry.mount());
+            if (module.isEmpty()) {
+                continue;
+            }
+            BodyRigSpec.Mount place = entry.place();
+            poseStack.pushPose();
+            moveToPivot(poseStack, bone);
+            // Offsets use the axes of the pivots in the .geo.json file, where x is mirrored against the rendered model.
+            poseStack.translate(-place.x() / 16f, place.y() / 16f, place.z() / 16f);
+            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(place.yaw()));
+            drawPart("module", module, entry.mount().socket(), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
+            poseStack.popPose();
         }
     }
 

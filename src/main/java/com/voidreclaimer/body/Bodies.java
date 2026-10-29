@@ -105,8 +105,7 @@ public final class Bodies {
                 continue;
             }
             for (int i = 0; i < section.mounts(ModuleKind.CORE); i++) {
-                modules.put(new BodyData.Mount(socket.id(), ModuleKind.CORE, i),
-                        new ItemStack(full ? ModItems.CORE_MK2.get() : ModItems.CORE_MK1.get()));
+                modules.put(new BodyData.Mount(socket.id(), ModuleKind.CORE, i), new ItemStack(presetCore(chassisKey, full)));
             }
             for (int i = 0; i < section.mounts(ModuleKind.THRUSTER); i++) {
                 modules.put(new BodyData.Mount(socket.id(), ModuleKind.THRUSTER, i), new ItemStack(ModItems.THRUSTER_MK1.get()));
@@ -126,6 +125,17 @@ public final class Bodies {
             }
         }
         return new BodyData(chassis.coreSocket(), sections, modules, 0, Cosmetics.DEFAULT, List.of());
+    }
+
+    /** The core module a preset carries: one the chassis' sections can be installed under (Ship: Mk III, Titan: Mk IV). */
+    private static net.minecraft.world.item.Item presetCore(ResourceKey<Chassis> chassis, boolean full) {
+        if (chassis.equals(BuiltinBodies.TITAN)) {
+            return ModItems.CORE_MK4.get();
+        }
+        if (chassis.equals(BuiltinBodies.SHIP)) {
+            return ModItems.CORE_MK3.get();
+        }
+        return (full ? ModItems.CORE_MK2 : ModItems.CORE_MK1).get();
     }
 
     public static BodyData data(LivingEntity entity) {

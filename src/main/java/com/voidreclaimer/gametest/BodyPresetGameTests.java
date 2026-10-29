@@ -51,6 +51,51 @@ public final class BodyPresetGameTests {
         check(helper, BuiltinBodies.SHIP, 89_040.5, false);
     }
 
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void titanPresetIsComplete(GameTestHelper helper) {
+        check(helper, BuiltinBodies.TITAN, 89_080.5, false);
+    }
+
+    /** The Titan is a new size class over 50 blocks long: the rig is 8.4 blocks at scale 1. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void titanIsTheBiggestSizeClass(GameTestHelper helper) {
+        double titan = BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.TITAN_SIZE).scale();
+        helper.assertTrue(titan * 8.4 > 50.0, "the Titan would be only " + titan * 8.4 + " blocks long");
+        for (var other : java.util.List.of(BuiltinBodies.DRONE_SIZE, BuiltinBodies.MECH_SIZE, BuiltinBodies.SHIP_SIZE)) {
+            helper.assertTrue(BuiltinBodies.SIZE_CLASSES.get(other).scale() < titan, other.location() + " is not smaller");
+            helper.assertTrue(BuiltinBodies.SIZE_CLASSES.get(other).rank() < BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.TITAN_SIZE).rank(), "rank");
+        }
+        helper.succeed();
+    }
+
+    /** A section can't be above the core's tier: Ship sections (3) need a Core Mk III, Titan sections (4) a Core Mk IV. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void shipAndTitanSectionsNeedTheirCores(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 89_100.5, 80, 0.5);
+        try {
+            check(helper, player, BuiltinBodies.SHIP, "wing_port", new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.SHIP_WING.get()),
+                    com.voidreclaimer.registry.ModItems.CORE_MK2.get(), com.voidreclaimer.registry.ModItems.CORE_MK3.get());
+            check(helper, player, BuiltinBodies.TITAN, "bridge", new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.TITAN_BRIDGE.get()),
+                    com.voidreclaimer.registry.ModItems.CORE_MK3.get(), com.voidreclaimer.registry.ModItems.CORE_MK4.get());
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    private static void check(GameTestHelper helper, ServerPlayer player, ResourceKey<Chassis> chassis, String socket,
+                              net.minecraft.world.item.ItemStack section, net.minecraft.world.item.Item tooLow, net.minecraft.world.item.Item enough) {
+        for (var item : java.util.List.of(tooLow, enough)) {
+            BodyData base = Bodies.preset(chassis);
+            BodyData.Mount core = base.modules().keySet().stream().filter(m -> m.kind() == com.voidreclaimer.api.body.ModuleKind.CORE).findFirst().orElseThrow();
+            Bodies.store(player, base.withModule(core, new net.minecraft.world.item.ItemStack(item)));
+            BodyRules.Check result = BodyRules.canInstallSection(Bodies.view(player), socket, section);
+            boolean expectOk = item == enough;
+            helper.assertTrue((result == BodyRules.Check.OK) == expectOk,
+                    chassis.location() + " " + socket + " with " + item + ": " + result);
+        }
+    }
+
     /** The Mech's jetpack is a rotor arm on its back, with a thruster. */
     @GameTest(template = "empty", timeoutTicks = 60)
     public static void mechPresetHasAJetpack(GameTestHelper helper) {
@@ -81,9 +126,9 @@ public final class BodyPresetGameTests {
     @GameTest(template = "empty", timeoutTicks = 60)
     public static void fullPresetsCarryEveryModuleAndAllFit(GameTestHelper helper) {
         java.util.Set<String> expected = java.util.Set.of("dust_sensor", "mechanical_drill", "matter_harvester", "salvage_tool",
-                "nanite_swarm", "core_mk2", "storage_mk1", "storage_mk2");
+                "nanite_swarm", "core_mk2", "core_mk3", "core_mk4", "storage_mk1", "storage_mk2");
         java.util.Set<String> seen = new java.util.HashSet<>();
-        for (ResourceKey<Chassis> key : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP)) {
+        for (ResourceKey<Chassis> key : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP, BuiltinBodies.TITAN)) {
             BodyData preset = Bodies.preset(key, true);
             helper.assertTrue(BodyRules.normalize(preset, BuiltinBodies.CHASSIS.get(key)).returned().isEmpty(),
                     key.location() + " full preset has parts that don't fit");

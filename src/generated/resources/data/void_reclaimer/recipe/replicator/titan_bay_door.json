@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 230.0,
+    "void_reclaimer:ice": 170.0,
+    "void_reclaimer:metallic": 340.0,
+    "void_reclaimer:silicate": 250.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:titan_bay_door"
+  },
+  "ticks": 7200
+}

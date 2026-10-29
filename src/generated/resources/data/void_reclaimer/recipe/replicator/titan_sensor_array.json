@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 140.0,
+    "void_reclaimer:ice": 100.0,
+    "void_reclaimer:metallic": 200.0,
+    "void_reclaimer:silicate": 150.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:titan_sensor_array"
+  },
+  "ticks": 4800
+}

@@ -159,6 +159,7 @@ class BodyLookTest {
         assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f));
         assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f));
         assertEquals(4f * 3f * 0.7f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f);
+        assertEquals(4f * 2.5f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-4f, "capped for the Titan");
         assertTrue(BodyRenderEvents.cameraDistance(4f, 1.2f) >= 4f);
     }
 }

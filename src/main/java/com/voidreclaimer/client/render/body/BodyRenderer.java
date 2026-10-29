@@ -45,9 +45,10 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
      * @param rigMountBones module mounts that have a bone in the rig, by bone name
      * @param inRigMounts  the mounts that are drawn on rig bones (the others sit inside their section's model)
      * @param spec         the rig's whole-model spec, or null for a composed rig
+     * @param specMounts   for a whole-model rig: the installed modules to draw, by the bone they follow
      */
     public record Frame(BodyView view, String rig, ResourceLocation rigTexture, Map<String, BodyData.Mount> rigMountBones,
-                        Set<BodyData.Mount> inRigMounts, @Nullable BodyRigSpec spec) {
+                        Set<BodyData.Mount> inRigMounts, @Nullable BodyRigSpec spec, Map<String, List<PlacedMount>> specMounts) {
         public ResourceLocation modelResource() {
             return spec != null ? spec.model() : com.voidreclaimer.VoidReclaimer.id("geo/body/" + rig + ".geo.json");
         }
@@ -60,6 +61,9 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             return view.data().cosmetics();
         }
     }
+
+    /** A module to draw on a whole-model rig: which mount it is on and where the spec puts it. */
+    public record PlacedMount(BodyData.Mount mount, BodyRigSpec.Mount place) {}
 
     private BodyRenderer(EntityRendererProvider.Context context) {
         super(context, new BodyModel(), BodyAnimatable.INSTANCE);
@@ -108,9 +112,18 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
                 inRig.add(mount);
             }
         }
+        Map<String, List<PlacedMount>> specMounts = new HashMap<>();
+        if (spec != null) {
+            for (BodyData.Mount mount : view.mounts()) {
+                BodyRigSpec.Mount place = spec.mounts().get(BodyLook.rigMountBone(view.data().coreSocket(), mount));
+                if (place != null && !view.data().module(mount).isEmpty() && rigModel.getBone(place.bone()).isPresent()) {
+                    specMounts.computeIfAbsent(place.bone(), bone -> new java.util.ArrayList<>()).add(new PlacedMount(mount, place));
+                }
+            }
+        }
         ResourceLocation texture = spec != null ? spec.texture()
                 : BodyTextures.INSTANCE.painted(rig, player.registryAccess(), cosmetics.casing(view.data().coreSocket()));
-        frame = new Frame(view, rig, texture, rigMountBones, inRig, spec);
+        frame = new Frame(view, rig, texture, rigMountBones, inRig, spec, specMounts);
         try {
             if (spec != null) {
                 hideEmptySockets(rigModel, view, spec);
@@ -133,6 +146,12 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
                     bone.setHidden(empty);
                     bone.setChildrenHidden(empty);
                 });
+            }
+        });
+        spec.socketParts().forEach((socket, bones) -> {
+            boolean empty = view.data().section(socket).isEmpty();
+            for (String name : bones) {
+                rigModel.getBone(name).ifPresent(bone -> bone.setHidden(empty));
             }
         });
     }
@@ -159,9 +178,10 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         Player player = getCurrentEntity();
         Frame current = frame;
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
-        boolean pitches = BodyLook.pitches(rig) && current != null && current.spec() == null;
+        BodyRigSpec spec = current == null ? null : current.spec();
+        boolean pitches = spec != null ? spec.pitches() : BodyLook.pitches(rig);
         float yaw = pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180f - yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180f - yaw + (spec == null ? 0f : spec.yaw())));
         if (pitches) {
             poseStack.mulPose(Axis.XP.rotationDegrees(-player.getViewXRot(partialTick)));
         }

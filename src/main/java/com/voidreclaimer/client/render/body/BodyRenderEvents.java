@@ -27,9 +27,12 @@ public final class BodyRenderEvents {
         }
     }
 
-    /** Bodies much bigger than a player (the Ship is 12 blocks long) need the third-person camera further back to see them whole. */
+    /**
+     * Bodies much bigger than a player (the Ship is 12 blocks long, the Titan over 60) need the third-person camera further back
+     * to see them whole. Vanilla already scales the distance with the body, so this adds up to 2.5 times more.
+     */
     public static float cameraDistance(float distance, float scale) {
-        return distance * Math.max(1f, scale * 0.7f);
+        return distance * Math.min(2.5f, Math.max(1f, scale * 0.7f));
     }
 
     @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)

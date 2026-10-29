@@ -160,6 +160,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("recipe.void_reclaimer.drone_kit", "Drone Kit");
         add("recipe.void_reclaimer.mech_core_kit", "Mech Core Kit");
         add("recipe.void_reclaimer.ship_core_kit", "Ship Core Kit");
+        add("recipe.void_reclaimer.titan_core_kit", "Titan Core Kit");
         add("commands.void_reclaimer.body.preset", "%s now has a complete %s body");
         add("milestone.void_reclaimer.starship", "Starship");
         add("milestone.void_reclaimer.starship.hint", "Make a Coolant Frame Plate, a Carbon Composite Plate, a High-Efficiency Solar Cell and a Micro-Alloy Sheet");
@@ -236,6 +237,8 @@ public final class ModLangProvider extends LanguageProvider {
         // ---- modules ----
         add(ModItems.CORE_MK1.get(), "Core Mk I");
         add(ModItems.CORE_MK2.get(), "Core Mk II");
+        add(ModItems.CORE_MK3.get(), "Core Mk III");
+        add(ModItems.CORE_MK4.get(), "Core Mk IV");
         add(ModItems.THRUSTER_MK1.get(), "Thruster Mk I");
         add(ModItems.THRUSTER_MK2.get(), "Thruster Mk II");
         add(ModItems.STORAGE_MK1.get(), "Storage Pod Mk I");
@@ -287,9 +290,18 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.SHIP_RCS_CLUSTER.get(), "RCS Cluster");
         add(ModItems.SHIP_DORSAL_SPINE.get(), "Dorsal Spine");
         add(ModItems.SHIP_VENTRAL_FIN.get(), "Ventral Fin");
+        add(ModItems.TITAN_SAUCER.get(), "Titan Saucer");
+        add(ModItems.TITAN_NECK.get(), "Titan Neck");
+        add(ModItems.TITAN_BRIDGE.get(), "Titan Bridge");
+        add(ModItems.TITAN_SENSOR_ARRAY.get(), "Titan Sensor Array");
+        add(ModItems.TITAN_DEFLECTOR.get(), "Titan Deflector");
+        add(ModItems.TITAN_BAY_DOOR.get(), "Titan Bay Door");
+        add(ModItems.TITAN_PYLON.get(), "Titan Pylon");
+        add(ModItems.TITAN_NACELLE.get(), "Titan Nacelle");
+        add("item.void_reclaimer.titan_saucer.tooltip", "Core section of a Titan, a ship over 60 blocks long. Needs a Core Mk IV.");
         add("item.void_reclaimer.drone_hull.tooltip", "Core section: installing it makes the body a Drone.");
         add("item.void_reclaimer.mech_torso.tooltip", "Core section: installing it makes the body a Mech.");
-        add("item.void_reclaimer.ship_keel.tooltip", "Core section of a Ship. Too large to assemble yet: needs materials from beyond the dust clouds.");
+        add("item.void_reclaimer.ship_keel.tooltip", "Core section of a Ship. Needs a Core Mk III.");
         add("tooltip.void_reclaimer.section", "%s section · Tier %s · Mass %s");
         add("tooltip.void_reclaimer.section.core", "%s (core section) · Tier %s · Mass %s");
         add("tooltip.void_reclaimer.section.budget", "budget +%s");
@@ -319,6 +331,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.chassis.drone", "Drone");
         add("body.void_reclaimer.chassis.mech", "Mech");
         add("body.void_reclaimer.chassis.ship", "Ship");
+        add("body.void_reclaimer.chassis.titan", "Titan");
         add("body.void_reclaimer.area.all", "All");
         add("body.void_reclaimer.area.core", "Core");
         add("body.void_reclaimer.area.sensors", "Sensors");
@@ -355,6 +368,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.size.drone", "Drone");
         add("body.void_reclaimer.size.mech", "Mech");
         add("body.void_reclaimer.size.ship", "Ship");
+        add("body.void_reclaimer.size.titan", "Titan");
         add("body.void_reclaimer.casing.andesite", "Andesite");
         add("body.void_reclaimer.casing.brass", "Brass");
         add("body.void_reclaimer.casing.copper", "Copper");
