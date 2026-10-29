@@ -444,6 +444,9 @@ From an outside audit, each checked against the code first (several claims were 
 - Everything the Art drop 1 section lists as "still our placeholders" is replaced except these.
 - Colour notes for the owner to judge: `asteroid_silicate` is orange (style guide: sand-tan); `carbon_flakes` reads as a dagger; `dyson_shell_truss_module` reads as a hooked tool.
 
+## CI savings: done
+- `build.yml`: docs/art-only PRs skip CI; drafts run build + unit tests only; client-only/test/tools/docs/asset PRs skip GameTests, datagen and Aeronautics; PR runs read the Gradle cache and only `main` saves it. Pushes to `main` always run everything. Untested until the PR itself runs. If `main` has required checks, skipped jobs count as passing but a fully skipped workflow (docs-only) does not.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
