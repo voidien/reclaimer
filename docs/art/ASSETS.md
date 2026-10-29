@@ -97,8 +97,8 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | dust_sensor | `item/dust_sensor.png` | 16x16 | no | art drop 1 (redo optional) | handheld brass sensor with a round cyan glass lens and small antenna |  |
 | nanite_swarm | `item/nanite_swarm.png` | 16x16 | no | art drop 1 (redo optional) | swirling cloud of tiny silver-cyan nanite specks around a small emitter | Animated (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). RD VFX animation as a sprite sheet, then stack 4 frames top to bottom. |
 | salvage_tool | `item/salvage_tool.png` | 16x16 | no | art drop 1 (redo optional) | compact cutting tool with a copper handle and glowing orange cutting edge |  |
-| mechanical_drill | `item/mechanical_drill.png` | 16x16 | no | placeholder | industrial drill module: andesite casing, brass collar, spiral steel drill bit |  |
-| matter_harvester | `item/matter_harvester.png` | 16x16 | no | placeholder | mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill |  |
+| mechanical_drill | `item/mechanical_drill.png` | 16x16 | no | RD art (promoted) | industrial drill module: andesite casing, brass collar, spiral steel drill bit |  |
+| matter_harvester | `item/matter_harvester.png` | 16x16 | no | RD art (promoted) | mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill |  |
 | body_blueprint | `item/body_blueprint.png` | 16x16 | no | art drop 1 (redo optional) | rolled blue engineering blueprint of a small robot drone, white line drawing |  |
 | core_mk1 | `item/core_mk1.png` | 16x16 | no | art drop 1 (redo optional) | small round power core: andesite shell, glowing cyan center, cog teeth around the rim |  |
 | core_mk2 | `item/core_mk2.png` | 16x16 | no | art drop 1 (redo optional) | larger power core: brass shell, bright white-cyan glowing center, two rings of cog teeth |  |
@@ -148,73 +148,73 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
-| raw_ice_shards | `item/raw_ice_shards.png` | 16x16 | no | placeholder | pile of pale cyan ice shards, sharp crystal edges |  |
-| carbon_flakes | `item/carbon_flakes.png` | 16x16 | no | placeholder | handful of dark grey-violet carbon flakes |  |
-| silicon_grit | `item/silicon_grit.png` | 16x16 | no | placeholder | pile of sandy tan silicon grit granules |  |
+| raw_ice_shards | `item/raw_ice_shards.png` | 16x16 | no | RD art (promoted) | pile of pale cyan ice shards, sharp crystal edges |  |
+| carbon_flakes | `item/carbon_flakes.png` | 16x16 | no | RD art (promoted) | handful of dark grey-violet carbon flakes |  |
+| silicon_grit | `item/silicon_grit.png` | 16x16 | no | RD art (promoted) | pile of sandy tan silicon grit granules |  |
 | metallic_grains | `item/metallic_grains.png` | 16x16 | no | placeholder | pile of shiny silver-grey metal grains |  |
-| crushed_cryo_ice | `item/crushed_cryo_ice.png` | 16x16 | no | placeholder | crushed frosty blue ice powder in a small heap |  |
-| coolant_frame_plate | `item/coolant_frame_plate.png` | 16x16 | no | placeholder | square metal plate with frosty blue coolant channels |  |
-| fine_carbon_powder | `item/fine_carbon_powder.png` | 16x16 | no | placeholder | small heap of fine black carbon powder |  |
-| carbon_paste | `item/carbon_paste.png` | 16x16 | no | placeholder | blob of thick glossy black paste |  |
-| carbon_composite_plate | `item/carbon_composite_plate.png` | 16x16 | no | placeholder | woven dark carbon-fiber plate with a sheen |  |
-| silicon_carbide_slurry | `item/silicon_carbide_slurry.png` | 16x16 | no | placeholder | blob of grey-green gritty slurry |  |
+| crushed_cryo_ice | `item/crushed_cryo_ice.png` | 16x16 | no | RD art (promoted) | crushed frosty blue ice powder in a small heap |  |
+| coolant_frame_plate | `item/coolant_frame_plate.png` | 16x16 | no | RD art (promoted) | square metal plate with frosty blue coolant channels |  |
+| fine_carbon_powder | `item/fine_carbon_powder.png` | 16x16 | no | RD art (promoted) | small heap of fine black carbon powder |  |
+| carbon_paste | `item/carbon_paste.png` | 16x16 | no | RD art (promoted) | blob of thick glossy black paste |  |
+| carbon_composite_plate | `item/carbon_composite_plate.png` | 16x16 | no | RD art (promoted) | woven dark carbon-fiber plate with a sheen |  |
+| silicon_carbide_slurry | `item/silicon_carbide_slurry.png` | 16x16 | no | RD art (promoted) | blob of grey-green gritty slurry |  |
 | silicon_carbide_coating | `item/silicon_carbide_coating.png` | 16x16 | no | placeholder | thin dark grey-green ceramic coating sheet |  |
-| thermal_shielding_tile | `item/thermal_shielding_tile.png` | 16x16 | no | placeholder | black ceramic heat shield tile with a white edge |  |
-| high_purity_graphite | `item/high_purity_graphite.png` | 16x16 | no | placeholder | glossy dark graphite ingot |  |
-| carbon_thread | `item/carbon_thread.png` | 16x16 | no | placeholder | spool of black carbon thread |  |
-| pure_silicon_dust | `item/pure_silicon_dust.png` | 16x16 | no | placeholder | small heap of bright silver-white silicon dust |  |
-| quartz_wafer | `item/quartz_wafer.png` | 16x16 | no | placeholder | thin round translucent quartz wafer disk |  |
-| doped_silicon_ingot | `item/doped_silicon_ingot.png` | 16x16 | no | placeholder | silicon ingot with faint blue-violet doping streaks |  |
-| high_efficiency_solar_cell | `item/high_efficiency_solar_cell.png` | 16x16 | no | placeholder | square dark blue solar cell with a silver grid |  |
-| advanced_sensor_unit | `item/advanced_sensor_unit.png` | 16x16 | no | placeholder | small electronic sensor box with a lens and a green status light |  |
-| refined_metal_nodule | `item/refined_metal_nodule.png` | 16x16 | no | placeholder | smooth round polished metal nodule |  |
+| thermal_shielding_tile | `item/thermal_shielding_tile.png` | 16x16 | no | RD art (promoted) | black ceramic heat shield tile with a white edge |  |
+| high_purity_graphite | `item/high_purity_graphite.png` | 16x16 | no | RD art (promoted) | glossy dark graphite ingot |  |
+| carbon_thread | `item/carbon_thread.png` | 16x16 | no | RD art (promoted) | spool of black carbon thread |  |
+| pure_silicon_dust | `item/pure_silicon_dust.png` | 16x16 | no | RD art (promoted) | small heap of bright silver-white silicon dust |  |
+| quartz_wafer | `item/quartz_wafer.png` | 16x16 | no | RD art (promoted) | thin round translucent quartz wafer disk |  |
+| doped_silicon_ingot | `item/doped_silicon_ingot.png` | 16x16 | no | RD art (promoted) | silicon ingot with faint blue-violet doping streaks |  |
+| high_efficiency_solar_cell | `item/high_efficiency_solar_cell.png` | 16x16 | no | RD art (promoted) | square dark blue solar cell with a silver grid |  |
+| advanced_sensor_unit | `item/advanced_sensor_unit.png` | 16x16 | no | RD art (promoted) | small electronic sensor box with a lens and a green status light |  |
+| refined_metal_nodule | `item/refined_metal_nodule.png` | 16x16 | no | RD art (promoted) | smooth round polished metal nodule |  |
 | micro_alloy_sheet | `item/micro_alloy_sheet.png` | 16x16 | no | placeholder | thin flexible shiny alloy sheet, slightly curled |  |
-| high_output_solar_sail | `item/high_output_solar_sail.png` | 16x16 | no | placeholder | folded gold-and-blue solar sail panel |  |
-| zero_g_precision_frame | `item/zero_g_precision_frame.png` | 16x16 | no | placeholder | precise square metal frame with graphite struts |  |
-| dyson_swarm_satellite_payload | `item/dyson_swarm_satellite_payload.png` | 16x16 | no | placeholder | compact satellite with folded solar panels on a frame |  |
-| dyson_shell_truss_module | `item/dyson_shell_truss_module.png` | 16x16 | no | placeholder | heavy triangular truss segment with heat tiles |  |
-| rcs_thruster | `item/rcs_thruster.png` | 16x16 | no | placeholder | small maneuvering thruster block with a nozzle and propellant line |  |
-| reaction_wheel_gyroscope | `item/reaction_wheel_gyroscope.png` | 16x16 | no | placeholder | gyroscope with a spinning brass wheel inside a frame |  |
-| atmospheric_catalyst_core | `item/atmospheric_catalyst_core.png` | 16x16 | no | placeholder | glowing green-blue crystal core inside a metal cage |  |
+| high_output_solar_sail | `item/high_output_solar_sail.png` | 16x16 | no | RD art (promoted) | folded gold-and-blue solar sail panel |  |
+| zero_g_precision_frame | `item/zero_g_precision_frame.png` | 16x16 | no | RD art (promoted) | precise square metal frame with graphite struts |  |
+| dyson_swarm_satellite_payload | `item/dyson_swarm_satellite_payload.png` | 16x16 | no | RD art (promoted) | compact satellite with folded solar panels on a frame |  |
+| dyson_shell_truss_module | `item/dyson_shell_truss_module.png` | 16x16 | no | RD art (promoted) | heavy triangular truss segment with heat tiles |  |
+| rcs_thruster | `item/rcs_thruster.png` | 16x16 | no | RD art (promoted) | small maneuvering thruster block with a nozzle and propellant line |  |
+| reaction_wheel_gyroscope | `item/reaction_wheel_gyroscope.png` | 16x16 | no | RD art (promoted) | gyroscope with a spinning brass wheel inside a frame |  |
+| atmospheric_catalyst_core | `item/atmospheric_catalyst_core.png` | 16x16 | no | RD art (promoted) | glowing green-blue crystal core inside a metal cage |  |
 
 ### Unfinished (Sequenced Assembly) (7)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
-| incomplete_zero_g_precision_frame | `item/incomplete_zero_g_precision_frame.png` | 16x16 | no | placeholder | half-built precise square metal frame with graphite struts, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_dyson_swarm_satellite_payload | `item/incomplete_dyson_swarm_satellite_payload.png` | 16x16 | no | placeholder | half-built compact satellite with folded solar panels on a frame, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_dyson_shell_truss_module | `item/incomplete_dyson_shell_truss_module.png` | 16x16 | no | placeholder | half-built heavy triangular truss segment with heat tiles, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_rcs_thruster | `item/incomplete_rcs_thruster.png` | 16x16 | no | placeholder | half-built small maneuvering thruster block with a nozzle and propellant line, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_reaction_wheel_gyroscope | `item/incomplete_reaction_wheel_gyroscope.png` | 16x16 | no | placeholder | half-built gyroscope with a spinning brass wheel inside a frame, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_atmospheric_catalyst_core | `item/incomplete_atmospheric_catalyst_core.png` | 16x16 | no | placeholder | half-built glowing green-blue crystal core inside a metal cage, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
-| incomplete_high_output_solar_sail | `item/incomplete_high_output_solar_sail.png` | 16x16 | no | placeholder | half-built folded gold-and-blue solar sail panel, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_zero_g_precision_frame | `item/incomplete_zero_g_precision_frame.png` | 16x16 | no | RD art (promoted) | half-built precise square metal frame with graphite struts, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_dyson_swarm_satellite_payload | `item/incomplete_dyson_swarm_satellite_payload.png` | 16x16 | no | RD art (promoted) | half-built compact satellite with folded solar panels on a frame, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_dyson_shell_truss_module | `item/incomplete_dyson_shell_truss_module.png` | 16x16 | no | RD art (promoted) | half-built heavy triangular truss segment with heat tiles, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_rcs_thruster | `item/incomplete_rcs_thruster.png` | 16x16 | no | RD art (promoted) | half-built small maneuvering thruster block with a nozzle and propellant line, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_reaction_wheel_gyroscope | `item/incomplete_reaction_wheel_gyroscope.png` | 16x16 | no | RD art (promoted) | half-built gyroscope with a spinning brass wheel inside a frame, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_atmospheric_catalyst_core | `item/incomplete_atmospheric_catalyst_core.png` | 16x16 | no | RD art (promoted) | half-built glowing green-blue crystal core inside a metal cage, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
+| incomplete_high_output_solar_sail | `item/incomplete_high_output_solar_sail.png` | 16x16 | no | RD art (promoted) | half-built folded gold-and-blue solar sail panel, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
 
 ### Fluid buckets (6)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
-| purified_water_bucket | `item/purified_water_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with clear light-blue water | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #A8DCFF. |
-| oxygen_gas_bucket | `item/oxygen_gas_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with pale blue gas swirls | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #B4C8FF. |
-| hydrogen_gas_bucket | `item/hydrogen_gas_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with pale pink gas swirls | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #FFC8C8. |
-| nebulite_propellant_bucket | `item/nebulite_propellant_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with glowing orange propellant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #FF9638. |
-| coolant_fluid_bucket | `item/coolant_fluid_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with cyan coolant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #78DCE6. |
-| liquid_silicon_bucket | `item/liquid_silicon_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with glowing silver-white molten silicon | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #D0D8EE. |
+| purified_water_bucket | `item/purified_water_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with clear light-blue water | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #A8DCFF. |
+| oxygen_gas_bucket | `item/oxygen_gas_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with pale blue gas swirls | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #B4C8FF. |
+| hydrogen_gas_bucket | `item/hydrogen_gas_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with pale pink gas swirls | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #FFC8C8. |
+| nebulite_propellant_bucket | `item/nebulite_propellant_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with glowing orange propellant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #FF9638. |
+| coolant_fluid_bucket | `item/coolant_fluid_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with cyan coolant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #78DCE6. |
+| liquid_silicon_bucket | `item/liquid_silicon_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with glowing silver-white molten silicon | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #D0D8EE. |
 
 ### Blocks (11)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
-| asteroid_silicate | `block/asteroid_silicate.png` | 16x16 | yes | placeholder | sandy tan porous space rock | Dust kind color #D9B38C. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
-| asteroid_ice | `block/asteroid_ice.png` | 16x16 | yes | placeholder | pale cyan frozen space rock with frost cracks | Dust kind color #9FE2FF. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
-| asteroid_carbon | `block/asteroid_carbon.png` | 16x16 | yes | placeholder | dark grey-violet sooty space rock | Dust kind color #6E6A80. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
-| asteroid_metallic | `block/asteroid_metallic.png` | 16x16 | yes | placeholder | silver-grey metallic space rock with shiny flecks | Dust kind color #B8C2CC. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
+| asteroid_silicate | `block/asteroid_silicate.png` | 16x16 | yes | RD art (promoted) | sandy tan porous space rock | Dust kind color #D9B38C. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
+| asteroid_ice | `block/asteroid_ice.png` | 16x16 | yes | RD art (promoted) | pale cyan frozen space rock with frost cracks | Dust kind color #9FE2FF. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
+| asteroid_carbon | `block/asteroid_carbon.png` | 16x16 | yes | RD art (promoted) | dark grey-violet sooty space rock | Dust kind color #6E6A80. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
+| asteroid_metallic | `block/asteroid_metallic.png` | 16x16 | yes | RD art (promoted) | silver-grey metallic space rock with shiny flecks | Dust kind color #B8C2CC. Worlds have huge surfaces of it: it must tile without visible seams or repeats. |
 | scaffold | `block/scaffold.png` | 16x16 | yes | art drop 1 (redo optional) | light andesite metal scaffold grid with open gaps |  |
 | backup_core | `block/backup_core.png` | 16x16 | no | art drop 1 (redo optional) | brass machine casing with a glowing cyan core window in the center | All six faces use this one texture now (cube_all). |
 | tether_anchor | `block/tether_anchor.png` | 16x16 | no | art drop 1 (redo optional) | heavy andesite anchor block with a brass ring in the middle | All six faces use this one texture now. |
-| electrolyzer_side | `block/electrolyzer_side.png` | 16x16 | no | placeholder | machine side: copper tank with glass window showing bubbling water | Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends (Create draws the turning shaft). |
-| electrolyzer_end | `block/electrolyzer_end.png` | 16x16 | no | placeholder | machine end face: andesite casing with a shaft hole in the middle |  |
-| spinner_side | `block/spinner_side.png` | 16x16 | no | placeholder | machine side: brass casing with a spinning spool of black thread visible | Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib). |
-| spinner_end | `block/spinner_end.png` | 16x16 | no | placeholder | machine end face: brass casing with a shaft hole in the middle |  |
+| electrolyzer_side | `block/electrolyzer_side.png` | 16x16 | no | RD art (promoted) | machine side: copper tank with glass window showing bubbling water | Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends (Create draws the turning shaft). |
+| electrolyzer_end | `block/electrolyzer_end.png` | 16x16 | no | RD art (promoted) | machine end face: andesite casing with a shaft hole in the middle |  |
+| spinner_side | `block/spinner_side.png` | 16x16 | no | RD art (promoted) | machine side: brass casing with a spinning spool of black thread visible | Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib). |
+| spinner_end | `block/spinner_end.png` | 16x16 | no | RD art (promoted) | machine end face: brass casing with a shaft hole in the middle |  |
 
 ### HUD & GUI (10)
 
@@ -237,7 +237,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 |---|---|---|---|---|---|---|
 | sun | `environment/sun.png` | 64x64 | no | missing (future) | pixel art distant pale star on transparent background, soft glow, small bright core | Deep space draws vanilla's sun texture now (DeepSpaceEffects). A custom one needs a one-line code change. |
 
-### Body models (GeckoLib) (40)
+### Body models (GeckoLib) (41)
 
 | Model | File | Texture | Status | Prompt | Bones to keep |
 |---|---|---|---|---|---|
@@ -279,6 +279,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | tool_claw (section) | `geo/section/tool_claw.geo.json` | 64x64 tex | art drop 1 (redo optional) | small mechanical claw with three copper fingers; single body part, boxy Minecraft-style model | tool_claw, tool_claw_casing, tool_claw_frame, claw_left, claw_right, mount_tool_1, mount_tool_2 |
 | brass_trim (module) | `geo/module/brass_trim.geo.json` | 64x64 tex | art drop 1 (redo optional) | decorative curved brass trim plate with rivets (cosmetic part); single body part, boxy Minecraft-style model | brass_trim, brass_trim_drone, brass_trim_mech, brass_trim_ship |
 | cogwheel_crown (module) | `geo/module/cogwheel_crown.geo.json` | 64x64 tex | art drop 1 (redo optional) | ring of small brass cogwheels forming a crown (cosmetic part); single body part, boxy Minecraft-style model | cogwheel_crown, cogwheel_crown_base, crown_cog |
+| core_mk1 (module) | `geo/module/core_mk1.geo.json` | 64x64 tex | RD art (promoted) | small round power core: andesite shell, glowing cyan center, cog teeth around the rim; single body part, boxy Minecraft-style model | core_mk1, core_mk1_mount |
 | thruster_mk1 (module) | `geo/module/thruster_mk1.geo.json` | 64x64 tex | art drop 1 (redo optional) | small copper rocket thruster nozzle with an andesite mount; single body part, boxy Minecraft-style model | thruster_mk1, thruster_mk1_mount, thruster_nozzle |
 | thruster_mk2 (module) | `geo/module/thruster_mk2.geo.json` | 64x64 tex | art drop 1 (redo optional) | larger brass rocket thruster with a flared nozzle and a faint blue exhaust glow; single body part, boxy Minecraft-style model | thruster_mk2, thruster_mk2_mount, thruster_nozzle, nozzle_flap_top, nozzle_flap_bottom |
 
@@ -303,11 +304,11 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | `animation.void_reclaimer.ship.low_power` | `animations/body/ship.animation.json` | ship: drooping, cogs winding down |
 | `animation.void_reclaimer.ship.module_work` | `animations/body/ship.animation.json` | ship: tool arm working, cogs spinning |
 
-### Body skins (GeckoLib) (80)
+### Body skins (GeckoLib) (82)
 
 All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate a model with RD 3D, its base texture comes with it. The `_accent` masks are painted by hand in Blockbench (white where the accent color shows). Sizes: 128x128 for the Ship rig and ship parts, 64x64 for the rest. Full list in `assets.csv`.
 
-### Missing module models (9)
+### Missing module models (8)
 
 | Model | File | Texture | Status | Prompt | Bones to keep |
 |---|---|---|---|---|---|
@@ -316,7 +317,6 @@ All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate
 | salvage_tool | `geo/module/salvage_tool.geo.json` | 64x64 tex | missing | compact cutting tool with a copper handle and glowing orange cutting edge; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
 | mechanical_drill | `geo/module/mechanical_drill.geo.json` | 64x64 tex | missing | industrial drill module: andesite casing, brass collar, spiral steel drill bit; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
 | matter_harvester | `geo/module/matter_harvester.geo.json` | 64x64 tex | missing | mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| core_mk1 | `geo/module/core_mk1.geo.json` | 64x64 tex | missing | small round power core: andesite shell, glowing cyan center, cog teeth around the rim; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
 | core_mk2 | `geo/module/core_mk2.geo.json` | 64x64 tex | missing | larger power core: brass shell, bright white-cyan glowing center, two rings of cog teeth; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
 | storage_mk1 | `geo/module/storage_mk1.geo.json` | 64x64 tex | missing | small andesite storage pod with a hatch and brass latches; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
 | storage_mk2 | `geo/module/storage_mk2.geo.json` | 64x64 tex | missing | larger brass storage pod with two hatches and copper bands; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |

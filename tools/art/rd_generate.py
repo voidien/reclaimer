@@ -46,6 +46,17 @@ STATE_PATH = os.path.join(STAGING, 'state.json')
 API = os.environ.get('RD_API_BASE', 'https://api.retrodiffusion.ai/v2').rstrip('/')
 TEXTURES = 'src/main/resources/assets/void_reclaimer/textures/'
 
+
+def record_promoted(rel_path):
+    """Adds a promoted texture to docs/art/promoted.txt (paths under textures/, one per line, sorted) so that
+    asset_list.py marks it as RD art instead of a placeholder. Commit the file with the art."""
+    path = os.path.join(REPO, 'docs', 'art', 'promoted.txt')
+    rel = rel_path[len(TEXTURES):] if rel_path.startswith(TEXTURES) else rel_path
+    lines = set(open(path).read().split()) if os.path.exists(path) else set()
+    if rel not in lines:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        write_file(path, ('\n'.join(sorted(lines | {rel})) + '\n').encode())
+
 # The CSV prompts start with a style prefix meant for people typing into RD's UI. The API's styles already do the
 # pixel-art rendering, and RD asks for subject-only prompts, so these are stripped before sending.
 PREFIXES = (
@@ -795,6 +806,7 @@ def promote(spec, rows):
         sys.exit('%s is %dx%d, expected %dx%d' % (src, len(pixels[0]), len(pixels), want[0], want[1]))
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(src, dst)
+    record_promoted(row['file'])
     print('copied %s -> %s' % (os.path.relpath(src, REPO), row['file']))
 
 
@@ -866,6 +878,7 @@ def promote_model(row, args):
         f.write('\n')
     os.makedirs(os.path.dirname(os.path.join(REPO, tex_rel)), exist_ok=True)
     write_file(os.path.join(REPO, tex_rel), png)
+    record_promoted(tex_rel)
     # The old accent mask matched the old texture layout, so it is replaced by an empty one (no accent tint) to paint.
     write_file(os.path.join(REPO, accent_rel), png_write([[(0, 0, 0, 0)] * len(pixels[0]) for _ in pixels]))
     preview = os.path.join(STAGING, akey, 'promoted_preview.png')

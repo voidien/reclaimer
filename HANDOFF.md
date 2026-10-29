@@ -2,20 +2,26 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged into `main`.
+Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures and the first RD module model) was merged into `main`.
 
 ## Where things stand
-- **`main`** has Phases 1–5a done, plus the extensibility pass and body sections:
-  - datapack registries, events, chassis and sockets;
-  - paint, wear and repair, Body Blueprints;
-  - kits (multi-output Replicator recipes).
-- **Last verified on `main`:** build, 67 unit tests and 63 GameTests pass, CI is green. The Body tab, kits and the JEI kit layout were checked in a real client with the performance mods.
+- **`main`** has Phases 1 to 10 done, plus everything around them. In order:
+  - Phases 1 to 4: deep space and spawn, zero-G flight, cosmic dust, the Replicator (4a), Nanite Swarm, Tether Anchor and Backup Core (4b).
+  - Phase 5a body data, then the extensibility pass and body sections (datapack registries, events, chassis and sockets, paint, wear, Body Blueprints, kits).
+  - Foundations: Create, Aeronautics and Sable required; Dyson Sphere counters and sky.
+  - Phase 6 asteroids; Phase 7 machines (nebula materials, Create chains, Electrolyzer, Spinner, fan freezing, spout casting).
+  - Phase 8 Zero-G Frame and payloads; Phase 9 Kinetic Mass Driver, Quantum Receiver and power beams; Phase 10 the Starship milestone and the Ship recipes.
+  - The art pipeline (`tools/art/`, see "Art workflow" below), art drop 1, RD art pass 1, and the Test Starship placeholder entity.
+- **Last verified on `main`:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
+- **Not done yet** (revised plan in `CLAUDE.md`):
+  - **5b:** GeckoLib body rendering and the assembly UI. The art is imported, and the Test Starship already proves that a GeckoLib entity (model, texture, animations, renderer) works in this setup, so use `starship/TestStarship` and `client/render/TestStarshipRenderer` as a working example.
+  - **7b:** Aeronautics ships (Space Thruster, Helm). Stations and helper drones.
+  - **Act III, phases 11 to 14:** Ruined Earth, the Terraforming Spire, the Data Monolith and villagers, Restoration.
+- **Next phase:** the owner's choice between 5b and phase 11. Ask first (`CLAUDE.md` workflow rule 2): clarifying questions, the file list, then wait for the go-ahead.
 - **Design doc:** the user's "Nebulae to Planetary Genesis" doc extends the plan (see `CLAUDE.md`, "Design doc" and "Dyson Sphere" blocks). Lore and recipes come only from that doc; ask when it's unclear.
+  - https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n (a Claude Docs project, at revision 12).
+  - It does **not** yet describe the body sections, paint, wear, blueprint and kit work, nor the later phases. Update it from the blocks in `CLAUDE.md` if the owner asks.
 - **Aeronautics GameTests:** `./gradlew runGameTestAeronautics` (separate from `runGameTestServer`, own CI job). The local GameTest world persists, so old test platforms stay put there; CI is fresh.
-- **Next phase:** 5b (GeckoLib rendering) or Act III, phase 11 (Ruined Earth); see the revised plan in `CLAUDE.md`. Phases 6 to 10 are done. 5b (GeckoLib rendering, art imported) and 7b (Aeronautics ships) are parallel tracks.
-- **Design doc:** https://claude.ai/artifact/YD1avpfCtfdKcZotESDR1n
-  - It's a Claude Docs project, at revision 12.
-  - It does **not** yet describe the body sections, paint, wear, blueprint and kit work merged in #14. Update it from the "Body sections" block in `CLAUDE.md`.
 
 ## The user's standing instructions
 - **Clarifying questions:** ask them before each phase (their preference, and `CLAUDE.md` workflow rule 2). Wait for a go-ahead on the file list.
@@ -30,6 +36,13 @@ Last updated 2026-10-29, after PR #14 (extensibility + body sections) was merged
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
+- **Two flaky GameTests (root cause not found, worth their own PR):**
+  - `placingregisterscoresuptothelimitandsunlightcharges` ("sunlight did not charge"; failed on PRs #28 and #30) and `salvagetooldismantlesfordustwithoutdrops` (PR #27).
+  - Each failed once in CI and passed on the one allowed re-run of the failed job. The PR-triggered run and the push-triggered run of the same commit disagreed, so it is timing or world state, not the PR's change.
+  - If one fails again: re-run the failed job once, comment on the PR, and keep going. Don't skip or disable the test. To fix it, run the test in a loop locally and look at what its fixed coordinates share with other tests.
+- **RD art pass 1 has not been looked at in a real client yet.** Unit tests load every model, the texture sizes are checked, and a comparison sheet looked right. In a client with Sodium and the other performance mods, check the asteroid rocks, the Electrolyzer and Spinner faces, and a few icons in the Replicator. Then update the placeholder list in `PROGRESS.md`.
+  - Known colour issue: `asteroid_silicate` came out orange; the style guide says sand-tan. `carbon_flakes` reads as a dagger and `dyson_shell_truss_module` as a hooked tool. The owner decides whether to redo them (Redo in the picker).
+  - Still placeholders: `metallic_grains`, `silicon_carbide_coating`, `micro_alloy_sheet`, and the empty `core_mk1_accent` mask (paint it in Blockbench).
 - **Kit-queue glitch:** once, in one client session, clicking Replicate on a kit did nothing: no job, no dust taken, no message. It didn't reproduce after a restart, and logging showed the request arriving and queueing correctly. It's listed in `PROGRESS.md` known issues. If it comes back, log both sides:
   - client: `ReplicatorScreen` replicate press;
   - server: `Replicator.queue`.
@@ -93,5 +106,13 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").
-- **Art pipeline:** `docs/art/ASSETS.md` + `assets.csv` list every asset with Retro Diffusion prompts. The owner generates them with `tools/art/rd_generate.py` on their own computer (their key; never ask for it or store it). When they say a batch is promoted, check it in game and update the placeholder list in `PROGRESS.md`. `--promote <asset>` converts an RD `.bbmodel` into a part's GeckoLib model (`tools/art/bbgeo.py`): it keeps our skeleton, scales to fit and bakes rotated face UVs (GeckoLib 4.9.3 only supports geometry 1.12.0 cleanly). `GeoModelLoadTest` (Gradle unit test) loads every `.geo.json` through GeckoLib's own loader. `--from-group`/`--scale-like` cut Ship sections out of one whole-ship model; `--promote-as entity/NAME` writes a standalone model plus converted animations (Blockbench's Bedrock export rules; GeckoLib reads only `post`, so step keys become holds). `GeoModelLoadTest` also loads every animation and checks its bones (body animations may move section/module bones). Body animations from RD still need Blockbench. The style guide lives in `docs/art/style.json` (regenerate with `tools/art/style_guide.py`; a test checks it is current). The owner chose to pick custom-style reference images later (1-4 images in `docs/art/style/<category>/`, then `--setup-styles`).
-Item textures are 16×16 programmer art, written by small Python PNG scripts (zlib + struct, no PIL). Every placeholder must be listed in `PROGRESS.md`.
+- **Art pipeline:** see "Art workflow" below. `docs/art/ASSETS.md` + `assets.csv` list every asset with Retro Diffusion prompts. The owner generates them with `tools/art/rd_generate.py` on their own computer (their key; never ask for it or store it). When they say a batch is promoted, check it in game and update the placeholder list in `PROGRESS.md`. `--promote <asset>` converts an RD `.bbmodel` into a part's GeckoLib model (`tools/art/bbgeo.py`): it keeps our skeleton, scales to fit and bakes rotated face UVs (GeckoLib 4.9.3 only supports geometry 1.12.0 cleanly). `GeoModelLoadTest` (Gradle unit test) loads every `.geo.json` through GeckoLib's own loader. `--from-group`/`--scale-like` cut Ship sections out of one whole-ship model; `--promote-as entity/NAME` writes a standalone model plus converted animations (Blockbench's Bedrock export rules; GeckoLib reads only `post`, so step keys become holds). `GeoModelLoadTest` also loads every animation and checks its bones (body animations may move section/module bones). Body animations from RD still need Blockbench. The style guide lives in `docs/art/style.json` (regenerate with `tools/art/style_guide.py`; a test checks it is current). The owner chose to pick custom-style reference images later (1-4 images in `docs/art/style/<category>/`, then `--setup-styles`).
+Remaining placeholder textures are 16×16 programmer art, written by small Python PNG scripts (zlib + struct, no PIL). Every placeholder must be listed in `PROGRESS.md`.
+
+## Art workflow (the owner works on a phone in Termux and on a PC)
+- **Generate and pick:** the owner runs `tools/art/rd_generate.py` with their own Retro Diffusion key (never ask for it, store it or commit it; it lives only in their environment). Results stage in `art/rd/` (gitignored). `art/rd/index.html` is a single self-contained page: tap a variant to promote it, or mark Keep current or Redo, add notes, and copy the commands it builds.
+- **Promote:** `--promote asset=N` copies a picked variant into the mod, size-checked, and records it in `docs/art/promoted.txt`. `asset_list.py` reads that file, so regenerating `docs/art/ASSETS.md` and `assets.csv` (`python3 tools/art/asset_list.py`) marks those files as `RD art (promoted)`. `--status placeholder` then skips them.
+- **Getting their work to you:** `art/rd/` is gitignored, so the owner pushes it on a throwaway branch with `git add -f art/rd` (see `tools/art/README.md`, "Moving staging between devices"). The branch `art-staging` on GitHub is only a courier: never merge it, and never commit `art/rd` to `main`. To use what is on it, `git fetch origin art-staging`, then `git checkout origin/art-staging -- src` for the promoted files (and `-- art/rd` plus `git reset -q art/rd` to look at the variants). Then make a normal branch and PR.
+- **Models:** `--promote <asset>` (keeps our skeleton), `--from-group` / `--scale-like` (cut Ship sections out of one whole model), `--promote-as entity/NAME` (standalone model plus converted animations, used by the Test Starship). The owner also chose RD's Blocky or Blocky Lite 3D styles only.
+- **Style:** `docs/art/style.json` is the source for the style guide and the per-category palettes (`python3 tools/art/style_guide.py`; a test checks they are current). `--setup-styles` makes RD custom styles from 1 to 4 reference images in `docs/art/style/<category>/` (the owner picks those later).
+- **Tests:** `python3 tools/art/test_rd_generate.py` (27 tests against a fake RD server; Node is used for the picker's command builder; CI runs it). Mutation-check new ones like any other test.
