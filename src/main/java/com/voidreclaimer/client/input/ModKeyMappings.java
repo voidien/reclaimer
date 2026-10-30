@@ -38,6 +38,20 @@ public final class ModKeyMappings {
     public static final KeyMapping PHOTO_MODE = new KeyMapping("key.void_reclaimer.photo_mode",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
 
+    /** The Helm's rotation axes; its translation axes are the movement keys. */
+    public static final KeyMapping ROLL_LEFT = new KeyMapping("key.void_reclaimer.roll_left",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Q, CATEGORY);
+    public static final KeyMapping ROLL_RIGHT = new KeyMapping("key.void_reclaimer.roll_right",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E, CATEGORY);
+    public static final KeyMapping PITCH_UP = new KeyMapping("key.void_reclaimer.pitch_up",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UP, CATEGORY);
+    public static final KeyMapping PITCH_DOWN = new KeyMapping("key.void_reclaimer.pitch_down",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_DOWN, CATEGORY);
+    public static final KeyMapping YAW_LEFT = new KeyMapping("key.void_reclaimer.yaw_left",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT, CATEGORY);
+    public static final KeyMapping YAW_RIGHT = new KeyMapping("key.void_reclaimer.yaw_right",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT, CATEGORY);
+
     private ModKeyMappings() {}
 
     public static void register(RegisterKeyMappingsEvent event) {
@@ -50,5 +64,11 @@ public final class ModKeyMappings {
         event.register(MODULE_WHEEL);
         event.register(ORBIT_CAMERA);
         event.register(PHOTO_MODE);
+        event.register(ROLL_LEFT);
+        event.register(ROLL_RIGHT);
+        event.register(PITCH_UP);
+        event.register(PITCH_DOWN);
+        event.register(YAW_LEFT);
+        event.register(YAW_RIGHT);
     }
 }

@@ -20,5 +20,11 @@ public final class ModEntities {
                     .updateInterval(20)
                     .build(VoidReclaimer.id("test_starship").toString()));
 
+    /** The invisible seat a pilot rides at the Helm. */
+    public static final Supplier<EntityType<com.voidreclaimer.ship.HelmSeat>> HELM_SEAT = ENTITY_TYPES.register("helm_seat",
+            () -> EntityType.Builder.<com.voidreclaimer.ship.HelmSeat>of(com.voidreclaimer.ship.HelmSeat::new, MobCategory.MISC)
+                    .sized(0.25f, 0.25f).noSummon().clientTrackingRange(8).updateInterval(20)
+                    .build(VoidReclaimer.id("helm_seat").toString()));
+
     private ModEntities() {}
 }

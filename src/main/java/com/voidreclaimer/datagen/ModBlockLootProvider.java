@@ -21,6 +21,7 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.CHEMICAL_THRUSTER.get());
         dropSelf(ModBlocks.ION_THRUSTER.get());
         dropSelf(ModBlocks.RCS_THRUSTER.get());
+        dropSelf(ModBlocks.HELM.get());
         dropSelf(ModBlocks.TERRAFORMING_SPIRE.get());
         dropSelf(ModBlocks.TETHER_ANCHOR.get());
         dropSelf(ModBlocks.BACKUP_CORE.get());

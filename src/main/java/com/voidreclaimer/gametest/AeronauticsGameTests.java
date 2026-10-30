@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -262,6 +263,138 @@ public final class AeronauticsGameTests {
             }
         }
         return 0.0;
+    }
+
+    /**
+     * A ship with a Helm facing north, a Chemical Thruster at the stern (nozzle south, so it pushes north) and an RCS jet at
+     * the bow pushing east (yaw). No redstone anywhere: only the pilot's keys open throttles.
+     */
+    private static void helmShip(GameTestHelper helper, BlockPos pos, java.util.function.Consumer<List<String>> then) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        for (int chunks = 1; chunks <= 8; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) - chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            List<String> log = new ArrayList<>();
+            // Keel from the bow (z-3) to the stern (z+2); the Helm in the middle, on top of the keel.
+            // Keel from the bow (z-3) to the stern; the Helm on top in the middle; the motor on the keel feeds the
+            // stern thruster from its back (a south-facing nozzle takes its shaft from the north).
+            log.addAll(command(server, space, pos, "fill " + x + " " + y + " " + (z - 3) + " " + x + " " + y + " " + (z + 1) + " minecraft:stone"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 2) + " create:creative_motor[facing=south]"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 3) + " void_reclaimer:chemical_thruster[facing=south]"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z - 4) + " void_reclaimer:rcs_thruster[facing=west]"));
+            var main = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z + 3));
+            main.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 4000),
+                    net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+            var jet = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z - 4));
+            jet.energy().receiveEnergy(2000, false);
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
+                then.accept(log);
+            });
+        });
+    }
+
+    /**
+     * Seats a fresh survival player at the Helm of this test's own ship (named after {@code pos}) and gives them the keys
+     * held. After assembly the Helm lives in the ship's plot, so it is found by scanning that ship's block entities; the
+     * pilot stands where the Helm is in the world.
+     */
+    private static ServerPlayer pilot(GameTestHelper helper, ServerLevel space, BlockPos pos, com.voidreclaimer.ship.PilotInput keys) {
+        dev.ryanhcode.sable.sublevel.ServerSubLevel ship = null;
+        for (var sub : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (("vr_test_" + pos.getX()).equals(sub.getName())) {
+                ship = sub;
+            }
+        }
+        helper.assertTrue(ship != null, "no ship named vr_test_" + pos.getX());
+        BlockPos helmPos = null;
+        for (BlockPos p : com.voidreclaimer.ship.Ships.blocksOf(space, ship)) {
+            if (space.getBlockEntity(p) instanceof com.voidreclaimer.ship.HelmBlockEntity) {
+                helmPos = p;
+            }
+        }
+        helper.assertTrue(helmPos != null, "no Helm on ship vr_test_" + pos.getX());
+        var helm = (com.voidreclaimer.ship.HelmBlockEntity) space.getBlockEntity(helmPos);
+        Vec3 where = ship.logicalPose().transformPosition(Vec3.atBottomCenterOf(helmPos));
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, where.x, where.y + 1, where.z);
+        ServerPlayer current = space.getServer().getPlayerList().getPlayer(player.getUUID());
+        player = current != null ? current : player;
+        helper.assertTrue(helm.seat(player), "the pilot could not sit at " + helmPos + " (player at " + player.position() + ")");
+        // A cross-dimension teleport can hand the server a fresh ServerPlayer object for the same player: compare by id.
+        helper.assertTrue(helm.pilot() != null && helm.pilot().getUUID().equals(player.getUUID()), "the Helm does not see its pilot: " + helm.pilot());
+        player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_INPUT, keys);
+        return player;
+    }
+
+    /** W at the Helm opens the stern thruster: the ship moves the way the chair faces (north, -Z). */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void aSeatedPilotPressingForwardMovesTheShipAhead(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(87_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.of(
+                    true, false, false, false, false, false, false, false, false, false, false, false));
+            helper.runAfterDelay(SETTLE_TICKS, () -> {
+                Vec3 first = shipPosition(server, space, pos);
+                helper.runAfterDelay(SAMPLE_TICKS, () -> {
+                    Vec3 second = shipPosition(server, space, pos);
+                    removeShip(server, space, pos);
+                    TestPlayers.remove(player);
+                    if (first == null || second == null) {
+                        helper.fail("lost the ship: " + first + ", " + second + "; setup: " + log);
+                        return;
+                    }
+                    double north = first.z - second.z;
+                    if (north < PUSHED) {
+                        helper.fail("the ship moved " + String.format("%.2f", north) + " blocks north, from " + first + " to " + second + "; setup: " + log);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        }));
+    }
+
+    /** The arrow keys open the bow jet: the ship starts turning. No key, no turn and no move. */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void aSeatedPilotYawsWithTheArrowKeysAndNothingHappensWithoutKeys(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(88_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+            helper.runAfterDelay(SAMPLE_TICKS, () -> {
+                List<String> idle = command(server, space, pos, "sable info " + shipSelector(pos));
+                double idleSpin = angularSpeed(idle);
+                Vec3 idlePos = position(idle);
+                // Now hold yaw right: the jet at the bow pushes east, ahead of the centre of mass, which turns the nose
+                // right (torque about -Y); the allocator refuses to open it for yaw left.
+                player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_INPUT,
+                        com.voidreclaimer.ship.PilotInput.of(false, false, false, false, false, false, false, false, false, false, false, true));
+                helper.runAfterDelay(SAMPLE_TICKS, () -> {
+                    List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
+                    double spin = angularSpeed(info);
+                    removeShip(server, space, pos);
+                    TestPlayers.remove(player);
+                    if (idleSpin > TURNING || idlePos != null && idlePos.distanceTo(Vec3.atCenterOf(pos)) > 2.0) {
+                        helper.fail("the ship moved with no keys held: spin " + idleSpin + ", at " + idlePos + "; setup: " + log);
+                    } else if (spin < TURNING) {
+                        helper.fail("yaw did not turn the ship: angular speed " + spin + "; info: " + info);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        }));
     }
 
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */

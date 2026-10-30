@@ -99,6 +99,18 @@ Read-only. A computer sets the throttle the way a player does: with redstone (`r
 | Ion Thruster, RCS Thruster | `getThrottle()`, `getForce()`, `isFiring()` | as above |
 | | `getEnergy()`, `getEnergyCapacity()` | Forge Energy in the buffer, and its size |
 
+## Helm (`HelmPeripheral`)
+Read-only: a computer cannot take the stick.
+
+| Function | Returns |
+|---|---|
+| `isOnShip()` | whether the Helm is built into a ship |
+| `getPilot()` | the pilot's name, or nil |
+| `getThrusterCount()` | thrusters the Helm found on its ship |
+| `getTranslation()` | how well the ship can push each way, 0 to 1: `{ forward, back, right, left, up, down }` |
+| `getRotation()` | how well it can turn each way: `{ rollRight, rollLeft, noseUp, noseDown, yawLeft, yawRight }` |
+| `getSupplies()` | `{ fuel, fuelCapacity, energy, energyCapacity }` across the ship's thrusters |
+
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
 pocket computer), as their own step.

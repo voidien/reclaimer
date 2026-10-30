@@ -4,6 +4,7 @@ import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -18,10 +19,13 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
  * capability. A short supply gives a proportional push. The server tick decides the force; the physics tick only reads
  * it. The subclasses set the numbers.
  */
-public abstract class ElectricThrusterBlockEntity extends BlockEntity implements BlockEntitySubLevelActor {
+public abstract class ElectricThrusterBlockEntity extends BlockEntity implements BlockEntitySubLevelActor, ThrusterLike {
     private final IEnergyStorage energy = new Energy();
     private int stored;
     private volatile double force;
+    /** A Helm's throttle, or -1 when redstone decides; it holds for the game tick it was set in and the next, whatever the tick order. */
+    private double commanded = -1;
+    private long commandedAt = Long.MIN_VALUE;
 
     protected ElectricThrusterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -51,9 +55,29 @@ public abstract class ElectricThrusterBlockEntity extends BlockEntity implements
         return force;
     }
 
-    /** Redstone throttle, 0 to 1. */
+    /** The throttle, 0 to 1: a Helm's command this tick, else redstone. */
     public double throttle() {
+        if (commanded >= 0 && level != null && level.getGameTime() - commandedAt <= 1) {
+            return commanded;
+        }
         return level == null ? 0.0 : ThrusterMath.throttle(level.getBestNeighborSignal(worldPosition));
+    }
+
+    @Override
+    public void setCommandedThrottle(double throttle) {
+        commanded = Math.max(0.0, Math.min(1.0, throttle));
+        commandedAt = level == null ? 0 : level.getGameTime();
+    }
+
+    /** Force at full throttle with the energy it has: full with any charge (the next tick's draw will say). */
+    @Override
+    public double maxForce() {
+        return stored > 0 ? baseForce() : 0.0;
+    }
+
+    @Override
+    public Direction pushDirection() {
+        return getBlockState().getValue(IonThrusterBlock.FACING).getOpposite();
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ElectricThrusterBlockEntity thruster) {
@@ -74,7 +98,7 @@ public abstract class ElectricThrusterBlockEntity extends BlockEntity implements
     public void sable$physicsTick(ServerSubLevel subLevel, RigidBodyHandle handle, double dt) {
         double current = force;
         if (current > 0.0) {
-            ThrusterPush.apply(subLevel, worldPosition, getBlockState().getValue(IonThrusterBlock.FACING).getOpposite(), current, dt);
+            ThrusterPush.apply(subLevel, worldPosition, pushDirection(), current, dt);
         }
     }
 

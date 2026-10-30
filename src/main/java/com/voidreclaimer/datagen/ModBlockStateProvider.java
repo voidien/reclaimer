@@ -2,6 +2,7 @@ package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModBlocks;
+import com.voidreclaimer.registry.ModItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -36,6 +37,10 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         // The RCS Thruster's item keeps its flat icon (a material): only the placed block needs a model here.
         directionalBlock(ModBlocks.RCS_THRUSTER.get(), models().cubeBottomTop("rcs_thruster", modLoc("block/rcs_thruster_side"),
                 modLoc("block/rcs_thruster_back"), modLoc("block/rcs_thruster_nozzle")));
+        // The Helm is drawn by GeckoLib; the blockstate points at an empty model and the item at a flat icon.
+        getVariantBuilder(ModBlocks.HELM.get()).forAllStates(state -> net.neoforged.neoforge.client.model.generators.ConfiguredModel.builder()
+                .modelFile(models().getBuilder("helm").texture("particle", modLoc("block/helm_particle"))).build());
+        itemModels().basicItem(ModItems.HELM.get());
         portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));
