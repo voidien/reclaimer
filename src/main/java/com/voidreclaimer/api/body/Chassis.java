@@ -23,17 +23,37 @@ import net.minecraft.resources.ResourceLocation;
  * @param sizeClass  size class of bodies built on it
  * @param coreSocket id of the socket the core section sits in (must be one of {@code sockets})
  * @param sockets    every socket, in Body tab order
+ * @param name       display name
+ * @param cockpit    where the first-person camera sits and whether the vanilla hand is hidden (big ships); none keeps the player's eyes
  */
-public record Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Optional<Component> name) {
+public record Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Optional<Component> name,
+                      Optional<Cockpit> cockpit) {
+    /**
+     * First-person camera offset from the eyes, in blocks at scale 1 (multiplied by the body's scale): {@code forward} along the view,
+     * {@code up} and {@code right} across it. A chassis with a cockpit also hides the first-person hand.
+     */
+    public record Cockpit(float forward, float up, float right) {
+        public static final Codec<Cockpit> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.FLOAT.optionalFieldOf("forward", 0f).forGetter(Cockpit::forward),
+                Codec.FLOAT.optionalFieldOf("up", 0f).forGetter(Cockpit::up),
+                Codec.FLOAT.optionalFieldOf("right", 0f).forGetter(Cockpit::right)
+        ).apply(instance, Cockpit::new));
+    }
+
     public static final Codec<Chassis> CODEC = RecordCodecBuilder.<Chassis>create(instance -> instance.group(
             ModCodecs.key(VoidReclaimerRegistries.SIZE_CLASS).fieldOf("size_class").forGetter(Chassis::sizeClass),
             Codec.STRING.fieldOf("core_socket").forGetter(Chassis::coreSocket),
             Socket.CODEC.listOf().fieldOf("sockets").forGetter(Chassis::sockets),
-            ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(Chassis::name)
+            ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(Chassis::name),
+            Cockpit.CODEC.optionalFieldOf("cockpit").forGetter(Chassis::cockpit)
     ).apply(instance, Chassis::new)).validate(Chassis::validate);
 
     public Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets) {
-        this(sizeClass, coreSocket, sockets, Optional.empty());
+        this(sizeClass, coreSocket, sockets, Optional.empty(), Optional.empty());
+    }
+
+    public Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Cockpit cockpit) {
+        this(sizeClass, coreSocket, sockets, Optional.empty(), Optional.of(cockpit));
     }
 
     @Nullable

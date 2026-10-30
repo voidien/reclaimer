@@ -1,4 +1,8 @@
 {
+  "cockpit": {
+    "forward": 3.0,
+    "up": 0.2
+  },
   "core_socket": "body",
   "size_class": "void_reclaimer:ship",
   "sockets": [

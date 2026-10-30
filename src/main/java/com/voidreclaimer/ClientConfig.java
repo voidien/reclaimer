@@ -12,6 +12,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.DoubleValue SWAY_STRENGTH;
     public static final ModConfigSpec.DoubleValue THRUSTER_VOLUME;
     public static final ModConfigSpec.BooleanValue CLOUD_SCANNER;
+    public static final ModConfigSpec.BooleanValue COCKPIT_CAMERA;
     public static final ModConfigSpec.IntValue BODY_MIN_LIGHT;
 
     static {
@@ -27,6 +28,9 @@ public final class ClientConfig {
         BUILDER.pop();
 
         BUILDER.push("sensor");
+        COCKPIT_CAMERA = BUILDER
+                .comment("First person in a big ship (Ship, Shuttle, Titan): put the camera at the cockpit and hide the hand. Off keeps the player's eyes.")
+                .define("cockpitCamera", true);
         CLOUD_SCANNER = BUILDER
                 .comment("Dust Sensor scanner view: outline nearby dust clouds in the world (toggle in game with the scanner key).")
                 .define("cloudScanner", true);

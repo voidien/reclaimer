@@ -16,7 +16,7 @@ public final class BodyRenderEvents {
     public static final class Game {
         @SubscribeEvent
         static void onCameraDistance(CalculateDetachedCameraDistanceEvent event) {
-            event.setDistance(cameraDistance(event.getDistance(), event.getEntityScalingFactor()));
+            event.setDistance(cameraDistance(event.getDistance(), event.getEntityScalingFactor()) * com.voidreclaimer.client.camera.OrbitCamera.zoom());
         }
 
         @SubscribeEvent
