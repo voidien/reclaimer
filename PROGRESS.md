@@ -466,6 +466,10 @@ From an outside audit, each checked against the code first (several claims were 
 - Placeholder icon `cloud_collector.png` (generated). Not seen in a real client.
 - The block version is the Cloud Siphon (above).
 
+## Fix: energy bar icons: done
+- Playtest note "The energy bar icons are not working correctly": the four sprite files are strips of ten battery cells (90x9, as delivered), and `EnergyBarLayer` drew each whole strip into one 9x9 cell, so every cell showed a ten-cell comb. It now draws one cell (the strip's leftmost 9x9) with the sub-region `blitSprite`; the art files are unchanged.
+- Checked in a real headless client: at 60% energy the bar shows ten cells (full, half and empty), and the flashing warning cells use the same path. No automated test (pure drawing).
+
 ## Fix: punch-break in zero-G: done
 - Playtest note "I should be able to just punch and destroy the anchor and scaffold": nothing blocked it, but vanilla's airborne divisor (1/5) applied all the time in zero-G, so a Scaffold took about 6 s and an Anchor about 11 s by hand. `ZeroGMining` undoes the divisor where there is gravity none. Tests: `ZeroGMiningGameTests` (zero-G speed is at least 1.0; airborne where there is gravity still 0.2). Mutation-checked: without the handler the zero-G speed was 0.2 and the test failed.
 
