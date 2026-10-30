@@ -682,6 +682,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
 - First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
 
+## RD tools, part 3: restyling placeholders (`--restyle`): done
+- `rd_generate.py --restyle` turns image jobs into image-to-image jobs on the asset's current texture (scaled up to the job size, `--strength`, default 0.6), so programmer art keeps its layout and takes the style; `--tile-variation` sends block textures through `rd_tile__tile_variation`. A restyle always runs (it is new work) and repeating it is not paid twice (the request body, including the image, is in the idempotency key). See `tools/art/README.md` "Restyling placeholders".
+- Tests: 4 new offline tests (41 pass). Mutation-checked: skipping a restyle as already generated, and not sending the texture, each fail.
+- **Found on the way:** `docs/art/assets.csv` is out of date. It lists `ashen_slag` as missing (its placeholder exists) and does not list the portal frame, portal pane, Portal Igniter or Spire textures at all, so they cannot be restyled until `asset_list.py` knows them. Fixed in a follow-up PR.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

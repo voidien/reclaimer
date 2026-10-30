@@ -378,6 +378,41 @@ class RdGenerateTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             rd.main(['--fix', 'asteroid_silicate', '--tool', 'seam', '--axes', 'z', '--yes'])
 
+    def real_inference(self):
+        return [c for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/inferences' and not c[2].get('check_cost')]
+
+    def test_restyle_starts_from_the_current_texture(self):
+        current = self.put_texture('block/ashen_slag.png')
+        rd.main(['--asset', 'ashen_slag', '--restyle', '--strength', '0.5', '--yes'])
+        body = self.real_inference()[0][2]
+        self.assertEqual(body['strength'], 0.5)
+        sent = rd.png_read(base64.b64decode(body['input_image']))
+        self.assertEqual((len(sent[0]), len(sent)), (body['width'], body['height']), 'the texture is scaled to the job size')
+        k = body['width'] // 16
+        self.assertEqual(sent, rd.upscale(rd.png_read(self.read(current)), k), 'nearest-neighbour upscale of our texture')
+        rd.main(['--asset', 'ashen_slag', '--restyle', '--strength', '0.5', '--yes'])
+        self.assertEqual(Fake.state['charged'], 1, 'the same restyle again is not paid again')
+
+    def test_restyle_runs_even_after_a_normal_generation(self):
+        self.put_texture('block/ashen_slag.png')
+        rd.main(['--asset', 'ashen_slag', '--yes'])
+        rd.main(['--asset', 'ashen_slag', '--restyle', '--yes'])
+        self.assertEqual(len(self.real_inference()), 2, 'a restyle is new work, not "already generated"')
+        self.assertNotIn('input_image', self.real_inference()[0][2])
+        self.assertIn('input_image', self.real_inference()[1][2])
+
+    def test_tile_variation_for_blocks(self):
+        self.put_texture('block/ashen_slag.png')
+        rd.main(['--asset', 'ashen_slag', '--restyle', '--tile-variation', '--yes'])
+        body = self.real_inference()[0][2]
+        self.assertEqual(body['prompt_style'], 'rd_tile__tile_variation')
+        self.assertNotIn('strength', body)
+        self.assertNotIn('tile_x', body, 'the tile style does its own tiling')
+
+    def test_restyle_skips_an_asset_with_no_texture(self):
+        rd.main(['--asset', 'quartz_wafer', '--restyle', '--yes'])
+        self.assertEqual(self.real_inference(), [], 'nothing to start from, nothing sent')
+
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')
         os.makedirs(folder)
