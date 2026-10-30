@@ -45,9 +45,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class ReplicatorScreen extends Screen {
     private static final int WIDTH = 320;
-    private static final int HEIGHT = 200;
+    private static final int HEIGHT = 244;
     private static final int LIST_WIDTH = 190;
     private static final int ROW = 22;
+    /** The description box under the recipe list. */
+    private static final int DETAIL_TOP = 38 + 6 * 22 + 4;
+    private static final int DETAIL_LINES = 4;
     private static final int VISIBLE_ROWS = 6;
     private static final int PANEL = 0xE0101418;
     private static final int PANEL_LIGHT = 0xFF1E2630;
@@ -170,6 +173,7 @@ public final class ReplicatorScreen extends Screen {
             return;
         }
         graphics.fill(left + 6, top + 38, left + LIST_WIDTH + 6, top + 38 + VISIBLE_ROWS * ROW, PANEL_LIGHT);
+        graphics.fill(left + 6, top + DETAIL_TOP, left + LIST_WIDTH + 6, top + HEIGHT - 28, PANEL_LIGHT);
         graphics.fill(left + LIST_WIDTH + 14, top + 38, left + WIDTH - 6, top + HEIGHT - 28, PANEL_LIGHT);
     }
 
@@ -182,6 +186,7 @@ public final class ReplicatorScreen extends Screen {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.empty_tab"), x + 6, y + 6, DIM, false);
         }
         List<Component> costHover = null;
+        Component rowHover = null;
         for (int i = scroll; i < Math.min(recipes.size(), scroll + VISIBLE_ROWS); i++) {
             RecipeHolder<ReplicatorRecipe> holder = recipes.get(i);
             ReplicatorRecipe recipe = holder.value();
@@ -193,6 +198,9 @@ public final class ReplicatorScreen extends Screen {
                 graphics.fill(x, rowY, x + LIST_WIDTH, rowY + ROW, 0xFF26323E);
             }
             if (unlocked) {
+                if (inside(mouseX, mouseY, x, rowY, LIST_WIDTH, ROW)) {
+                    rowHover = description(holder);
+                }
                 graphics.renderItem(recipe.result(), x + 3, rowY + 3);
                 graphics.renderItemDecorations(font, recipe.result(), x + 3, rowY + 3);
                 Component name = recipe.results().size() > 1
@@ -208,12 +216,48 @@ public final class ReplicatorScreen extends Screen {
                 graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
             }
         }
+        renderDetail(graphics);
         if (costHover != null) {
             graphics.renderComponentTooltip(font, costHover, mouseX, mouseY);
+        } else if (rowHover != null) {
+            graphics.renderTooltip(font, font.split(rowHover, 180), mouseX, mouseY);
         }
         if (recipes.size() > VISIBLE_ROWS) {
             graphics.drawString(font, (scroll + 1) + "-" + Math.min(recipes.size(), scroll + VISIBLE_ROWS) + "/" + recipes.size(),
                     left + 104, top + HEIGHT - 19, DIM, false);
+        }
+    }
+
+    /** A recipe's description: its own text, else the built-in line for it, else null. */
+    @Nullable
+    private Component description(RecipeHolder<ReplicatorRecipe> holder) {
+        if (holder.value().description().isPresent()) {
+            return holder.value().description().get();
+        }
+        String key = ReplicatorRecipe.descriptionKey(holder.id());
+        return net.minecraft.client.resources.language.I18n.exists(key) ? Component.translatable(key) : null;
+    }
+
+    /** The selected recipe's name and description in the box under the list. */
+    private void renderDetail(GuiGraphics graphics) {
+        int x = left + 10;
+        int y = top + DETAIL_TOP + 3;
+        if (selected == null) {
+            graphics.drawString(font, Component.translatable("replicator.void_reclaimer.select_hint"), x, y, DIM, false);
+            return;
+        }
+        ReplicatorData data = minecraft.player.getData(ModAttachments.REPLICATOR);
+        if (!data.isUnlocked(selected.value().milestone())) {
+            graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), selected.value().milestone()), x, y, DIM, false);
+            return;
+        }
+        Component text = description(selected);
+        if (text == null) {
+            return;
+        }
+        List<net.minecraft.util.FormattedCharSequence> lines = font.split(text, LIST_WIDTH - 12);
+        for (int i = 0; i < Math.min(lines.size(), DETAIL_LINES); i++) {
+            graphics.drawString(font, lines.get(i), x, y + i * 9, TEXT, false);
         }
     }
 
