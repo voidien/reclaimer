@@ -667,6 +667,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Not run against the real RD service yet (needs the owner's key): first real use is `--fix asteroid_silicate --tool palette`.
 - Next (agreed): part 2 repaint (`image_edit`, inpainting, outpainting, seam tiling), part 3 restyle placeholders (img2img, tile variation), part 4 low-poly revise and export. Low-poly animate and Blockbench export already exist.
 
+## CC: Tweaked peripherals, part 2: the Dyson launch chain: done
+- `DysonPeripheral`: Kinetic Drive Base (`isAssembled`, `getProgress`, `getLaunches`, `getSpeed`, `hasPayload`, `getSphere`), Payload Chamber (`getItems`), Quantum Receiver (`getSpeed`, `getStressCapacity`, `getSphere`); `getSphere` gives the Dyson counters, sky tier, shell progress and sunlight. Lua reference in `docs/CC_PERIPHERALS.md`.
+- **Read-only, a change from the plan:** the plan listed a `launch()` function, but the Mass Driver fires on its own once wound up and a player has no way to make it launch, so by the owner's rule (computers do only what players can) there is no control function.
+- Tests: `CCPeripheralGameTests.theDysonLaunchChainIsAPeripheral` (CC's own provider offers the functions on a real base, chamber and receiver; values match the blocks and the sphere). Mutation-checked: `hasPayload` forced false fails it.
 ## Fix: flaky Test Starship spawn GameTest (root cause): done
 - `StarshipEntityGameTests.spawnCommandPutsOneShipAheadOfTheSource` failed now and then with "found 2" or "found 0". Two test bugs: old ships were discarded in `prepare()`, before the forced chunks had loaded their entities, so a ship an earlier run left in the persistent GameTest world reappeared and was counted; and the new ship was searched for within 0.5 blocks of its anchor, while a spawned ship sits at its drift position, up to the drift radius away. Old ships are now cleared once the chunks tick entities (in `whenTicking`), and ships are matched by their anchor within the drift radius. The game code was fine.
 
