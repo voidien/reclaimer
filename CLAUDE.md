@@ -301,7 +301,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 |---|---|---|
 | `void_reclaimer:dust_kind` | Synced datapack registry (`api.dust.DustKind`) | `color`, `cloud_weight` (0 = never in clouds), `name`, `order` (built-ins 0–3) |
 | `void_reclaimer:milestone` | Synced datapack registry (`api.milestone.Milestone`) | `criterion`, `order`, optional `title`/`hint`/`log_title`/`log_text` |
-| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held`, `blocks_placed`, `dust_full`, `dyson_tier`, `items_made` (a list of item ids the player must have held) |
+| `void_reclaimer:milestone_criterion_type` | Code registry of `MapCodec<? extends MilestoneCriterion>` | Built-in: `always`, `dust_collected`, `dust_kinds_held` (both count dust *gathered* from clouds and drilling, `MilestoneContext.collected`, not the reserve), `blocks_placed`, `dust_full`, `dyson_tier`, `items_made` (a list of item ids the player must have held) |
 | `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
@@ -473,6 +473,13 @@ Parallel tracks, scheduled as they fit:
 
 **Health bar (2026-10-30, owner's choice)**
 - One bar replaces the vanilla hearts (`client/hud/HealthBarLayer`, sizes in `HealthBarMath`): longer and taller with max health on a log scale (60 px at 20 health up to the hotbar's 182 px at 1000, height 5 to 9), a notch every 100 health when there is room, and "health / max" above it. Drawn with `GuiGraphics.fill` only.
+
+**Start of the game (2026-10-30, owner's choices)**
+- **Starter dust:** a new body gets Metallic 25, Silicate 30, Carbon 5, Ice 0 (config `starter`, toggle `enabled`) when it first reaches the Awakening milestone in play (`replicator/StarterDust`, from `MilestoneReachedEvent`). That pays for the Dust Sensor, Thruster Mk I, Scaffold and Rotor Arm. Worlds that already passed Awakening get nothing.
+- **Guided first craft:** the Awakening toast and AI log line (Log 0001) tell the player to press R and build a Dust Sensor. Toast only; no forced screen.
+- **Built-in hum:** the directional hum works without a Dust Sensor (same range, tone only). The sensor adds the signal bar, markers, readout and pulse.
+- **Gathered, not held:** dust milestones (First Dust, Diversified, datapack `dust_collected` / `dust_kinds_held`) count dust actually gathered, kept per player in the `dust_collected` attachment (`dust/DustLedger`, recorded by cloud gains and drilling). The starter gift, refunds and the Replicator never reach them. `/void_reclaimer dust set` raises the ledger too, so test setups still unlock milestones. Saves keep milestones already reached.
+- **Not changed:** clouds can still be far from spawn (the starter nebula game rule stays opt-in); revisit after the next playtest.
 
 **Titan size class, Core Mk III and IV, whole-rig mounts (2026-10-29, defaults)**
 - **Titan:** a fourth size class (`titan`, scale 8, rank 3). The rig is 8.4 blocks long at scale 1, so the body is about 67 blocks long (the owner wants more than 50). Chassis `titan`, core socket `saucer`; sockets (ids are the art rig's bones): `neck`, `bridge`, `sensor` and `deflector`/`bay_door`/`pylon_l`/`pylon_r` with `nacelle_l`/`nacelle_r` under the pylons. Tier-4 section items `titan_saucer` (core section), `titan_neck`, `titan_bridge`, `titan_sensor_array`, `titan_deflector`, `titan_bay_door`, `titan_pylon` and `titan_nacelle`, with mounts: saucer core 1, storage 2, cosmetic 1; bridge sensor 1; sensor array sensor 2; bay door storage 2; nacelle thruster 3.

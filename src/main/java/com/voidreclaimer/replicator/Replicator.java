@@ -131,7 +131,7 @@ public final class Replicator {
 
     public static void checkMilestones(ServerPlayer player) {
         ReplicatorData data = trackItems(player, data(player));
-        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), data.blocksPlaced(), DustData.capacity(player),
+        MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), player.getData(ModAttachments.DUST_COLLECTED), data.blocksPlaced(), DustData.capacity(player),
                 DysonSphereData.of(player.serverLevel()).tier(), java.util.Set.copyOf(data.itemsMade()));
         ReplicatorData updated = data;
         List<ResourceKey<Milestone>> reached = new ArrayList<>();

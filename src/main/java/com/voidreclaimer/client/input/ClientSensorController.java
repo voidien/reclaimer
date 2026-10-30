@@ -5,7 +5,6 @@ import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustCloud;
 import com.voidreclaimer.dust.DustField;
-import com.voidreclaimer.dust.DustSensor;
 import com.voidreclaimer.dust.SensorPulse;
 import com.voidreclaimer.network.SensorEchoPayload;
 import com.voidreclaimer.network.SensorPulsePayload;
@@ -71,7 +70,7 @@ public final class ClientSensorController {
         return echo == null ? 0f : 1f - (float) echoAge / ECHO_DISPLAY_TICKS;
     }
 
-    /** Current hum signal 0..1 (0 when inside a cloud, out of range, or without a sensor). */
+    /** Current hum signal 0..1 (0 when inside a cloud or out of range). The bare Drone hears it too; only a Dust Sensor draws the bar. */
     public static float signal() {
         return signal;
     }
@@ -105,7 +104,7 @@ public final class ClientSensorController {
 
     private static void updateHum(Minecraft mc, LocalPlayer player) {
         DustField field = DustField.of(player.level());
-        if (field == null || !DustSensor.has(player)) {
+        if (field == null) {
             humTarget = null;
             signal = 0f;
             return;

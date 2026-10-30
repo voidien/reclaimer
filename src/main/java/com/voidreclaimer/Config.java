@@ -38,6 +38,11 @@ public final class Config {
     public static final ModConfigSpec.IntValue PULSE_COOLDOWN_SECONDS;
     public static final ModConfigSpec.DoubleValue PULSE_RANGE;
     public static final ModConfigSpec.DoubleValue HUM_RANGE;
+    public static final ModConfigSpec.BooleanValue STARTER_DUST_ENABLED;
+    public static final ModConfigSpec.DoubleValue STARTER_METALLIC;
+    public static final ModConfigSpec.DoubleValue STARTER_SILICATE;
+    public static final ModConfigSpec.DoubleValue STARTER_ICE;
+    public static final ModConfigSpec.DoubleValue STARTER_CARBON;
 
     public static final ModConfigSpec.DoubleValue REPLICATOR_ENERGY;
     public static final ModConfigSpec.DoubleValue SALVAGE_REFUND;
@@ -146,6 +151,14 @@ public final class Config {
         SPEED_CHECK_TOLERANCE = BUILDER
                 .comment("Server speed check: movement over one second may exceed top speed by this factor before it is corrected.")
                 .defineInRange("speedCheckTolerance", 1.5, 1.0, 10.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Dust a new body starts with: enough for the Dust Sensor, Scaffold, Thruster Mk I and Rotor Arm. Granted once, when a player first wakes up.").push("starter");
+        STARTER_DUST_ENABLED = BUILDER.define("enabled", true);
+        STARTER_METALLIC = BUILDER.defineInRange("metallic", 25.0, 0.0, 1_000_000.0);
+        STARTER_SILICATE = BUILDER.defineInRange("silicate", 30.0, 0.0, 1_000_000.0);
+        STARTER_ICE = BUILDER.defineInRange("ice", 0.0, 0.0, 1_000_000.0);
+        STARTER_CARBON = BUILDER.defineInRange("carbon", 5.0, 0.0, 1_000_000.0);
         BUILDER.pop();
 
         BUILDER.comment("Cosmic dust. Cloud placement and shape are fixed by the world seed and not configurable.").push("dust");

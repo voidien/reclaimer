@@ -322,7 +322,7 @@
   "key.void_reclaimer.sensor_pulse": "Dust Sensor Pulse",
   "key.void_reclaimer.toggle_creative_thrusters": "Toggle Thruster Flight (Creative)",
   "key.void_reclaimer.toggle_dampener": "Toggle Inertial Dampener",
-  "log.void_reclaimer.awakening.text": "Consciousness restored. Chassis: one micro-drone, no memory of how I got here. Starlight on my cells, nothing within sensor range. The replicator core still answers. If I can find matter out here, I can build. I will start small.",
+  "log.void_reclaimer.awakening.text": "Consciousness restored. Chassis: one micro-drone, no memory of how I got here. Starlight on my cells, nothing within sensor range. The replicator core still answers. If I can find matter out here, I can build. I will start small. A little dust is still in my reserves: press R to open the replicator and build a Dust Sensor.",
   "log.void_reclaimer.awakening.title": "Log 0001: Boot",
   "log.void_reclaimer.diversified.text": "Metal, glass, ice, carbon: enough variety to copy myself. If this chassis fails, a backup core can hold my pattern and rebuild me where I left it.",
   "log.void_reclaimer.diversified.title": "Log 0004: Redundancy",

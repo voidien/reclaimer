@@ -51,6 +51,8 @@ public final class DustGameTests {
             DustData dust = player.getData(ModAttachments.DUST);
             float collected = dust.get(cloud.kind());
             helper.assertTrue(collected > 0.05f, "collected only " + collected + " " + cloud.kind());
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST_COLLECTED).get(cloud.kind()) - collected) < 1e-3f,
+                    "the gathered-dust record (" + player.getData(ModAttachments.DUST_COLLECTED).get(cloud.kind()) + ") does not match the dust gained");
             for (DustKinds.Entry entry : DustKinds.all(player.registryAccess())) {
                 net.minecraft.resources.ResourceLocation other = entry.id();
                 if (!other.equals(cloud.kind())) {
