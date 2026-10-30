@@ -75,6 +75,15 @@ public final class BodyLook {
         }
     }
 
+    /** Pose key of the idle variant (the Mech's impatient fidget): played in place of {@code idle} on every other {@link #IDLE_VARIANT_TICKS} of standing still. */
+    public static final String IDLE_LONG = "idle_long";
+    public static final long IDLE_VARIANT_TICKS = 400;
+
+    /** Whether a body that has been idle for {@code idleTicks} shows its idle variant: the plain idle for 20 s, the variant for 20 s, and so on. */
+    public static boolean idleVariant(long idleTicks) {
+        return idleTicks >= IDLE_VARIANT_TICKS && (idleTicks / IDLE_VARIANT_TICKS) % 2 == 1;
+    }
+
     /** Pose key of the tool animation, played while the player swings. */
     public static final String MODULE_WORK = "module_work";
 

@@ -46,6 +46,8 @@ public final class BodyAnimatable implements GeoReplacedEntity {
         double previousSpeed;
         BodyLook.Pose pose = BodyLook.Pose.IDLE;
         int heldUntil;
+        /** Game tick the current idle began, or -1 while not idle. */
+        int idleSince = -1;
     }
 
     @Override
@@ -95,6 +97,9 @@ public final class BodyAnimatable implements GeoReplacedEntity {
         if (player.swinging && pose != BodyLook.Pose.LOW_POWER && !layered) {
             keys.add(BodyLook.MODULE_WORK);
         }
+        if (pose == BodyLook.Pose.IDLE && BodyLook.idleVariant(idleTicks(player))) {
+            keys.add(BodyLook.IDLE_LONG);
+        }
         keys.addAll(BodyLook.fallbacks(pose));
         ResourceLocation file = frame.animationResource();
         for (String key : keys) {
@@ -128,7 +133,18 @@ public final class BodyAnimatable implements GeoReplacedEntity {
                 motion.heldUntil = player.tickCount + HOLD_TICKS;
             }
         }
+        if (motion.pose != BodyLook.Pose.IDLE) {
+            motion.idleSince = -1;
+        } else if (motion.idleSince < 0) {
+            motion.idleSince = player.tickCount;
+        }
         return motion.pose;
+    }
+
+    /** How long the body has been idle, in ticks (0 when it is not). */
+    private long idleTicks(Player player) {
+        Motion motion = motions.get(player.getId());
+        return motion == null || motion.idleSince < 0 ? 0 : Math.max(0, player.tickCount - motion.idleSince);
     }
 
     /** The local player's held keys; other players' input isn't known here, so their steady motion counts as thrust. */

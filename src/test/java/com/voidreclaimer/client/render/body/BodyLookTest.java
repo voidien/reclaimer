@@ -67,6 +67,16 @@ class BodyLookTest {
     }
 
     @Test
+    void theIdleVariantAlternatesEveryTwentySecondsOfStandingStill() {
+        assertFalse(BodyLook.idleVariant(0));
+        assertFalse(BodyLook.idleVariant(BodyLook.IDLE_VARIANT_TICKS - 1));
+        assertTrue(BodyLook.idleVariant(BodyLook.IDLE_VARIANT_TICKS));
+        assertTrue(BodyLook.idleVariant(2 * BodyLook.IDLE_VARIANT_TICKS - 1));
+        assertFalse(BodyLook.idleVariant(2 * BodyLook.IDLE_VARIANT_TICKS));
+        assertTrue(BodyLook.idleVariant(3 * BodyLook.IDLE_VARIANT_TICKS));
+    }
+
+    @Test
     void aSteadyCruiseUnderThrustKeepsTheThrustPose() {
         assertEquals(BodyLook.Pose.THRUST, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, true));
         assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, false));
