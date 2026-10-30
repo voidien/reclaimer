@@ -24,6 +24,7 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlockWithItem(ModBlocks.PAYLOAD_CHAMBER.get(), cubeAll(ModBlocks.PAYLOAD_CHAMBER.get()));
         simpleBlockWithItem(ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), cubeAll(ModBlocks.MAGNETIC_BARREL_NOZZLE.get()));
         simpleBlockWithItem(ModBlocks.PORTAL_FRAME.get(), cubeAll(ModBlocks.PORTAL_FRAME.get()));
+        simpleBlockWithItem(ModBlocks.TERRAFORMING_SPIRE.get(), cubeAll(ModBlocks.TERRAFORMING_SPIRE.get()));
         portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));

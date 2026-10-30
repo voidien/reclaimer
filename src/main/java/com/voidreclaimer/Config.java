@@ -105,6 +105,9 @@ public final class Config {
     public static final ModConfigSpec.BooleanValue COLLECTOR_ENABLED;
     public static final ModConfigSpec.DoubleValue COLLECTOR_YIELD;
 
+    public static final ModConfigSpec.IntValue SPIRE_RADIUS;
+    public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
+
     public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
     public static final ModConfigSpec.LongValue DYSON_SHELL_TOTAL;
 
@@ -279,6 +282,13 @@ public final class Config {
         DRILL_ENERGY = BUILDER.comment("Energy per asteroid block broken by either tool.").defineInRange("drillEnergy", 0.5, 0.0, 100.0);
         DRILL_DUST_YIELD = BUILDER.comment("Dust refunded per block by the Mechanical Drill, of the block's own kind.")
                 .defineInRange("drillDustYield", 1.0, 0.0, 1000.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Terraforming Spire.").push("terraform");
+        SPIRE_RADIUS = BUILDER.comment("Blocks from the Spire to the edge of its square area. 128 makes 16 Spires tile the planet.")
+                .defineInRange("spireRadius", 128, 1, 256);
+        SPIRE_PULSE_TICKS = BUILDER.comment("Ticks the Genesis Pulse takes to sweep from the Spire to the edge of its area.")
+                .defineInRange("pulseTicks", 300, 1, 24_000);
         BUILDER.pop();
 
         BUILDER.comment("Dyson Sphere.").push("dyson");

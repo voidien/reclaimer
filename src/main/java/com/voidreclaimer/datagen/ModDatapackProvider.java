@@ -25,7 +25,9 @@ public final class ModDatapackProvider extends DatapackBuiltinEntriesProvider {
             .add(VoidReclaimerRegistries.CASING, context -> Cosmetics.BUILTIN_CASINGS.forEach(context::register))
             .add(VoidReclaimerRegistries.TRAIL, context -> Cosmetics.BUILTIN_TRAILS.forEach(context::register))
             .add(VoidReclaimerRegistries.SIZE_CLASS, context -> BuiltinBodies.SIZE_CLASSES.forEach(context::register))
-            .add(VoidReclaimerRegistries.CHASSIS, context -> BuiltinBodies.CHASSIS.forEach(context::register));
+            .add(VoidReclaimerRegistries.CHASSIS, context -> BuiltinBodies.CHASSIS.forEach(context::register))
+            .add(VoidReclaimerRegistries.TERRAFORM_PROFILE, context -> context.register(
+                    com.voidreclaimer.terraform.TerraformProfiles.RESTORED, com.voidreclaimer.terraform.TerraformProfiles.restored()));
 
     public ModDatapackProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Set.of(VoidReclaimer.MOD_ID));

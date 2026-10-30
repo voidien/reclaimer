@@ -3,6 +3,7 @@
     "void_reclaimer:scaffold",
     "void_reclaimer:tether_anchor",
     "void_reclaimer:backup_core",
-    "void_reclaimer:portal_frame"
+    "void_reclaimer:portal_frame",
+    "void_reclaimer:terraforming_spire"
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "biome": "minecraft:plains",
+  "swaps": [
+    {
+      "from": "void_reclaimer:ashen_slag",
+      "surface": {
+        "Name": "minecraft:grass_block",
+        "Properties": {
+          "snowy": "false"
+        }
+      },
+      "to": {
+        "Name": "minecraft:dirt"
+      }
+    }
+  ]
+}

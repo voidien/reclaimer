@@ -52,6 +52,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.ASHEN_SLAG.get());
                 output.accept(ModItems.PORTAL_FRAME.get());
                 output.accept(ModItems.PORTAL_IGNITER.get());
+                output.accept(ModItems.TERRAFORMING_SPIRE.get());
                 output.accept(ModItems.ASTEROID_CARBON.get());
                 output.accept(ModItems.ASTEROID_METALLIC.get());
                 for (var material : ModMaterials.ALL) {

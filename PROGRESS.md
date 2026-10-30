@@ -535,7 +535,7 @@ From an outside audit, each checked against the code first (several claims were 
 - `SkyLook` (pure, unit-tested) holds each era's colors, fog distance, sun tint and clouds. Ruined: brown smog, 90-block fog, big dim red sun, no clouds. Healing: thinning haze, 220-block fog, pale sun, clouds. Restored: clear blue, 512-block fog, white sun, clouds. All numbers are guesses to tune by eye.
 - Client: `RuinedEarthEffects` (a `DimensionSpecialEffects` registered as `void_reclaimer:ruined_earth`, used by the dimension type) draws a gradient dome and a tinted sun through the `renderSky` hook; `RuinedEarthFog` sets fog color and distance from `ViewportEvent`. No chunk rendering is touched (Sodium-safe), no raw Tesselator HUD drawing.
 - Tests: `SkyEraTest` (4 unit tests), one GameTest that runs the real command. Mutation-checked.
-- **Not seen in a real client yet**: the sky, fog and sun are unchecked by eye.
+- **Seen in the headless client (2026-10-30):** all three eras render and look clearly different (brown smog, beige haze, pale blue); the horizon reads flat and the zenith gradient and the sun were not looked at. Every number is still a guess for the owner to tune.
 
 ## Act III slice, part 3a: Atmospheric Portal frame and lighting: done
 - **Atmospheric Portal Frame** (`portal_frame`) and **Portal Igniter** (`portal_igniter`): Replicator recipes gated by the `starship` milestone (placeholder prices: 8 frames for 40/32/24/16 dust, an igniter for 12/10/8/12).
@@ -555,6 +555,17 @@ From an outside audit, each checked against the code first (several claims were 
 - Gravity follows the dimension on arrival (checked: on in ruined Earth, off in deep space).
 - Tests: `PortalShapeTest` and `PortalLinksTest` (unit), `PortalGameTests.aPlayerTravelsToTheReturnGateAndBack` (a real survival player, a Ship-sized portal, both ways). Mutation-checked: ignoring the saved exit fails it.
 - Not built: portal sounds of our own (vanilla's portal sound stands in), flying a body through at speed (only a walking-pace player is tested), a pane animation.
+
+## Act III slice, part 4: the Terraforming Spire and Genesis Pulse: done
+- **Terraforming Spire** (`terraforming_spire`, one block for now; the multiblock and its inputs come later): right-click, or a redstone pulse, fires the **Genesis Pulse**, on ruined Earth only (anywhere else it says so). Replicator recipe behind `starship` (placeholder price).
+- The pulse is a square wave: rings sweep out from the Spire over `terraform.pulseTicks` (default 300 = 15 s) to `terraform.spireRadius` (default 128, so 16 Spires tile the 4 x 4 sectors). Each ring's columns get their top 5 blocks rewritten as it passes (`Terraforming.swapColumn`), with particles along the ring; when it ends, the whole area's biome is rewritten and its chunks resent the way `/fillbiome` does (`chunkMap.resendBiomesForChunks`), so Sodium rebuilds them from the normal packets. A pulse in progress is saved with the block and continues after a reload.
+- Data-driven: the synced-nowhere datapack registry `void_reclaimer:terraform_profile` (`api.terraform.TerraformProfile`: a list of block swaps, each with an optional surface state, and a biome). The Spire uses `void_reclaimer:restored`: Ashen Slag becomes dirt, grass block at the surface, and the area becomes plains. A datapack can replace it.
+- Pure logic: `PulseSchedule` (the wave), unit-tested. Tests: `PulseScheduleTest` (3), `SpireGameTests` (3: a real wave on a floating slag platform, caught part way and at the end, blocks and biomes inside and outside the area; refuses in deep space; a running pulse survives a save and load). Mutation-checked both ways (no block rewrite, no biome rewrite). The test resets biomes on its own, not through the code under test, because the GameTest world persists.
+- **Not verified by a test:** that the chunk resend packets reach clients (`lastChunksResent` only counts the chunks handed to the resend call). Look at it in game: the grass colour should change when the wave finishes.
+- Not built (later Act III phases): the multiblock, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core per sector, per-sector restoration tracking, driving the sky era from the restoration percent.
+
+### Placeholder assets
+- `textures/block/terraforming_spire.png` (16x16 programmer art; a plain cube, no model).
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

@@ -50,5 +50,7 @@ public final class ModRegistries {
         event.dataPackRegistry(VoidReclaimerRegistries.TRAIL, Trail.CODEC, Trail.CODEC);
         event.dataPackRegistry(VoidReclaimerRegistries.SIZE_CLASS, SizeClass.CODEC, SizeClass.CODEC);
         event.dataPackRegistry(VoidReclaimerRegistries.CHASSIS, Chassis.CODEC, Chassis.CODEC);
+        // Server only: the pulse runs on the server, so this one is not synced.
+        event.dataPackRegistry(VoidReclaimerRegistries.TERRAFORM_PROFILE, com.voidreclaimer.api.terraform.TerraformProfile.CODEC);
     }
 }

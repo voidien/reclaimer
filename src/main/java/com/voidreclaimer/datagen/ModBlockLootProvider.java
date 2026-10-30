@@ -18,6 +18,7 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.SCAFFOLD.get());
         dropSelf(ModBlocks.ASHEN_SLAG.get());
         dropSelf(ModBlocks.PORTAL_FRAME.get());
+        dropSelf(ModBlocks.TERRAFORMING_SPIRE.get());
         dropSelf(ModBlocks.TETHER_ANCHOR.get());
         dropSelf(ModBlocks.BACKUP_CORE.get());
         dropSelf(ModBlocks.ELECTROLYZER.get());
