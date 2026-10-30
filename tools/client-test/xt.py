@@ -1,5 +1,5 @@
 # Drives the headless test client on Xvfb display :99 through XTest (see HANDOFF.md).
-# Usage: xt.py click X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | move DX DY
+# Usage: xt.py click X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | mdrag DX DY [steps [shot.png]] | move DX DY
 import ctypes, sys, time
 X = ctypes.cdll.LoadLibrary('libX11.so.6'); T = ctypes.cdll.LoadLibrary('libXtst.so.6')
 X.XOpenDisplay.restype = ctypes.c_void_p; X.XStringToKeysym.restype = ctypes.c_ulong
@@ -39,6 +39,16 @@ elif a[1] == 'chord':  # chord ctrl+f : hold the modifiers, tap the last key
     for m in parts[:-1]: key(m, 1)
     tap(parts[-1])
     for m in reversed(parts[:-1]): key(m, 0)
+elif a[1] == 'mdrag':  # mdrag DX DY [steps]: hold the middle mouse button and move the pointer by DX, DY (relative) in steps
+    steps = int(a[4]) if len(a) > 4 else 20
+    T.XTestFakeButtonEvent(d, 2, 1, 0); X.XFlush(d); time.sleep(0.3)
+    for _ in range(steps):
+        T.XTestFakeRelativeMotionEvent(d, int(a[2]) // steps, int(a[3]) // steps, 0); X.XFlush(d); time.sleep(0.05)
+    time.sleep(0.3)
+    if len(a) > 5:  # a screenshot path: take it while the button is still held
+        import subprocess, os
+        subprocess.run(['import', '-window', 'root', a[5]], env=dict(os.environ, DISPLAY=':99'))
+    T.XTestFakeButtonEvent(d, 2, 0, 0); X.XFlush(d)
 elif a[1] == 'hover':
     T.XTestFakeMotionEvent(d, 0, int(a[2]), int(a[3]), 0); X.XFlush(d)
 elif a[1] == 'move':
