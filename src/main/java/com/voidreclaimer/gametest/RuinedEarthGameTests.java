@@ -1,15 +1,20 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.earth.EarthSky;
 import com.voidreclaimer.earth.RuinedEarth;
 import com.voidreclaimer.earth.RuinedEarthChunkGenerator;
 import com.voidreclaimer.earth.RuinedTerrain;
+import com.voidreclaimer.earth.SkyEra;
+import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.space.ZeroGravity;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -81,5 +86,24 @@ public final class RuinedEarthGameTests {
         helper.assertFalse(item.isNoGravity(), "item has no gravity on ruined earth");
         item.discard();
         helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void skyEraCommandSetsAndPersistsTheEra(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel earth = earth(helper);
+        CommandSourceStack source = server.createCommandSourceStack().withPermission(4).withSuppressedOutput();
+        try {
+            server.getCommands().performPrefixedCommand(source, "void_reclaimer sky era set healing");
+            helper.assertTrue(SkyEra.of(earth) == SkyEra.HEALING && EarthSky.get(server) == SkyEra.HEALING, "era not healing");
+            server.getCommands().performPrefixedCommand(source, "void_reclaimer sky era set restored");
+            helper.assertTrue(SkyEra.of(earth) == SkyEra.RESTORED, "era not restored");
+            server.getCommands().performPrefixedCommand(source, "void_reclaimer sky era set nonsense");
+            helper.assertTrue(SkyEra.of(earth) == SkyEra.RESTORED, "an unknown era changed the sky");
+            helper.assertTrue(earth.hasData(ModAttachments.EARTH_SKY_ERA), "era is not stored on the level");
+            helper.succeed();
+        } finally {
+            EarthSky.set(server, SkyEra.RUINED);
+        }
     }
 }

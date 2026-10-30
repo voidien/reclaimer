@@ -55,6 +55,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *       still holds is granted again at the next check)</li>
  *   <li>{@code /void_reclaimer core charge <player>}: fill every Backup Core the player owns</li>
  *   <li>{@code /void_reclaimer asteroid locate [small|large|giant]}: nearest asteroid from the command position (deep space)</li>
+ *   <li>{@code /void_reclaimer sky era get|set <ruined|healing|restored>}: the ruined Earth sky era</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
@@ -126,6 +127,14 @@ public final class ModCommands {
                                 .then(Commands.literal("trusses")
                                         .then(Commands.argument("count", LongArgumentType.longArg(0))
                                                 .executes(ctx -> setDyson(ctx.getSource(), false, LongArgumentType.getLong(ctx, "count")))))))
+                .then(Commands.literal("sky")
+                        .then(Commands.literal("era")
+                                .then(Commands.literal("get").executes(ctx -> getSkyEra(ctx.getSource())))
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("era", StringArgumentType.word())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                                        Arrays.stream(com.voidreclaimer.earth.SkyEra.values()).map(com.voidreclaimer.earth.SkyEra::getSerializedName), builder))
+                                                .executes(ctx -> setSkyEra(ctx.getSource(), StringArgumentType.getString(ctx, "era")))))))
                 .then(Commands.literal("starship")
                         .then(Commands.literal("spawn").executes(ctx -> spawnStarship(ctx.getSource()))))
                 .then(Commands.literal("milestone")
@@ -233,6 +242,27 @@ public final class ModCommands {
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dyson.set", updated.satellites(), updated.trusses(),
                 updated.tier()), true);
         return updated.tier();
+    }
+
+    private static int getSkyEra(CommandSourceStack source) {
+        com.voidreclaimer.earth.SkyEra era = com.voidreclaimer.earth.EarthSky.get(source.getServer());
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.sky.era.get", era.getSerializedName()), false);
+        return era.ordinal();
+    }
+
+    private static int setSkyEra(CommandSourceStack source, String name) {
+        com.voidreclaimer.earth.SkyEra era = Arrays.stream(com.voidreclaimer.earth.SkyEra.values())
+                .filter(candidate -> candidate.getSerializedName().equals(name)).findFirst().orElse(null);
+        if (era == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.sky.era.unknown", name));
+            return 0;
+        }
+        if (!com.voidreclaimer.earth.EarthSky.set(source.getServer(), era)) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.sky.era.no_dimension"));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.sky.era.set", era.getSerializedName()), true);
+        return era.ordinal() + 1;
     }
 
     private static int setMilestone(CommandSourceStack source, ServerPlayer player, ResourceLocation id, boolean grant) {

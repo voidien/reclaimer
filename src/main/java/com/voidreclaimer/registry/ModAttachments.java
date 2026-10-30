@@ -94,6 +94,13 @@ public final class ModAttachments {
                     .sync(DysonSphereData.STREAM_CODEC)
                     .build());
 
+    /** Ruined Earth level only: which of the three skies is shown. Saved with the level and synced to every client in it. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.earth.SkyEra>> EARTH_SKY_ERA = ATTACHMENT_TYPES.register("earth_sky_era",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.earth.SkyEra.RUINED)
+                    .serialize(com.voidreclaimer.earth.SkyEra.CODEC)
+                    .sync(com.voidreclaimer.earth.SkyEra.STREAM_CODEC)
+                    .build());
+
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());
