@@ -547,6 +547,15 @@ From an outside audit, each checked against the code first (several claims were 
 ### Placeholder assets
 - `textures/block/portal_frame.png`, `textures/block/atmospheric_portal.png`, `textures/item/portal_igniter.png` (16x16 programmer art, no animation on the pane yet).
 
+## Act III slice, part 3b: portal travel and the return gate: done
+- A lit Atmospheric Portal now sends anything that walks or flies into it (it implements vanilla's `Portal`; 5 ticks inside) to **ruined Earth**, and the way back to where the trip began. No screen overlay.
+- `PortalTravel`: from any portal outside ruined Earth you arrive at the **return gate**, built on first use on the landing area (centered on x = 0, z = -10, one block above the ground, a level floor under it, at least 12 x 6 so the Ship can always come home; larger if the origin portal is larger). You stand a few blocks off its plane, facing away, on the side you were travelling towards.
+- `PortalLinks` (saved on the ruined_earth level, not synced) remembers the gate and the origin portal's floor point and side, so the gate leads back out of the portal the trip began at (any dimension), or to the deep space spawn if none is known. The latest origin wins when several portals are used.
+- Note (vanilla): standing inside a portal during its cooldown keeps the cooldown going, so arrivals are placed off the plane.
+- Gravity follows the dimension on arrival (checked: on in ruined Earth, off in deep space).
+- Tests: `PortalShapeTest` and `PortalLinksTest` (unit), `PortalGameTests.aPlayerTravelsToTheReturnGateAndBack` (a real survival player, a Ship-sized portal, both ways). Mutation-checked: ignoring the saved exit fails it.
+- Not built: portal sounds of our own (vanilla's portal sound stands in), flying a body through at speed (only a walking-pace player is tested), a pane animation.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

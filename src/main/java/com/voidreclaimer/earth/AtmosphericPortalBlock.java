@@ -2,7 +2,13 @@ package com.voidreclaimer.earth;
 
 import com.voidreclaimer.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Portal;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -20,9 +26,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The shimmering pane inside a lit Atmospheric Portal frame. Thin, no collision, and it vanishes as soon as a block of
  * the frame around it is gone (like the Nether portal). Travel through it comes in a later change.
  */
-public class AtmosphericPortalBlock extends Block {
+public class AtmosphericPortalBlock extends Block implements Portal {
     /** The axis the portal's width runs along. */
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    public static final int TRAVEL_TICKS = 5;
     private static final VoxelShape ACROSS_X = Block.box(0, 0, 6, 16, 16, 10);
     private static final VoxelShape ACROSS_Z = Block.box(6, 0, 0, 10, 16, 16);
 
@@ -52,6 +59,31 @@ public class AtmosphericPortalBlock extends Block {
             return Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    }
+
+    @Override
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (entity.canUsePortal(false)) {
+            entity.setAsInsidePortal(this, pos);
+        }
+    }
+
+    /** Ticks inside the pane before the trip; short, because a ship passes through quickly. */
+    @Override
+    public int getPortalTransitionTime(ServerLevel level, Entity entity) {
+        return TRAVEL_TICKS;
+    }
+
+    @Nullable
+    @Override
+    public DimensionTransition getPortalDestination(ServerLevel level, Entity entity, BlockPos pos) {
+        return PortalTravel.destination(level, entity, pos);
+    }
+
+    /** No screen overlay: the pane is not a Nether portal. */
+    @Override
+    public Portal.Transition getLocalTransition() {
+        return Portal.Transition.NONE;
     }
 
     @Override

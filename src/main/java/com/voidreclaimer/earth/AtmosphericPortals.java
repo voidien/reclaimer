@@ -32,6 +32,21 @@ public final class AtmosphericPortals {
         return Optional.empty();
     }
 
+    /** The rectangle a lit portal pane belongs to, found from the pane's own axis. */
+    public static Optional<PortalShape.Rect> rectAround(Level level, BlockPos pane) {
+        BlockState state = level.getBlockState(pane);
+        if (!state.is(ModBlocks.ATMOSPHERIC_PORTAL.get())) {
+            return Optional.empty();
+        }
+        return PortalShape.find(
+                pos -> level.getBlockState(pos).is(ModBlocks.PORTAL_FRAME.get()),
+                pos -> {
+                    BlockState other = level.getBlockState(pos);
+                    return other.isAir() || other.is(ModBlocks.ATMOSPHERIC_PORTAL.get());
+                },
+                pane, state.getValue(AtmosphericPortalBlock.AXIS));
+    }
+
     /** Lights the frame that {@code clicked} belongs to. True when a portal was made. */
     public static boolean tryLight(Level level, BlockPos clicked) {
         Optional<PortalShape.Rect> rect = findFrame(level, clicked);
