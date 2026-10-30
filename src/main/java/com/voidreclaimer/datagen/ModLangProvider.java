@@ -183,6 +183,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.empty_tab", "No designs in this category yet.");
         add("replicator.void_reclaimer.no_logs", "No log entries.");
         add("replicator.void_reclaimer.drag_hint", "drag to reorder");
+        add("menu.void_reclaimer.inventory", "Inventory");
+        add("menu.void_reclaimer.inventory.locked", "Locked: install storage to unlock this row");
+        add("replicator.void_reclaimer.tab.replicator", "Replicator");
         add("replicator.void_reclaimer.cost_tooltip", "%s: %s held, %s needed");
         add("replicator.void_reclaimer.select_hint", "Select a recipe to read what it does.");
         addReplicatorDescriptions();
