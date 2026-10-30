@@ -26,15 +26,25 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class NaniteGameTests {
     private NaniteGameTests() {}
 
-    /** Force-loads the chunk at {@code pos}, waits for it to tick, then runs the test body with a fresh area. */
+    /** Force-loads the chunk at {@code pos}, waits for it to tick entities, then runs the test body with a fresh area. */
     static void inLoadedArea(GameTestHelper helper, BlockPos pos, int radius, Runnable body) {
         ServerLevel space = TestPlayers.deepSpace(helper);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
-        helper.runAfterDelay(5, () -> {
+        // Scheduled ticks set before this are dropped, so wait a few ticks; then wait for the chunk to really tick, which on a
+        // slow machine (CI) or a fresh world takes longer than a fixed delay. A chunk that never ticks gives up after 100 ticks.
+        helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, 0, () -> {
             BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
                     .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
             body.run();
-        });
+        }));
+    }
+
+    private static void waitTicking(GameTestHelper helper, ServerLevel space, BlockPos pos, int waited, Runnable then) {
+        if (space.isPositionEntityTicking(pos) || waited >= 100) {
+            then.run();
+        } else {
+            helper.runAfterDelay(1, () -> waitTicking(helper, space, pos, waited + 1, then));
+        }
     }
 
     @GameTest(template = "empty", timeoutTicks = 60)
