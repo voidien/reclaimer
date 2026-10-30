@@ -677,6 +677,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## CC: Tweaked peripherals, part 3: the Terraforming Spire: done
 - `SpirePeripheral`: `isRunning`, `getProgress` (0 to 1), `getPulses`, `getRadius`, and `pulse()`, which goes through the same `SpireBlockEntity.tryStart()` as a right-click or redstone pulse (ruined Earth only, one pulse at a time) and returns `true`, or `false` and `"busy"`, `"wrong_world"` or `"no_profile"`. `SpireBlockEntity` gained `progress()` and `radius()`.
 - Tests: `CCPeripheralGameTests.theSpireIsAPeripheralAndPulsesUnderThePlayersRules` (CC offers the functions; `pulse()` is refused in deep space, starts on ruined Earth, and is refused while busy; the block is removed in the same tick so the persistent test world is not terraformed). Mutation-checked: a `pulse()` that skips the player's rules fails it.
+## RD tools, part 2: repainting (`--fix --tool edit|inpaint|outpaint|seam`): done
+- `rd_edit.py` gains RD's generative edit tools through the same `--fix` command: `edit` (`image_edit`, needs `--prompt`), `inpaint` (`inpainting`, needs `--prompt` and `--mask`), `outpaint` (`--expand L,R,T,B`) and `seam` (`seam_tiling`, `--axes`), with `--seed`. Results are downloaded from RD's URLs and become variants. The mask is checked before anything is paid (size, and not opaque everywhere). See `tools/art/README.md` "Repainting part of an image".
+- Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
+- First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
