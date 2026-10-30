@@ -92,6 +92,55 @@ def read_bbmodel(data):
     return tree, elements, png, uv, bool(model.get('meta', {}).get('box_uv'))
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Effect groups that lost their parent
+
+# Effect groups belong under the effect bone of their part: (prefix of the group's name, bone it goes under; {side} is the
+# l/r token after the prefix). RD's Re-rig can leave them at the model's top level, where no body bone moves them.
+PARENT_HINTS = [
+    ('fx_flame_boot_', 'fx_boot_{side}'),
+    ('fx_flame_', 'fx_jet_{side}'),
+    ('fx_tool_', 'fx_tool'),
+    ('fx_watch_', 'fx_watch'),
+]
+
+
+def hint_parent(name):
+    """The bone an effect group's name says it belongs under, or None."""
+    for prefix, template in PARENT_HINTS:
+        if name.startswith(prefix):
+            return template.format(side=name[len(prefix):].split('_')[0])
+    return None
+
+
+def reparent_effects(tree):
+    """Moves top-level effect groups (other than the first top-level group, the model's root) under the bone their name
+    hints at, when that bone exists and is itself parented. Changes `tree` in place; returns [(group, parent)]."""
+    top = [item for kind, item in tree if kind == 'group']
+    if not top:
+        return []
+    root = top[0]
+    found = {}
+
+    def collect(item, parented):
+        found[item['name']] = (item, parented)
+        for kind, child in item['children']:
+            if kind == 'group':
+                collect(child, True)
+
+    for item in top:
+        collect(item, item is root)
+    moves = []
+    for item in top[1:]:
+        parent = hint_parent(item['name'])
+        if parent in found and found[parent][1] and parent != item['name']:
+            found[parent][0]['children'].append(('group', item))
+            tree[:] = [node for node in tree if node[1] is not item]
+            moves.append((item['name'], parent))
+    return moves
+
+
+
 def bake_rotated_faces(elements, png, uv_w, uv_h):
     """Copies every face whose UV is rotated into a new strip under the atlas, turned so it maps without rotation.
 
@@ -236,6 +285,7 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
     named `part` with RD's groups under their own names (for entities and blocks, not body parts). `out`, if given,
     receives `bones_by_uuid` (RD group uuid -> our bone name) and `scale`, for convert_animations."""
     tree, elements, png, (tw, th), box_uv = read_bbmodel(bbmodel)
+    moved = reparent_effects(tree) if standalone and not groups else []
     if groups:
         tree = select_groups(tree, groups)
         keep = set()
@@ -255,7 +305,7 @@ def convert(bbmodel, part, old_geo=None, bone_map=None, fit=4.0, scale=True, ide
     elif any((f or {}).get('rotation') for e in elements.values() for f in (e.get('faces') or {}).values()):
         raise ConvertError('the model has rotated face UVs but no texture to bake them into')
     bone_map = dict(bone_map or {})
-    report = []
+    report = ['reparented %s under %s (they had no parent, so no bone would have moved them)' % (n, p) for n, p in moved]
 
     if standalone:
         skeleton = [{'name': part, 'pivot': [0, 0, 0]}]
