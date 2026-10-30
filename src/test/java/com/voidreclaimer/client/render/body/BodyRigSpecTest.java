@@ -147,6 +147,7 @@ class BodyRigSpecTest {
             known.add(pose.animation());
         }
         known.add(BodyLook.MODULE_WORK);
+        known.add(BodyLook.IDLE_LONG);
         for (String rig : RIGS.keySet()) {
             for (String key : spec(rig).poses().keySet()) {
                 assertTrue(known.contains(key), rig + ": unknown pose key " + key);

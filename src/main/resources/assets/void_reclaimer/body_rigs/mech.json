@@ -189,6 +189,7 @@
   },
   "poses": {
     "idle": "idle_ambient",
+    "idle_long": "idle_impatient",
     "thrust": "zoom_flight",
     "back": "fly_back",
     "strafe_left": "fly_left",
