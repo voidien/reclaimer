@@ -108,6 +108,10 @@ public final class Config {
     public static final ModConfigSpec.BooleanValue COLLECTOR_ENABLED;
     public static final ModConfigSpec.DoubleValue COLLECTOR_YIELD;
 
+    public static final ModConfigSpec.DoubleValue CHEMICAL_THRUST;
+    public static final ModConfigSpec.DoubleValue THRUSTER_STRESS;
+    public static final ModConfigSpec.IntValue THRUSTER_TANK;
+
     public static final ModConfigSpec.IntValue SPIRE_RADIUS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
 
@@ -294,6 +298,14 @@ public final class Config {
         DRILL_ENERGY = BUILDER.comment("Energy per asteroid block broken by either tool.").defineInRange("drillEnergy", 0.5, 0.0, 100.0);
         DRILL_DUST_YIELD = BUILDER.comment("Dust refunded per block by the Mechanical Drill, of the block's own kind.")
                 .defineInRange("drillDustYield", 1.0, 0.0, 1000.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Block ship thrusters.").push("ships");
+        toggle("chemicalThruster", "The Chemical Thruster pushes ships.");
+        CHEMICAL_THRUST = BUILDER.comment("Force of a Chemical Thruster at full throttle, full spin (64 RPM) and a fuel of thrust 1.")
+                .defineInRange("chemicalThrust", 400.0, 0.0, 1_000_000.0);
+        THRUSTER_STRESS = BUILDER.comment("Stress a Chemical Thruster needs, in SU per RPM.").defineInRange("thrusterStress", 8.0, 0.0, 1024.0);
+        THRUSTER_TANK = BUILDER.comment("mB of fuel a Chemical Thruster holds.").defineInRange("thrusterTank", 4000, 1, 1_000_000);
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");

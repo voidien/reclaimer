@@ -36,6 +36,7 @@ public final class VoidReclaimer {
         ModSounds.SOUND_EVENTS.register(modBus);
         ConfigCondition.CONDITIONS.register(modBus);
         com.voidreclaimer.machine.MachineSetup.FAN_TYPES.register(modBus);
+        modBus.addListener(com.voidreclaimer.registry.ModDataMaps::register);
         modBus.addListener(com.voidreclaimer.machine.MachineSetup::onCommonSetup);
         modBus.addListener(com.voidreclaimer.compat.cc.CCCompat::onCommonSetup);
         modBus.addListener(com.voidreclaimer.compat.cc.CCCompat::registerCapabilities);

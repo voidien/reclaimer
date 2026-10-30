@@ -35,5 +35,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.terraform.SpireBlockEntity>> SPIRE = BLOCK_ENTITIES.register("terraforming_spire",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.terraform.SpireBlockEntity::new, ModBlocks.TERRAFORMING_SPIRE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.ship.ChemicalThrusterBlockEntity>> CHEMICAL_THRUSTER = BLOCK_ENTITIES.register("chemical_thruster",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.ship.ChemicalThrusterBlockEntity::new, ModBlocks.CHEMICAL_THRUSTER.get()).build(null));
+
     private ModBlockEntities() {}
 }

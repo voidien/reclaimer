@@ -38,6 +38,8 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
         replicator(output, "terraforming_spire", ModItems.TERRAFORMING_SPIRE.get(), 1, DustCost.of(60, 50, 40, 50), 60,
                 ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
+        replicator(output, "chemical_thruster", ModItems.CHEMICAL_THRUSTER.get(), 1, DustCost.of(60, 40, 30, 40), 40,
+                ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
         replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
                 ReplicatorCategories.TOOLS, Milestones.STARSHIP);
         replicator(output, "scaffold", ModItems.SCAFFOLD.get(), 8, DustCost.of(0, 8, 0, 0), 5,

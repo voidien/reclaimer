@@ -27,6 +27,7 @@ public final class MachineSetup {
             BlockStressValues.IMPACTS.register(ModBlocks.ELECTROLYZER.get(), () -> Config.ELECTROLYZER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.SPINNER.get(), () -> Config.SPINNER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.CLOUD_SIPHON.get(), () -> Config.SIPHON_STRESS.get());
+            BlockStressValues.IMPACTS.register(ModBlocks.CHEMICAL_THRUSTER.get(), () -> Config.THRUSTER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.KINETIC_DRIVE_BASE.get(), () -> Config.MASS_DRIVER_STRESS.get());
             // Per RPM, for tooltips; the Receiver's real output scales with the trusses launched (QuantumReceiverBlockEntity).
             BlockStressValues.CAPACITIES.register(ModBlocks.QUANTUM_RECEIVER.get(), () -> Config.RECEIVER_MAX_STRESS.get() / Config.RECEIVER_RPM.get());
@@ -43,6 +44,8 @@ public final class MachineSetup {
                 (entity, side) -> entity.items());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, com.voidreclaimer.registry.ModBlockEntities.CLOUD_SIPHON.get(),
                 (entity, side) -> entity.energy());
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.CHEMICAL_THRUSTER.get(),
+                (entity, side) -> entity.fluids());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.PAYLOAD_CHAMBER.get(),
                 (entity, side) -> entity.items());
     }

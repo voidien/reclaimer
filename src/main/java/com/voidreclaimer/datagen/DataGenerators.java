@@ -31,6 +31,7 @@ public final class DataGenerators {
         CompletableFuture<HolderLookup.Provider> registries = datapack.getRegistryProvider();
         generator.addProvider(event.includeServer(), new ModRecipeProvider(output, registries));
         generator.addProvider(event.includeServer(), new ModCreateRecipeProvider(output));
+        generator.addProvider(event.includeServer(), new ModDataMapProvider(output, registries));
         ModBlockTagsProvider blockTags = generator.addProvider(event.includeServer(),
                 new ModBlockTagsProvider(output, registries, event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new ModItemTagsProvider(output, registries, blockTags.contentsGetter(),

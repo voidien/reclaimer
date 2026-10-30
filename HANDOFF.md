@@ -2,12 +2,12 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-30, after PR #111. Read "Start here" first: it has the state, the next task (7b block ships, PR 1), the open decisions and this machine's setup.
+Last updated 2026-10-30, after PR #111. Read "Start here" first: it has the state, the next task (7b block ships), the open decisions and this machine's setup.
 
 ## Start here (rewritten 2026-10-30 for a new session)
 **State:** `main` builds and is green (last merged: PR #111). No open PRs. Verified on `main`: 230 unit tests, 159 GameTests (`runGameTestServer`), the Aeronautics GameTests, 44 RD tool tests (`python3 tools/art/test_rd_generate.py`), datagen up to date.
 
-**Next task: 7b block ships, PR 1 (the Chemical Thruster).** The interview is done and the owner said "Execute" for PRs 1 to 4 (Chemical Thruster, Ion Thruster, RCS block, TFMG fuels). The design, the Sable API facts and the PR order are in `CLAUDE.md` "7b block ships". Stop before the Helm: it needs its own interview (6-DOF controls and camera). Then the Create Propulsion vacuum spike.
+**Next task: 7b block ships, PR 2 (the Ion Thruster); PR 1, the Chemical Thruster, is done.** The interview is done and the owner said "Execute" for PRs 1 to 4 (Chemical Thruster, Ion Thruster, RCS block, TFMG fuels). The design, the Sable API facts and the PR order are in `CLAUDE.md` "7b block ships". Stop before the Helm: it needs its own interview (6-DOF controls and camera). Then the Create Propulsion vacuum spike.
 
 **Done on 2026-10-30 (all merged, details in `PROGRESS.md`):** the Act III vertical slice (#88-#92: `ruined_earth`, the three-era sky, the Atmospheric Portal, the Spire pulse); hover flight on Earth (#94-#97; weight factor 0.12, measured from the real presets); the addon compatibility spike (#98, #100) and the required addons (#101); the Cloud Siphon's Forge Energy input (#99); CC: Tweaked peripherals for every existing block (#102, #105, #106, #108; `docs/CC_PERIPHERALS.md`); the RD tool upgrades (#103, #107, #109, #111: `--fix`, repaint tools, `--restyle`, `--model-revise`/`--model-export`; `tools/art/README.md`); a flaky Starship GameTest fixed at its root (#104); the Act III placeholders added to the asset list (#110).
 

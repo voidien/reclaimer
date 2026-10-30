@@ -1,5 +1,6 @@
 {
   "values": [
+    "void_reclaimer:chemical_thruster",
     "void_reclaimer:electrolyzer",
     "void_reclaimer:spinner",
     "void_reclaimer:cloud_siphon",

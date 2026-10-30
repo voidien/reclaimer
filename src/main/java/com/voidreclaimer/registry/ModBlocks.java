@@ -44,6 +44,11 @@ public final class ModBlocks {
             com.voidreclaimer.terraform.SpireBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).strength(3.0f, 8.0f).sound(SoundType.COPPER).lightLevel(state -> 8));
 
+    /** Pushes a block ship: burns fuel, needs a shaft, redstone is the throttle. Its stress impact is in {@code MachineSetup}. */
+    public static final DeferredBlock<com.voidreclaimer.ship.ChemicalThrusterBlock> CHEMICAL_THRUSTER = BLOCKS.registerBlock("chemical_thruster",
+            com.voidreclaimer.ship.ChemicalThrusterBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

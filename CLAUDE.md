@@ -147,6 +147,7 @@ src/main/java/com/voidreclaimer/
 │   ├── hud/                      dust meter, Dust Sensor overlay
 │   ├── screen/                   replicator, assembly, machine screens
 │   └── render/                   GeckoLib body/part/drone renderers, player model replacement
+├── ship/                         7b: block ship thrusters (Sable actors), ThrusterMath
 ├── compat/jei/                   @JeiPlugin + categories (only loaded when JEI present)
 ├── compat/cc/                    CC: Tweaked generic peripherals (only loaded when CC present)
 ├── gametest/                     GameTests (./gradlew runGameTestServer) + TestPlayers helper
@@ -326,6 +327,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:freezing` fan type | Create registry entry (`create:fan_processing_type`) | `machine.FreezingFanType`, priority 450, active in powder snow; registered through `MachineSetup.FAN_TYPES` |
 | Spout behaviors | Create `BlockSpoutingBehaviour.BY_BLOCK` | `machine.SpoutCasting` on the Depot; add more casting by registering for another block |
 | `void_reclaimer:config` recipe condition | NeoForge condition (`machine.ConfigCondition`) | `key` names a toggle in `Config.TOGGLES`; gates any recipe on a config switch |
+| `void_reclaimer:thruster_fuel` | Data map on fluids (`api.ship.ThrusterFuel`: `thrust` multiplier, `burn` mB per tick at full throttle) | What a fluid is worth in a Chemical Thruster; only listed fluids enter its tank. `data/<ns>/data_maps/fluid/thruster_fuel.json` |
 | `void_reclaimer:asteroids` | Chunk generator type (`asteroid.AsteroidChunkGenerator`) | A flat-generator subclass; a dimension can use it with the flat `settings` object |
 | `#void_reclaimer:asteroid_blocks` | Block tag | Blocks only the drill and harvester can break |
 | `#void_reclaimer:modules/dust_sensor` | Item tag | Items that work as a Dust Sensor in a sensor slot |
@@ -453,6 +455,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Chemical fuel:** Nebulite Propellant (ours, strongest) plus TFMG fuels (diesel, kerosene, gasoline, LPG; verify their fluid ids in the TFMG jar) at their own strengths, through a `void_reclaimer:thruster_fuel` data map (fluid -> thrust, burn rate) so packs can add more.
 - **Helm: full 6-DOF** (pitch, yaw, roll and translation) - the hardest part; it gets its own short interview on controls and camera before any code.
 - **Create Propulsion (required) in vacuum:** spike first: check whether its thrusters already push in deep space's zero-pressure physics; only build a bridge if they do not.
+- **Done, PR 1:** `ship/ChemicalThrusterBlock` and `ChemicalThrusterBlockEntity` (a `BlockEntitySubLevelActor`; the server tick decides `force`, `sable$physicsTick` queues it on `ForceGroups.PROPULSION` in the ship's own coordinates at the block, scaled by `dt`, like Sable's propeller), `ThrusterMath`, `api.ship.ThrusterFuel` and the data map `void_reclaimer:thruster_fuel` (`data_maps/fluid/thruster_fuel.json`, server only). Sable is `compileOnly`; `extractCreateLibs` also unpacks its nested Veil and companion jars.
 - **PR order:** (1) Chemical Thruster with Sable as a compile dependency, `ThrusterMath` (pure, unit-tested), the fuel data map with Nebulite Propellant, a redstone throttle, a CC peripheral, an Aeronautics GameTest (a fuelled, powered thruster speeds a ship up along its nozzle; no fuel or no redstone, no push); (2) Ion Thruster; (3) RCS block; (4) TFMG fuels; then the Helm interview; then the Propulsion spike. The owner gave the go for PRs 1 to 4.
 
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
