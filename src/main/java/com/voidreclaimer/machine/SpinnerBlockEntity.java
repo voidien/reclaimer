@@ -33,6 +33,12 @@ public class SpinnerBlockEntity extends KineticBlockEntity {
     }
 
     /** What automation sees: graphite goes in, thread comes out. */
+    /** Progress toward the next thread, 0 to 1 (the share of the configured cycle done). */
+    public float progress() {
+        int cycle = Config.MACHINE_CYCLE_TICKS.get();
+        return cycle <= 0 ? 0f : Math.min(1f, Math.max(0f, progress / cycle));
+    }
+
     public IItemHandler items() {
         return handler;
     }

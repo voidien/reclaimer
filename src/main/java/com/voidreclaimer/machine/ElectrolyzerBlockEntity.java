@@ -34,6 +34,12 @@ public class ElectrolyzerBlockEntity extends KineticBlockEntity {
     }
 
     /** What pipes see: water goes in, the gases come out. */
+    /** Progress toward the next batch, 0 to 1 (the share of the configured cycle done). */
+    public float progress() {
+        int cycle = Config.MACHINE_CYCLE_TICKS.get();
+        return cycle <= 0 ? 0f : Math.min(1f, Math.max(0f, progress / cycle));
+    }
+
     public IFluidHandler fluids() {
         return handler;
     }

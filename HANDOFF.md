@@ -6,6 +6,8 @@ Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical sl
 
 ## Start here (written 2026-10-30 at the owner's request)
 
+- **CC: Tweaked peripherals (2026-10-30):** standing rule: every new block or item with state or actions gets a peripheral in the same PR (`CLAUDE.md` "CC: Tweaked peripherals", `docs/CC_PERIPHERALS.md`). Part 1 (factory machines) is done; next: the Dyson launch chain, the Spire, then spawn and travel blocks, then item upgrades. Also queued: teaching `tools/art/rd_generate.py` new tricks from RD's API (owner asked; interview first). The owner pasted an RD key into the chat once; it has been revoked. Never use or store keys; the owner adds the RD MCP server with `$RD_API_KEY` from their environment.
+
 - **Required addons (2026-10-30):** Crafts & Additions, Advanced Electricity, Advanced Computer Technic, Propulsion, TFMG are required (see `CLAUDE.md` "Required addons"). CC: Tweaked and Avionics are optional; the owner asked whether Computer Technic's computers can script Aeronautics ships like Avionics does: research that before designing it.
 
 - **Update (2026-10-30, unattended stretch):** hover flight on Earth is done (PRs #94 to #97; the weight factor default is 0.12, measured, see PROGRESS.md "Hover tuning") and the addon compatibility spike is done (PROGRESS.md "Addon compatibility spike: results": all nine candidates load together, nothing was made required). The owner decides the required set. The spike worktree is `../reclaimer-spike` (never merge it; it has the `-PspikeMods=` hook and a client quickplay hack). Next in the agreed order: addon policy and an electricity bridge, then 7b ships.
