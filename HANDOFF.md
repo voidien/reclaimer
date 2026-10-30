@@ -5,6 +5,8 @@ How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it 
 Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical slice (dimension, sky eras, portal, Spire pulse) is built, PRs #88 to #91 and the Spire PR; see the PROGRESS.md blocks "Act III slice". Next: the owner looks at it in game, then hover flight on Earth, the launch complex, stations and helper drones.
 
 ## Start here (written 2026-10-30 at the owner's request)
+
+- **Next work (decided 2026-10-30, see `CLAUDE.md` "Hover flight on Earth" and "Create, Aeronautics and addon integration"):** (1) hover flight on Earth in three small PRs (interview done, file list given, **waiting for the owner's go for PR 1**); (2) the addon compatibility spike; then electricity bridge, 7b ships, Earth airships, moving stations, portal-crossing ships. The owner has no time to playtest right now: do not wait for feedback, but keep asking before features. The Act III slice (PRs #88 to #92) is merged; the blue slabs around the Ship were **not reproducible** in the Xvfb client (third person, front, first person, dark and lit room).
 **The owner's answers for the next session:**
 - **First task (DONE 2026-10-30, see PROGRESS.md): the Act III vertical slice.** It proves the riskiest part early (`CLAUDE.md` "Interview decisions", step 4): the `ruined_earth` dimension, the Atmospheric Portal, the three-era sky and one Terraforming Spire pulse. Interview the owner about the rest of its design (AskUserQuestion), list the files, then split it into small PRs. Their decisions so far:
   - **Portal:** a craftable Atmospheric Portal frame, **big enough for the Ship to fly through** (Ship is about 12 blocks long, 5.6 wide, at scale 3; the Titan is 67 blocks and need not fit yet).
