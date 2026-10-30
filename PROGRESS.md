@@ -510,7 +510,7 @@ From an outside audit, each checked against the code first (several claims were 
 - F8 opens a free camera with the HUD hidden (drag to look, WASD/Space/Shift to move, scroll FOV, Q/E roll, Enter screenshot). `CameraPhotoMixin` is a small client-only mixin. Checked in a headless client (HUD hides and returns, camera moves, no mixin errors); the controls' feel is not tried by hand.
 
 ## First person in big ships (5b-2a, first step): done
-- Ship, Shuttle and Titan chassis have a `cockpit`: first person has no hand and the camera sits forward of the eyes. The offsets are guesses; not seen in game. Still to do: the Drone and Mech first-person pieces (art), and a camera that follows the ship's roll when 6-DOF exists.
+- Ship, Shuttle and Titan chassis have a `cockpit`: first person has no hand and the camera sits forward of the eyes. The offsets come from the rigs' bridge and windshield pivots; not checked by eye. Still to do: the Drone and Mech first-person pieces (art), and a camera that follows the ship's roll when 6-DOF exists.
 ## Machine recipe check (GameTest): done
 - `CreateRecipeGameTests`: every Create chain, Sequenced Assembly and freezing recipe loads and names real items and fluids (a typo in a recipe fails it). The screenshot tool that opens each recipe in JEI in the headless client is `tools/client-test/jei_shots.py` (1920x1080 client).
 
