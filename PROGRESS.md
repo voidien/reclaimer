@@ -616,6 +616,31 @@ Done on a never-merged branch (`spike-addon-compat` in a separate worktree; `-Ps
 - **Maturity:** Crafts & Additions and Steam 'n' Rails are betas, CC: Tweaked and Avionics are alphas. Required addons should probably be the releases (New Age, plus Propulsion and Aeroworks if the ship track wants them) and Crafts & Additions on the strength of its download count; CC: Tweaked and Avionics are a risk while alpha. This is a recommendation, not a decision.
 - **Pitfall for later:** Modrinth maven coordinates resolve by version number across loaders; when an addon has several loaders, use the version id (check the jar for `META-INF/neoforge.mods.toml`).
 
+### Round 2 (2026-10-30): the owner's two CurseForge addons and the themed shortlist
+Same method; every Modrinth entry now pinned by version id, the two CurseForge mods through `https://cursemaven.com` (`curse.maven:<slug>-<projectId>:<fileId>`).
+
+| Addon (version, source) | Loads | Notes |
+|---|---|---|
+| Create: Advanced Electricity / Technology Addon (1.21.1 1.0.0, CurseForge 1743391 file 9362753; mod id `light_bulb_addon_create_crafts_and__addions`) | yes | clean; needs Crafts & Additions; uploaded 2026-10-29, under 900 downloads |
+| Create: Advanced Computer Technic (1.21.1 1.0.2, CurseForge 1759784 file 9362807; mod id `advanced_computer_technic`) | yes | clean; needs Crafts & Additions and Advanced Electricity (runs on its 1.0.0 although the page asks for 1.0.5); All Rights Reserved; under 500 downloads |
+| Create: The Factory Must Grow 1.2.0 | yes | clean |
+| Create Ore Excavation 1.6.8 | yes | clean |
+| Create: Power Loader 2.0.5 | yes | clean |
+| Create: Hypertubes 0.6.0 | yes | clean |
+| Create: Tweaked Controllers 1.2.7 | yes | clean |
+| Create: Trading Floor 3.0.16 | yes | clean |
+| Create: Numismatics 1.1.0 | yes | clean |
+| Create: Electro Energetics 1.1.4 | yes | clean |
+| Create: Connected 1.3.3 | yes | 16 loot-table errors for optional Dye Depot blocks; harmless |
+| Create: Copycats+ 3.0.9 | yes | Sable ships physics data for `copycats:copycat_catwalk`, which this version does not register; that block would lack ship physics |
+| Create Deco 2.1.3 | yes | the placard recipe fails to parse |
+| Create: Power Grid 0.6.2 (+ Architectury 13.0.11) | alone yes | native fast solver fails to load (Java fallback); **cannot be installed with TFMG**: its TFMG integration needs TFMG 1.3.x and the newest is 1.2.0, so the game does not start |
+| Create: Radars 5.0.3 | **no** | hard-requires Create Big Cannons (weapons), not listed on Modrinth |
+
+- **Everything together** (the first nine plus round 2, without Power Grid and Radars: 22 addons): the game starts and the whole suite passes (151 GameTests on the spike branch); the only log errors are the known harmless ones above (323 lines).
+- Still untested: any real feature interplay.
+
+
 ## Electricity bridge: the Cloud Siphon takes Forge Energy: done
 - The Cloud Siphon now has a **Forge Energy** input (`Capabilities.EnergyStorage.BLOCK`, receive only; nothing can be taken out). It is the standard NeoForge capability, so Crafts & Additions, Create: New Age and any other energy mod can power it, with no dependency on them.
 - Energy **tops up the shaft to full power** while the siphon is actually working (in a cloud at or above the minimum density): `CloudSiphonMath.topUp`. A siphon with no shaft runs on electricity alone at full power for `machines.siphonFePerTick` FE per tick (default 40); a slow shaft only takes the gap; a shaft already at full power or more takes nothing; an idle siphon takes nothing. The buffer is `machines.siphonFeBuffer` (default 4000, 100 ticks of full power) and is saved with the block. `siphonFePerTick = 0` turns the input off. It sits alongside `CollectorPowerEvent`, which stays the hook for addons that want to decide power themselves.
