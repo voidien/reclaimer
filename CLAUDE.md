@@ -490,6 +490,7 @@ Parallel tracks, scheduled as they fit:
 **Replicator screen (2026-10-30, owner's choices)**
 - **Descriptions:** every built-in Replicator recipe has a one- or two-line gameplay hint, translation key `replicator.<namespace>.description.<name>` (recipe id `<namespace>:replicator/<name>`); a recipe may carry its own `description` text, which overrides it (datapack field, synced). The screen shows it in a box under the list for the selected recipe and as a tooltip on every unlocked row. `RecipeDescriptionTest` fails when a built-in recipe has none, so new recipes need a line in `ModLangProvider.addReplicatorDescriptions`.
 - The panel is 244 tall (was 200) to fit the description box.
+- **JEI on the screen:** `VoidReclaimerJeiPlugin.registerGuiHandlers` registers `ReplicatorScreen` (it is not a container screen) with its bounds, so JEI's lists sit beside the panel, and `ReplicatorScreen.itemAt` tells JEI which item (recipe result, queued job, output item) is under the mouse, so JEI's recipe and uses keys work on them. Dust icons are not JEI ingredients and have no lookup.
 - **Reorder:** drag a waiting job in the queue to a new place (`ReplicatorActionPayload` action `MOVE`, `ReplicatorLogic.reorder`, `Replicator.move`). The job being worked on never moves and nothing goes in front of it, so progress is never lost; the server validates every move.
 
 **Titan size class, Core Mk III and IV, whole-rig mounts (2026-10-29, defaults)**
