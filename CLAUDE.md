@@ -446,6 +446,15 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Control follows player rules:** a computer can do what a player can by right-click or redstone, through the same code paths and checks, never more.
 - **Ship scripting (owner's route 3):** Create: Avionics with CC: Tweaked (both optional). Advanced Computer Technic's CogScript has no extension API (hard-coded functions, a single device slot), so we do not patch it.
 
+**7b block ships (interview 2026-10-30, owner's answers; not built yet)**
+- **Thrusters, three blocks:** **Chemical Thruster** (Create rotation plus fuel: high thrust, burns fast), **Ion Thruster** (Forge Energy only: low thrust, efficient), and an **RCS block** for fine rotation (our existing `rcs_thruster` item becomes placeable, keeping its item id so saves and recipes stay valid).
+- **How they push (checked in Sable 2.0.6's jar):** the thruster block entity implements Sable's `BlockEntitySubLevelActor`; in `sable$physicsTick(ServerSubLevel, RigidBodyHandle, double dt)` it applies an impulse at its nozzle (`RigidBodyHandle.applyImpulseAtPoint`, also `applyLinearImpulse`, `applyTorqueImpulse`, `getLinearVelocity`). Placement therefore matters: an off-centre thruster turns the ship. Look at how `BlockEntitySubLevelPropellerActor.applyForces` converts local thrust to an impulse (javap -c) before writing ours; Sable must become a `compileOnly` dependency (it is already required at runtime).
+- **Activation before the Helm:** redstone signal strength 0-15 is the throttle (works with Create links and contraptions; stays useful after the Helm).
+- **Chemical fuel:** Nebulite Propellant (ours, strongest) plus TFMG fuels (diesel, kerosene, gasoline, LPG; verify their fluid ids in the TFMG jar) at their own strengths, through a `void_reclaimer:thruster_fuel` data map (fluid -> thrust, burn rate) so packs can add more.
+- **Helm: full 6-DOF** (pitch, yaw, roll and translation) - the hardest part; it gets its own short interview on controls and camera before any code.
+- **Create Propulsion (required) in vacuum:** spike first: check whether its thrusters already push in deep space's zero-pressure physics; only build a bridge if they do not.
+- **PR order:** (1) Chemical Thruster with Sable as a compile dependency, `ThrusterMath` (pure, unit-tested), the fuel data map with Nebulite Propellant, a redstone throttle, a CC peripheral, an Aeronautics GameTest (a fuelled, powered thruster speeds a ship up along its nozzle; no fuel or no redstone, no push); (2) Ion Thruster; (3) RCS block; (4) TFMG fuels; then the Helm interview; then the Propulsion spike. The owner gave the go for PRs 1 to 4.
+
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
 Act II, the Dyson Sphere (deep_space):
