@@ -47,6 +47,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("dust.void_reclaimer.carbon", "Carbon");
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
+        add("key.void_reclaimer.orbit_camera", "Orbit Camera (hold, third person)");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
         add("message.void_reclaimer.scanner_on", "Cloud scanner: ON");
         add("message.void_reclaimer.scanner_off", "Cloud scanner: OFF");

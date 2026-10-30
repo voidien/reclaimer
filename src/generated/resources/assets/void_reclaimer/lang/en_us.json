@@ -317,6 +317,7 @@
   "key.categories.void_reclaimer": "Void Reclaimer",
   "key.void_reclaimer.cloud_scanner": "Toggle Cloud Scanner",
   "key.void_reclaimer.module_wheel": "Module Wheel (hold)",
+  "key.void_reclaimer.orbit_camera": "Orbit Camera (hold, third person)",
   "key.void_reclaimer.recall": "Tether Recall (hold)",
   "key.void_reclaimer.replicator": "Open Replicator",
   "key.void_reclaimer.sensor_pulse": "Dust Sensor Pulse",
