@@ -584,6 +584,12 @@ From an outside audit, each checked against the code first (several claims were 
   - **The starter numbers:** a test body with the fallback stats (mass 1.0, thrust 0.03) is below the weight 0.048 (0.08 x 0.6) and shows TOO HEAVY; a real Drone's thrust is about 0.075. `flight.hoverWeightFactor` is the knob; look at the real Drone, Mech and Ship before the owner tunes it.
 - Not seen in a real client yet (physics runs client-side): hovering, the HUD text, landing.
 
+## Hover flight on Earth, part 3: the Mech walks: done
+- `Chassis.walks` (datapack field, optional, default false; `Chassis.withWalks`; the old five-argument constructor stays for addons) marks bodies with legs. Only the built-in Mech has it (`mech.json` gained `"walks": true`). `Bodies.walks(entity)` reads it. It is on `Chassis`, not `BodyStats`, so the `BodyStatsEvent` extension API is untouched.
+- On ruined Earth a walking body moves like a normal player (vanilla movement, jump, fall damage) until Space engages its thrusters; then it flies with the same hover model as every other body. Engaging is the new `FlightInput` flag `engaged` (client controller: Space while walking and able to fly; sent with the input payload). It disengages on the ground with no up-thrust held (`FlightInput.shouldDisengage`: after letting go of Space, or on landing). In zero-G a walking body always flies, as before. Drone, Ship and the rest fly all the time.
+- Tests: `FlightInputTest` (engaged is a flag and not a key, survives the codec, the disengage rule), `ChassisCockpitTest` (only the Mech walks; the flag round-trips and is omitted when false), `HoverGameTests` (a Mech walks until engaged, Drone and Ship always fly, a Mech always flies in zero-G). Mutation-checked: `walks` forced false fails the Mech test.
+- **Not tested by a GameTest, not seen in a client:** the client controller (engaging on Space, disengaging on landing) is client-only, like all input. **Decision pending:** engaging needs Space pressed on the ground, and a Mech hovering still (no keys) stays engaged until it lands; a Mech in creative with thrusters off just walks.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

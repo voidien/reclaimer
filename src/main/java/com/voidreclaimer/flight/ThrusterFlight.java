@@ -35,7 +35,8 @@ public final class ThrusterFlight {
         if (player.isSpectator() || player.isPassenger() || player.isFallFlying()) {
             return false;
         }
-        if (!ZeroGravity.isZeroG(player.level(), player.blockPosition()) && !canHover(player)) {
+        if (!ZeroGravity.isZeroG(player.level(), player.blockPosition())
+                && (!canHover(player) || walks(player) && !player.getData(ModAttachments.FLIGHT_INPUT).engaged())) {
             return false;
         }
         return !player.isCreative() || player.getData(ModAttachments.FLIGHT_SETTINGS).creativeThrusters();
@@ -47,6 +48,17 @@ public final class ThrusterFlight {
      */
     public static boolean canHover(Player player) {
         return RuinedEarth.is(player.level()) && FlightStats.of(player).thrust() > 0.0;
+    }
+
+    /** A body with legs (the Mech) on ground with gravity: it walks, and its thrusters fire only while engaged. */
+    public static boolean walks(Player player) {
+        return com.voidreclaimer.body.Bodies.walks(player);
+    }
+
+    /** Whether this body could fire its thrusters here but is walking until they are engaged. */
+    public static boolean canEngage(Player player) {
+        return canHover(player) && walks(player) && !player.isSpectator() && !player.isPassenger()
+                && (!player.isCreative() || player.getData(ModAttachments.FLIGHT_SETTINGS).creativeThrusters());
     }
 
     /** The downward acceleration (blocks/tick²) the thrusters must cancel here: 0 in zero-G, else gravity times the config factor. */

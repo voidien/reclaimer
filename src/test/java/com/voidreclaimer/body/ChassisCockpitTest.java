@@ -29,4 +29,18 @@ class ChassisCockpitTest {
         Chassis parsed = Chassis.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json.toString())).getOrThrow();
         assertEquals(Optional.empty(), parsed.cockpit());
     }
+
+    @Test
+    void onlyTheMechWalksAndTheFlagIsOptionalInTheCodec() {
+        for (var entry : BuiltinBodies.CHASSIS.entrySet()) {
+            assertEquals(entry.getKey().equals(BuiltinBodies.MECH), entry.getValue().walks(), entry.getKey().location().toString());
+        }
+        Chassis mech = BuiltinBodies.CHASSIS.get(BuiltinBodies.MECH);
+        var json = Chassis.CODEC.encodeStart(JsonOps.INSTANCE, mech).getOrThrow().getAsJsonObject();
+        assertTrue(json.get("walks").getAsBoolean());
+        assertTrue(Chassis.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json.toString())).getOrThrow().walks());
+        var drone = Chassis.CODEC.encodeStart(JsonOps.INSTANCE, BuiltinBodies.CHASSIS.get(BuiltinBodies.DRONE)).getOrThrow().getAsJsonObject();
+        assertTrue(!drone.has("walks"), "no walks key for a body that flies");
+        assertTrue(!Chassis.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(drone.toString())).getOrThrow().walks());
+    }
 }
