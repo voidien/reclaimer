@@ -501,6 +501,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Body inventory screen (part 1): done
 - E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
 
+## Machine recipe check (GameTest): done
+- `CreateRecipeGameTests`: every Create chain, Sequenced Assembly and freezing recipe loads and names real items and fluids (a typo in a recipe fails it). **Not done:** the screenshot tool that opens each recipe in JEI in the headless client; it needs coordinate calibration on a live client.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
