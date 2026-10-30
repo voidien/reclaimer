@@ -8,7 +8,9 @@ import com.voidreclaimer.space.ZeroGravity;
 import com.voidreclaimer.tether.Tether;
 import com.voidreclaimer.tether.TetherData;
 import com.voidreclaimer.tether.TetherPhysics;
+import com.voidreclaimer.earth.RuinedEarth;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -33,10 +35,26 @@ public final class ThrusterFlight {
         if (player.isSpectator() || player.isPassenger() || player.isFallFlying()) {
             return false;
         }
-        if (!ZeroGravity.isZeroG(player.level(), player.blockPosition())) {
+        if (!ZeroGravity.isZeroG(player.level(), player.blockPosition()) && !canHover(player)) {
             return false;
         }
         return !player.isCreative() || player.getData(ModAttachments.FLIGHT_SETTINGS).creativeThrusters();
+    }
+
+    /**
+     * Whether the body flies on thrusters where gravity is back (ruined Earth): any body with thrust at all. A body
+     * with no thrust cannot hold itself up, so it walks like a normal player instead of being stuck.
+     */
+    public static boolean canHover(Player player) {
+        return RuinedEarth.is(player.level()) && FlightStats.of(player).thrust() > 0.0;
+    }
+
+    /** The downward acceleration (blocks/tick²) the thrusters must cancel here: 0 in zero-G, else gravity times the config factor. */
+    public static double weight(Player player) {
+        if (ZeroGravity.isZeroG(player.level(), player.blockPosition())) {
+            return 0.0;
+        }
+        return player.getAttributeValue(Attributes.GRAVITY) * Config.HOVER_WEIGHT_FACTOR.get();
     }
 
     /** Replaces vanilla travel for the local player: apply thrust, then move with collisions and no drag. */
@@ -67,7 +85,8 @@ public final class ThrusterFlight {
                 Energy.canPowerSystems(player),
                 player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
                 stats,
-                cloudDrag(player));
+                cloudDrag(player),
+                weight(player));
         return tether(player, next, stats);
     }
 

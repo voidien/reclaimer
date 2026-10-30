@@ -573,6 +573,17 @@ From an outside audit, each checked against the code first (several claims were 
 - Tests: 7 new `FlightPhysicsTest` cases; mutation-checked (weight support forced to 0 fails four of them).
 - Next: part 2 (always-thruster bodies on Earth: `ThrusterFlight`, server energy, HUD, GameTests), part 3 (Mech walking).
 
+## Hover flight on Earth, part 2: always-thruster bodies on ruined Earth: done
+- On ruined Earth every body with thrust now flies on thrusters, like in deep space but with weight (`ThrusterFlight.isActive`, `canHover`, `weight`, and the weight passed into `FlightPhysics.step`). Creative keeps vanilla flight. Zero-G flight is unchanged. The Mech hovers too until part 3 gives it legs.
+- Energy (`ServerFlightHandler`): holding altitude costs the usual thrust cost times `hoverShare` (the share of thrust spent on weight) times the body's energy multiplier, on top of braking; thrusting costs the full thrust cost as before. Hovering also wears the thruster sections.
+- HUD (`FlightHudLayer`): HOVER, TOO HEAVY: SINKING (thrust below weight) and FALLING: DAMPENER OFF, next to the speed.
+- Tests: `HoverGameTests` (3): bodies fly with the right weight and creative does not; the hover cost equals thrust cost x share x energy multiplier (measured against the same minute with the dampener off); controlled landings are safe and free falls hurt. Mutation-checked: no hover charge and no landing rule each fail. The test player is made weightless because the server simulates vanilla gravity on fake players, which would charge braking energy for the fall.
+- **Decisions pending (taken unattended 2026-10-30; the owner can overrule):**
+  - **Controlled landings take no fall damage.** A body under power with the dampener on lands under control however far it came down (`LivingFallEvent` is cancelled), because vanilla's distance-based damage would hurt every normal hover descent. Free falls (low power, or the dampener off) hurt as in vanilla, which keeps the owner's "vanilla fall damage" for uncontrolled falls.
+  - **A body with no thrust walks** like a normal player on Earth (`canHover` is false), instead of being stuck.
+  - **The starter numbers:** a test body with the fallback stats (mass 1.0, thrust 0.03) is below the weight 0.048 (0.08 x 0.6) and shows TOO HEAVY; a real Drone's thrust is about 0.075. `flight.hoverWeightFactor` is the knob; look at the real Drone, Mech and Ship before the owner tunes it.
+- Not seen in a real client yet (physics runs client-side): hovering, the HUD text, landing.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

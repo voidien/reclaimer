@@ -7,10 +7,12 @@ import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.tether.Tether;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
@@ -74,16 +76,44 @@ public final class ServerFlightHandler {
             return;
         }
         FlightInput input = player.getData(ModAttachments.FLIGHT_INPUT);
+        double thrustPerTick = Config.THRUST_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
         double perTick;
         if (input.isThrusting()) {
-            perTick = Config.THRUST_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
+            perTick = thrustPerTick;
             com.voidreclaimer.body.Wear.onThrustTick(player);
-        } else if (ThrusterFlight.isBraking(player, input, speed)) {
-            perTick = Config.BRAKE_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
         } else {
+            // Holding altitude under gravity spends the share of thrust that cancels weight, on top of any braking.
+            double hover = hoverShare(player);
+            perTick = hover * thrustPerTick;
+            if (hover > 0.0) {
+                com.voidreclaimer.body.Wear.onThrustTick(player);
+            }
+            if (ThrusterFlight.isBraking(player, input, speed)) {
+                perTick += Config.BRAKE_ENERGY_COST.get() / FlightStats.TICKS_PER_SECOND;
+            }
+        }
+        if (perTick <= 0.0) {
             return;
         }
         Energy.consume(player, (float) perTick * com.voidreclaimer.body.Bodies.stats(player).energyUse());
+    }
+
+    /** The share of thrust this player is spending to hold up its weight right now (0 in zero-G). */
+    public static double hoverShare(Player player) {
+        return FlightPhysics.hoverShare(FlightStats.of(player), ThrusterFlight.weight(player),
+                player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(), Energy.canPowerSystems(player));
+    }
+
+    /**
+     * A body under power with the dampener on lands under control, however far it came down: vanilla's distance-based
+     * damage would hurt every normal hover descent. A free fall (no power, or the dampener off) still hurts as in vanilla.
+     */
+    @SubscribeEvent
+    static void onFall(LivingFallEvent event) {
+        if (event.getEntity() instanceof Player player && ThrusterFlight.isActive(player) && !Energy.isExempt(player)
+                && Energy.canPowerSystems(player) && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
+            event.setCanceled(true);
+        }
     }
 
     /** Returns true if the player was corrected. */

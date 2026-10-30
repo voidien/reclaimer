@@ -16,6 +16,9 @@ public final class ModLangProvider extends LanguageProvider {
     protected void addTranslations() {
         add("biome.void_reclaimer.deep_space", "Deep Space");
 
+        add("hud.void_reclaimer.hover", "HOVER");
+        add("hud.void_reclaimer.too_heavy", "TOO HEAVY: SINKING");
+        add("hud.void_reclaimer.falling", "FALLING: DAMPENER OFF");
         add("message.void_reclaimer.dimension_locked", "Navigation error: no viable route to that destination.");
         add("message.void_reclaimer.no_planetary_anchor", "No planetary anchor detected. This device needs gravity to function.");
         add("message.void_reclaimer.low_power", "LOW POWER: thrusters, tools and replicator offline.");
