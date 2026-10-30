@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:ruined_earth",
+  "generator": {
+    "type": "void_reclaimer:ruined_earth",
+    "settings": {
+      "biome": "void_reclaimer:ruined_earth",
+      "layers": [],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

@@ -16,6 +16,7 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
     @Override
     protected void generate() {
         dropSelf(ModBlocks.SCAFFOLD.get());
+        dropSelf(ModBlocks.ASHEN_SLAG.get());
         dropSelf(ModBlocks.TETHER_ANCHOR.get());
         dropSelf(ModBlocks.BACKUP_CORE.get());
         dropSelf(ModBlocks.ELECTROLYZER.get());

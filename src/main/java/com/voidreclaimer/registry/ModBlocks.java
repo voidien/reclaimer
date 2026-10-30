@@ -25,6 +25,10 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> SCAFFOLD = BLOCKS.registerSimpleBlock("scaffold",
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.8f).sound(SoundType.COPPER_GRATE));
 
+    /** The burnt, glassy crust that covers ruined Earth. Terraforming turns it back into soil. */
+    public static final DeferredBlock<Block> ASHEN_SLAG = BLOCKS.registerSimpleBlock("ashen_slag",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.2f).sound(SoundType.BASALT));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));
