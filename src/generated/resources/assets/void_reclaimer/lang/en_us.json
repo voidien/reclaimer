@@ -428,6 +428,7 @@
   "recipe.void_reclaimer.shuttle_core_kit": "Shuttle Core Kit",
   "recipe.void_reclaimer.titan_core_kit": "Titan Core Kit",
   "replicator.void_reclaimer.collect": "Collect output",
+  "replicator.void_reclaimer.cost_tooltip": "%s: %s held, %s needed",
   "replicator.void_reclaimer.empty_tab": "No designs in this category yet.",
   "replicator.void_reclaimer.no_logs": "No log entries.",
   "replicator.void_reclaimer.output": "Output",

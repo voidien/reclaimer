@@ -59,6 +59,7 @@ public final class DustSensorLayer {
             Component title = Component.translatable("hud.void_reclaimer.sensor.cloud", DustKinds.name(player.registryAccess(), cloud.kind()),
                     Math.round(sample.density() * 100));
             graphics.drawCenteredString(font, title, width / 2, PANEL_Y, kindColor);
+            DustIcons.draw(graphics, player.registryAccess(), cloud.kind(), width / 2 - font.width(title) / 2 - DustIcons.SIZE - 3, PANEL_Y, 1f);
             bar(graphics, width / 2 - BAR_WIDTH / 2, PANEL_Y + 11, (float) sample.density(), 0xFF000000 | kindColor);
 
             double toCenter = eyes.distanceTo(cloud.center());

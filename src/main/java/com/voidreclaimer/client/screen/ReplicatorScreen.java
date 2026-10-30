@@ -1,5 +1,6 @@
 package com.voidreclaimer.client.screen;
 
+import com.voidreclaimer.client.hud.DustIcons;
 import com.voidreclaimer.client.input.ModKeyMappings;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustKinds;
@@ -180,6 +181,7 @@ public final class ReplicatorScreen extends Screen {
         if (recipes.isEmpty()) {
             graphics.drawString(font, Component.translatable("replicator.void_reclaimer.empty_tab"), x + 6, y + 6, DIM, false);
         }
+        List<Component> costHover = null;
         for (int i = scroll; i < Math.min(recipes.size(), scroll + VISIBLE_ROWS); i++) {
             RecipeHolder<ReplicatorRecipe> holder = recipes.get(i);
             ReplicatorRecipe recipe = holder.value();
@@ -197,11 +199,17 @@ public final class ReplicatorScreen extends Screen {
                         ? recipe.displayName().copy().append(Component.literal(" +" + (recipe.results().size() - 1)).withColor(DIM))
                         : recipe.displayName();
                 graphics.drawString(font, name, x + 24, rowY + 2, TEXT, false);
-                graphics.drawString(font, costLine(recipe, dust), x + 24, rowY + 12, TEXT, false);
+                List<Component> hover = drawCost(graphics, recipe, dust, x + 24, rowY + 12, mouseX, mouseY);
+                if (hover != null) {
+                    costHover = hover;
+                }
             } else {
                 graphics.drawString(font, "???", x + 11 - font.width("???") / 2, rowY + 7, DIM, false);
                 graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
             }
+        }
+        if (costHover != null) {
+            graphics.renderComponentTooltip(font, costHover, mouseX, mouseY);
         }
         if (recipes.size() > VISIBLE_ROWS) {
             graphics.drawString(font, (scroll + 1) + "-" + Math.min(recipes.size(), scroll + VISIBLE_ROWS) + "/" + recipes.size(),
@@ -209,19 +217,31 @@ public final class ReplicatorScreen extends Screen {
         }
     }
 
-    /** "M10 S15 C5 · 20s", each amount red when not affordable. */
-    private Component costLine(ReplicatorRecipe recipe, DustData dust) {
-        MutableComponent line = Component.empty();
+    /**
+     * Draws a recipe's price as an icon and an amount per dust kind, red when not affordable, then the time ("[icon]10 [icon]15 · 20s").
+     * Returns the tooltip (name, held and needed) for the icon under the mouse, or null.
+     */
+    @Nullable
+    private List<Component> drawCost(GuiGraphics graphics, ReplicatorRecipe recipe, DustData dust, int x, int y, int mouseX, int mouseY) {
         var access = minecraft.level.registryAccess();
+        List<Component> hover = null;
+        int cx = x;
         for (ResourceLocation kind : DustKinds.ordered(access, recipe.cost().amounts().keySet())) {
             float amount = recipe.cost().get(kind);
-            int color = dust.get(kind) + 1.0E-4f >= amount ? DustKinds.color(access, kind) : 0xFF5050;
-            String name = DustKinds.name(access, kind).getString();
-            String label = (name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(java.util.Locale.ROOT)) + Mth.ceil(amount) + " ";
-            line.append(Component.literal(label).withColor(color));
+            boolean affordable = dust.get(kind) + 1.0E-4f >= amount;
+            String number = Integer.toString(Mth.ceil(amount));
+            int width = DustIcons.SIZE + 1 + font.width(number);
+            DustIcons.draw(graphics, access, kind, cx, y, 1f);
+            graphics.drawString(font, number, cx + DustIcons.SIZE + 1, y + 1, affordable ? TEXT : 0xFF5050, false);
+            if (inside(mouseX, mouseY, cx, y - 1, width, DustIcons.SIZE + 2)) {
+                hover = List.of(Component.translatable("replicator.void_reclaimer.cost_tooltip", DustKinds.name(access, kind),
+                        Mth.floor(dust.get(kind)), Mth.ceil(amount)));
+            }
+            cx += width + 5;
         }
-        line.append(Component.literal(String.format(java.util.Locale.ROOT, "· %ds", Mth.ceil(recipe.ticks() / 20f))).withColor(0x8899AA));
-        return line;
+        graphics.drawString(font, Component.literal(String.format(java.util.Locale.ROOT, "· %ds", Mth.ceil(recipe.ticks() / 20f))).withColor(0x8899AA),
+                cx, y + 1, TEXT, false);
+        return hover;
     }
 
     private void renderLogs(GuiGraphics graphics, ReplicatorData data) {
