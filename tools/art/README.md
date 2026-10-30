@@ -119,6 +119,11 @@ python3 tools/art/rd_generate.py --balance
 - Saved files: `model.bbmodel` (with every animation), `atlas.png`, `render.png` and `turntable.png`.
 - RD's `minecraft` export is not used: it needs Minecraft 1.21.11+ for tilted boxes, and the mod is on 1.21.1.
 
+**Checking a rig (`rig_check.py`)**
+- `python3 tools/art/rig_check.py MODEL.bbmodel [--spec src/main/resources/assets/void_reclaimer/body_rigs/mech.json]` compares an RD model with a rig spec: every bone the spec names exists and is unique, every animation the poses name exists, animations only key real bones, and effect groups (flames, tool and watch pieces) are parented. A group left at the model's top level is moved by no bone, so a flame there floats in the air.
+- It prints the problems and Re-rig instructions of at most 250 characters (the limit of RD's Re-rig box). Paste them one at a time, re-export, and run the check again.
+- Re-rig before animating: RD deletes animations that use bones a Re-rig removes. Test: `python3 tools/art/test_rig_check.py` (runs in CI).
+
 **Animations**
 - Run on the rig's model once that model exists, then the rig's `.bbmodel` is re-exported.
 - Animation names and bones still need the Blockbench step in `docs/art/ASSETS.md`; `--promote` converts models, not animations.
