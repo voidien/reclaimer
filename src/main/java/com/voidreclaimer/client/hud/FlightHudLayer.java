@@ -36,6 +36,15 @@ public final class FlightHudLayer {
         if (!Energy.canPowerSystems(player)) {
             status = Component.translatable("hud.void_reclaimer.thrusters_offline");
             color = COLOR_WARNING;
+        } else if (ThrusterFlight.weight(player) > 0.0 && !player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
+            status = Component.translatable("hud.void_reclaimer.falling");
+            color = COLOR_WARNING;
+        } else if (ThrusterFlight.weight(player) > 0.0 && FlightStats.of(player).acceleration() < ThrusterFlight.weight(player)) {
+            status = Component.translatable("hud.void_reclaimer.too_heavy");
+            color = COLOR_WARNING;
+        } else if (ThrusterFlight.weight(player) > 0.0) {
+            status = Component.translatable("hud.void_reclaimer.hover");
+            color = COLOR_NORMAL;
         } else if (player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
             status = Component.translatable("hud.void_reclaimer.dampener_on");
             color = COLOR_NORMAL;

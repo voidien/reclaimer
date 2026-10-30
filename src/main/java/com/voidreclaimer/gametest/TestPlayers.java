@@ -80,6 +80,20 @@ final class TestPlayers {
         return player;
     }
 
+    /** A survival player standing in the air over ruined Earth at the given position. */
+    static ServerPlayer survivalOnRuinedEarth(GameTestHelper helper, double x, double y, double z) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        if (earth == null) {
+            throw new IllegalStateException("ruined_earth dimension is not loaded");
+        }
+        ServerPlayer player = join(helper);
+        earth.getChunk((int) Math.floor(x) >> 4, (int) Math.floor(z) >> 4);
+        player.teleportTo(earth, x, y, z, 0f, 0f);
+        player.hasChangedDimension();
+        player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        return player;
+    }
+
     /**
      * Installs a module straight onto the body's {@code index}-th mount of {@code kind} (bypassing the inventory and
      * the rules), e.g. a Dust Sensor or a tool.
