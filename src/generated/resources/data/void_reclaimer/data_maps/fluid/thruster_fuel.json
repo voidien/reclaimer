@@ -1,5 +1,21 @@
 {
   "values": {
+    "tfmg:diesel": {
+      "burn": 3.0,
+      "thrust": 0.5
+    },
+    "tfmg:gasoline": {
+      "burn": 3.0,
+      "thrust": 0.6
+    },
+    "tfmg:kerosene": {
+      "burn": 3.0,
+      "thrust": 0.8
+    },
+    "tfmg:lpg": {
+      "burn": 3.0,
+      "thrust": 0.7
+    },
     "void_reclaimer:nebulite_propellant": {
       "burn": 2.0,
       "thrust": 1.0

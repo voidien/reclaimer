@@ -3,20 +3,25 @@ package com.voidreclaimer.gametest;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.ship.ThrusterFuel;
 import com.voidreclaimer.registry.ModBlocks;
+import com.voidreclaimer.registry.ModDataMaps;
 import com.voidreclaimer.registry.ModFluids;
 import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
 import com.voidreclaimer.ship.ElectricThrusterBlockEntity;
 import com.voidreclaimer.ship.IonThrusterBlockEntity;
 import com.voidreclaimer.ship.RcsThrusterBlockEntity;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -208,5 +213,25 @@ public final class ThrusterGameTests {
         helper.assertTrue(item.getBlock() == ModBlocks.RCS_THRUSTER.get(), "it does not place the block");
         helper.assertTrue(ModMaterials.ALL.stream().anyMatch(m -> m.item().get() == item), "it left the material list");
         helper.succeed();
+    }
+
+    /** Every TFMG fuel is a real fluid, goes in the tank and pushes weaker than Nebulite Propellant. A wrong id in the data map fails here. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void tfmgFuelsBurnAtTheirOwnStrengths(GameTestHelper helper) {
+        withThruster(helper, new BlockPos(61_900, 80, 0), thruster -> {
+            openThrottle(thruster);
+            for (String id : List.of("kerosene", "lpg", "gasoline", "diesel")) {
+                Fluid fluid = BuiltInRegistries.FLUID.get(ResourceLocation.fromNamespaceAndPath("tfmg", id));
+                helper.assertTrue(fluid != Fluids.EMPTY, "no fluid tfmg:" + id);
+                ThrusterFuel fuel = fluid.builtInRegistryHolder().getData(ModDataMaps.THRUSTER_FUEL);
+                helper.assertTrue(fuel != null, "tfmg:" + id + " is not a thruster fuel");
+                thruster.tank().setFluid(FluidStack.EMPTY);
+                helper.assertTrue(thruster.fluids().fill(new FluidStack(fluid, 1000), IFluidHandler.FluidAction.EXECUTE) == 1000, id + " did not go in");
+                tick(thruster, FULL_SPIN_RPM, 3);
+                double expected = Config.CHEMICAL_THRUST.get() * fuel.thrust();
+                helper.assertTrue(Math.abs(thruster.force() - expected) < 1e-3, id + ": force " + thruster.force() + ", expected " + expected);
+                helper.assertTrue(thruster.force() < Config.CHEMICAL_THRUST.get(), id + " is as strong as Nebulite Propellant");
+            }
+        });
     }
 }
