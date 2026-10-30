@@ -567,6 +567,12 @@ From an outside audit, each checked against the code first (several claims were 
 ### Placeholder assets
 - `textures/block/terraforming_spire.png` (16x16 programmer art; a plain cube, no model).
 
+## Hover flight on Earth, part 1: the physics: done
+- `FlightPhysics.step(..., weight)` adds gravity to thruster flight (pure, no caller yet, so no behaviour change): with the dampener on, thrust cancels weight first (`weightSupport`, up to all of it) and only the remainder steers; a body too weak to cover its weight falls at the unsupported weight (partial lift) and does not steer; dampener off or no power means full weight. `hoverShare` is the share of thrust spent on weight, which is what hovering will cost in energy. With weight 0 it is exactly the old step (tested).
+- Config `flight.hoverWeightFactor` (default 0.6): the weight the thrusters must cancel is the body's gravity times this (vanilla 0.08, so 0.048; a Mk I Drone's thrust is about 0.075).
+- Tests: 7 new `FlightPhysicsTest` cases; mutation-checked (weight support forced to 0 fails four of them).
+- Next: part 2 (always-thruster bodies on Earth: `ThrusterFlight`, server energy, HUD, GameTests), part 3 (Mech walking).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
