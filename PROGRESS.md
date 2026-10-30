@@ -649,6 +649,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Test flake fixed on the way (root cause):** all `CloudSiphonGameTests` had `timeoutTicks = 100`, but `inLoadedArea` waits up to 5 + 100 ticks for the chunk to tick, so any run where the chunk was slow timed out (they failed even on clean `main` when run on their own). They now have 300.
 - **Decisions pending (unattended):** the numbers (40 FE per tick, 4000 buffer) are guesses; only the Cloud Siphon takes energy for now; the other machines are Create stress machines, and an electricity answer for them (an electric motor, or Crafts & Additions' own) is a separate step. Whether our body's energy should charge from FE (a charger block) is open.
 
+## Required addons: done
+- Five Create addons are now required (owner's choice after the spike): Create Crafts & Additions 1.7.2, Create: Advanced Electricity 1.0.0 and Create: Advanced Computer Technic 1.0.2 (both CurseForge, through `cursemaven.com`), Create Propulsion: Simulated 1.1.5, Create: The Factory Must Grow 1.2.0. Declared like Create and Aeronautics (`gradle.properties`, `localRuntime` + `testRuntimeOnly`, `required` in `neoforge.mods.toml`). See `CLAUDE.md` "Required addons" for the policy, the optional list and the risks.
+- The unit-test JVM now gets 2 GB (`maxHeapSize`): with the extra mods it ran out of memory booting the mod at Gradle's default 512 MB.
+- Checked: 230 unit tests, 154 GameTests, the Aeronautics GameTests and `runData` (no diff) all pass with the five loaded. Nothing in our code uses them yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

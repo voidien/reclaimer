@@ -40,6 +40,12 @@ repositories {
         }
     }
     maven {
+        // CurseForge-only required addons (Advanced Electricity, Advanced Computer Technic).
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup('curse.maven') }
+    }
+    maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
         content { includeGroup('maven.modrinth') }
@@ -153,6 +159,19 @@ dependencies {
     testRuntimeOnly "maven.modrinth:sable:${sable_version}"
     testRuntimeOnly "maven.modrinth:create-aeronautics:${aeronautics_version}"
 
+    // Required Create addons (runtime only, like Aeronautics; add implementation when our code needs their API).
+    def requiredAddons = [
+            "maven.modrinth:createaddition:${createaddition_version}",
+            "maven.modrinth:create-propulsion-simulated:${propulsion_version}",
+            "maven.modrinth:create-tfmg:${tfmg_version}",
+            "curse.maven:create-advanced-electricity-addon-1743391:${advanced_electricity_file}",
+            "curse.maven:create-advanced-computer-technic-1759784:${advanced_computer_file}",
+    ]
+    requiredAddons.each {
+        localRuntime it
+        testRuntimeOnly it
+    }
+
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"
     localRuntime "maven.modrinth:modernfix:${modernfix_version}"
@@ -165,6 +184,8 @@ dependencies {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    // Unit tests boot the mod with its required mods (Create, Aeronautics, the required addons); Gradle's default 512 MB is too small.
+    maxHeapSize = '2G'
 }
 
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).
@@ -180,6 +201,11 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             create_version_range   : create_version_range,
             aeronautics_version_range: aeronautics_version_range,
             sable_version_range    : sable_version_range,
+            createaddition_version_range: createaddition_version_range,
+            propulsion_version_range: propulsion_version_range,
+            tfmg_version_range     : tfmg_version_range,
+            advanced_electricity_version_range: advanced_electricity_version_range,
+            advanced_computer_version_range: advanced_computer_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,

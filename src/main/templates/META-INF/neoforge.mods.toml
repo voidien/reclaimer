@@ -55,6 +55,41 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
+modId = "createaddition"
+type = "required"
+versionRange = "${createaddition_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "createpropulsion"
+type = "required"
+versionRange = "${propulsion_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "tfmg"
+type = "required"
+versionRange = "${tfmg_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "light_bulb_addon_create_crafts_and__addions"
+type = "required"
+versionRange = "${advanced_electricity_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "advanced_computer_technic"
+type = "required"
+versionRange = "${advanced_computer_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "jei"
 type = "optional"
 versionRange = "${jei_version_range}"
