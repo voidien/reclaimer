@@ -670,6 +670,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: flaky Test Starship spawn GameTest (root cause): done
 - `StarshipEntityGameTests.spawnCommandPutsOneShipAheadOfTheSource` failed now and then with "found 2" or "found 0". Two test bugs: old ships were discarded in `prepare()`, before the forced chunks had loaded their entities, so a ship an earlier run left in the persistent GameTest world reappeared and was counted; and the new ship was searched for within 0.5 blocks of its anchor, while a spawned ship sits at its drift position, up to the drift radius away. Old ships are now cleared once the chunks tick entities (in `whenTicking`), and ships are matched by their anchor within the drift radius. The game code was fine.
 
+## CC: Tweaked peripherals, part 3: the Terraforming Spire: done
+- `SpirePeripheral`: `isRunning`, `getProgress` (0 to 1), `getPulses`, `getRadius`, and `pulse()`, which goes through the same `SpireBlockEntity.tryStart()` as a right-click or redstone pulse (ruined Earth only, one pulse at a time) and returns `true`, or `false` and `"busy"`, `"wrong_world"` or `"no_profile"`. `SpireBlockEntity` gained `progress()` and `radius()`.
+- Tests: `CCPeripheralGameTests.theSpireIsAPeripheralAndPulsesUnderThePlayersRules` (CC offers the functions; `pulse()` is refused in deep space, starts on ruined Earth, and is refused while busy; the block is removed in the same tick so the persistent test world is not terraformed). Mutation-checked: a `pulse()` that skips the player's rules fails it.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -3,6 +3,8 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.compat.cc.CCCompat;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
+import com.voidreclaimer.compat.cc.SpirePeripheral;
+import com.voidreclaimer.terraform.SpireBlockEntity;
 import com.voidreclaimer.machine.CloudSiphonBlockEntity;
 import com.voidreclaimer.machine.ElectrolyzerBlockEntity;
 import com.voidreclaimer.machine.SpinnerBlockEntity;
@@ -124,6 +126,42 @@ public final class CCPeripheralGameTests {
 
             for (BlockPos pos : List.of(siphonPos, electrolyzerPos, spinnerPos)) {
                 level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theSpireIsAPeripheralAndPulsesUnderThePlayersRules(GameTestHelper helper) {
+        SpirePeripheral lua = new SpirePeripheral();
+        // In deep space the Spire refuses, as it does for a right-click.
+        BlockPos spacePos = new BlockPos(60_200, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, spacePos, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            SpireBlockEntity idle = place(space, spacePos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
+            requireMethods(helper, Lookup.of(space, spacePos), "Terraforming Spire",
+                    "isRunning", "getProgress", "getPulses", "getRadius", "pulse");
+            Object[] refused = lua.pulse(idle).getResult();
+            helper.assertTrue(Boolean.FALSE.equals(refused[0]) && "wrong_world".equals(refused[1]),
+                    "pulse() in deep space: " + Arrays.toString(refused));
+            helper.assertFalse(lua.isRunning(idle), "running in deep space");
+            helper.assertTrue(lua.getRadius(idle) == com.voidreclaimer.Config.SPIRE_RADIUS.get(), "getRadius " + lua.getRadius(idle));
+            space.setBlock(spacePos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+
+            // On ruined Earth pulse() starts it, and a second call is refused while it runs. The block is removed in
+            // the same tick, before the wave touches any ground of the persistent test world.
+            ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+            BlockPos earthPos = new BlockPos(350, 200, -300);
+            SpireBlockEntity spire = place(earth, earthPos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
+            try {
+                Object[] started = lua.pulse(spire).getResult();
+                helper.assertTrue(started.length == 1 && Boolean.TRUE.equals(started[0]), "pulse() on ruined Earth: " + Arrays.toString(started));
+                helper.assertTrue(lua.isRunning(spire), "not running after pulse()");
+                helper.assertTrue(lua.getProgress(spire) == 0.0, "progress before the first tick " + lua.getProgress(spire));
+                Object[] busy = lua.pulse(spire).getResult();
+                helper.assertTrue(Boolean.FALSE.equals(busy[0]) && "busy".equals(busy[1]), "a second pulse(): " + Arrays.toString(busy));
+            } finally {
+                earth.setBlock(earthPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
             helper.succeed();
         });

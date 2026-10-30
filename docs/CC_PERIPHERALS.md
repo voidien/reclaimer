@@ -29,6 +29,23 @@ local siphon = peripheral.find("void_reclaimer:cloud_siphon")
 print(("density %.2f, %d FE"):format(siphon.getDensity(), siphon.getEnergy()))
 ```
 
+## Terraforming Spire (`SpirePeripheral`)
+
+| Function | Returns |
+|---|---|
+| `isRunning()` | whether a Genesis Pulse is sweeping out from this Spire |
+| `getProgress()` | how far the running pulse has swept, 0 to 1 (0 when idle) |
+| `getPulses()` | pulses finished at this Spire |
+| `getRadius()` | blocks from the Spire to the edge of its square area |
+| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"no_profile"` |
+
+```lua
+local spire = peripheral.find("void_reclaimer:terraforming_spire")
+local ok, why = spire.pulse()
+if not ok then print("no pulse: " .. why) end
+while spire.isRunning() do print(("%.0f%%"):format(spire.getProgress() * 100)) sleep(1) end
+```
+
 ## Coming next
 The Dyson launch chain (Kinetic Mass Driver, Quantum Receiver), the Terraforming Spire, and the Backup Core, Tether Anchor
 and Atmospheric Portal frame. Item upgrades (turtle and pocket computer) come after.
