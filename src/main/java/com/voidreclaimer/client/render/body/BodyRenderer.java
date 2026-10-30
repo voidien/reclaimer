@@ -186,6 +186,25 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         if (pitches) {
             poseStack.mulPose(Axis.XP.rotationDegrees(-player.getViewXRot(partialTick)));
         }
+        BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
+        if (!lean.isNone()) {
+            applyLean(poseStack, player, lean, pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot), partialTick);
+        }
+    }
+
+    private static final BodyLean.State LEAN = new BodyLean.State();
+
+    /** Leans the model into its motion about the middle of the body (the rig's front is local +Z after the turn above). */
+    private static void applyLean(PoseStack poseStack, Player player, BodyRigSpec.Lean lean, float yaw, float partialTick) {
+        double dx = player.getX() - player.xo;
+        double dz = player.getZ() - player.zo;
+        LEAN.update(player.getId(), player.tickCount, BodyLook.forward(dx, dz, yaw), BodyLook.lateral(dx, dz, yaw), lean);
+        BodyLean.Angles angles = LEAN.at(player.getId(), partialTick);
+        float pivot = player.getBbHeight() * 0.5f;
+        poseStack.translate(0.0, pivot, 0.0);
+        poseStack.mulPose(Axis.XP.rotationDegrees(angles.pitch()));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(angles.roll()));
+        poseStack.translate(0.0, -pivot, 0.0);
     }
 
     /** Where the rig's origin sits above the player's feet: its middle for flyers, the pelvis height for the upright Mech. */

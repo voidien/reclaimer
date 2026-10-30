@@ -4,6 +4,11 @@
   "animations": "void_reclaimer:animations/entity/mech_suit.animation.json",
   "animation_prefix": "animation.void_reclaimer.mech_suit.",
   "grounded": true,
+  "lean": {
+    "pitch": 22,
+    "roll": 16,
+    "reference_speed": 0.4
+  },
   "yaw": 180,
   "sockets": {
     "head": [
