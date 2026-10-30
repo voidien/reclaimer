@@ -674,6 +674,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: flaky Test Starship spawn GameTest (root cause): done
 - `StarshipEntityGameTests.spawnCommandPutsOneShipAheadOfTheSource` failed now and then with "found 2" or "found 0". Two test bugs: old ships were discarded in `prepare()`, before the forced chunks had loaded their entities, so a ship an earlier run left in the persistent GameTest world reappeared and was counted; and the new ship was searched for within 0.5 blocks of its anchor, while a spawned ship sits at its drift position, up to the drift radius away. Old ships are now cleared once the chunks tick entities (in `whenTicking`), and ships are matched by their anchor within the drift radius. The game code was fine.
 
+## RD tools, part 2: repainting (`--fix --tool edit|inpaint|outpaint|seam`): done
+- `rd_edit.py` gains RD's generative edit tools through the same `--fix` command: `edit` (`image_edit`, needs `--prompt`), `inpaint` (`inpainting`, needs `--prompt` and `--mask`), `outpaint` (`--expand L,R,T,B`) and `seam` (`seam_tiling`, `--axes`), with `--seed`. Results are downloaded from RD's URLs and become variants. The mask is checked before anything is paid (size, and not opaque everywhere). See `tools/art/README.md` "Repainting part of an image".
+- Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
+- First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

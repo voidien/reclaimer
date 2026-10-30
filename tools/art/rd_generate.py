@@ -1049,7 +1049,13 @@ def main(argv=None):
                    help="fix art we already have with an RD edit tool or the Pixel Fixer (see rd_edit.py): the mod's "
                         "file, or staged variant N; the result becomes the next variant")
     p.add_argument('--tool', default='palette',
-                   help='--fix tool: palette (style-guide palette), reduce, downscale, unbg, correct, pixel, pixel-neural')
+                   help='--fix tool: palette (style-guide palette), reduce, downscale, unbg, correct, pixel, pixel-neural; '
+                        'repaint: edit, inpaint, outpaint, seam')
+    p.add_argument('--prompt', help='--fix --tool edit/inpaint/outpaint: what to paint')
+    p.add_argument('--mask', help='--fix --tool inpaint: RGBA PNG the size of the image, opaque where to repaint')
+    p.add_argument('--expand', metavar='L,R,T,B', help='--fix --tool outpaint: pixels to grow on each side')
+    p.add_argument('--axes', help='--fix --tool seam: x, y or xy (default xy)')
+    p.add_argument('--seed', type=int, help='--fix repaint tools: a fixed seed')
     p.add_argument('--colors', type=int, default=16, help='--fix --tool reduce: number of colours (default 16)')
     args = ARGS = p.parse_args(argv)
     rows = load_rows()
