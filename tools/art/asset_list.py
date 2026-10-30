@@ -49,6 +49,8 @@ def item(group, iid, desc, notes='', phase='now'):
 # ---------- items: tools and modules ----------
 G = 'Tools & modules'
 item(G, 'dust_sensor', 'handheld brass sensor with a round cyan glass lens and small antenna')
+item(G, 'portal_igniter', 'small brass igniter with a pale-blue crystal ring at the tip',
+     'Lights an Atmospheric Portal frame; used up. Act III slice placeholder.', phase='11')
 item(G, 'nanite_swarm', 'swirling cloud of tiny silver-cyan nanite specks around a small emitter',
      'Animated (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). RD VFX animation as a sprite sheet, then stack 4 frames top to bottom.')
 item(G, 'salvage_tool', 'compact cutting tool with a copper handle and glowing orange cutting edge')
@@ -177,6 +179,15 @@ block('electrolyzer_end', 'block/electrolyzer_end.png', 'machine end face: andes
 block('spinner_side', 'block/spinner_side.png', 'machine side: brass casing with a spinning spool of black thread visible',
       tile='no', model='Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib).')
 block('spinner_end', 'block/spinner_end.png', 'machine end face: brass casing with a shaft hole in the middle', tile='no')
+# Act III slice (ruined_earth, the Atmospheric Portal, the Spire): placeholders exist, so they are ordinary rows now.
+block('ashen_slag', 'block/ashen_slag.png', 'grey-black ashen slag ground with cinders', phase='11',
+      notes='The whole ruined Earth surface: it must tile without visible seams. The Spire turns it into soil.')
+block('portal_frame', 'block/portal_frame.png', 'brass and andesite portal frame block with a pale-blue inlay', tile='no',
+      phase='11', notes='Built into a flat rectangle (up to 32 x 32 inside) around the Atmospheric Portal.')
+block('atmospheric_portal', 'block/atmospheric_portal.png', 'swirling pale-blue atmosphere, translucent', tile='no', phase='11',
+      notes='The portal pane: drawn translucent on a thin plate. Still static; an animated strip (like the Nether portal) can come later.')
+block('terraforming_spire', 'block/terraforming_spire.png', 'terraforming machine face: green-lit brass column with a glowing emitter',
+      tile='no', phase='12', notes='The single-block Spire of the Act III slice; the multiblock with its 3D model is a future row.')
 
 # ---------- HUD and GUI (larger, mixed sizes) ----------
 G = 'HUD & GUI'
@@ -307,10 +318,9 @@ fut = [
      'DysonSky draws these procedurally now; textures optional.'),
     ('11', 'ruined_earth sky', 'sky textures', 'environment/ruined_*.png', 'RD image',
      'smoggy brown-orange sky, three eras: choked, clearing, healed', 'Three-era sky.'),
-    ('11', 'atmospheric_portal', 'block + animated surface', 'block/atmospheric_portal_{frame,surface}.png', 'RD image (VFX animation)',
-     'portal frame of brass and andesite; swirling pale-blue atmosphere surface',
-     'Surface is a vertical strip of 16x16 frames, like the nether portal: RD sprite-sheet output, restacked.'),
-    ('11', 'ashen_slag', 'block', 'block/ashen_slag.png', 'RD image', 'grey-black ashen slag ground with cinders', 'Tileable 16x16.'),
+    ('11', 'atmospheric_portal_animation', 'animated surface', 'block/atmospheric_portal.png', 'RD image (VFX animation)',
+     'swirling pale-blue atmosphere surface', 'Animated version of the pane: a vertical strip of 16x16 frames, like the nether '
+                                              'portal (RD sprite-sheet output, restacked).'),
     ('11', 'acid_drizzle', 'weather texture', 'environment/acid_rain.png', 'RD image',
      'sickly yellow-green rain streaks, vanilla rain layout 64x256', 'Weather replacement texture.'),
     ('11', 'drop_pod', 'animated entity', 'entity/drop_pod.png', 'RD 3D blocky + animate (GeckoLib)',
@@ -319,7 +329,7 @@ fut = [
      'heavy industrial mech, copper and andesite, hazard stripes', 'Defined in the design doc; if it is a body chassis it follows the socket contract.'),
     ('11', 'planetary_grid_hud', 'GUI', 'gui/planetary_grid.png', 'RD image',
      'pixel art 4x4 planetary sector map, dark screen with cyan grid lines', '256x256 GUI sprite.'),
-    ('12', 'terraforming_spire', 'animated multiblock', 'block/spire_*.png', 'RD 3D blocky + animate (GeckoLib)',
+    ('12', 'terraforming_spire_multiblock', 'animated multiblock', 'block/spire_*.png', 'RD 3D blocky + animate (GeckoLib)',
      'tall terraforming spire: heavy base, ribbed column, glowing green emitter top', 'Genesis Pulse animation on the emitter.'),
     ('12', 'bio_nutrient_slurry', 'fluid + bucket', 'item/bio_nutrient_slurry_bucket.png', 'RD image',
      'bucket of thick green bio-nutrient slurry', 'Fluid can reuse tinted water like the others.'),
@@ -336,7 +346,7 @@ fut = [
 ]
 for phase, asset, kind, rel, method, prompt, notes in fut:
     rows.append(dict(group=G, asset=asset, file=T + rel, size='16x16' if kind.startswith('block') else '-',
-                     tileable='yes' if asset in ('ashen_slag', 'asteroid ores') else 'no',
+                     tileable='yes' if asset == 'asteroid ores' else 'no',
                      method=method, status='missing (future)', phase=phase, model=kind, prompt=prompt, notes=notes))
 
 # ---------- write CSV ----------
