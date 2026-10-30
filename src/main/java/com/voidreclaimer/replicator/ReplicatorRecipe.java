@@ -40,7 +40,7 @@ import net.minecraft.world.level.Level;
  * @param title     name shown instead of the first result's (kits)
  */
 public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category,
-                               ResourceKey<Milestone> milestone, Optional<Component> title) implements Recipe<ReplicatorInput> {
+                               ResourceKey<Milestone> milestone, Optional<Component> title, Optional<Component> description) implements Recipe<ReplicatorInput> {
 
     public static final MapCodec<ReplicatorRecipe> CODEC = RecordCodecBuilder.<ReplicatorRecipe>mapCodec(instance -> instance.group(
             ItemStack.STRICT_CODEC.optionalFieldOf("result").forGetter(r -> r.results.size() == 1 ? Optional.of(r.results.get(0)) : Optional.empty()),
@@ -49,26 +49,54 @@ public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks
             ExtraCodecs.POSITIVE_INT.fieldOf("ticks").forGetter(ReplicatorRecipe::ticks),
             ModCodecs.key(VoidReclaimerRegistries.REPLICATOR_CATEGORY).fieldOf("category").forGetter(ReplicatorRecipe::category),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).fieldOf("milestone").forGetter(ReplicatorRecipe::milestone),
-            ComponentSerialization.CODEC.optionalFieldOf("title").forGetter(ReplicatorRecipe::title)
-    ).apply(instance, (single, list, cost, ticks, category, milestone, title) -> new ReplicatorRecipe(
-            list.orElseGet(() -> single.map(List::of).orElse(List.of())), cost, ticks, category, milestone, title)))
+            ComponentSerialization.CODEC.optionalFieldOf("title").forGetter(ReplicatorRecipe::title),
+            ComponentSerialization.CODEC.optionalFieldOf("description").forGetter(ReplicatorRecipe::description)
+    ).apply(instance, (single, list, cost, ticks, category, milestone, title, description) -> new ReplicatorRecipe(
+            list.orElseGet(() -> single.map(List::of).orElse(List.of())), cost, ticks, category, milestone, title, description)))
             .validate(recipe -> recipe.results.isEmpty() ? DataResult.error(() -> "a Replicator recipe needs a result") : DataResult.success(recipe));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorRecipe> STREAM_CODEC = StreamCodec.composite(
-            ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorRecipe::results,
-            DustCost.STREAM_CODEC, ReplicatorRecipe::cost,
-            ByteBufCodecs.VAR_INT, ReplicatorRecipe::ticks,
-            ResourceKey.streamCodec(VoidReclaimerRegistries.REPLICATOR_CATEGORY), ReplicatorRecipe::category,
-            ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE), ReplicatorRecipe::milestone,
-            ByteBufCodecs.optional(ComponentSerialization.TRUSTED_STREAM_CODEC), ReplicatorRecipe::title,
-            ReplicatorRecipe::new);
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<ItemStack>> RESULTS = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list());
+    private static final StreamCodec<io.netty.buffer.ByteBuf, ResourceKey<ReplicatorCategory>> CATEGORY =
+            ResourceKey.streamCodec(VoidReclaimerRegistries.REPLICATOR_CATEGORY);
+    private static final StreamCodec<io.netty.buffer.ByteBuf, ResourceKey<Milestone>> MILESTONE =
+            ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE);
+    private static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> TEXT =
+            ByteBufCodecs.optional(ComponentSerialization.TRUSTED_STREAM_CODEC);
+
+    /** Written by hand: {@code StreamCodec.composite} stops at six fields. */
+    public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorRecipe> STREAM_CODEC = StreamCodec.of(
+            (buf, recipe) -> {
+                RESULTS.encode(buf, recipe.results);
+                DustCost.STREAM_CODEC.encode(buf, recipe.cost);
+                ByteBufCodecs.VAR_INT.encode(buf, recipe.ticks);
+                CATEGORY.encode(buf, recipe.category);
+                MILESTONE.encode(buf, recipe.milestone);
+                TEXT.encode(buf, recipe.title);
+                TEXT.encode(buf, recipe.description);
+            },
+            buf -> new ReplicatorRecipe(RESULTS.decode(buf), DustCost.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
+                    CATEGORY.decode(buf), MILESTONE.decode(buf), TEXT.decode(buf), TEXT.decode(buf)));
 
     public ReplicatorRecipe {
         results = results.stream().map(ItemStack::copy).toList();
     }
 
+    public ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category,
+                            ResourceKey<Milestone> milestone, Optional<Component> title) {
+        this(results, cost, ticks, category, milestone, title, Optional.empty());
+    }
+
     public ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category, ResourceKey<Milestone> milestone) {
-        this(List.of(result), cost, ticks, category, milestone, Optional.empty());
+        this(List.of(result), cost, ticks, category, milestone, Optional.empty(), Optional.empty());
+    }
+
+    /**
+     * Translation key of a built-in recipe's description: {@code replicator.<namespace>.description.<name>}, where the recipe
+     * id is {@code <namespace>:replicator/<name>}. A recipe's own {@code description} overrides it.
+     */
+    public static String descriptionKey(net.minecraft.resources.ResourceLocation recipeId) {
+        String path = recipeId.getPath();
+        return "replicator." + recipeId.getNamespace() + ".description." + (path.startsWith("replicator/") ? path.substring("replicator/".length()) : path);
     }
 
     /** The first result (the one shown). */

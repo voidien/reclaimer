@@ -108,6 +108,8 @@ public final class ExtensionGameTests {
             helper.assertTrue(Replicator.queue(player, PLASMA_GLASS) == ReplicatorLogic.QueueResult.QUEUED, "recipe not queued");
             helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(PLASMA) - 3f) < 1e-4, "plasma not paid");
             helper.assertTrue(Replicator.recipe(player, PLASMA_GLASS).category().equals(EXPERIMENTAL), "recipe category not read");
+            helper.assertTrue(Replicator.recipe(player, PLASMA_GLASS).description().map(c -> c.getString().equals("Melts plasma into glass panes.")).orElse(false),
+                    "a datapack recipe's description was not read");
             helper.assertTrue(ReplicatorCategories.all(player.registryAccess()).getLast().key().equals(EXPERIMENTAL),
                     "datapack tab not after the built-in ones");
             helper.succeed();
