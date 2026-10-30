@@ -1,6 +1,7 @@
 package com.voidreclaimer.client.render.body;
 
 import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +97,7 @@ public final class BodyAnimatable implements GeoReplacedEntity {
             motion.tick = player.tickCount;
             float yaw = player.getYRot();
             BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, !Energy.canPowerSystems(player),
-                    BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw));
+                    BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw), thrusting(player));
             if (now != motion.pose && (player.tickCount >= motion.heldUntil || now == BodyLook.Pose.LOW_POWER)) {
                 motion.pose = now;
                 motion.heldUntil = player.tickCount + HOLD_TICKS;
@@ -105,6 +106,11 @@ public final class BodyAnimatable implements GeoReplacedEntity {
             }
         }
         return motion.pose;
+    }
+
+    /** The local player's held keys; other players' input isn't known here, so their steady motion counts as thrust. */
+    private static boolean thrusting(Player player) {
+        return !player.isLocalPlayer() || player.getData(ModAttachments.FLIGHT_INPUT).isThrusting();
     }
 
     @Override

@@ -537,6 +537,38 @@ class RdGenerateTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 rd.main(bad)
 
+    def test_standalone_conversion_reparents_effect_groups_that_lost_their_parent(self):
+        """RD's Re-rig can leave flames at the model's top level, where no bone moves them."""
+        import bbgeo
+
+        def cube(uuid, at):
+            faces = {f: {'uv': [0, 0, 4, 4], 'texture': 0} for f in ('north', 'east', 'south', 'west', 'up', 'down')}
+            return {'uuid': uuid, 'name': uuid, 'type': 'cube', 'from': at, 'to': [at[0] + 2, at[1] + 2, at[2] + 2],
+                    'origin': at, 'rotation': [0, 0, 0], 'faces': faces}
+
+        def grp(name, origin, children=()):
+            return {'name': name, 'uuid': 'g-' + name, 'origin': origin, 'rotation': [0, 0, 0], 'children': list(children)}
+
+        png = base64.b64encode(checker(16, 16, transparent_corner=False)).decode()
+        model = {'meta': {'format_version': '4.10', 'model_format': 'free', 'box_uv': False}, 'name': 'rd',
+                 'resolution': {'width': 16, 'height': 16},
+                 'elements': [cube('c1', [0, 0, 0]), cube('c2', [4, 0, 0]), cube('c3', [4, -4, 0])],
+                 'textures': [{'name': 'a', 'source': 'data:image/png;base64,' + png, 'uv_width': 16, 'uv_height': 16}],
+                 'outliner': [grp('root', [0, 8, 0], ['c1', grp('foot_l', [4, 2, 0], ['c2', grp('fx_boot_l', [4, 0, 0])])]),
+                              grp('fx_flame_boot_l', [4, -4, 0], ['c3'])]}
+        geo, _, report = bbgeo.convert(json.dumps(model), 'mech', standalone=True, scale=False)
+        parents = {b['name']: b.get('parent') for b in geo['minecraft:geometry'][0]['bones']}
+        self.assertEqual('fx_boot_l', parents['fx_flame_boot_l'])
+        self.assertTrue(any('reparented fx_flame_boot_l under fx_boot_l' in line for line in report))
+        # A group with no matching bone is left alone, and a parented model changes nothing.
+        model['outliner'].append(grp('antenna', [0, 20, 0]))
+        geo, _, _ = bbgeo.convert(json.dumps(model), 'mech', standalone=True, scale=False)
+        parents = {b['name']: b.get('parent') for b in geo['minecraft:geometry'][0]['bones']}
+        self.assertEqual('mech', parents['antenna'])
+        tree = bbgeo.read_bbmodel(model)[0]
+        self.assertEqual([('fx_flame_boot_l', 'fx_boot_l')], bbgeo.reparent_effects(tree))
+        self.assertEqual([], bbgeo.reparent_effects(tree), 'already moved: nothing left to do')
+
     def test_scale_like_sizes_the_whole_model_like_ours(self):
         import bbgeo
         geo_dir = os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo/body')

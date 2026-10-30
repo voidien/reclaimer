@@ -30,11 +30,11 @@ public final class BodyRenderEvents {
     /**
      * Bodies much bigger than a player (the Ship is 12 blocks long, the Titan over 60) need the third-person camera further back
      * to see them whole. The event's distance is the unscaled 4 blocks and vanilla multiplies the result by the body's scale
-     * afterwards, so this only adds a factor of up to 4 for the big ones: the Ship ends up about 25 blocks away, the Titan
-     * about 130 (a larger factor put the camera 1000 blocks away).
+     * afterwards, so this only adds a factor of up to 5 for the big ones: the Ship ends up about 40 blocks away, the Titan
+     * about 160 (a larger factor put the camera 1000 blocks away). Bodies up to the Mech's size keep vanilla's distance.
      */
     public static float cameraDistance(float distance, float scale) {
-        return distance * Math.min(4f, Math.max(1f, scale * 0.7f));
+        return scale <= 1.5f ? distance : distance * Math.min(5f, scale * 1.1f);
     }
 
     @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)

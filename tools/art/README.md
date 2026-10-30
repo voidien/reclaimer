@@ -119,6 +119,11 @@ python3 tools/art/rd_generate.py --balance
 - Saved files: `model.bbmodel` (with every animation), `atlas.png`, `render.png` and `turntable.png`.
 - RD's `minecraft` export is not used: it needs Minecraft 1.21.11+ for tilted boxes, and the mod is on 1.21.1.
 
+**Checking a rig (`rig_check.py`)**
+- `python3 tools/art/rig_check.py MODEL.bbmodel [--spec src/main/resources/assets/void_reclaimer/body_rigs/mech.json]` compares an RD model with a rig spec: every bone the spec names exists and is unique, every animation the poses name exists, animations only key real bones, and effect groups (flames, tool and watch pieces) are parented. A group left at the model's top level is moved by no bone, so a flame there floats in the air.
+- It prints the problems and Re-rig instructions of at most 250 characters (the limit of RD's Re-rig box). Paste them one at a time, re-export, and run the check again.
+- Re-rig before animating: RD deletes animations that use bones a Re-rig removes. Test: `python3 tools/art/test_rig_check.py` (runs in CI).
+
 **Animations**
 - Run on the rig's model once that model exists, then the rig's `.bbmodel` is re-exported.
 - Animation names and bones still need the Blockbench step in `docs/art/ASSETS.md`; `--promote` converts models, not animations.
@@ -199,6 +204,7 @@ python3 tools/art/rd_generate.py --promote-as entity/starship --source art/rd/st
 ```
 - **Written:** `geo/entity/starship.geo.json`, `textures/entity/starship.png` and `animations/entity/starship.animation.json`. Also `entity/` or `block/`.
 - **Bones** keep RD's group names (`nose`, `wing_l`, ...) under a root bone named after the model.
+- **Lost parents are repaired.** RD's Re-rig can leave effect groups (`fx_flame_*`, `fx_tool_*`, `fx_watch_*`) at the model's top level, where no bone moves them (a flame floats where the foot was). The promote puts them back under their effect bone (`fx_boot_l`, `fx_jet_l`, `fx_tool`, `fx_watch`; `bbgeo.PARENT_HINTS`) and prints each move.
 - **Size:** RD's size is kept unless you pass `--fit`, `--scale` or `--scale-like` (e.g. `--scale-like body/ship` makes it as long as the Ship rig).
 - **Animations** are converted the way Blockbench's own Bedrock export does it: rotation X/Y and position X negated, positions scaled with the model. Step keys are held until the next key, because GeckoLib reads only a keyframe's `post` value. Loop modes map to GeckoLib's (`loop`, `hold_on_last_frame`, play once).
 - **Checks:** `GeoModelLoadTest` loads every animation through GeckoLib and checks that each moved bone exists in its model. For body animations, that means the rig or any section or module.

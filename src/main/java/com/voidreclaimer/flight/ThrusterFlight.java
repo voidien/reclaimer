@@ -45,6 +45,17 @@ public final class ThrusterFlight {
         player.setDeltaMovement(velocity);
         player.move(MoverType.SELF, velocity);
         player.calculateEntityAnimation(true);
+        calmWalkBob(player);
+    }
+
+    /**
+     * Touching a wall or floor sets {@code onGround}, which makes vanilla's walking view-bob (and limb swing) kick in,
+     * so a drone resting against the floor of a tunnel would bob. Thrusters never walk: keep the bob at zero.
+     * Runs after vanilla's per-tick bob update, so the rendered bob is zero.
+     */
+    public static void calmWalkBob(Player player) {
+        player.bob = 0f;
+        player.oBob = 0f;
     }
 
     /** One tick of thruster physics for this player, plus the tether: returns the new velocity. */
