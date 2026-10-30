@@ -15,6 +15,7 @@ public final class ModPayloads {
         registrar.playToServer(ToggleFlightSettingPayload.TYPE, ToggleFlightSettingPayload.STREAM_CODEC, ToggleFlightSettingPayload::handle);
         registrar.playToServer(SensorPulsePayload.TYPE, SensorPulsePayload.STREAM_CODEC, SensorPulsePayload::handle);
         registrar.playToServer(ReplicatorActionPayload.TYPE, ReplicatorActionPayload.STREAM_CODEC, ReplicatorActionPayload::handle);
+        registrar.playToServer(OpenInventoryPayload.TYPE, OpenInventoryPayload.STREAM_CODEC, OpenInventoryPayload::handle);
         registrar.playToServer(NaniteRangePayload.TYPE, NaniteRangePayload.STREAM_CODEC, NaniteRangePayload::handle);
         registrar.playToServer(TetherRecallPayload.TYPE, TetherRecallPayload.STREAM_CODEC, TetherRecallPayload::handle);
         registrar.playToServer(CoreActionPayload.TYPE, CoreActionPayload.STREAM_CODEC, CoreActionPayload::handle);

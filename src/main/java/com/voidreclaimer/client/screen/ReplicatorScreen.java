@@ -69,6 +69,7 @@ public final class ReplicatorScreen extends Screen {
     @Nullable
     private RecipeHolder<ReplicatorRecipe> selected;
     private int selectedLog;
+    private Start start = Start.RECIPES;
     /** Queue position being dragged (never 0, the running job), or -1. */
     private int dragFrom = -1;
     private int left;
@@ -76,8 +77,16 @@ public final class ReplicatorScreen extends Screen {
     private Button replicateButton;
     private Button collectButton;
 
+    /** Which tab the screen opens on: the first recipe tab, the Logs tab or the Body tab. */
+    public enum Start { RECIPES, LOGS, BODY }
+
     public ReplicatorScreen() {
+        this(Start.RECIPES);
+    }
+
+    public ReplicatorScreen(Start start) {
         super(Component.translatable("replicator.void_reclaimer.title"));
+        this.start = start;
     }
 
     @Override
@@ -103,6 +112,15 @@ public final class ReplicatorScreen extends Screen {
             addRenderableWidget(Button.builder(label, b -> selectTab(index)).bounds(tabX, top + 18, tabWidth, 16).build());
             tabX += tabWidth + 2;
         }
+        addRenderableWidget(Button.builder(Component.translatable("menu.void_reclaimer.inventory"),
+                        b -> PacketDistributor.sendToServer(com.voidreclaimer.network.OpenInventoryPayload.INSTANCE))
+                .bounds(left + WIDTH - 60, top + 2, 56, 14).build());
+        if (start == Start.LOGS) {
+            tab = logsTab;
+        } else if (start == Start.BODY) {
+            tab = bodyTab;
+        }
+        start = Start.RECIPES;
         bodyPanel = new BodyPanel(font, left + 6, top + 38, WIDTH - 12);
         replicateButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.replicate"), b -> replicate())
                 .bounds(left + 6, top + HEIGHT - 24, 90, 18).build());
