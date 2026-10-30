@@ -49,6 +49,11 @@ public final class ModBlocks {
             com.voidreclaimer.ship.ChemicalThrusterBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
 
+    /** Pushes a block ship on Forge Energy: weak but needs no fuel or shaft; redstone is the throttle. */
+    public static final DeferredBlock<com.voidreclaimer.ship.IonThrusterBlock> ION_THRUSTER = BLOCKS.registerBlock("ion_thruster",
+            com.voidreclaimer.ship.IonThrusterBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 6.0f).sound(SoundType.COPPER).lightLevel(state -> 3));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

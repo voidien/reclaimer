@@ -38,5 +38,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.ship.ChemicalThrusterBlockEntity>> CHEMICAL_THRUSTER = BLOCK_ENTITIES.register("chemical_thruster",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.ship.ChemicalThrusterBlockEntity::new, ModBlocks.CHEMICAL_THRUSTER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.ship.IonThrusterBlockEntity>> ION_THRUSTER = BLOCK_ENTITIES.register("ion_thruster",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.ship.IonThrusterBlockEntity::new, ModBlocks.ION_THRUSTER.get()).build(null));
+
     private ModBlockEntities() {}
 }

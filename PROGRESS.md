@@ -713,6 +713,15 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ### Placeholder assets
 - `textures/block/chemical_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
 
+## 7b ships, part 2: the Ion Thruster: done
+- **Ion Thruster** (`ion_thruster`): pushes a ship on Forge Energy from any energy mod (receive-only capability), with no shaft and no fuel. Force 60 at full throttle against the Chemical Thruster's 400, using 80 FE per tick; redstone is the throttle and sets both the draw and the push; a short buffer gives a proportional push. The nozzle points out of the face it is placed on. Replicator recipe behind `starship` (placeholder price). Config section `ships`: `ionThrust`, `ionFePerTick`, `ionFeBuffer` (8000), toggle `ionThruster`.
+- `ThrusterPeripheral` gains the Ion Thruster (`getThrottle`, `getForce`, `isFiring`, `getEnergy`, `getEnergyCapacity`). The thrusters' force code moved to `ship/ThrusterPush`.
+- Tests: `ThrusterMathTest` (3 more), `ThrusterGameTests` (3 more: buffer rules, draw and push, empty buffer), two real-ship `AeronauticsGameTests` (a charged thruster moves a ship; an empty one leaves it still), the peripheral test. Mutation-checked: never using energy, and pushing on an empty buffer, each fail.
+- The numbers are guesses, and a Chemical Thruster's fuel is not weighed against FE cost yet. Not seen in a client.
+
+### Placeholder assets
+- `textures/block/ion_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

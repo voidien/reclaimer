@@ -6,6 +6,7 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModFluids;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
+import com.voidreclaimer.ship.IonThrusterBlockEntity;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -13,12 +14,13 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-/** The Chemical Thruster as a block: its tank, fuel burn and force. That it really moves a ship is in {@link AeronauticsGameTests}. */
+/** The thrusters as blocks: its tank, fuel burn and force. That it really moves a ship is in {@link AeronauticsGameTests}. */
 @GameTestHolder(VoidReclaimer.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ThrusterGameTests {
@@ -111,6 +113,64 @@ public final class ThrusterGameTests {
             tick(thruster, FULL_SPIN_RPM, 20);
             helper.assertTrue(thruster.tank().isEmpty(), "fuel left: " + thruster.tank().getFluidAmount());
             helper.assertTrue(thruster.force() == 0.0, "still pushing on an empty tank: " + thruster.force());
+        });
+    }
+
+    /** An Ion Thruster at {@code pos}, ticked by hand through its server tick. */
+    private static void withIon(GameTestHelper helper, BlockPos pos, Consumer<IonThrusterBlockEntity> body) {
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            level.setBlock(pos, ModBlocks.ION_THRUSTER.get().defaultBlockState(), 3);
+            try {
+                body.accept((IonThrusterBlockEntity) level.getBlockEntity(pos));
+                helper.succeed();
+            } finally {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 3);
+            }
+        });
+    }
+
+    private static void tickIon(IonThrusterBlockEntity thruster, int ticks) {
+        for (int i = 0; i < ticks; i++) {
+            IonThrusterBlockEntity.serverTick(thruster.getLevel(), thruster.getBlockPos(), thruster.getBlockState(), thruster);
+        }
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theIonBufferOnlyTakesEnergyIn(GameTestHelper helper) {
+        withIon(helper, new BlockPos(61_500, 80, 0), thruster -> {
+            int buffer = Config.ION_FE_BUFFER.get();
+            helper.assertTrue(thruster.energy().receiveEnergy(Integer.MAX_VALUE, false) == buffer, "the buffer is not bounded");
+            helper.assertTrue(thruster.energy().receiveEnergy(1, false) == 0, "a full buffer took more");
+            helper.assertTrue(thruster.energy().extractEnergy(100, false) == 0 && !thruster.energy().canExtract(), "energy came back out");
+            helper.assertTrue(thruster.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, thruster.getBlockPos(), null) != null,
+                    "energy mods cannot reach it");
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void anOpenIonThrusterDrawsEnergyAndPushes(GameTestHelper helper) {
+        withIon(helper, new BlockPos(61_600, 80, 0), thruster -> {
+            thruster.energy().receiveEnergy(1000, false);
+            tickIon(thruster, 10);
+            helper.assertTrue(thruster.force() == 0.0 && thruster.storedEnergy() == 1000, "it ran with the throttle shut");
+            thruster.getLevel().setBlock(thruster.getBlockPos().above(), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            tickIon(thruster, 10);
+            helper.assertTrue(Math.abs(thruster.force() - Config.ION_THRUST.get()) < 1e-6, "full force expected, got " + thruster.force());
+            helper.assertTrue(thruster.storedEnergy() == 1000 - 10 * Config.ION_FE_PER_TICK.get(), "energy left " + thruster.storedEnergy());
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void anEmptyIonThrusterStopsPushing(GameTestHelper helper) {
+        withIon(helper, new BlockPos(61_700, 80, 0), thruster -> {
+            thruster.energy().receiveEnergy(100, false);
+            thruster.getLevel().setBlock(thruster.getBlockPos().above(), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            tickIon(thruster, 1);
+            helper.assertTrue(thruster.force() > 0.0, "not firing on a charged buffer");
+            tickIon(thruster, 5);
+            helper.assertTrue(thruster.storedEnergy() == 0 && thruster.force() == 0.0, "still pushing on an empty buffer: " + thruster.force());
         });
     }
 }

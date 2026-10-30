@@ -2,6 +2,7 @@ package com.voidreclaimer.compat.cc;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
+import com.voidreclaimer.ship.IonThrusterBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 import java.util.List;
@@ -16,6 +17,38 @@ public final class ThrusterPeripheral implements GenericPeripheral {
     public String id() {
         return VoidReclaimer.id("thrusters").toString();
     }
+
+    // ---- Ion Thruster -----------------------------------------------------------------------------------------------
+
+    /** Redstone throttle, 0 to 1. */
+    @LuaFunction(mainThread = true)
+    public final double getThrottle(IonThrusterBlockEntity thruster) {
+        return thruster.throttle();
+    }
+
+    /** The force it pushes with right now. */
+    @LuaFunction(mainThread = true)
+    public final double getForce(IonThrusterBlockEntity thruster) {
+        return thruster.force();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final boolean isFiring(IonThrusterBlockEntity thruster) {
+        return thruster.force() > 0.0;
+    }
+
+    /** Forge Energy in the buffer. */
+    @LuaFunction(mainThread = true)
+    public final int getEnergy(IonThrusterBlockEntity thruster) {
+        return thruster.storedEnergy();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final int getEnergyCapacity(IonThrusterBlockEntity thruster) {
+        return thruster.energy().getMaxEnergyStored();
+    }
+
+    // ---- Chemical Thruster ------------------------------------------------------------------------------------------
 
     /** Redstone throttle, 0 to 1. */
     @LuaFunction(mainThread = true)

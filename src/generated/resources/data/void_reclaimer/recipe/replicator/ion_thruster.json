@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 30.0,
+    "void_reclaimer:ice": 40.0,
+    "void_reclaimer:metallic": 50.0,
+    "void_reclaimer:silicate": 50.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:ion_thruster"
+  },
+  "ticks": 800
+}

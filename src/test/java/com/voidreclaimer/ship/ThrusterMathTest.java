@@ -44,4 +44,28 @@ class ThrusterMathTest {
         assertTrue(ThrusterMath.burn(2, 0.5, 1) < ThrusterMath.burn(2, 1, 1));
         assertEquals(1.0, ThrusterMath.burn(2, 0.5, 1), EPS);
     }
+
+    @Test
+    void anIonThrusterDrawsAndPushesByThrottle() {
+        ThrusterMath.IonDraw full = ThrusterMath.ionDraw(60, 80, 1.0, 1000);
+        assertEquals(60.0, full.force(), EPS);
+        assertEquals(80, full.energy());
+        ThrusterMath.IonDraw half = ThrusterMath.ionDraw(60, 80, 0.5, 1000);
+        assertEquals(30.0, half.force(), EPS);
+        assertEquals(40, half.energy());
+    }
+
+    @Test
+    void aShortBufferGivesAProportionalPush() {
+        ThrusterMath.IonDraw low = ThrusterMath.ionDraw(60, 80, 1.0, 20);
+        assertEquals(15.0, low.force(), EPS);
+        assertEquals(20, low.energy());
+    }
+
+    @Test
+    void anIonThrusterDoesNothingWithoutPowerOrThrottle() {
+        assertEquals(new ThrusterMath.IonDraw(0.0, 0), ThrusterMath.ionDraw(60, 80, 1.0, 0));
+        assertEquals(new ThrusterMath.IonDraw(0.0, 0), ThrusterMath.ionDraw(60, 80, 0.0, 1000));
+        assertEquals(new ThrusterMath.IonDraw(0.0, 0), ThrusterMath.ionDraw(60, 0, 1.0, 1000), "a zero draw config turns it off");
+    }
 }

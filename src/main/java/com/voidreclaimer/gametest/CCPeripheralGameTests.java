@@ -19,6 +19,7 @@ import com.voidreclaimer.machine.SpinnerBlockEntity;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
+import com.voidreclaimer.ship.IonThrusterBlockEntity;
 import com.voidreclaimer.terraform.SpireBlockEntity;
 import java.util.Arrays;
 import java.util.List;
@@ -308,6 +309,23 @@ public final class CCPeripheralGameTests {
             helper.assertTrue(lua.getThrottle(thruster) == 1.0, "getThrottle with a redstone block: " + lua.getThrottle(thruster));
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             level.setBlock(pos.above(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theIonThrusterIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_500, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            ThrusterPeripheral lua = new ThrusterPeripheral();
+            IonThrusterBlockEntity thruster = place(level, pos, ModBlocks.ION_THRUSTER.get(), IonThrusterBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Ion Thruster", "getThrottle", "getForce", "isFiring", "getEnergy", "getEnergyCapacity");
+            thruster.energy().receiveEnergy(500, false);
+            helper.assertTrue(lua.getEnergy(thruster) == 500 && lua.getEnergyCapacity(thruster) == com.voidreclaimer.Config.ION_FE_BUFFER.get(),
+                    "energy " + lua.getEnergy(thruster));
+            helper.assertTrue(lua.getThrottle(thruster) == 0.0 && !lua.isFiring(thruster), "idle thruster reads as open");
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });
     }

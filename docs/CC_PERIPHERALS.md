@@ -96,6 +96,8 @@ Read-only. A computer sets the throttle the way a player does: with redstone (`r
 | | `isFiring()` | whether it is pushing |
 | | `getSpeed()` | shaft speed in RPM |
 | | `getTanks()` | its fuel tank: `{ { name, amount, capacity } }` in mB |
+| Ion Thruster | `getThrottle()`, `getForce()`, `isFiring()` | as above |
+| | `getEnergy()`, `getEnergyCapacity()` | Forge Energy in the buffer, and its size |
 
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor

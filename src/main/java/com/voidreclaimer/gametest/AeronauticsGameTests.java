@@ -127,11 +127,7 @@ public final class AeronauticsGameTests {
             clearArea(server, space, pos);
             int x = pos.getX(), y = pos.getY(), z = pos.getZ();
             List<String> log = new ArrayList<>();
-            // A cross around the thruster, with the motor straight behind it: the force goes through the centre of mass.
-            for (BlockPos arm : List.of(pos.north(), pos.south(), pos.below())) {
-                log.addAll(command(server, space, pos, "setblock " + arm.getX() + " " + arm.getY() + " " + arm.getZ() + " minecraft:stone"));
-            }
-            log.addAll(command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " " + (powered ? "minecraft:redstone_block" : "minecraft:stone")));
+            cross(server, space, pos, powered, log);
             log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + z + " create:creative_motor[facing=east]"));
             log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:chemical_thruster[facing=east]"));
             if (fuelled) {
@@ -146,6 +142,63 @@ public final class AeronauticsGameTests {
                 then.accept(log);
             });
         });
+    }
+
+    /** A cross of blocks around a thruster, redstone on top if it is powered: the force goes close to the centre of mass. */
+    private static void cross(MinecraftServer server, ServerLevel space, BlockPos pos, boolean powered, List<String> log) {
+        for (BlockPos arm : List.of(pos.north(), pos.south(), pos.below())) {
+            log.addAll(command(server, space, pos, "setblock " + arm.getX() + " " + arm.getY() + " " + arm.getZ() + " minecraft:stone"));
+        }
+        BlockPos top = pos.above();
+        log.addAll(command(server, space, pos, "setblock " + top.getX() + " " + top.getY() + " " + top.getZ() + " "
+                + (powered ? "minecraft:redstone_block" : "minecraft:stone")));
+    }
+
+    /** The same ship with an Ion Thruster, nozzle east: no motor, and a charged buffer instead of fuel. */
+    private static void ionShip(GameTestHelper helper, BlockPos pos, boolean charged, java.util.function.Consumer<List<String>> then) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        for (int chunks = 1; chunks <= 8; chunks++) {
+            space.setChunkForced((pos.getX() >> 4) - chunks, pos.getZ() >> 4, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            List<String> log = new ArrayList<>();
+            cross(server, space, pos, true, log);
+            log.addAll(command(server, space, pos, "setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " void_reclaimer:ion_thruster[facing=east]"));
+            if (charged) {
+                var thruster = (com.voidreclaimer.ship.IonThrusterBlockEntity) space.getBlockEntity(pos);
+                log.add("charged " + thruster.energy().receiveEnergy(8000, false));
+            }
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ()));
+                then.accept(log);
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void anIonThrusterPushesItsShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(83_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        ionShip(helper, pos, true, log -> watch(helper, server, space, pos, log, (first, second) -> {
+            double west = first.x - second.x;
+            if (west < PUSHED) {
+                helper.fail("the ship moved " + String.format("%.2f", west) + " blocks west, from " + first + " to " + second + "; setup: " + log);
+            } else {
+                helper.succeed();
+            }
+        }));
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void anIonThrusterWithoutEnergyDoesNotPush(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(84_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        ionShip(helper, pos, false, log -> coasts(helper, server, space, pos, log));
     }
 
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */
