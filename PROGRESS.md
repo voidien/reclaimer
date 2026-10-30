@@ -732,6 +732,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ### Placeholder assets
 - `textures/block/rcs_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
 
+## 7b ships, part 4: TFMG fuels: done
+- The Chemical Thruster also burns The Factory Must Grow's fuels, through the `thruster_fuel` data map: `tfmg:kerosene` (thrust 0.8), `tfmg:lpg` (0.7), `tfmg:gasoline` (0.6), `tfmg:diesel` (0.5), all at 3 mB per tick, against Nebulite Propellant at 1.0 and 2 mB per tick, so our own chain stays the best fuel. The numbers are guesses to tune.
+- Test: `ThrusterGameTests.tfmgFuelsBurnAtTheirOwnStrengths` loads each real TFMG fluid, so a wrong id fails it; each goes in the tank and pushes at its own strength. Mutation-checked: a fuel missing from the data map fails it.
+- **The four approved 7b PRs are done.** Next, and each needs the owner first: the Helm interview (6-DOF controls and camera), then the Create Propulsion vacuum spike.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
