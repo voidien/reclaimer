@@ -39,6 +39,7 @@ public final class VoidReclaimer {
         modBus.addListener(com.voidreclaimer.machine.MachineSetup::onCommonSetup);
         modBus.addListener(com.voidreclaimer.machine.MachineSetup::registerCapabilities);
         ModChunkGenerators.CHUNK_GENERATORS.register(modBus);
+        com.voidreclaimer.registry.ModMenus.MENUS.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModMaterials.init();
         ModFluids.FLUID_TYPES.register(modBus);

@@ -35,6 +35,8 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterDimensionEffects);
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
         modBus.addListener(ModKeyMappings::register);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) ->
+                event.register(com.voidreclaimer.registry.ModMenus.BODY_INVENTORY.get(), com.voidreclaimer.client.screen.BodyInventoryScreen::new));
         modBus.addListener(VoidReclaimerClient::onRegisterClientExtensions);
         modBus.addListener(VoidReclaimerClient::onRegisterRenderers);
         modBus.addListener(VoidReclaimerClient::onRegisterItemColors);

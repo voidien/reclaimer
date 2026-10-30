@@ -491,11 +491,15 @@ From an outside audit, each checked against the code first (several claims were 
 ## Replicator screen, part 1: descriptions: done
 - A description line per built-in recipe (81), an optional `description` field on Replicator recipes (synced; the sync codec is hand-written because `StreamCodec.composite` stops at six fields), a description box under the list and a hover tooltip on rows; the panel is taller (244). Not seen in game yet.
 
+## Replicator screen, part 3: JEI: done
+- JEI gets the screen's bounds and the item under the mouse (`registerGuiHandlers`, `ReplicatorScreen.itemAt`). Checked only that JEI loads the plugin without errors in a headless client; the hover keys are not tried by hand yet.
 ## Replicator screen, part 2: queue reorder: done
 - Drag a waiting job to a new place (`MOVE` action, `ReplicatorLogic.reorder`); the running job stays first. Unit tests and a GameTest. Not seen in game yet.
 
 ## Respawn screen: done
 - Card panel for the spawn and charged cores (name, charge pips, distance), plus a placeholder AI line on death. Not seen in game (needs a death in a world with a Backup Core).
+## Body inventory screen (part 1): done
+- E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
