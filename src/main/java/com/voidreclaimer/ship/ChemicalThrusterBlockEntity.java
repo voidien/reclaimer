@@ -7,7 +7,6 @@ import com.voidreclaimer.machine.MachineMath;
 import com.voidreclaimer.registry.ModBlockEntities;
 import com.voidreclaimer.registry.ModDataMaps;
 import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
-import dev.ryanhcode.sable.api.physics.force.ForceGroups;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import javax.annotation.Nullable;
@@ -20,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.joml.Vector3d;
 
 /**
  * A Chemical Thruster: while redstone holds the throttle open, the shaft turns and the tank holds a fuel from the
@@ -102,10 +100,7 @@ public class ChemicalThrusterBlockEntity extends KineticBlockEntity implements B
         if (current <= 0.0) {
             return;
         }
-        Direction push = pushDirection();
-        Vector3d impulse = new Vector3d(push.getStepX(), push.getStepY(), push.getStepZ()).mul(current * dt);
-        Vector3d at = new Vector3d(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5);
-        subLevel.getOrCreateQueuedForceGroup(ForceGroups.PROPULSION.get()).applyAndRecordPointForce(at, impulse);
+        ThrusterPush.apply(subLevel, worldPosition, pushDirection(), current, dt);
     }
 
     @Override
