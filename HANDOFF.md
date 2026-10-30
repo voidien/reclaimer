@@ -2,7 +2,17 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-30, after playtest round 1 group A (PRs #49 to #60). Work now runs on the owner's PC; see "Taking over on a PC" below.
+Last updated 2026-10-30, after round 2 (PRs #49 to #86). The next piece of work is the Act III vertical slice (see "Start here").
+
+## Start here (written 2026-10-30 at the owner's request)
+**The owner's answers for the next session:**
+- **First task: the Act III vertical slice.** It proves the riskiest part early (`CLAUDE.md` "Interview decisions", step 4): the `ruined_earth` dimension, the Atmospheric Portal, the three-era sky and one Terraforming Spire pulse. Interview the owner about the rest of its design (AskUserQuestion), list the files, then split it into small PRs. Their decisions so far:
+  - **Portal:** a craftable Atmospheric Portal frame, **big enough for the Ship to fly through** (Ship is about 12 blocks long, 5.6 wide, at scale 3; the Titan is 67 blocks and need not fit yet).
+  - **Sky:** all three eras (ruined, healing, restored) selectable by a debug command first, so each can be judged before the Spire drives them. Blending by restoration percent comes later.
+  - **Spire pulse:** rewrites biomes **and blocks** in its 128-block area and resends the chunks, with a visible before/after and a GameTest (`CLAUDE.md` Phases 11 and 12: the 4x4 sectors, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core, the Genesis Pulse).
+- **Ask before features, just do bug fixes.** New features: interview-style questions with the AskUserQuestion tool, a file list, then wait for a go. Bug fixes go straight to a PR. **Merge your own PRs once CI is green** (if the auto-mode classifier blocks `gh pr merge`, say so and stop; do not work around it, the owner then says "merge" or adds a permission rule).
+- **Standing rules:** small PRs, one change each, branched from the latest `main`, never pushed to `main`; keep working (start the next bug or look-around) while CI or tests run; the Opus reviewer agent (`.claude/agents/reviewer.md`) only when absolutely necessary (risky gameplay logic, saved data, networking, extension points); keep `CLAUDE.md`, `PROGRESS.md` and this file current in the same PR; no model names in commits, PRs or code.
+- **Warnings:** (1) **The owner has not played any of round 2 yet.** Expect feedback on the cockpit offsets (`BuiltinBodies`), the orbit camera sensitivity, the Mech lean, the starter dust, the panel sizes, and the new screens. Ask for it first and fix what comes back. The checklist is `docs/PLAYTEST.md` section 9b. (2) **Unexplained blue slabs around the Ship preset** (see "Seen in the headless client" below): possibly a real rendering bug, possibly what the owner called "too large"; look before building more on the Ship. (3) **Ship and Shuttle size is undecided** (scale 3.0 now; the owner may want about 2.0): do not change it until they decide. (4) The classifier note above.
 
 ## Where things stand
 - **`main`** has Phases 1 to 10 done, plus everything around them. In order:
