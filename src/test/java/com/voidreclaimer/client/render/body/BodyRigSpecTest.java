@@ -120,6 +120,27 @@ class BodyRigSpecTest {
     }
 
     @Test
+    void everyLayerAnimationExistsAndMovesOnlyBonesOfItsRig() throws IOException {
+        for (String rig : RIGS.keySet()) {
+            BodyRigSpec spec = spec(rig);
+            assertTrue(spec.layerList().size() <= BodyRigSpec.MAX_LAYERS, rig + " has more layers than the animatable registers");
+            JsonObject animations = json(file(spec.animations())).getAsJsonObject("animations");
+            for (int i = 0; i < spec.layerList().size(); i++) {
+                for (String key : spec.layerList().get(i).keySet()) {
+                    String id = spec.layerAnimation(i, key);
+                    assertNotNull(id);
+                    assertTrue(animations.has(id), rig + ": no animation " + id + " for layer " + i + " pose " + key);
+                }
+            }
+        }
+        BodyRigSpec mech = spec("mech");
+        assertTrue(mech.hasLayerFor(BodyLook.MODULE_WORK), "the Mech swings its tool arm as a layer");
+        assertEquals("animation.void_reclaimer.mech_suit.swing_tool_arms", mech.layerAnimation(0, BodyLook.MODULE_WORK));
+        assertNull(mech.layerAnimation(0, "thrust"));
+        assertNull(mech.layerAnimation(2, BodyLook.MODULE_WORK), "no third layer");
+    }
+
+    @Test
     void everyPoseKeyIsOneTheAnimatableAsks() throws IOException {
         Set<String> known = new HashSet<>();
         for (BodyLook.Pose pose : BodyLook.Pose.values()) {
@@ -167,6 +188,7 @@ class BodyRigSpecTest {
         assertEquals("", minimal.animationPrefix());
         assertTrue(minimal.sockets().isEmpty() && minimal.poses().isEmpty() && minimal.mounts().isEmpty() && minimal.socketParts().isEmpty());
         assertFalse(minimal.pitches());
+        assertTrue(minimal.layers().isEmpty() && minimal.layerList().isEmpty() && !minimal.hasLayerFor(BodyLook.MODULE_WORK), "no layers unless a rig asks");
         assertTrue(minimal.lean().isNone(), "no lean unless a rig asks for it");
         assertEquals(0f, minimal.yaw());
         assertNull(minimal.animation("idle"));

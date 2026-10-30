@@ -506,6 +506,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Machine recipe check (GameTest): done
 - `CreateRecipeGameTests`: every Create chain, Sequenced Assembly and freezing recipe loads and names real items and fluids (a typo in a recipe fails it). **Not done:** the screenshot tool that opens each recipe in JEI in the headless client; it needs coordinate calibration on a live client.
 
+## Layered animation poses: done
+- Rig specs may have `layers` (up to 3, played by extra GeckoLib controllers over the main one). The Mech swings only its right arm for tool work (`swing_tool_arms`, made with `anim_slice.py`) while the body keeps flying. Unit tests check every layer animation exists. Not seen in game (a swing needs a tool module and a world with cheats).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
