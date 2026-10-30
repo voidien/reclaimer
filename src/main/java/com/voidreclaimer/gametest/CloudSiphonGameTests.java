@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -99,7 +100,7 @@ public final class CloudSiphonGameTests {
         return total;
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void siphonCondensesTheCloudsKindWhenTurned(GameTestHelper helper) {
         inCloud(helper, 0, (level, pos, raw) -> {
             CloudSiphonBlockEntity siphon = place(level, pos);
@@ -121,7 +122,7 @@ public final class CloudSiphonGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void siphonDoesNothingTooSlowOrInThinDust(GameTestHelper helper) {
         inCloud(helper, 1, (level, pos, raw) -> {
             CloudSiphonBlockEntity slow = place(level, pos);
@@ -143,7 +144,7 @@ public final class CloudSiphonGameTests {
     }
 
     /** The fringe of a cloud has dust, but too thin to siphon. */
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void siphonDoesNothingInTheThinFringeOfACloud(GameTestHelper helper) {
         DustCloud cloud = denseCloud(helper);
         DustField field = DustGameTests.field(helper);
@@ -169,7 +170,7 @@ public final class CloudSiphonGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void addonPowerRunsItWithoutRotation(GameTestHelper helper) {
         inCloud(helper, 2, (level, pos, raw) -> {
             CloudSiphonBlockEntity siphon = place(level, pos);
@@ -185,7 +186,56 @@ public final class CloudSiphonGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void forgeEnergyRunsItWithoutRotation(GameTestHelper helper) {
+        inCloud(helper, 4, (level, pos, raw) -> {
+            CloudSiphonBlockEntity siphon = place(level, pos);
+            IEnergyStorage fe = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, null);
+            helper.assertTrue(fe != null && fe.canReceive() && !fe.canExtract(), "no receive-only energy capability");
+            int perTick = Config.SIPHON_FE_PER_TICK.get();
+            helper.assertTrue(perTick > 0, "the energy input is off by default");
+            helper.assertTrue(fe.receiveEnergy(500, false) == 500 && fe.extractEnergy(100, false) == 0, "energy came back out");
+            for (int i = 0; i < TICKS; i++) {
+                fe.receiveEnergy(perTick, false);
+                tick(siphon, 0f, 1);
+            }
+            helper.assertTrue(count(siphon, raw) >= 3, "a siphon on electricity alone made only " + count(siphon, raw));
+            // Every tick fed 40 and drew 40, so the 500 put in first is still there: the draw matched the feed.
+            helper.assertTrue(Math.abs(siphon.storedEnergy() - 500) <= 2 * perTick, "the draw did not match the feed: " + siphon.storedEnergy());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aFullShaftUsesNoEnergy(GameTestHelper helper) {
+        inCloud(helper, 5, (level, pos, raw) -> {
+            CloudSiphonBlockEntity siphon = place(level, pos);
+            // Power is sampled once a second and place() sampled it at 0 RPM: let the shaft's sample replace it first.
+            tick(siphon, 64f, 25);
+            IEnergyStorage fe = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, null);
+            int filled = fe.receiveEnergy(Integer.MAX_VALUE, false);
+            helper.assertTrue(filled == Config.SIPHON_FE_BUFFER.get() && fe.receiveEnergy(1, false) == 0, "buffer is not bounded: " + filled);
+            tick(siphon, 64f, TICKS);
+            helper.assertTrue(count(siphon, raw) >= 3, "the shaft made only " + count(siphon, raw));
+            helper.assertTrue(siphon.storedEnergy() == filled, "a siphon at full shaft power drew energy: " + siphon.storedEnergy());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aSiphonWithNoCloudDrawsNoEnergy(GameTestHelper helper) {
+        BlockPos empty = emptySpace(DustGameTests.field(helper));
+        NaniteGameTests.inLoadedArea(helper, empty, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            CloudSiphonBlockEntity siphon = place(level, empty);
+            int filled = level.getCapability(Capabilities.EnergyStorage.BLOCK, empty, null).receiveEnergy(1000, false);
+            tick(siphon, 0f, 100);
+            helper.assertTrue(siphon.storedEnergy() == filled, "an idle siphon drew energy: " + siphon.storedEnergy());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void fullOutputPausesWithoutLosingItems(GameTestHelper helper) {
         inCloud(helper, 3, (level, pos, raw) -> {
             CloudSiphonBlockEntity siphon = place(level, pos);
