@@ -509,6 +509,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Layered animation poses: done
 - Rig specs may have `layers` (up to 3, played by extra GeckoLib controllers over the main one). The Mech swings only its right arm for tool work (`swing_tool_arms`, made with `anim_slice.py`) while the body keeps flying. Unit tests check every layer animation exists. Not seen in game (a swing needs a tool module and a world with cheats).
 
+## Handoff notes, round 2: done
+- HANDOFF.md lists what is done, what to try in game and what comes next. `tools/client-test/xt.py` gained `chord ctrl+f`. The JEI recipe screenshot tool is **not** built: JEI hides its search box in a 1280-wide window.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
