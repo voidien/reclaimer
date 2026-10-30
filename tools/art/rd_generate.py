@@ -17,6 +17,7 @@ Examples:
   python3 tools/art/rd_generate.py --promote quartz_wafer=2                # copy variant 2 into the mod
   python3 tools/art/rd_generate.py --balance
   python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette     # fix existing art (rd_edit.py)
+  python3 tools/art/rd_generate.py --asset ashen_slag --restyle --strength 0.5   # restyle a placeholder in place
 
 See docs/art/ASSETS.md for the workflow and tools/art/README.md for the options.
 """
@@ -76,8 +77,9 @@ STYLE_LIMITS = {
     'rd_fast__ui': (64, 384, 16), 'rd_fast__default': (64, 384, 15),
     'rd_pro__simple': (12, 256, 16), 'rd_pro__scifi': (12, 256, 16),
     'rd_animation__vfx': (24, 96, 1),
+    'rd_tile__tile_variation': (16, 128, 4),
 }
-IMAGE_PRICE = {'rd_fast': 0.03, 'rd_plus': 0.06, 'rd_mini': 0.06, 'rd_pro': 0.18, 'rd_animation': 0.25,
+IMAGE_PRICE = {'rd_fast': 0.03, 'rd_plus': 0.06, 'rd_mini': 0.06, 'rd_pro': 0.18, 'rd_animation': 0.25, 'rd_tile': 0.06,
                'user': 0.18}  # 'user' = custom styles, which run on RD Pro
 LOWPOLY_PRICE = {16: 0.25, 32: 0.50, 64: 0.85, 128: 1.20, 256: 3.00}
 LOWPOLY_ANIMATE_PRICE = {16: 0.15, 32: 0.25, 64: 0.35, 128: 0.50, 256: 1.00}
@@ -283,9 +285,13 @@ def jobs_for(row, args, limits):
         if custom:
             style = custom['prompt_style']
             w, h, _ = fit(style, tw, th, limits)
-        jobs.append(dict(kind='image', style=style, prompt=styled(subject(row['prompt']), category, args, 1000),
-                         width=w, height=h, target=(tw, th), tile=tile, remove_bg=remove_bg, frames=frames,
-                         variants=1 if frames else args.variants, palette=None if args.no_style else category))
+        job = dict(kind='image', style=style, prompt=styled(subject(row['prompt']), category, args, 1000),
+                   width=w, height=h, target=(tw, th), tile=tile, remove_bg=remove_bg, frames=frames,
+                   variants=1 if frames else args.variants, palette=None if args.no_style else category)
+        if getattr(args, 'restyle', False):
+            job = restyle(job, row, args, limits)
+        if job:
+            jobs.append(job)
     if '3D blocky' in method:
         size = args.model_size or MODEL_SIZE.get(row['asset'], 'auto')
         category = category_for(row, 'model')
@@ -438,6 +444,35 @@ def offline_price(job):
     return LITE_OTHER if job.get('style', '').endswith('_lite') else LOWPOLY_ANIMATE_PRICE[64]
 
 
+def restyle(job, row, args, limits):
+    """Turns an image job into an image-to-image job on the asset's current texture (``--restyle``): the result keeps
+    its layout and takes the style. With ``--tile-variation`` a block texture goes through RD's tile-variation style
+    instead. None (with a note) when there is nothing to start from."""
+    if job['frames']:
+        print('  skip %s: animated textures cannot be restyled' % row['key'])
+        return None
+    path = os.path.join(REPO, row['file']) if row['file'] and not any(c in row['file'] for c in '*<{') else ''
+    if not path or not os.path.exists(path):
+        print('  skip %s: no current texture to restyle' % row['key'])
+        return None
+    if args.tile_variation and '/textures/block/' in row['file']:
+        job['style'] = 'rd_tile__tile_variation'
+        job['width'], job['height'], _ = fit(job['style'], job['target'][0], job['target'][1], limits)
+        job['tile'] = False
+    with open(path, 'rb') as f:
+        pixels = png_read(f.read())
+    sw, sh = len(pixels[0]), len(pixels)
+    if (sw, sh) != (job['width'], job['height']):
+        k = job['width'] // sw
+        if k < 1 or (sw * k, sh * k) != (job['width'], job['height']):
+            print('  skip %s: its texture is %dx%d, which does not scale to %dx%d' % (row['key'], sw, sh, job['width'], job['height']))
+            return None
+        pixels = upscale(pixels, k)
+    job['input'] = base64.b64encode(png_write(pixels)).decode()
+    job['strength'] = None if job['style'] == 'rd_tile__tile_variation' else args.strength
+    return job
+
+
 def image_body(job, row, seed=None):
     body = dict(prompt=job['prompt'], prompt_style=job['style'], width=job['width'], height=job['height'],
                 num_images=job['variants'], remove_bg=job['remove_bg'])
@@ -449,6 +484,10 @@ def image_body(job, row, seed=None):
         body['seed'] = seed
     if job.get('palette'):
         body['input_palette'] = palette_b64(job['palette'])
+    if job.get('input'):
+        body['input_image'] = job['input']
+        if job.get('strength') is not None:
+            body['strength'] = job['strength']
     return body
 
 
@@ -1045,6 +1084,12 @@ def main(argv=None):
                         'block/NAME), keeping RD\'s group names as bones')
     p.add_argument('--balance', action='store_true', help='show the account balance')
     p.add_argument('--index', action='store_true', help='rewrite art/rd/index.html')
+    p.add_argument('--restyle', action='store_true',
+                   help="image jobs start from the asset's current texture (image-to-image), so the result keeps its layout")
+    p.add_argument('--strength', type=float, default=0.6,
+                   help='--restyle: how far the result may move away from the current texture, 0 to 1 (default 0.6)')
+    p.add_argument('--tile-variation', action='store_true',
+                   help="--restyle: block textures use RD's tile-variation style (keeps a tile's structure)")
     p.add_argument('--fix', action='append', metavar='ASSET[=N]',
                    help="fix art we already have with an RD edit tool or the Pixel Fixer (see rd_edit.py): the mod's "
                         "file, or staged variant N; the result becomes the next variant")
@@ -1104,7 +1149,7 @@ def main(argv=None):
     for row in selected(rows, args):
         done = state['assets'].get(row['key'], {}).get('jobs', [])
         for job in jobs_for(row, args, limits):
-            if not args.again and any(j['kind'] == job['kind'] and j['status'] in ('done', 'submitted', 'pending', 'running')
+            if not args.again and not args.restyle and any(j['kind'] == job['kind'] and j['status'] in ('done', 'submitted', 'pending', 'running')
                                       for j in done):
                 continue
             plan.append((row, job))

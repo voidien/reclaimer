@@ -256,3 +256,21 @@ opaque where to repaint (only alpha counts). The tool refuses a mask of the wron
 (that would repaint the whole image). For consistent variants of one asset, derive them from one base with `edit` and a
 prompt that pins the layout, rather than generating each from scratch (RD's advice).
 
+## Restyling placeholders (`--restyle`)
+Generation that starts from the asset's current texture (image-to-image), so the result keeps its layout and takes the
+style guide's look: the way to turn programmer art into real art.
+
+    python3 tools/art/rd_generate.py --asset ashen_slag --restyle --strength 0.5
+    python3 tools/art/rd_generate.py --asset ashen_slag --restyle --tile-variation
+
+- Works with any image row and the usual filters (`--asset`, `--status placeholder`, ...), palettes and custom styles.
+- `--strength` (0 to 1, default 0.6): how far the result may move away from the current texture.
+- The texture is scaled up (nearest neighbour) to the job size; one that does not scale evenly is skipped with a note,
+  as are assets with no texture yet and animated textures.
+- `--tile-variation`: block textures go through RD's `rd_tile__tile_variation` style instead (keeps a tile's structure;
+  no strength).
+- A restyle always runs, even for an asset generated before (it is new work); repeating the same restyle is not paid twice.
+- Prices as for generation (most styles $0.06 an image, custom styles $0.18; tile variation $0.06).
+
+Rows come from `docs/art/assets.csv`: an asset has to be listed there to be restyled.
+
