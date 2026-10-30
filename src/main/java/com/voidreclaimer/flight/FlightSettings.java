@@ -11,26 +11,34 @@ import net.minecraft.network.codec.StreamCodec;
  *
  * @param dampener          inertial dampener: brake to a stop when no thrust key is held
  * @param creativeThrusters creative mode only: use thruster flight instead of vanilla creative flight
+ * @param rcsLock           at a Helm: the ship's thrusters stop its spin and hold its heading when no rotation key is held
  */
-public record FlightSettings(boolean dampener, boolean creativeThrusters) {
+public record FlightSettings(boolean dampener, boolean creativeThrusters, boolean rcsLock) {
     private static final boolean DEFAULT_DAMPENER = true;
-    public static final FlightSettings DEFAULT = new FlightSettings(DEFAULT_DAMPENER, false);
+    private static final boolean DEFAULT_RCS_LOCK = true;
+    public static final FlightSettings DEFAULT = new FlightSettings(DEFAULT_DAMPENER, false, DEFAULT_RCS_LOCK);
 
     public static final Codec<FlightSettings> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("dampener", DEFAULT_DAMPENER).forGetter(FlightSettings::dampener),
-            Codec.BOOL.optionalFieldOf("creative_thrusters", false).forGetter(FlightSettings::creativeThrusters)
+            Codec.BOOL.optionalFieldOf("creative_thrusters", false).forGetter(FlightSettings::creativeThrusters),
+            Codec.BOOL.optionalFieldOf("rcs_lock", DEFAULT_RCS_LOCK).forGetter(FlightSettings::rcsLock)
     ).apply(instance, FlightSettings::new));
 
     public static final StreamCodec<ByteBuf, FlightSettings> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL, FlightSettings::dampener,
             ByteBufCodecs.BOOL, FlightSettings::creativeThrusters,
+            ByteBufCodecs.BOOL, FlightSettings::rcsLock,
             FlightSettings::new);
 
     public FlightSettings withDampener(boolean value) {
-        return new FlightSettings(value, creativeThrusters);
+        return new FlightSettings(value, creativeThrusters, rcsLock);
     }
 
     public FlightSettings withCreativeThrusters(boolean value) {
-        return new FlightSettings(dampener, value);
+        return new FlightSettings(dampener, value, rcsLock);
+    }
+
+    public FlightSettings withRcsLock(boolean value) {
+        return new FlightSettings(dampener, creativeThrusters, value);
     }
 }

@@ -63,4 +63,17 @@ class FlightInputTest {
         assertFalse(FlightInput.shouldDisengage(false, false), "in the air stays engaged");
         assertFalse(FlightInput.shouldDisengage(false, true));
     }
+
+    @Test
+    void flightSettingsRoundTripWithTheRcsLockAndDefaultItOnForOldSaves() {
+        var settings = com.voidreclaimer.flight.FlightSettings.DEFAULT.withRcsLock(false).withDampener(false);
+        ByteBuf buf = Unpooled.buffer();
+        com.voidreclaimer.flight.FlightSettings.STREAM_CODEC.encode(buf, settings);
+        assertEquals(settings, com.voidreclaimer.flight.FlightSettings.STREAM_CODEC.decode(buf));
+        var json = com.voidreclaimer.flight.FlightSettings.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, settings).getOrThrow();
+        assertEquals(settings, com.voidreclaimer.flight.FlightSettings.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow());
+        // A save from before the RCS lock existed has no such field: it loads as on.
+        var old = com.google.gson.JsonParser.parseString("{\"dampener\": false}");
+        assertTrue(com.voidreclaimer.flight.FlightSettings.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, old).getOrThrow().rcsLock());
+    }
 }

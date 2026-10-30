@@ -92,6 +92,9 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ION_THRUSTER.get(), "Ion Thruster");
         add(ModItems.HELM.get(), "Helm");
         add("entity.void_reclaimer.helm_seat", "Helm Seat");
+        add("key.void_reclaimer.toggle_rcs_lock", "Toggle RCS Lock (ship)");
+        add("message.void_reclaimer.rcs_lock_on", "RCS lock: ON. The ship holds its heading.");
+        add("message.void_reclaimer.rcs_lock_off", "RCS lock: OFF. The ship keeps spinning until you stop it.");
         add("key.void_reclaimer.roll_left", "Ship: Roll Left");
         add("key.void_reclaimer.roll_right", "Ship: Roll Right");
         add("key.void_reclaimer.pitch_up", "Ship: Nose Up");
