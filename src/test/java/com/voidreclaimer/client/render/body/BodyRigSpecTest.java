@@ -154,6 +154,7 @@ class BodyRigSpecTest {
     void theTitanFliesLikeAShipAndTheMechStaysUpright() throws IOException {
         assertTrue(spec("titan").pitches());
         assertFalse(spec("mech").pitches());
+        assertFalse(spec("mech").lean().isNone(), "the upright Mech leans into its motion");
         assertEquals(180f, spec("titan").yaw());
         assertEquals("titan", BodyLook.rig(BuiltinBodies.TITAN));
     }
@@ -166,6 +167,7 @@ class BodyRigSpecTest {
         assertEquals("", minimal.animationPrefix());
         assertTrue(minimal.sockets().isEmpty() && minimal.poses().isEmpty() && minimal.mounts().isEmpty() && minimal.socketParts().isEmpty());
         assertFalse(minimal.pitches());
+        assertTrue(minimal.lean().isNone(), "no lean unless a rig asks for it");
         assertEquals(0f, minimal.yaw());
         assertNull(minimal.animation("idle"));
     }

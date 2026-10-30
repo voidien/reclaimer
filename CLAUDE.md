@@ -467,6 +467,10 @@ Parallel tracks, scheduled as they fit:
 - **Debug commands:** `/void_reclaimer body preset <player> drone|mech|ship [full]` (a complete body: every socket filled, Mk I core, thrusters and storage; the Mech gets a rotor arm jetpack on its back; `full` adds a Mk II core, Mk I and Mk II storage pods in turn, Dust Sensors and the four tool modules, so every module model shows) and `/void_reclaimer body remove <player> <socket>`.
 - **Known limits:** the art's textures are very dark (black frames with small casing and accent areas), so the body is drawn with a minimum light (`body.minLight`); the Drone and Ship still look sparse. Modules without models (sensors, storage, core, tools) are invisible. The nameplate and held items are not drawn on the body.
 
+**Velocity lean (2026-10-30, owner's choice: the Mech first)**
+- A rig spec may have `lean` (`pitch`, `roll` degrees, `reference_speed` blocks per tick; default none). `BodyLean` (pure) eases the body toward a forward lean (tipping back when flying backward) and a bank into a strafe, about the middle of the body, so one flying animation covers every direction; `BodyRenderer.applyRotations` draws it. The Mech has 22 / 16 / 0.4. Other rigs are off for now.
+- The owner's longer-term goal: ships that travel freely in every direction and face every orientation (roll and full 6-DOF). The lean is the first step; nothing else is built.
+
 **Health bar (2026-10-30, owner's choice)**
 - One bar replaces the vanilla hearts (`client/hud/HealthBarLayer`, sizes in `HealthBarMath`): longer and taller with max health on a log scale (60 px at 20 health up to the hotbar's 182 px at 1000, height 5 to 9), a notch every 100 health when there is room, and "health / max" above it. Drawn with `GuiGraphics.fill` only.
 

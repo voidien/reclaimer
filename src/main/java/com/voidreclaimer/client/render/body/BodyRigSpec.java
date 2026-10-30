@@ -28,6 +28,8 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  * @param offsetY         pixels to move the model up (down when negative), at the body's scale (the probe's middle at the hitbox's)
  * @param yaw             degrees to turn the model so its front faces where the body looks (180 when the model's front is +Z)
  * @param pitches         the body also nose-dives and climbs with the look pitch (ships); else it only turns
+ * @param lean            how far the model leans into its motion (a forward lean, a bank when strafing), so one flying animation
+ *                        covers every direction; none by default
  * @param sockets         bones to hide, with their children, when the socket has no section ({@code socket id -> bones})
  * @param socketParts     bones to hide when the socket has no section, without their children (a neck that carries the head)
  * @param mounts          where modules sit: {@code rig mount name -> bone and offset}; the name is
@@ -38,7 +40,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  *                        ({@link BodyLook#fallbacks})
  */
 public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, ResourceLocation animations, String animationPrefix,
-                          boolean grounded, float offsetY, float yaw, boolean pitches, Map<String, List<String>> sockets,
+                          boolean grounded, float offsetY, float yaw, boolean pitches, Lean lean, Map<String, List<String>> sockets,
                           Map<String, List<String>> socketParts, Map<String, Mount> mounts, Map<String, String> poses) {
     /**
      * A module position on a rig: the bone it follows, an offset from that bone's pivot in pixels (the same axes as the
@@ -68,6 +70,27 @@ public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, Reso
         }
     }
 
+    /**
+     * Procedural lean toward the direction of motion: up to {@code pitch} degrees forward (backward when flying back) and
+     * {@code roll} degrees banked toward a strafe, reached at {@code referenceSpeed} blocks per tick.
+     */
+    public record Lean(float pitch, float roll, float referenceSpeed) {
+        public static final Lean NONE = new Lean(0f, 0f, 0.4f);
+        public static final Codec<Lean> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.FLOAT.optionalFieldOf("pitch", 0f).forGetter(Lean::pitch),
+                Codec.FLOAT.optionalFieldOf("roll", 0f).forGetter(Lean::roll),
+                Codec.FLOAT.optionalFieldOf("reference_speed", 0.4f).forGetter(Lean::referenceSpeed)
+        ).apply(instance, Lean::new));
+
+        public Lean {
+            referenceSpeed = Math.max(1.0E-3f, referenceSpeed);
+        }
+
+        public boolean isNone() {
+            return pitch == 0f && roll == 0f;
+        }
+    }
+
     public static final Codec<BodyRigSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("model").forGetter(BodyRigSpec::model),
             ResourceLocation.CODEC.fieldOf("texture").forGetter(BodyRigSpec::texture),
@@ -77,6 +100,7 @@ public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, Reso
             Codec.FLOAT.optionalFieldOf("offset_y", 0f).forGetter(BodyRigSpec::offsetY),
             Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(BodyRigSpec::yaw),
             Codec.BOOL.optionalFieldOf("pitches", false).forGetter(BodyRigSpec::pitches),
+            Lean.CODEC.optionalFieldOf("lean", Lean.NONE).forGetter(BodyRigSpec::lean),
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("sockets", Map.of()).forGetter(BodyRigSpec::sockets),
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("socket_parts", Map.of()).forGetter(BodyRigSpec::socketParts),
             Codec.unboundedMap(Codec.STRING, Mount.CODEC).optionalFieldOf("mounts", Map.of()).forGetter(BodyRigSpec::mounts),
