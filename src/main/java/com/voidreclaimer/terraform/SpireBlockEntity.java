@@ -52,6 +52,16 @@ public final class SpireBlockEntity extends BlockEntity {
         return elapsed;
     }
 
+    /** How far the running pulse has swept, 0 to 1; 0 when idle. */
+    public float progress() {
+        return running() ? Math.min(1f, elapsed / (float) Math.max(1, duration)) : 0f;
+    }
+
+    /** Blocks from the Spire to the edge of the running pulse's area, or of the next one (the config). */
+    public int radius() {
+        return running() ? radius : Config.SPIRE_RADIUS.get();
+    }
+
     /** Pulses finished here so far. */
     public int pulses() {
         return pulses;
