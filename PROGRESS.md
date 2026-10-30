@@ -466,6 +466,10 @@ From an outside audit, each checked against the code first (several claims were 
 - Placeholder icon `cloud_collector.png` (generated). Not seen in a real client.
 - The block version is the Cloud Siphon (above).
 
+## Fix: energy bar icons: done
+- Playtest note "The energy bar icons are not working correctly": the four sprite files are strips of ten battery cells (90x9, as delivered), and `EnergyBarLayer` drew each whole strip into one 9x9 cell, so every cell showed a ten-cell comb. It now draws one cell (the strip's leftmost 9x9) with the sub-region `blitSprite`; the art files are unchanged.
+- Checked in a real headless client: at 60% energy the bar shows ten cells (full, half and empty), and the flashing warning cells use the same path. No automated test (pure drawing).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
