@@ -1,7 +1,7 @@
 {
   "cockpit": {
-    "forward": 3.0,
-    "up": 0.6
+    "forward": 1.7,
+    "up": 0.5
   },
   "core_socket": "saucer",
   "size_class": "void_reclaimer:titan",
