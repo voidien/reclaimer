@@ -32,12 +32,22 @@ public final class ClientFlightController {
         if (!(event.getEntity() instanceof LocalPlayer player)) {
             return;
         }
+        Input input = event.getInput();
+        // A walking body (the Mech) fires its thrusters when Space is pressed, and drops back to walking when it
+        // is on the ground with no up-thrust held.
+        boolean walker = ThrusterFlight.canEngage(player);
+        FlightInput stored = player.getData(ModAttachments.FLIGHT_INPUT);
+        if (walker && !stored.engaged() && input.jumping) {
+            stored = stored.withEngaged(true);
+            player.setData(ModAttachments.FLIGHT_INPUT, stored);
+        }
         if (!ThrusterFlight.isActive(player)) {
             setInput(player, FlightInput.NONE);
             return;
         }
-        Input input = event.getInput();
-        setInput(player, FlightInput.of(input.up, input.down, input.left, input.right, input.jumping, input.shiftKeyDown));
+        boolean engaged = walker && !FlightInput.shouldDisengage(player.onGround(), input.jumping);
+        setInput(player, FlightInput.of(input.up, input.down, input.left, input.right, input.jumping, input.shiftKeyDown)
+                .withEngaged(engaged));
 
         input.forwardImpulse = 0f;
         input.leftImpulse = 0f;

@@ -33,4 +33,34 @@ class FlightInputTest {
             assertEquals(input, FlightInput.STREAM_CODEC.decode(buf));
         }
     }
+
+    @Test
+    void engagedIsAFlagThatIsNotAKey() {
+        FlightInput keys = FlightInput.of(true, false, false, true, true, false);
+        FlightInput engaged = keys.withEngaged(true);
+        assertTrue(engaged.engaged());
+        assertFalse(keys.engaged());
+        assertEquals(keys.forwardAxis(), engaged.forwardAxis());
+        assertEquals(keys.strafeAxis(), engaged.strafeAxis());
+        assertEquals(keys.verticalAxis(), engaged.verticalAxis());
+        assertFalse(FlightInput.NONE.withEngaged(true).isThrusting(), "engaging alone is not thrust");
+        assertEquals(keys, engaged.withEngaged(false));
+        assertEquals(FlightInput.NONE, FlightInput.NONE.withEngaged(true).withEngaged(false));
+    }
+
+    @Test
+    void streamCodecKeepsTheEngagedFlag() {
+        FlightInput input = FlightInput.of(false, true, false, false, false, true).withEngaged(true);
+        ByteBuf buf = Unpooled.buffer();
+        FlightInput.STREAM_CODEC.encode(buf, input);
+        assertTrue(FlightInput.STREAM_CODEC.decode(buf).engaged());
+    }
+
+    @Test
+    void awalkingBodyDropsBackToWalkingOnlyOnTheGroundWithNoUpThrustHeld() {
+        assertTrue(FlightInput.shouldDisengage(true, false), "landed, no Space held");
+        assertFalse(FlightInput.shouldDisengage(true, true), "still on the ground but Space is held: taking off");
+        assertFalse(FlightInput.shouldDisengage(false, false), "in the air stays engaged");
+        assertFalse(FlightInput.shouldDisengage(false, true));
+    }
 }

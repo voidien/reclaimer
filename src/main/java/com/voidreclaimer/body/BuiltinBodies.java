@@ -123,7 +123,7 @@ public final class BuiltinBodies {
             mech.add(socket(side + "_shin", side + "_thigh", 0, -6, 0, "legs", SHIN));
             mech.add(socket(side + "_foot", side + "_shin", 0, -6, 0, "legs", FOOT));
         }
-        map.put(MECH, new Chassis(MECH_SIZE, "torso", List.copyOf(mech)));
+        map.put(MECH, new Chassis(MECH_SIZE, "torso", List.copyOf(mech)).withWalks(true));
 
         List<Socket> ship = new ArrayList<>();
         ship.add(root("keel", SHIP_KEEL, "core"));

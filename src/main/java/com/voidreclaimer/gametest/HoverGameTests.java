@@ -2,7 +2,10 @@ package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.energy.EnergyData;
+import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightPhysics;
 import com.voidreclaimer.flight.FlightStats;
 import com.voidreclaimer.flight.ServerFlightHandler;
@@ -118,5 +121,43 @@ public final class HoverGameTests {
 
     private static LivingFallEvent fall(ServerPlayer player) {
         return NeoForge.EVENT_BUS.post(new LivingFallEvent(player, 12f, 1f));
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void onlyBodiesWithLegsWalkUntilTheirThrustersAreEngaged(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalOnRuinedEarth(helper, 8.5, 120, 104.5);
+        try {
+            Bodies.store(player, Bodies.preset(BuiltinBodies.MECH, true));
+            helper.assertTrue(Bodies.walks(player), "the Mech preset does not walk");
+            helper.assertTrue(FlightStats.of(player).thrust() > 0.0, "the Mech preset has no thrust");
+            helper.assertFalse(ThrusterFlight.isActive(player), "a Mech that has not engaged is on thrusters");
+            player.setData(ModAttachments.FLIGHT_INPUT, FlightInput.NONE.withEngaged(true));
+            helper.assertTrue(ThrusterFlight.isActive(player), "an engaged Mech is not on thrusters");
+            player.setData(ModAttachments.FLIGHT_INPUT, FlightInput.NONE);
+            helper.assertFalse(ThrusterFlight.isActive(player), "a disengaged Mech is on thrusters");
+
+            // Everything else flies all the time, engaged or not.
+            for (var chassis : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.SHIP)) {
+                Bodies.store(player, Bodies.preset(chassis, true));
+                helper.assertFalse(Bodies.walks(player), chassis.location() + " walks");
+                helper.assertTrue(ThrusterFlight.isActive(player), chassis.location() + " is not on thrusters on Earth");
+            }
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aMechAlwaysFliesInZeroG(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 25_000.5, 80, 0.5);
+        try {
+            Bodies.store(player, Bodies.preset(BuiltinBodies.MECH, true));
+            helper.assertTrue(Bodies.walks(player), "the Mech preset does not walk");
+            helper.assertTrue(ThrusterFlight.isActive(player), "a Mech in deep space is not on thrusters without engaging");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
     }
 }

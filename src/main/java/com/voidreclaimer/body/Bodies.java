@@ -191,6 +191,11 @@ public final class Bodies {
         return BodyStats.computeWorn(chassis.sizeClass(), size, sections, modules);
     }
 
+    /** Whether the body has legs: where gravity is back it walks and fires thrusters only when asked (see {@code Chassis.walks}). */
+    public static boolean walks(LivingEntity entity) {
+        return chassis(entity.registryAccess(), data(entity)).walks();
+    }
+
     /** The layout named by the core section; the built-in Drone if it is missing or unknown. */
     public static Chassis chassis(RegistryAccess access, BodyData body) {
         SectionStats core = Parts.section(body.core());
