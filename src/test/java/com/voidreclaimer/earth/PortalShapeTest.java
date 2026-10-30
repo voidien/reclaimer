@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 class PortalShapeTest {
@@ -88,5 +89,28 @@ class PortalShapeTest {
         Set<BlockPos> frame = ring(Direction.Axis.X, 5, 5);
         frame.removeIf(pos -> pos.getY() > ORIGIN.getY() + 4);
         assertTrue(find(frame, Set.of(), ORIGIN.east(), Direction.Axis.X).isEmpty());
+    }
+
+    @Test
+    void centerBottomAndNormalFollowTheAxis() {
+        PortalShape.Rect x = new PortalShape.Rect(new BlockPos(10, 65, 20), Direction.Axis.X, 12, 6);
+        assertEquals(new Vec3(16, 65, 20.5), x.centerBottom());
+        assertEquals(Direction.SOUTH, x.normal(1));
+        assertEquals(Direction.NORTH, x.normal(-1));
+        PortalShape.Rect z = new PortalShape.Rect(new BlockPos(10, 65, 20), Direction.Axis.Z, 4, 6);
+        assertEquals(new Vec3(10.5, 65, 22), z.centerBottom());
+        assertEquals(Direction.EAST, z.normal(1));
+        assertEquals(Direction.WEST, z.normal(-1));
+    }
+
+    @Test
+    void travelSignFollowsMovementAcrossThePlaneOnly() {
+        PortalShape.Rect x = new PortalShape.Rect(BlockPos.ZERO, Direction.Axis.X, 5, 5);
+        assertEquals(1, x.travelSign(new Vec3(0, 0, 0.5)));
+        assertEquals(-1, x.travelSign(new Vec3(0, 0, -0.5)));
+        assertEquals(1, x.travelSign(new Vec3(-3, 0, 0)), "movement along the plane says nothing");
+        assertEquals(1, x.travelSign(Vec3.ZERO), "standing still defaults to the positive side");
+        PortalShape.Rect z = new PortalShape.Rect(BlockPos.ZERO, Direction.Axis.Z, 5, 5);
+        assertEquals(-1, z.travelSign(new Vec3(-0.5, 0, 0)));
     }
 }

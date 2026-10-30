@@ -101,6 +101,12 @@ public final class ModAttachments {
                     .sync(com.voidreclaimer.earth.SkyEra.STREAM_CODEC)
                     .build());
 
+    /** Ruined Earth level only: the return gate and where the way back leaves. Saved with the level, not synced. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.earth.PortalLinks>> PORTAL_LINKS = ATTACHMENT_TYPES.register("portal_links",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.earth.PortalLinks.NONE)
+                    .serialize(com.voidreclaimer.earth.PortalLinks.CODEC)
+                    .build());
+
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());

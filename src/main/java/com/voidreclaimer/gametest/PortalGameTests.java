@@ -3,6 +3,11 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.earth.AtmosphericPortalBlock;
 import com.voidreclaimer.earth.AtmosphericPortals;
+import com.voidreclaimer.earth.PortalLinks;
+import com.voidreclaimer.earth.PortalTravel;
+import com.voidreclaimer.earth.RuinedEarth;
+import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.space.ModDimensions;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -12,12 +17,14 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import java.util.function.BooleanSupplier;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -138,6 +145,88 @@ public final class PortalGameTests {
                 clear(space, origin);
                 space.setChunkForced(origin.getX() >> 4, origin.getZ() >> 4, false);
                 space.setChunkForced((origin.getX() + WIDTH) >> 4, origin.getZ() >> 4, false);
+            }
+        });
+    }
+
+    /** Calls {@code each} once per tick until {@code done}, then {@code then}; fails the test when the budget runs out. */
+    private static void until(GameTestHelper helper, String leg, ServerPlayer player, int budget, BooleanSupplier done, Runnable each, Runnable then) {
+        if (done.getAsBoolean()) {
+            then.run();
+            return;
+        }
+        if (budget <= 0) {
+            helper.fail("timed out waiting for the " + leg + ": player in " + player.level().dimension().location() + " at " + player.position()
+                    + ", portalProcess=" + player.portalProcess + ", cooldown=" + player.getPortalCooldown() + ", alive=" + player.isAlive());
+            return;
+        }
+        each.run();
+        helper.runAfterDelay(1, () -> until(helper, leg, player, budget - 1, done, each, then));
+    }
+
+    /** Puts the player in the pane at {@code pos} each tick, as walking through it would. */
+    private static void standIn(ServerPlayer player, BlockPos pos) {
+        ServerLevel level = player.serverLevel();
+        level.getBlockState(pos).entityInside(level, pos, player);
+        player.doTick();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void aPlayerTravelsToTheReturnGateAndBack(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerLevel earth = helper.getLevel().getServer().getLevel(RuinedEarth.DIMENSION);
+        BlockPos origin = new BlockPos(13_300, 64, 0);
+        space.setChunkForced(origin.getX() >> 4, origin.getZ() >> 4, true);
+        space.setChunkForced((origin.getX() + WIDTH) >> 4, origin.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clear(space, origin);
+            buildFrame(space, origin);
+            helper.assertTrue(AtmosphericPortals.tryLight(space, origin.below()), "frame did not light");
+            BlockPos pane = origin.east(WIDTH / 2).above(1);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, pane.getX() + 0.5, pane.getY(), pane.getZ() + 0.5);
+            Runnable cleanup = () -> {
+                TestPlayers.remove(player);
+                clear(space, origin);
+                space.setChunkForced(origin.getX() >> 4, origin.getZ() >> 4, false);
+                space.setChunkForced((origin.getX() + WIDTH) >> 4, origin.getZ() >> 4, false);
+            };
+            try {
+                until(helper, "trip to Earth", player, 100, () -> player.level().dimension() == RuinedEarth.DIMENSION, () -> standIn(player, pane), () -> {
+                    try {
+                        PortalLinks.Gate gate = earth.getData(ModAttachments.PORTAL_LINKS).gate().orElseThrow();
+                        helper.assertTrue(gate.width() >= PortalTravel.MIN_GATE_WIDTH && gate.height() >= PortalTravel.MIN_GATE_HEIGHT,
+                                "return gate too small for the Ship: " + gate);
+                        BlockPos gatePane = gate.rect().at(gate.width() / 2, 1);
+                        helper.assertTrue(earth.getBlockState(gatePane).is(ModBlocks.ATMOSPHERIC_PORTAL.get()), "the return gate is not lit");
+                        helper.assertTrue(player.getY() >= gate.bottomLeft().getY() - 0.01 && Math.abs(player.getX() - gate.rect().centerBottom().x) < 1
+                                        && player.getZ() > gate.bottomLeft().getZ() + 1.5 && player.getZ() < gate.bottomLeft().getZ() + 5,
+                                "arrived in the wrong place: " + player.position());
+                        helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) > 0, "no gravity on ruined Earth");
+                        BlockPos back = gatePane;
+                        // A real client acknowledges the dimension change; until then the server holds the player's ticking.
+                        player.hasChangedDimension();
+                        // Standing in a portal during its cooldown keeps the cooldown going, so wait it out where we landed.
+                        until(helper, "portal cooldown", player, 100, () -> player.getPortalCooldown() == 0, player::doTick, () -> {
+                            player.teleportTo(back.getX() + 0.5, back.getY(), back.getZ() + 0.5);
+                            until(helper, "trip back", player, 100, () -> player.level().dimension() == ModDimensions.DEEP_SPACE, () -> standIn(player, back), () -> {
+                                try {
+                                    helper.assertTrue(player.position().distanceTo(Vec3.atBottomCenterOf(pane).add(0, -1, 0)) < 6,
+                                            "came back far from the portal: " + player.position());
+                                    helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) == 0.0, "gravity on in deep space");
+                                    helper.succeed();
+                                } finally {
+                                    cleanup.run();
+                                }
+                            });
+                        });
+                    } catch (RuntimeException e) {
+                        cleanup.run();
+                        throw e;
+                    }
+                });
+            } catch (RuntimeException e) {
+                cleanup.run();
+                throw e;
             }
         });
     }

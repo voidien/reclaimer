@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Finds the rectangle an Atmospheric Portal fills inside a frame. Pure over two predicates, so it is unit-tested with a
@@ -27,6 +28,27 @@ public final class PortalShape {
     public record Rect(BlockPos bottomLeft, Direction.Axis axis, int width, int height) {
         public BlockPos at(int across, int up) {
             return bottomLeft.relative(alongWidth(axis), across).above(up);
+        }
+
+        /** The middle of the bottom row, at floor level: where an entity would stand to face the portal. */
+        public Vec3 centerBottom() {
+            return axis == Direction.Axis.X
+                    ? new Vec3(bottomLeft.getX() + width / 2.0, bottomLeft.getY(), bottomLeft.getZ() + 0.5)
+                    : new Vec3(bottomLeft.getX() + 0.5, bottomLeft.getY(), bottomLeft.getZ() + width / 2.0);
+        }
+
+        /** The side of the plane, as a direction; {@code sign} positive is the south or east side. */
+        public Direction normal(int sign) {
+            if (axis == Direction.Axis.X) {
+                return sign >= 0 ? Direction.SOUTH : Direction.NORTH;
+            }
+            return sign >= 0 ? Direction.EAST : Direction.WEST;
+        }
+
+        /** Which side of the plane an entity moving by {@code moved} (along the plane's normal axis) ends up on; positive if still. */
+        public int travelSign(Vec3 moved) {
+            double along = axis == Direction.Axis.X ? moved.z : moved.x;
+            return along < -1.0e-3 ? -1 : 1;
         }
 
         public void forEach(Consumer<BlockPos> action) {
