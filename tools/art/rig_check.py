@@ -131,6 +131,41 @@ def pack(fixes, limit=REAL_LIMIT):
     return out
 
 
+RIG_DIR = os.path.dirname(os.path.abspath(DEFAULT_SPEC))
+
+
+def spec_for(asset):
+    """The rig spec of a whole-body asset: the one whose name is a word of the asset's name, which must also say "body"
+    ("mech (body)" -> mech.json). A section or module of the drone ("drone_hull (section)") is not a rig."""
+    words = {w for w in ''.join(c if c.isalnum() else ' ' for c in asset.lower()).split()}
+    if 'body' in words and os.path.isdir(RIG_DIR):
+        for file in sorted(os.listdir(RIG_DIR)):
+            if file.endswith('.json') and file[:-5] in words:
+                return os.path.join(RIG_DIR, file)
+    return None
+
+
+def report(model_path, spec_path, out_path):
+    """Checks a model and writes the findings and the Re-rig instructions to `out_path` (removed when the model is clean).
+    Returns the number of problems."""
+    with open(model_path, encoding='utf-8') as f:
+        model = json.load(f)
+    with open(spec_path, encoding='utf-8') as f:
+        spec = json.load(f)
+    problems, fixes = check(model, spec)
+    if not problems:
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        return 0
+    lines = ['Rig check against %s: %d problem(s)' % (os.path.basename(spec_path), len(problems))]
+    lines += ['  - ' + p for p in problems]
+    lines += ['', 'Re-rig instructions (paste into RD one at a time, then export and check again):']
+    lines += ['%d. %s' % (i, text) for i, text in enumerate(pack(fixes), 1)]
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines) + '\n')
+    return len(problems)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('model', help='the RD .bbmodel (or its .json export)')

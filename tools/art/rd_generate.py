@@ -37,6 +37,7 @@ import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pngutil import png_read, png_write  # noqa: E402
+import rig_check  # noqa: E402
 import style_guide  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
@@ -711,6 +712,25 @@ def export_model(folder, asset_id, key):
     for target, name in (('blockbench', 'model.bbmodel'), ('atlas', 'atlas.png')):
         res = request('POST', '/lowpoly/assets/%s/export' % asset_id, key, {'target': target})
         write_file(os.path.join(folder, name), download(res['url']))
+    rig_report(folder)
+
+
+def rig_report(folder):
+    """For a body rig's model, checks its bones against the rig spec and writes rerig.txt (problems plus Re-rig text for
+    RD's 250-character box) beside it. Never stops a run: a failed check only prints a warning."""
+    spec = rig_check.spec_for(os.path.basename(folder))
+    if not spec:
+        return
+    out = os.path.join(folder, 'rerig.txt')
+    try:
+        n = rig_check.report(os.path.join(folder, 'model.bbmodel'), spec, out)
+    except (OSError, ValueError, KeyError) as e:
+        print('  rig check skipped: %s' % e)
+        return
+    if n:
+        print('  rig check: %d problem(s) against %s, see %s for the Re-rig text' % (n, os.path.basename(spec), out))
+    else:
+        print('  rig check: the model has every bone the %s rig needs' % os.path.basename(spec)[:-5])
 
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -83,5 +83,36 @@ class RigCheck(unittest.TestCase):
         self.assertIn('chest', need)
 
 
+class Report(unittest.TestCase):
+    def test_spec_for_matches_a_word_of_the_asset_name(self):
+        self.assertTrue(rc.spec_for('mech (body)').endswith('mech.json'))
+        self.assertTrue(rc.spec_for('drone_body').endswith('drone.json'))
+        self.assertIsNone(rc.spec_for('drone_hull_section'), 'a part of the drone is not the rig')
+        self.assertIsNone(rc.spec_for('quartz_wafer'))
+        self.assertIsNone(rc.spec_for('mechanical_drill'), 'a word, not a prefix')
+
+    def test_report_writes_instructions_for_a_bad_model_and_removes_the_file_for_a_good_one(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            spec_path = os.path.join(tmp, 'spec.json')
+            with open(spec_path, 'w') as f:
+                json.dump(SPEC, f)
+            bad = os.path.join(tmp, 'bad.bbmodel')
+            tree = good_tree() + [group('fx_flame_boot_l', (7, -2, 3))]
+            with open(bad, 'w') as f:
+                json.dump(model(tree, [animation('hover')]), f)
+            out = os.path.join(tmp, 'rerig.txt')
+            self.assertEqual(1, rc.report(bad, spec_path, out))
+            with open(out) as f:
+                text = f.read()
+            self.assertIn('Parent fx_flame_boot_l under fx_boot_l', text)
+            good = os.path.join(tmp, 'good.bbmodel')
+            with open(good, 'w') as f:
+                json.dump(model(good_tree(), [animation('hover')]), f)
+            self.assertEqual(0, rc.report(good, spec_path, out))
+            self.assertFalse(os.path.exists(out), 'a clean model leaves no stale rerig.txt')
+
+
 if __name__ == '__main__':
     unittest.main()

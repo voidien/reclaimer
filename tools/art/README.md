@@ -122,6 +122,7 @@ python3 tools/art/rd_generate.py --balance
 **Checking a rig (`rig_check.py`)**
 - `python3 tools/art/rig_check.py MODEL.bbmodel [--spec src/main/resources/assets/void_reclaimer/body_rigs/mech.json]` compares an RD model with a rig spec: every bone the spec names exists and is unique, every animation the poses name exists, animations only key real bones, and effect groups (flames, tool and watch pieces) are parented. A group left at the model's top level is moved by no bone, so a flame there floats in the air.
 - It prints the problems and Re-rig instructions of at most 250 characters (the limit of RD's Re-rig box). Paste them one at a time, re-export, and run the check again.
+- `rd_generate.py` runs the check by itself on every downloaded body-rig model (`mech (body)`, `drone (body)`, ...): it prints a one-line verdict and writes `rerig.txt` beside the model with the problems and the Re-rig text (the file is removed when the model is clean). Parts and modules are not rigs and are not checked.
 - Re-rig before animating: RD deletes animations that use bones a Re-rig removes. Test: `python3 tools/art/test_rig_check.py` (runs in CI).
 
 **Animations**
