@@ -45,13 +45,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class ReplicatorScreen extends Screen {
     private static final int WIDTH = 320;
-    private static final int HEIGHT = 244;
+    /** At most 240 so the panel fits a 720p window at GUI scale 3 (the owner's usual test size). */
+    private static final int HEIGHT = 236;
     private static final int LIST_WIDTH = 190;
     private static final int ROW = 22;
     /** The description box under the recipe list. */
-    private static final int DETAIL_TOP = 38 + 6 * 22 + 4;
-    private static final int DETAIL_LINES = 4;
-    private static final int VISIBLE_ROWS = 6;
+    private static final int DETAIL_TOP = 38 + 5 * 22 + 4;
+    private static final int DETAIL_LINES = 5;
+    private static final int VISIBLE_ROWS = 5;
     private static final int PANEL = 0xE0101418;
     private static final int PANEL_LIGHT = 0xFF1E2630;
     private static final int ACCENT = 0xFF7FD4FF;

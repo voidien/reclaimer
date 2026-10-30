@@ -489,7 +489,7 @@ From an outside audit, each checked against the code first (several claims were 
 - Dust kinds have an optional `icon`; the meter, the Replicator prices and the sensor title draw it (`DustIcons`), the meter dims when idle (`DustMeterFade`), names show while a screen is open, price icons have a hover tooltip. **Placeholder art:** `textures/gui/sprites/hud/dust_{metallic,silicate,ice,carbon}.png` (9x9 programmer art) until the owner's RD icons. Not seen in game yet.
 
 ## Replicator screen, part 1: descriptions: done
-- A description line per built-in recipe (81), an optional `description` field on Replicator recipes (synced; the sync codec is hand-written because `StreamCodec.composite` stops at six fields), a description box under the list and a hover tooltip on rows; the panel is taller (244). Not seen in game yet.
+- A description line per built-in recipe (81), an optional `description` field on Replicator recipes (synced; the sync codec is hand-written because `StreamCodec.composite` stops at six fields), a description box under the list and a hover tooltip on rows; the panel is taller (236). Not seen in game yet.
 
 ## Replicator screen, part 3: JEI: done
 - JEI gets the screen's bounds and the item under the mouse (`registerGuiHandlers`, `ReplicatorScreen.itemAt`). Checked only that JEI loads the plugin without errors in a headless client; the hover keys are not tried by hand yet.

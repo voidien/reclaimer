@@ -19,7 +19,7 @@ import net.minecraft.world.inventory.Slot;
  */
 public class BodyInventoryScreen extends AbstractContainerScreen<BodyInventoryMenu> {
     static final int WIDTH = 320;
-    static final int HEIGHT = 244;
+    static final int HEIGHT = 236;
     private static final int PANEL = 0xE0101418;
     private static final int PANEL_LIGHT = 0xFF1E2630;
     private static final int SLOT = 0xFF0C1014;
