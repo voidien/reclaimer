@@ -86,6 +86,17 @@ Read-only.
 The Tether Anchor and the portal frame have no block entity, so they are attached through CC's block capability; the
 functions are the same to a computer.
 
+## Ship thrusters (`ThrusterPeripheral`)
+Read-only. A computer sets the throttle the way a player does: with redstone (`redstone.setAnalogOutput(side, 0 to 15)`).
+
+| Block | Function | Returns |
+|---|---|---|
+| Chemical Thruster | `getThrottle()` | the redstone throttle, 0 to 1 |
+| | `getForce()` | the force it pushes with right now |
+| | `isFiring()` | whether it is pushing |
+| | `getSpeed()` | shaft speed in RPM |
+| | `getTanks()` | its fuel tank: `{ { name, amount, capacity } }` in mB |
+
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
 pocket computer), as their own step.

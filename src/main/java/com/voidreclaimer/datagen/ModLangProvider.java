@@ -88,6 +88,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ASHEN_SLAG.get(), "Ashen Slag");
         add(ModItems.PORTAL_FRAME.get(), "Atmospheric Portal Frame");
         add(ModItems.PORTAL_IGNITER.get(), "Portal Igniter");
+        add(ModItems.CHEMICAL_THRUSTER.get(), "Chemical Thruster");
         add(ModItems.TERRAFORMING_SPIRE.get(), "Terraforming Spire");
         add("message.void_reclaimer.spire.started", "Genesis Pulse started.");
         add("message.void_reclaimer.spire.busy", "A Genesis Pulse is already sweeping out from this Spire.");
@@ -506,6 +507,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");
         add("replicator.void_reclaimer.description.terraforming_spire", "Fires the Genesis Pulse: a wave sweeps out over 256 by 256 blocks of ruined Earth, turning Ashen Slag into soil and the biome into plains. Right-click it, or power it with redstone.");
+        add("replicator.void_reclaimer.description.chemical_thruster", "Pushes a block ship. Build it into the ship with the nozzle pointing away from where you want to go, turn it with a shaft, pipe in Nebulite Propellant, and open the throttle with redstone.");
         add("replicator.void_reclaimer.description.backup_core", "A respawn point. Place it in deep space; after a death you can come back to it, spending one charge.");
         add("replicator.void_reclaimer.description.body_blueprint", "Saves your body's layout. Apply it later to queue the Replicator jobs for any parts you are missing.");
         add("replicator.void_reclaimer.description.brass_trim", "Cosmetic brass plating for a cosmetic mount. It changes how your body looks, not how it flies.");

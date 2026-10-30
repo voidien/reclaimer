@@ -25,6 +25,10 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlockWithItem(ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), cubeAll(ModBlocks.MAGNETIC_BARREL_NOZZLE.get()));
         simpleBlockWithItem(ModBlocks.PORTAL_FRAME.get(), cubeAll(ModBlocks.PORTAL_FRAME.get()));
         simpleBlockWithItem(ModBlocks.TERRAFORMING_SPIRE.get(), cubeAll(ModBlocks.TERRAFORMING_SPIRE.get()));
+        var thruster = models().cubeBottomTop("chemical_thruster", modLoc("block/chemical_thruster_side"),
+                modLoc("block/chemical_thruster_back"), modLoc("block/chemical_thruster_nozzle"));
+        directionalBlock(ModBlocks.CHEMICAL_THRUSTER.get(), thruster);
+        simpleBlockItem(ModBlocks.CHEMICAL_THRUSTER.get(), thruster);
         portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));

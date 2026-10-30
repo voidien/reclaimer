@@ -159,6 +159,10 @@ dependencies {
     // can't see: extractCreateLibs unpacks them (the exact versions Create runs with) for compiling only.
     implementation "maven.modrinth:create:${create_version}"
     createJar "maven.modrinth:create:${create_version}"
+    // Sable's API is compiled against for ship thrusters (it stays a runtime mod below); its Veil and companion jars are
+    // nested the same way as Create's, so extractCreateLibs unpacks them too.
+    compileOnly "maven.modrinth:sable:${sable_version}"
+    createJar "maven.modrinth:sable:${sable_version}"
     compileOnly fileTree(layout.buildDirectory.dir('create-libs')) {
         builtBy 'extractCreateLibs'
         include '*.jar'

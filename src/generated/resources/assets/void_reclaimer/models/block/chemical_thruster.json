@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "void_reclaimer:block/chemical_thruster_back",
+    "side": "void_reclaimer:block/chemical_thruster_side",
+    "top": "void_reclaimer:block/chemical_thruster_nozzle"
+  }
+}

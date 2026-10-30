@@ -6,6 +6,7 @@ import com.voidreclaimer.compat.cc.DysonPeripheral;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
 import com.voidreclaimer.compat.cc.SpawnTravelPeripherals;
 import com.voidreclaimer.compat.cc.SpirePeripheral;
+import com.voidreclaimer.compat.cc.ThrusterPeripheral;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.machine.CloudSiphonBlockEntity;
@@ -17,6 +18,7 @@ import com.voidreclaimer.machine.QuantumReceiverBlockEntity;
 import com.voidreclaimer.machine.SpinnerBlockEntity;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModMaterials;
+import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
 import com.voidreclaimer.terraform.SpireBlockEntity;
 import java.util.Arrays;
 import java.util.List;
@@ -287,6 +289,25 @@ public final class CCPeripheralGameTests {
             }
             level.setBlock(base, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             level.setBlock(anchorPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theChemicalThrusterIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_400, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            ThrusterPeripheral lua = new ThrusterPeripheral();
+            ChemicalThrusterBlockEntity thruster = place(level, pos, ModBlocks.CHEMICAL_THRUSTER.get(), ChemicalThrusterBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Chemical Thruster", "getThrottle", "getForce", "isFiring", "getSpeed", "getTanks");
+            thruster.tank().fill(new FluidStack(com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 500), IFluidHandler.FluidAction.EXECUTE);
+            helper.assertTrue(lua.getThrottle(thruster) == 0.0 && !lua.isFiring(thruster), "idle thruster reads as open");
+            helper.assertTrue(Integer.valueOf(500).equals(lua.getTanks(thruster).get(0).get("amount")), "getTanks " + lua.getTanks(thruster));
+            level.setBlock(pos.above(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            helper.assertTrue(lua.getThrottle(thruster) == 1.0, "getThrottle with a redstone block: " + lua.getThrottle(thruster));
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(pos.above(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });
     }

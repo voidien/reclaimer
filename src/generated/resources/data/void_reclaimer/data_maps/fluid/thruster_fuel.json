@@ -1,0 +1,8 @@
+{
+  "values": {
+    "void_reclaimer:nebulite_propellant": {
+      "burn": 2.0,
+      "thrust": 1.0
+    }
+  }
+}

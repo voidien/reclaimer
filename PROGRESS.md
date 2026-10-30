@@ -699,6 +699,20 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: 3 new offline tests (44 pass). Mutation-checked: a revision without an Idempotency-Key, and one that skips the question, each fail.
 - **The four RD parts agreed on 2026-10-30 are all done** (fix, repaint, restyle, low-poly). None has run against the real RD service yet: that needs the owner's new key in `$RD_API_KEY`.
 
+## 7b ships, part 1: the Chemical Thruster: done
+- **Chemical Thruster** (`chemical_thruster`): built into an Aeronautics ship, it pushes the ship away from its nozzle through vacuum. It needs a shaft at the back (full power at 64 RPM, nothing below `minRpm`; the force is capped at full spin), fuel in its tank (pipes reach it) and redstone: signal strength 0-15 is the throttle. Replicator recipe behind `starship` (placeholder price). Config section `ships`: `chemicalThrust` (400), `thrusterStress`, `thrusterTank`, toggle `chemicalThruster`.
+- **Fuel:** the data map `void_reclaimer:thruster_fuel` (`api.ship.ThrusterFuel`: thrust multiplier, burn per tick); Nebulite Propellant is thrust 1, 2 mB per tick. Only listed fluids enter the tank. TFMG fuels come in part 4.
+- **How it pushes:** `ChemicalThrusterBlockEntity` is a Sable `BlockEntitySubLevelActor`; its physics tick queues a point force at the block on `ForceGroups.PROPULSION`, in the ship's coordinates, the way Sable's propeller does. The force acts at the block, so anything off the centre of mass turns the ship: even a slightly unbalanced test ship tumbles (seen in the velocity log).
+- Sable is now a `compileOnly` dependency; `extractCreateLibs` also unpacks its nested Veil and companion jars.
+- `ThrusterPeripheral` (read-only: `getThrottle`, `getForce`, `isFiring`, `getSpeed`, `getTanks`; `docs/CC_PERIPHERALS.md`).
+- Tests: `ThrusterMathTest` (5), `ThrusterGameTests` (5: tank rules, burn, no throttle, slow shaft, dry tank), `CCPeripheralGameTests.theChemicalThrusterIsAPeripheral`, and three real-ship `AeronauticsGameTests` (a fuelled, powered, turning thruster moves a ship away from its nozzle; without fuel or without redstone it stays exactly still). Mutation-checked: a reversed push, no Sable force, and no fuel burn each fail.
+- **Aeronautics GameTests made reliable:** they were colliding with ships left in the local persistent world (a thruster ship is saved still firing and keeps flying). Each test now names its ship (`vr_test_<x>`) and reads and removes it by name, and the first test of a run removes every loaded ship. Sable facts: "all" is `@e` (not `@a`), a bad selector only prints a message (`remove` now throws on it), and `distance=` did not limit `sable remove`, so do not use it there. To clear strays from a local world, delete `run/world`.
+- **Numbers are guesses:** at 16 RPM (quarter spin, force 100) the small test ship reaches about 7.7 blocks per second in 1.5 s, and a real ship is heavier. There is no top speed and no drag in deep space yet. Tune with real ships.
+- Not seen in a client: the block's look, its orientation when placed, a ship flown for real.
+
+### Placeholder assets
+- `textures/block/chemical_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
