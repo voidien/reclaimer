@@ -69,6 +69,8 @@ public final class ReplicatorScreen extends Screen {
     @Nullable
     private RecipeHolder<ReplicatorRecipe> selected;
     private int selectedLog;
+    /** Queue position being dragged (never 0, the running job), or -1. */
+    private int dragFrom = -1;
     private int left;
     private int top;
     private Button replicateButton;
@@ -316,8 +318,19 @@ public final class ReplicatorScreen extends Screen {
         int width = WIDTH - LIST_WIDTH - 28;
         graphics.drawString(font, Component.translatable("replicator.void_reclaimer.queue", data.jobs().size(), ReplicatorData.MAX_JOBS), x, y, ACCENT, false);
         y += 12;
+        if (dragFrom >= data.jobs().size()) {
+            dragFrom = -1;
+        }
+        int dropAt = dragFrom >= 0 ? dropIndex(mouseY, data.jobs().size()) : -1;
         for (int i = 0; i < data.jobs().size(); i++) {
             ReplicatorJob job = data.jobs().get(i);
+            if (i == dragFrom) {
+                graphics.fill(x - 2, y - 1, x + width, y + 16, 0x66000000);
+            }
+            if (dropAt == i && dropAt != dragFrom) {
+                int lineY = dropAt > dragFrom ? y + 17 : y - 1;
+                graphics.fill(x - 2, lineY, x + width, lineY + 1, ACCENT);
+            }
             graphics.renderItem(job.result(), x, y);
             graphics.renderItemDecorations(font, job.result(), x, y);
             int barX = x + 20;
@@ -328,6 +341,11 @@ public final class ReplicatorScreen extends Screen {
             boolean hover = inside(mouseX, mouseY, cancelX, y + 2, 10, 12);
             graphics.drawString(font, "x", cancelX + 2, y + 4, hover ? 0xFFFF6060 : DIM, false);
             y += 18;
+        }
+        if (dragFrom >= 0 && dragFrom < data.jobs().size()) {
+            graphics.renderItem(data.jobs().get(dragFrom).result(), mouseX - 8, mouseY - 8);
+        } else if (data.jobs().size() > 2) {
+            graphics.drawString(font, Component.translatable("replicator.void_reclaimer.drag_hint"), x + 62, top + 42, DIM, false);
         }
         int bufferY = top + HEIGHT - 28 - 46;
         graphics.drawString(font, Component.translatable("replicator.void_reclaimer.output"), x, bufferY, ACCENT, false);
@@ -386,7 +404,36 @@ public final class ReplicatorScreen extends Screen {
             }
             rowY += 18;
         }
+        // Waiting jobs can be dragged to a new place; the running job (0) stays put.
+        rowY = top + 54;
+        for (int i = 0; i < data.jobs().size(); i++) {
+            if (i >= 1 && inside(mouseX, mouseY, queueX, rowY, width - 12, 16)) {
+                dragFrom = i;
+                return true;
+            }
+            rowY += 18;
+        }
         return false;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (dragFrom >= 0 && player != null) {
+            int size = player.getData(ModAttachments.REPLICATOR).jobs().size();
+            int target = dropIndex(mouseY, size);
+            if (target != dragFrom) {
+                PacketDistributor.sendToServer(ReplicatorActionPayload.move(dragFrom, target));
+            }
+            dragFrom = -1;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    /** The queue place under a mouse height, never in front of the running job. */
+    private int dropIndex(double mouseY, int size) {
+        return Mth.clamp((int) Math.floor((mouseY - (top + 54)) / 18.0), 1, Math.max(1, size - 1));
     }
 
     @Override

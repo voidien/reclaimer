@@ -510,6 +510,7 @@
   "replicator.void_reclaimer.description.titan_saucer": "The core of a Titan body. It holds your power core and storage; every other Titan piece attaches to it.",
   "replicator.void_reclaimer.description.titan_sensor_array": "A Titan sensor array with two sensor mounts.",
   "replicator.void_reclaimer.description.tool_claw": "A claw for the Drone with two tool mounts.",
+  "replicator.void_reclaimer.drag_hint": "drag to reorder",
   "replicator.void_reclaimer.empty_tab": "No designs in this category yet.",
   "replicator.void_reclaimer.no_logs": "No log entries.",
   "replicator.void_reclaimer.output": "Output",

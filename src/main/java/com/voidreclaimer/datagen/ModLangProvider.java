@@ -182,6 +182,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.paused", "PAUSED: low power");
         add("replicator.void_reclaimer.empty_tab", "No designs in this category yet.");
         add("replicator.void_reclaimer.no_logs", "No log entries.");
+        add("replicator.void_reclaimer.drag_hint", "drag to reorder");
         add("replicator.void_reclaimer.cost_tooltip", "%s: %s held, %s needed");
         add("replicator.void_reclaimer.select_hint", "Select a recipe to read what it does.");
         addReplicatorDescriptions();

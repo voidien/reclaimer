@@ -44,6 +44,30 @@ public final class ReplicatorGameTests {
     private ReplicatorGameTests() {}
 
     @GameTest(template = "empty")
+    public static void queuedJobsCanBeReorderedButTheRunningOneStays(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 99_000.5, 80, 0.5);
+        try {
+            Replicator.checkMilestones(player);
+            player.setData(ModAttachments.DUST, DustData.of(100, 100, 0, 0));
+            ResourceLocation thruster = VoidReclaimer.id("replicator/thruster_mk1");
+            ResourceLocation rotor = VoidReclaimer.id("replicator/rotor_arm");
+            helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.QUEUED, "queue 1");
+            helper.assertTrue(Replicator.queue(player, thruster) == ReplicatorLogic.QueueResult.QUEUED, "queue 2");
+            helper.assertTrue(Replicator.queue(player, rotor) == ReplicatorLogic.QueueResult.QUEUED, "queue 3");
+            helper.assertFalse(Replicator.move(player, 0, 2), "the running job moved");
+            helper.assertFalse(Replicator.move(player, 1, 1), "a move to the same place changed the queue");
+            helper.assertTrue(Replicator.move(player, 2, 1), "a waiting job could not be moved up");
+            var jobs = Replicator.data(player).jobs();
+            helper.assertTrue(jobs.get(0).recipe().equals(SCAFFOLD) && jobs.get(1).recipe().equals(rotor) && jobs.get(2).recipe().equals(thruster),
+                    "order after the move: " + jobs.stream().map(j -> j.recipe().getPath()).toList());
+            helper.assertTrue(jobs.get(0).progress() == Replicator.data(player).jobs().get(0).progress(), "the running job lost progress");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    @GameTest(template = "empty")
     public static void awakeningUnlocksStarterDesigns(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 40_000.5, 80, 0.5);
         try {
