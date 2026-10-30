@@ -56,7 +56,16 @@ public final class StarshipEntityGameTests {
                             helper.assertTrue(space.isPositionEntityTicking(BlockPos.containing(pos.add(dx, 0, dz))), "chunks not ticking entities yet");
                         }
                     }
-                });
+                })
+                // The GameTest world persists: a ship an earlier run left here is only loaded once its chunk ticks, so
+                // clear the area now, not in prepare() (where its entities are not loaded yet).
+                .thenExecute(() -> ships(space, pos, 32).forEach(TestStarship::discard));
+    }
+
+    /** Ships anchored at {@code anchor}. A ship sits at its drift position, up to the drift radius away from its anchor. */
+    private static List<TestStarship> anchoredAt(ServerLevel space, Vec3 anchor) {
+        return ships(space, anchor, Math.hypot(StarshipDrift.RADIUS, StarshipDrift.BOB) + 1).stream()
+                .filter(ship -> ship.anchor().distanceTo(anchor) < 1e-3).toList();
     }
 
     private static List<TestStarship> ships(ServerLevel space, Vec3 pos, double range) {
@@ -130,9 +139,9 @@ public final class StarshipEntityGameTests {
             CommandSourceStack source = space.getServer().createCommandSourceStack().withLevel(space).withPosition(from)
                     .withRotation(Vec2.ZERO).withPermission(4).withSuppressedOutput();
             space.getServer().getCommands().performPrefixedCommand(source, "void_reclaimer starship spawn");
-            List<TestStarship> found = ships(space, expected, 0.5);
-            helper.assertTrue(found.size() == 1, "expected one ship anchored ahead, found " + found.size());
-            helper.assertTrue(found.get(0).anchor().distanceTo(expected) < 1e-3, "anchored at " + found.get(0).anchor());
+            List<TestStarship> found = anchoredAt(space, expected);
+            helper.assertTrue(found.size() == 1, "expected one ship anchored ahead, found " + found.size()
+                    + " (ships nearby: " + ships(space, expected, 32).stream().map(TestStarship::anchor).toList() + ")");
             found.forEach(TestStarship::discard);
             forceChunks(space, expected, false);
             helper.succeed();
