@@ -32,5 +32,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.QuantumReceiverBlockEntity>> QUANTUM_RECEIVER = BLOCK_ENTITIES.register("quantum_receiver",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.QuantumReceiverBlockEntity::new, ModBlocks.QUANTUM_RECEIVER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.terraform.SpireBlockEntity>> SPIRE = BLOCK_ENTITIES.register("terraforming_spire",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.terraform.SpireBlockEntity::new, ModBlocks.TERRAFORMING_SPIRE.get()).build(null));
+
     private ModBlockEntities() {}
 }

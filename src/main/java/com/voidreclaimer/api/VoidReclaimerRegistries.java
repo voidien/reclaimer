@@ -34,6 +34,8 @@ public final class VoidReclaimerRegistries {
     public static final ResourceKey<Registry<SizeClass>> SIZE_CLASS = key("size_class");
     /** Synced datapack registry: body layouts (sockets) named by core sections. */
     public static final ResourceKey<Registry<Chassis>> CHASSIS = key("chassis");
+    /** Datapack registry (server only): what a Terraforming Spire pulse turns ruined ground into. */
+    public static final ResourceKey<Registry<com.voidreclaimer.api.terraform.TerraformProfile>> TERRAFORM_PROFILE = key("terraform_profile");
     /** Code registry: what tool modules do. */
     public static final ResourceKey<Registry<ToolModuleType>> TOOL_MODULE_TYPE = key("tool_module_type");
     /** Code registry: the codecs of milestone criterion types, by the {@code type} name used in JSON. */

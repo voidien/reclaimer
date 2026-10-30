@@ -2,11 +2,11 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical slice is in progress (see "Start here" and the PROGRESS.md block "Act III slice").
+Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical slice (dimension, sky eras, portal, Spire pulse) is built, PRs #88 to #91 and the Spire PR; see the PROGRESS.md blocks "Act III slice". Next: the owner looks at it in game, then hover flight on Earth, the launch complex, stations and helper drones.
 
 ## Start here (written 2026-10-30 at the owner's request)
 **The owner's answers for the next session:**
-- **First task: the Act III vertical slice.** It proves the riskiest part early (`CLAUDE.md` "Interview decisions", step 4): the `ruined_earth` dimension, the Atmospheric Portal, the three-era sky and one Terraforming Spire pulse. Interview the owner about the rest of its design (AskUserQuestion), list the files, then split it into small PRs. Their decisions so far:
+- **First task (DONE 2026-10-30, see PROGRESS.md): the Act III vertical slice.** It proves the riskiest part early (`CLAUDE.md` "Interview decisions", step 4): the `ruined_earth` dimension, the Atmospheric Portal, the three-era sky and one Terraforming Spire pulse. Interview the owner about the rest of its design (AskUserQuestion), list the files, then split it into small PRs. Their decisions so far:
   - **Portal:** a craftable Atmospheric Portal frame, **big enough for the Ship to fly through** (Ship is about 12 blocks long, 5.6 wide, at scale 3; the Titan is 67 blocks and need not fit yet).
   - **Sky:** all three eras (ruined, healing, restored) selectable by a debug command first, so each can be judged before the Spire drives them. Blending by restoration percent comes later.
   - **Spire pulse:** rewrites biomes **and blocks** in its 128-block area and resends the chunks, with a visible before/after and a GameTest (`CLAUDE.md` Phases 11 and 12: the 4x4 sectors, Purified Water and Bio-Nutrient Slurry inputs, the Atmospheric Catalyst Core, the Genesis Pulse).

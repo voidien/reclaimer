@@ -178,6 +178,7 @@ public final class ModItems {
     // ---- blocks -------------------------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> SCAFFOLD = ITEMS.registerSimpleBlockItem(ModBlocks.SCAFFOLD);
+    public static final DeferredItem<BlockItem> TERRAFORMING_SPIRE = ITEMS.registerSimpleBlockItem(ModBlocks.TERRAFORMING_SPIRE);
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));
