@@ -344,6 +344,7 @@
   "log.void_reclaimer.starship.text": "[Placeholder, lore text pending.] Ice, carbon, silicon and metal: one finished part from each. The drafts for a ship-sized body are complete.",
   "log.void_reclaimer.starship.title": "Log: The Starship",
   "menu.void_reclaimer.inventory": "Inventory",
+  "menu.void_reclaimer.inventory.dust": "Dust reserves",
   "menu.void_reclaimer.inventory.locked": "Locked: install storage to unlock this row",
   "message.void_reclaimer.blueprint.applied": "Blueprint built: nothing missing.",
   "message.void_reclaimer.blueprint.count": "%s× %s",
