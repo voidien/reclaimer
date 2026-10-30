@@ -67,6 +67,11 @@ Build order after Phase 4: 5a → 6 → 7 → 5b → 8 → 9 → 10.
 | Create (required) | 6.0.10 (`maven.modrinth:create:6.0.10+mc1.21.1`, range `[6.0.10,6.1)`) | api.modrinth.com/maven; bundles Flywheel 1.0.x, Ponder, Registrate |
 | Create Aeronautics (required) | 1.3.2 (`maven.modrinth:create-aeronautics:1.3.2+mc1.21.1`, range `[1.3.2,1.4)`, mod id `aeronautics`) | api.modrinth.com/maven; jar-in-jar bundle of aeronautics, simulated, offroad; needs Create and Veil |
 | Sable (required) | 2.0.6 (`maven.modrinth:sable:2.0.6+mc1.21.1`, range `[2.0.6,2.1)`) | api.modrinth.com/maven |
+| Create Crafts & Additions (required) | 1.7.2 (`maven.modrinth:createaddition:neoforge-1.21.1-1.7.2`, mod id `createaddition`) | api.modrinth.com/maven |
+| Create Propulsion: Simulated (required) | 1.1.5 (`maven.modrinth:create-propulsion-simulated:1.1.5`, mod id `createpropulsion`) | api.modrinth.com/maven |
+| Create: The Factory Must Grow (required) | 1.2.0 (`maven.modrinth:create-tfmg:uDi14nbt`, pinned by version id, mod id `tfmg`) | api.modrinth.com/maven |
+| Create: Advanced Electricity / Technology Addon (required) | 1.21.1 1.0.0 (`curse.maven:create-advanced-electricity-addon-1743391:9362753`, mod id `light_bulb_addon_create_crafts_and__addions`) | cursemaven.com (CurseForge only) |
+| Create: Advanced Computer Technic (required) | 1.21.1 1.0.2 (`curse.maven:create-advanced-computer-technic-1759784:9362807`, mod id `advanced_computer_technic`; All Rights Reserved) | cursemaven.com (CurseForge only) |
 | Gradle wrapper | 9.2.1 | matches official NeoForge 1.21.1 MDK |
 | Sodium (dev run only) | mc1.21.1-0.8.13-neoforge | api.modrinth.com/maven |
 | ModernFix (dev run only) | 5.27.27+mc1.21.1 | api.modrinth.com/maven |
@@ -425,6 +430,13 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Thrusters:** our Space Thruster is the guaranteed engine (dust fuel and energy); ships using a third-party thruster addon's blocks also work in deep space through the same Sable force path. No player is locked into one engine.
 - **Order after hover flight:** compatibility spike, then addon policy and an electricity bridge (Crafts & Additions power into our energy and `CollectorPowerEvent`), then 7b ships (Space Thruster, Helm, third-party thrusters), then airships on ruined Earth, then moving stations, then portal-crossing ships (spike first), then CC: Tweaked peripherals for our machines. The launch complex and helper drones follow. Each step is split into small PRs and gets its own interview before code.
 - **Still open:** the exact required set (spike result), what Steam 'n' Rails is used for, whether portal-crossing ships are viable, and the power units between Create, our energy and the addons.
+
+**Required addons (decided 2026-10-30 by the owner, after the compatibility spike)**
+- **Required:** Create Crafts & Additions, Create: Advanced Electricity / Technology Addon, Create: Advanced Computer Technic (the "electronics stack"; the last two need Crafts & Additions), Create Propulsion: Simulated (ship thrusters), Create: The Factory Must Grow (oil, fuels, steel). Same rules as Create and Aeronautics: `localRuntime` + `testRuntimeOnly`, versions and ranges in `gradle.properties`, `required` in `neoforge.mods.toml`; switch one to `implementation` only when our code needs its API.
+- **Optional with soft compat:** everything else from the spike (New Age, CC: Tweaked, Create: Avionics, Aeroworks, Steam 'n' Rails, Electro Energetics, Ore Excavation, Power Loader, Hypertubes, Tweaked Controllers, Trading Floor, Numismatics, Connected, Copycats+, Deco). We support them through standard hooks (Forge Energy, tags, events), never by compiling against them.
+- **Not usable now:** Create: Power Grid (crashes with TFMG 1.2.0: its TFMG integration needs 1.3.x), Create: Radars (hard-requires Create Big Cannons; no combat in this game). Create: Avionics only works with CC: Tweaked (hard dependency), not with Advanced Computer Technic's computers.
+- **Distribution:** two required addons are CurseForge-only (one All Rights Reserved), so a Modrinth modpack cannot bundle them; players need the CurseForge app or a manual download.
+- **Risk:** Advanced Electricity and Computer Technic were first released for 1.21.1 on 2026-10-29 with a few hundred downloads; expect updates and breakage, and re-run the GameTests when they change.
 
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).

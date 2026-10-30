@@ -6,6 +6,8 @@ Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical sl
 
 ## Start here (written 2026-10-30 at the owner's request)
 
+- **Required addons (2026-10-30):** Crafts & Additions, Advanced Electricity, Advanced Computer Technic, Propulsion, TFMG are required (see `CLAUDE.md` "Required addons"). CC: Tweaked and Avionics are optional; the owner asked whether Computer Technic's computers can script Aeronautics ships like Avionics does: research that before designing it.
+
 - **Update (2026-10-30, unattended stretch):** hover flight on Earth is done (PRs #94 to #97; the weight factor default is 0.12, measured, see PROGRESS.md "Hover tuning") and the addon compatibility spike is done (PROGRESS.md "Addon compatibility spike: results": all nine candidates load together, nothing was made required). The owner decides the required set. The spike worktree is `../reclaimer-spike` (never merge it; it has the `-PspikeMods=` hook and a client quickplay hack). Next in the agreed order: addon policy and an electricity bridge, then 7b ships.
 
 - **Next work (decided 2026-10-30, see `CLAUDE.md` "Hover flight on Earth" and "Create, Aeronautics and addon integration"):** (1) hover flight on Earth in three small PRs (interview done, file list given, **waiting for the owner's go for PR 1**); (2) the addon compatibility spike; then electricity bridge, 7b ships, Earth airships, moving stations, portal-crossing ships. The owner has no time to playtest right now: do not wait for feedback, but keep asking before features. The Act III slice (PRs #88 to #92) is merged; the blue slabs around the Ship were **not reproducible** in the Xvfb client (third person, front, first person, dark and lit room).
