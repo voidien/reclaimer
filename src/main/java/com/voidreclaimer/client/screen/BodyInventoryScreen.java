@@ -2,7 +2,11 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.body.BodyInventoryMenu;
 import com.voidreclaimer.client.input.ModKeyMappings;
+import com.voidreclaimer.client.hud.DustMeterLayer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -32,15 +36,14 @@ public class BodyInventoryScreen extends AbstractContainerScreen<BodyInventoryMe
     @Override
     protected void init() {
         super.init();
-        int tabWidth = 50;
         int x = leftPos + 6;
         Button inventory = addRenderableWidget(Button.builder(Component.translatable("menu.void_reclaimer.inventory"), b -> {})
-                .bounds(x, topPos + 18, tabWidth + 6, 16).build());
+                .bounds(x, topPos + 18, 60, 16).build());
         inventory.active = false;
-        x += tabWidth + 8;
-        x = tab(x, tabWidth, "replicator.void_reclaimer.tab.replicator", ReplicatorScreen.Start.RECIPES);
-        x = tab(x, tabWidth, "replicator.void_reclaimer.tab.body", ReplicatorScreen.Start.BODY);
-        tab(x, tabWidth, "replicator.void_reclaimer.tab.logs", ReplicatorScreen.Start.LOGS);
+        x += 62;
+        x = tab(x, 66, "replicator.void_reclaimer.tab.replicator", ReplicatorScreen.Start.RECIPES);
+        x = tab(x, 44, "replicator.void_reclaimer.tab.body", ReplicatorScreen.Start.BODY);
+        tab(x, 44, "replicator.void_reclaimer.tab.logs", ReplicatorScreen.Start.LOGS);
     }
 
     private int tab(int x, int width, String key, ReplicatorScreen.Start start) {
@@ -57,12 +60,34 @@ public class BodyInventoryScreen extends AbstractContainerScreen<BodyInventoryMe
         for (Slot slot : menu.slots) {
             graphics.fill(leftPos + slot.x - 1, topPos + slot.y - 1, leftPos + slot.x + 17, topPos + slot.y + 17, SLOT);
         }
+        renderSide(graphics, mouseX, mouseY);
     }
 
-    @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, Component.translatable("menu.void_reclaimer.inventory"), BodyInventoryMenu.GRID_X, 40 - 1 + 0, ACCENT, false);
+    /** Right of the slots: the body preview on top, the dust reserves under it. */
+    private static final int SIDE_X = 6 + 9 * 18 + 4 + 8;
+    private static final int PREVIEW_TOP = 40;
+    private static final int PREVIEW_HEIGHT = 112;
+
+    private void renderSide(GuiGraphics graphics, int mouseX, int mouseY) {
+        int x1 = leftPos + SIDE_X;
+        int x2 = leftPos + WIDTH - 6;
+        int y1 = topPos + PREVIEW_TOP;
+        int y2 = y1 + PREVIEW_HEIGHT;
+        graphics.fill(x1, y1, x2, y2, PANEL_LIGHT);
+        LocalPlayer player = minecraft.player;
+        if (player != null) {
+            // The model is much longer than the hitbox for the big classes; fit by the larger of the two.
+            double size = Math.max(player.getBbHeight(), player.getBbWidth() * (player.getScale() > 1.5 ? 4.0 : 1.0));
+            int scale = (int) Mth.clamp(PREVIEW_HEIGHT * 0.6 / Math.max(0.4, size), 2, 140);
+            InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, 0.0625f, mouseX, mouseY, player);
+            graphics.drawString(font, Component.translatable("menu.void_reclaimer.inventory.dust"), x1, y2 + 6, ACCENT, false);
+            DustMeterLayer.drawRows(graphics, minecraft, player, x1, y2 + 18, 1f, true);
+        }
     }
+
+    /** No labels: the tab strip already says where you are. */
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {}
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

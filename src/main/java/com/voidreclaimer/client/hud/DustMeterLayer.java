@@ -31,6 +31,10 @@ public final class DustMeterLayer {
 
     public static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
+        // The inventory screen draws the same rows itself.
+        if (mc.screen instanceof com.voidreclaimer.client.screen.BodyInventoryScreen) {
+            return;
+        }
         if (mc.options.hideGui || mc.getDebugOverlay().showDebugScreen() || !(mc.getCameraEntity() instanceof Player player)) {
             return;
         }
@@ -53,13 +57,19 @@ public final class DustMeterLayer {
         float alpha = DustMeterFade.alpha(now - lastChange, inCloud || mc.screen != null);
         int alphaBits = Math.round(alpha * 255) << 24;
 
+        drawRows(graphics, mc, player, X, Y, alpha, mc.screen != null);
+    }
+
+    /** The dust rows (icon, bar, amount and optionally the name) with the first row at {@code x, y}; the HUD meter and the inventory screen share it. */
+    public static void drawRows(GuiGraphics graphics, Minecraft mc, Player player, int x, int y, float alpha, boolean names) {
+        DustData dust = player.getData(ModAttachments.DUST);
+        int alphaBits = Math.round(alpha * 255) << 24;
         float capacity = DustData.capacity(player);
-        int y = Y;
         for (DustKinds.Entry entry : DustKinds.all(player.registryAccess())) {
             float amount = dust.get(entry.id());
             int color = alphaBits | (entry.kind().color() & 0xFFFFFF);
-            DustIcons.draw(graphics, player.registryAccess(), entry.id(), X, y, alpha);
-            int barX = X + DustIcons.SIZE + 3;
+            DustIcons.draw(graphics, player.registryAccess(), entry.id(), x, y, alpha);
+            int barX = x + DustIcons.SIZE + 3;
             graphics.fill(barX, y + 2, barX + BAR_WIDTH, y + 6, ((int) (alpha * 0x90) << 24) | 0x202028);
             int filled = Mth.clamp(Math.round(amount / capacity * BAR_WIDTH), 0, BAR_WIDTH);
             if (filled > 0) {
@@ -68,7 +78,7 @@ public final class DustMeterLayer {
             int textX = barX + BAR_WIDTH + 4;
             String number = Integer.toString(Mth.floor(amount));
             graphics.drawString(mc.font, number, textX, y, alphaBits | 0xDDDDDD);
-            if (mc.screen != null) {
+            if (names) {
                 graphics.drawString(mc.font, entry.kind().displayName(entry.id()), textX + mc.font.width(number) + 5, y, alphaBits | 0x99AABB);
             }
             y += ROW;

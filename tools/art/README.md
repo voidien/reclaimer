@@ -125,6 +125,9 @@ python3 tools/art/rd_generate.py --balance
 - `rd_generate.py` runs the check by itself on every downloaded body-rig model (`mech (body)`, `drone (body)`, ...): it prints a one-line verdict and writes `rerig.txt` beside the model with the problems and the Re-rig text (the file is removed when the model is clean). Parts and modules are not rigs and are not checked.
 - Re-rig before animating: RD deletes animations that use bones a Re-rig removes. Test: `python3 tools/art/test_rig_check.py` (runs in CI).
 
+**Reusing animations (`anim_slice.py`)**
+- `python3 tools/art/anim_slice.py FILE.animation.json SOURCE NEW [options]` makes a new animation in the same file from an existing one: `--start/--end` keep a time range (edge keys are interpolated), `--bones a,b` (with `--geo MODEL.geo.json --children`) keep only those bones and their descendants, `--without` drops bones, `--mirror` swaps left and right (`arm_l` and `arm_r`, rotation Y and Z and position X change sign), `--speed` retimes, `--loop/--no-loop`. So one good swing becomes an arms-only layer, its mirror for the other arm and a calmer version. Test: `python3 tools/art/test_anim_slice.py` (runs in CI).
+
 **Animations**
 - Run on the rig's model once that model exists, then the rig's `.bbmodel` is re-exported.
 - Animation names and bones still need the Blockbench step in `docs/art/ASSETS.md`; `--promote` converts models, not animations.

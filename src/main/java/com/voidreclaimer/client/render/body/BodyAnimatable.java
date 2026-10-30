@@ -56,6 +56,28 @@ public final class BodyAnimatable implements GeoReplacedEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "body", 6, this::play));
+        // Layers added after the main controller overwrite the bones they animate; the rest stays with the main animation.
+        for (int i = 0; i < BodyRigSpec.MAX_LAYERS; i++) {
+            int index = i;
+            controllers.add(new AnimationController<>(this, "layer" + i, 6, state -> playLayer(index, state)));
+        }
+    }
+
+    private PlayState playLayer(int index, AnimationState<BodyAnimatable> state) {
+        Entity entity = state.getData(DataTickets.ENTITY);
+        BodyRenderer.Frame frame = BodyRenderer.frame();
+        if (!(entity instanceof Player player) || frame == null || frame.spec() == null) {
+            return PlayState.STOP;
+        }
+        BodyLook.Pose pose = pose(player);
+        ResourceLocation file = frame.animationResource();
+        for (String key : BodyLook.layerKeys(player.swinging, pose)) {
+            String name = frame.spec().layerAnimation(index, key);
+            if (name != null && hasAnimation(file, name)) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop(name));
+            }
+        }
+        return PlayState.STOP;
     }
 
     private PlayState play(AnimationState<BodyAnimatable> state) {
@@ -69,7 +91,8 @@ public final class BodyAnimatable implements GeoReplacedEntity {
         }
         BodyLook.Pose pose = pose(player);
         List<String> keys = new ArrayList<>();
-        if (player.swinging && pose != BodyLook.Pose.LOW_POWER) {
+        boolean layered = frame.spec() != null && frame.spec().hasLayerFor(BodyLook.MODULE_WORK);
+        if (player.swinging && pose != BodyLook.Pose.LOW_POWER && !layered) {
             keys.add(BodyLook.MODULE_WORK);
         }
         keys.addAll(BodyLook.fallbacks(pose));
