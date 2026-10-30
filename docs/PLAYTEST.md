@@ -96,7 +96,21 @@ Sequenced Assembly on a belt (Deployer, Spout, Press in order; the transitional 
 - [ ] Look at each body in third person (use a lit room; the `full` presets show every module): Drone (mining probe), Mech, Ship, Shuttle, Titan. Camera distance grows with the body.
 - **Skip:** `milestone grant @s void_reclaimer:starship`, then `body preset @s ship|shuttle|titan full`.
 
+## 9b. Round 2: screens, cameras and the start of the game
+New since the last round. Each box is something to try; tell me what looks wrong or feels off (sizes, speeds and offsets are guesses).
+- [ ] **Start:** in a brand-new world the AI log (Replicator Logs tab, and the toast) tells you to press R and build a Dust Sensor. You begin with 25 metallic, 30 silicate and 5 carbon dust, enough for the Dust Sensor, Thruster Mk I, Scaffold and Rotor Arm. **First Dust** and **Diversified** must *not* be unlocked yet; flying through a cloud unlocks them.
+- [ ] **Hum:** before you have a Dust Sensor, face a cloud within 512 blocks: you hear the tone (no bar). With the sensor the bar and markers appear.
+- [ ] **Dust meter** (top left): icon, bar and number per kind (placeholder icons: diamond, block, cross, disc). It dims after about 10 s without a change; with a screen open it shows the names.
+- [ ] **Health bar:** one bar with `health / max` above it, longer and taller for a bigger body; try `body preset @s titan`.
+- [ ] **Replicator (R):** each unlocked recipe shows a description when you hover it and in the box under the list; prices are icon plus amount (hover an icon for held / needed); drag a waiting job in the queue to reorder it (the first one never moves); with JEI, hover a result and press R or U.
+- [ ] **Inventory (E):** opens our screen: the rows your body has unlocked (the others darker), no armor or crafting slots, a 3D preview of your body and the dust reserves. Shift-click moves between the hotbar and the rows. The Replicator, Body and Logs tabs switch screens; R opens the Replicator.
+- [ ] **Death:** `/kill` with a charged Backup Core: the death screen shows a card per choice (name, charge pips, distance) and a placeholder AI line under the score.
+- [ ] **Orbit camera:** third person (F5), hold the middle mouse button and move the mouse: the camera swings round the body without turning it; scroll zooms; letting go eases back.
+- [ ] **Photo mode (F8):** the HUD hides and the camera is free: drag with the left mouse button to look, WASD and Space/Shift to move (Ctrl fast), scroll for FOV, Q/E to roll, R resets roll, Enter takes a screenshot, Escape or F8 leaves.
+- [ ] **Big ships first person:** `body preset @s ship` (also `shuttle`, `titan`), first person (F5 until it cycles): no hand, and the camera is forward of your eyes. Tell me where the camera should sit.
+- [ ] **Mech:** `body preset @s mech full`: it leans into its motion (forward, back, sideways), keeps the flying animation while cruising, its flames follow its feet, and swinging a tool moves only the right arm.
+
 ## 10. Report
 For anything wrong, send: stage number, what you did, what you expected, what happened, the world's mods (Sodium and the others loaded?), a screenshot if visual, and `logs/latest.log` if the game crashed or errors showed in chat.
 
-Known gaps, so you don't report them again: the Mass Driver, machines and the Titan have static models (no spinning), Quantum Receiver tooltip shows the per-RPM figure, first person still shows the vanilla hand, sounds are vanilla stand-ins, and some item icons are placeholders (`docs/art/ASSETS.md`).
+Known gaps, so you don't report them again: the Mass Driver, machines and the Titan have static models (no spinning), Quantum Receiver tooltip shows the per-RPM figure, first person still shows the vanilla hand for the Drone and the Mech, sounds are vanilla stand-ins, and some item icons are placeholders (`docs/art/ASSETS.md`).
