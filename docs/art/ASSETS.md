@@ -90,11 +90,12 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 ## The list
 
-### Tools & modules (14)
+### Tools & modules (15)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
 | dust_sensor | `item/dust_sensor.png` | 16x16 | no | art drop 1 (redo optional) | handheld brass sensor with a round cyan glass lens and small antenna |  |
+| portal_igniter | `item/portal_igniter.png` | 16x16 | no | placeholder | small brass igniter with a pale-blue crystal ring at the tip | Lights an Atmospheric Portal frame; used up. Act III slice placeholder. |
 | nanite_swarm | `item/nanite_swarm.png` | 16x16 | no | art drop 1 (redo optional) | swirling cloud of tiny silver-cyan nanite specks around a small emitter | Animated (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). RD VFX animation as a sprite sheet, then stack 4 frames top to bottom. |
 | salvage_tool | `item/salvage_tool.png` | 16x16 | no | art drop 1 (redo optional) | compact cutting tool with a copper handle and glowing orange cutting edge |  |
 | mechanical_drill | `item/mechanical_drill.png` | 16x16 | no | RD art (promoted) | industrial drill module: andesite casing, brass collar, spiral steel drill bit |  |
@@ -200,7 +201,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | coolant_fluid_bucket | `item/coolant_fluid_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with cyan coolant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #78DCE6. |
 | liquid_silicon_bucket | `item/liquid_silicon_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with glowing silver-white molten silicon | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #D0D8EE. |
 
-### Blocks (11)
+### Blocks (15)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
@@ -215,8 +216,12 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | electrolyzer_end | `block/electrolyzer_end.png` | 16x16 | no | RD art (promoted) | machine end face: andesite casing with a shaft hole in the middle |  |
 | spinner_side | `block/spinner_side.png` | 16x16 | no | RD art (promoted) | machine side: brass casing with a spinning spool of black thread visible | Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends; the spool could spin later (GeckoLib). |
 | spinner_end | `block/spinner_end.png` | 16x16 | no | RD art (promoted) | machine end face: brass casing with a shaft hole in the middle |  |
+| ashen_slag | `block/ashen_slag.png` | 16x16 | yes | placeholder | grey-black ashen slag ground with cinders | The whole ruined Earth surface: it must tile without visible seams. The Spire turns it into soil. |
+| portal_frame | `block/portal_frame.png` | 16x16 | no | placeholder | brass and andesite portal frame block with a pale-blue inlay | Built into a flat rectangle (up to 32 x 32 inside) around the Atmospheric Portal. |
+| atmospheric_portal | `block/atmospheric_portal.png` | 16x16 | no | placeholder | swirling pale-blue atmosphere, translucent | The portal pane: drawn translucent on a thin plate. Still static; an animated strip (like the Nether portal) can come later. |
+| terraforming_spire | `block/terraforming_spire.png` | 16x16 | no | placeholder | terraforming machine face: green-lit brass column with a glowing emitter | The single-block Spire of the Act III slice; the multiblock with its 3D model is a future row. |
 
-### HUD & GUI (10)
+### HUD & GUI (13)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
@@ -224,13 +229,13 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | energy_half | `gui/sprites/hud/energy_half.png` | 90x9 | no | art drop 1 (redo optional) | pixel art HUD energy bar, 90x9, ten cyan battery cells in a row, half-filled segment, transparent background | Replaces the hunger bar slot. Must stay exactly 90x9. |
 | energy_empty | `gui/sprites/hud/energy_empty.png` | 90x9 | no | art drop 1 (redo optional) | pixel art HUD energy bar, 90x9, ten cyan battery cells in a row, empty segment, transparent background | Replaces the hunger bar slot. Must stay exactly 90x9. |
 | energy_empty_warning | `gui/sprites/hud/energy_empty_warning.png` | 90x9 | no | art drop 1 (redo optional) | pixel art HUD energy bar, 90x9, ten cyan battery cells in a row, empty segment flashing red warning, transparent background | Replaces the hunger bar slot. Must stay exactly 90x9. |
-| replicator_panel | `gui/replicator_panel.png` | 256x256 | no | missing (future) | pixel art sci-fi machine GUI panel background, dark blue-grey with andesite metal frame and brass corners, empty inner areas | Not wired up yet: the Replicator and Body tab are drawn with flat fills. Needs a small code change to use a sprite (9-slice). |
-| replicator_tabs | `gui/sprites/replicator/tab.png` | 48x20 | no | missing (future) | pixel art GUI tab button, andesite metal with brass edge, plus a highlighted variant | Same: code change needed. |
-| module_wheel | `gui/sprites/hud/module_wheel.png` | 128x128 | no | missing (future) | pixel art radial selection wheel, six segments, dark translucent metal with cyan highlight | Same: code change needed. |
 | dust_icon_metallic | `gui/sprites/hud/dust_metallic.png` | 9x9 | no | placeholder | tiny pixel art icon, 9x9, a small pile of silver-grey metal grains (#B8C2CC), dark 1px outline, transparent background | Beside the dust amounts in the HUD meter, the Replicator prices and the Dust Sensor panel. Must stay 9x9; it reads at a glance, so keep the shape simple and distinct from the other three kinds (placeholders: diamond, block, cross, disc). |
 | dust_icon_silicate | `gui/sprites/hud/dust_silicate.png` | 9x9 | no | placeholder | tiny pixel art icon, 9x9, a small pile of sandy tan rock grit (#D9B38C), dark 1px outline, transparent background | Beside the dust amounts in the HUD meter, the Replicator prices and the Dust Sensor panel. Must stay 9x9; it reads at a glance, so keep the shape simple and distinct from the other three kinds (placeholders: diamond, block, cross, disc). |
 | dust_icon_ice | `gui/sprites/hud/dust_ice.png` | 9x9 | no | placeholder | tiny pixel art icon, 9x9, a small pile of pale cyan ice shards (#9FE3FF), dark 1px outline, transparent background | Beside the dust amounts in the HUD meter, the Replicator prices and the Dust Sensor panel. Must stay 9x9; it reads at a glance, so keep the shape simple and distinct from the other three kinds (placeholders: diamond, block, cross, disc). |
 | dust_icon_carbon | `gui/sprites/hud/dust_carbon.png` | 9x9 | no | placeholder | tiny pixel art icon, 9x9, a small pile of dark grey-violet soot flakes (#6E6A80), dark 1px outline, transparent background | Beside the dust amounts in the HUD meter, the Replicator prices and the Dust Sensor panel. Must stay 9x9; it reads at a glance, so keep the shape simple and distinct from the other three kinds (placeholders: diamond, block, cross, disc). |
+| replicator_panel | `gui/replicator_panel.png` | 256x256 | no | missing (future) | pixel art sci-fi machine GUI panel background, dark blue-grey with andesite metal frame and brass corners, empty inner areas | Not wired up yet: the Replicator and Body tab are drawn with flat fills. Needs a small code change to use a sprite (9-slice). |
+| replicator_tabs | `gui/sprites/replicator/tab.png` | 48x20 | no | missing (future) | pixel art GUI tab button, andesite metal with brass edge, plus a highlighted variant | Same: code change needed. |
+| module_wheel | `gui/sprites/hud/module_wheel.png` | 128x128 | no | missing (future) | pixel art radial selection wheel, six segments, dark translucent metal with cyan highlight | Same: code change needed. |
 | milestone_toast_icon | `gui/sprites/toast/milestone.png` | 16x16 | no | missing (future) | pixel art icon of a glowing AI core with a data spark | Toast shows no icon now; code change needed. |
 | mod_logo | `logo.png` | 256x256 | no | missing (future) | pixel art game logo: "Void Reclaimer", a small robot drone silhouetted against a dim distant sun in black space | For neoforge.mods.toml logoFile (not set yet). |
 
@@ -240,7 +245,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 |---|---|---|---|---|---|---|
 | sun | `environment/sun.png` | 64x64 | no | missing (future) | pixel art distant pale star on transparent background, soft glow, small bright core | Deep space draws vanilla's sun texture now (DeepSpaceEffects). A custom one needs a one-line code change. |
 
-### Body models (GeckoLib) (41)
+### Body models (GeckoLib) (49)
 
 | Model | File | Texture | Status | Prompt | Bones to keep |
 |---|---|---|---|---|---|
@@ -283,6 +288,14 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | brass_trim (module) | `geo/module/brass_trim.geo.json` | 64x64 tex | art drop 1 (redo optional) | decorative curved brass trim plate with rivets (cosmetic part); single body part, boxy Minecraft-style model | brass_trim, brass_trim_drone, brass_trim_mech, brass_trim_ship |
 | cogwheel_crown (module) | `geo/module/cogwheel_crown.geo.json` | 64x64 tex | art drop 1 (redo optional) | ring of small brass cogwheels forming a crown (cosmetic part); single body part, boxy Minecraft-style model | cogwheel_crown, cogwheel_crown_base, crown_cog |
 | core_mk1 (module) | `geo/module/core_mk1.geo.json` | 64x64 tex | RD art (promoted) | small round power core: andesite shell, glowing cyan center, cog teeth around the rim; single body part, boxy Minecraft-style model | core_mk1, core_mk1_mount |
+| core_mk2 (module) | `geo/module/core_mk2.geo.json` | 64x64 tex | art drop 1 (redo optional) | larger power core: brass shell, bright white-cyan glowing center, two rings of cog teeth; single body part, boxy Minecraft-style model | core_mk2, core_mk2_mount |
+| dust_sensor (module) | `geo/module/dust_sensor.geo.json` | 64x64 tex | art drop 1 (redo optional) | handheld brass sensor with a round cyan glass lens and small antenna; single body part, boxy Minecraft-style model | dust_sensor, dust_sensor_mount |
+| matter_harvester (module) | `geo/module/matter_harvester.geo.json` | 128x128 tex | art drop 1 (redo optional) | mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill; single body part, boxy Minecraft-style model | matter_harvester, matter_harvester_mount, matter_harvester_cog |
+| mechanical_drill (module) | `geo/module/mechanical_drill.geo.json` | 64x64 tex | art drop 1 (redo optional) | industrial drill module: andesite casing, brass collar, spiral steel drill bit; single body part, boxy Minecraft-style model | mechanical_drill, mechanical_drill_mount |
+| nanite_swarm (module) | `geo/module/nanite_swarm.geo.json` | 64x64 tex | art drop 1 (redo optional) | swirling cloud of tiny silver-cyan nanite specks around a small emitter; single body part, boxy Minecraft-style model | nanite_swarm, nanite_swarm_mount |
+| salvage_tool (module) | `geo/module/salvage_tool.geo.json` | 64x64 tex | art drop 1 (redo optional) | compact cutting tool with a copper handle and glowing orange cutting edge; single body part, boxy Minecraft-style model | salvage_tool, salvage_tool_mount, salvage_tool_arm |
+| storage_mk1 (module) | `geo/module/storage_mk1.geo.json` | 128x128 tex | art drop 1 (redo optional) | small andesite storage pod with a hatch and brass latches; single body part, boxy Minecraft-style model | storage_mk1, storage_mk1_mount |
+| storage_mk2 (module) | `geo/module/storage_mk2.geo.json` | 128x128 tex | art drop 1 (redo optional) | larger brass storage pod with two hatches and copper bands; single body part, boxy Minecraft-style model | storage_mk2, storage_mk2_mount, storage_mk2_pod |
 | thruster_mk1 (module) | `geo/module/thruster_mk1.geo.json` | 64x64 tex | art drop 1 (redo optional) | small copper rocket thruster nozzle with an andesite mount; single body part, boxy Minecraft-style model | thruster_mk1, thruster_mk1_mount, thruster_nozzle |
 | thruster_mk2 (module) | `geo/module/thruster_mk2.geo.json` | 64x64 tex | art drop 1 (redo optional) | larger brass rocket thruster with a flared nozzle and a faint blue exhaust glow; single body part, boxy Minecraft-style model | thruster_mk2, thruster_mk2_mount, thruster_nozzle, nozzle_flap_top, nozzle_flap_bottom |
 
@@ -307,24 +320,11 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | `animation.void_reclaimer.ship.low_power` | `animations/body/ship.animation.json` | ship: drooping, cogs winding down |
 | `animation.void_reclaimer.ship.module_work` | `animations/body/ship.animation.json` | ship: tool arm working, cogs spinning |
 
-### Body skins (GeckoLib) (82)
+### Body skins (GeckoLib) (98)
 
 All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate a model with RD 3D, its base texture comes with it. The `_accent` masks are painted by hand in Blockbench (white where the accent color shows). Sizes: 128x128 for the Ship rig and ship parts, 64x64 for the rest. Full list in `assets.csv`.
 
-### Missing module models (8)
-
-| Model | File | Texture | Status | Prompt | Bones to keep |
-|---|---|---|---|---|---|
-| dust_sensor | `geo/module/dust_sensor.geo.json` | 64x64 tex | missing | handheld brass sensor with a round cyan glass lens and small antenna; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| nanite_swarm | `geo/module/nanite_swarm.geo.json` | 64x64 tex | missing | swirling cloud of tiny silver-cyan nanite specks around a small emitter; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| salvage_tool | `geo/module/salvage_tool.geo.json` | 64x64 tex | missing | compact cutting tool with a copper handle and glowing orange cutting edge; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| mechanical_drill | `geo/module/mechanical_drill.geo.json` | 64x64 tex | missing | industrial drill module: andesite casing, brass collar, spiral steel drill bit; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| matter_harvester | `geo/module/matter_harvester.geo.json` | 64x64 tex | missing | mining module with a wide brass intake funnel and copper pipes, slower gentler cousin of a drill; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| core_mk2 | `geo/module/core_mk2.geo.json` | 64x64 tex | missing | larger power core: brass shell, bright white-cyan glowing center, two rings of cog teeth; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| storage_mk1 | `geo/module/storage_mk1.geo.json` | 64x64 tex | missing | small andesite storage pod with a hatch and brass latches; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-| storage_mk2 | `geo/module/storage_mk2.geo.json` | 64x64 tex | missing | larger brass storage pod with two hatches and copper bands; small module that mounts on a robot body, boxy Minecraft-style model | `<id>`, `<id>_mount`, own parts |
-
-### Future phases (20)
+### Future phases (19)
 
 | Phase | Asset | What | Method | Prompt idea | Notes |
 |---|---|---|---|---|---|
@@ -335,13 +335,12 @@ All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate
 | 9 | power_beam | effect texture | RD image (VFX animation) | vertical beam of soft cyan-white light, fading at the edges, 16x64 strip | Drawn from the Dyson swarm to the receiver. |
 | 9 | dyson_swarm_sprites | sky textures | RD image | tiny satellites / lattice segments / shell panels around a sun, pixel art, transparent | DysonSky draws these procedurally now; textures optional. |
 | 11 | ruined_earth sky | sky textures | RD image | smoggy brown-orange sky, three eras: choked, clearing, healed | Three-era sky. |
-| 11 | atmospheric_portal | block + animated surface | RD image (VFX animation) | portal frame of brass and andesite; swirling pale-blue atmosphere surface | Surface is a vertical strip of 16x16 frames, like the nether portal: RD sprite-sheet output, restacked. |
-| 11 | ashen_slag | block | RD image | grey-black ashen slag ground with cinders | Tileable 16x16. |
+| 11 | atmospheric_portal_animation | animated surface | RD image (VFX animation) | swirling pale-blue atmosphere surface | Animated version of the pane: a vertical strip of 16x16 frames, like the nether portal (RD sprite-sheet output, restacked). |
 | 11 | acid_drizzle | weather texture | RD image | sickly yellow-green rain streaks, vanilla rain layout 64x256 | Weather replacement texture. |
 | 11 | drop_pod | animated entity | RD 3D blocky + animate (GeckoLib) | scorched landing pod, brass ribs and heat shield underside | Animations: fall, land, open. |
 | 11 | industrial_mech | body or entity | RD 3D blocky + animate (GeckoLib) | heavy industrial mech, copper and andesite, hazard stripes | Defined in the design doc; if it is a body chassis it follows the socket contract. |
 | 11 | planetary_grid_hud | GUI | RD image | pixel art 4x4 planetary sector map, dark screen with cyan grid lines | 256x256 GUI sprite. |
-| 12 | terraforming_spire | animated multiblock | RD 3D blocky + animate (GeckoLib) | tall terraforming spire: heavy base, ribbed column, glowing green emitter top | Genesis Pulse animation on the emitter. |
+| 12 | terraforming_spire_multiblock | animated multiblock | RD 3D blocky + animate (GeckoLib) | tall terraforming spire: heavy base, ribbed column, glowing green emitter top | Genesis Pulse animation on the emitter. |
 | 12 | bio_nutrient_slurry | fluid + bucket | RD image | bucket of thick green bio-nutrient slurry | Fluid can reuse tinted water like the others. |
 | 13 | data_monolith | block model | RD 3D blocky | tall black monolith with faint cyan circuit lines and an output drawer | Design not settled in the doc yet. |
 | 14 | restoration_hud | GUI | RD image | pixel art planet restoration progress panel, green and blue | 256x256 GUI sprite. |

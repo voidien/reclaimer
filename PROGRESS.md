@@ -682,6 +682,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
 - First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
 
+## Asset list: the Act III placeholders: done
+- `tools/art/asset_list.py` now lists the Act III slice placeholders as ordinary rows, so they show as placeholders and can be generated or restyled: Ashen Slag, the Atmospheric Portal Frame and pane and the Terraforming Spire (Blocks), and the Portal Igniter (Tools & modules). The future rows that remain are the animated portal pane and the Spire multiblock. `docs/art/assets.csv` and `ASSETS.md` regenerated; this also brings in earlier drift (module models now under Body models, their skins under Body skins).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
