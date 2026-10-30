@@ -512,13 +512,13 @@ From an outside audit, each checked against the code first (several claims were 
 ## First person in big ships (5b-2a, first step): done
 - Ship, Shuttle and Titan chassis have a `cockpit`: first person has no hand and the camera sits forward of the eyes. The offsets are guesses; not seen in game. Still to do: the Drone and Mech first-person pieces (art), and a camera that follows the ship's roll when 6-DOF exists.
 ## Machine recipe check (GameTest): done
-- `CreateRecipeGameTests`: every Create chain, Sequenced Assembly and freezing recipe loads and names real items and fluids (a typo in a recipe fails it). **Not done:** the screenshot tool that opens each recipe in JEI in the headless client; it needs coordinate calibration on a live client.
+- `CreateRecipeGameTests`: every Create chain, Sequenced Assembly and freezing recipe loads and names real items and fluids (a typo in a recipe fails it). The screenshot tool that opens each recipe in JEI in the headless client is `tools/client-test/jei_shots.py` (1920x1080 client).
 
 ## Layered animation poses: done
 - Rig specs may have `layers` (up to 3, played by extra GeckoLib controllers over the main one). The Mech swings only its right arm for tool work (`swing_tool_arms`, made with `anim_slice.py`) while the body keeps flying. Unit tests check every layer animation exists. Not seen in game (a swing needs a tool module and a world with cheats).
 
 ## Handoff notes, round 2: done
-- HANDOFF.md lists what is done, what to try in game and what comes next. `tools/client-test/xt.py` gained `chord ctrl+f`. The JEI recipe screenshot tool is **not** built: JEI hides its search box in a 1280-wide window.
+- HANDOFF.md lists what is done, what to try in game and what comes next. `tools/client-test/xt.py` gained `chord ctrl+f`. The JEI recipe screenshot tool is built afterwards (`jei_shots.py`, needs a 1920x1080 client).
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

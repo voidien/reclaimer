@@ -26,12 +26,14 @@ elif a[1] == 'scroll':
     b = 4 if int(a[2]) > 0 else 5
     for _ in range(abs(int(a[2]))):
         T.XTestFakeButtonEvent(d, b, 1, 0); X.XFlush(d); time.sleep(0.05); T.XTestFakeButtonEvent(d, b, 0, 0); X.XFlush(d); time.sleep(0.15)
-elif a[1] == 'type':
+elif a[1] == 'type':  # type "text" [seconds_between_keys]: slow it down for boxes that refilter on every key (JEI search)
+    gap = float(a[3]) if len(a) > 3 else 0.0
     for ch in a[2]:
         s = SYM.get(ch, ch)
         if ch in SHIFT: key('Shift_L', 1)
         tap(s)
         if ch in SHIFT: key('Shift_L', 0)
+        time.sleep(gap)
 elif a[1] == 'key':
     tap(a[2], float(a[3]) if len(a) > 3 else 0.05)
 elif a[1] == 'chord':  # chord ctrl+f : hold the modifiers, tap the last key
