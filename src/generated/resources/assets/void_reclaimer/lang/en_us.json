@@ -203,6 +203,8 @@
   "item.void_reclaimer.carbon_flakes": "Carbon Flakes",
   "item.void_reclaimer.carbon_paste": "Carbon Paste",
   "item.void_reclaimer.carbon_thread": "Carbon Thread",
+  "item.void_reclaimer.cloud_collector": "Cloud Collector",
+  "item.void_reclaimer.cloud_collector.tooltip": "Tool-mount module: while you fly through a dust cloud it also makes raw items of the cloud's kind, one per dust gathered. Uses energy; stops in low power.",
   "item.void_reclaimer.cogwheel_crown": "Cogwheel Crown",
   "item.void_reclaimer.cogwheel_crown.tooltip": "Cosmetic. Shown on the body once body models arrive.",
   "item.void_reclaimer.coolant_fluid_bucket": "Coolant Fluid Bucket",

@@ -32,6 +32,8 @@ public final class ModRecipeProvider extends RecipeProvider {
     protected void buildRecipes(RecipeOutput output) {
         replicator(output, "dust_sensor", ModItems.DUST_SENSOR.get(), 1, DustCost.of(10, 15, 0, 5), 20,
                 ReplicatorCategories.MODULES, Milestones.AWAKENING);
+        replicator(output, "cloud_collector", ModItems.CLOUD_COLLECTOR.get(), 1, DustCost.of(30, 25, 15, 20), 60,
+                ReplicatorCategories.MODULES, Milestones.DIVERSIFIED);
         replicator(output, "scaffold", ModItems.SCAFFOLD.get(), 8, DustCost.of(0, 8, 0, 0), 5,
                 ReplicatorCategories.BLOCKS, Milestones.AWAKENING);
         replicator(output, "salvage_tool", ModItems.SALVAGE_TOOL.get(), 1, DustCost.of(15, 5, 0, 0), 30,

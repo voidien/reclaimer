@@ -460,6 +460,12 @@ From an outside audit, each checked against the code first (several claims were 
 - Placeholders: generated block textures `cloud_siphon_side/end.png`. Static model (no rotation animation, like the other machines). Not seen in a real client.
 - The module's own raw-item map (`ModItems.CLOUD_COLLECTOR`) and `RawItems` hold the same four pairs; unify them if a third user appears.
 
+## Cloud Collector module: done
+- `cloud_collector` module (tool mount) with a data-driven `collector` spec; `dust.Collectors` makes the cloud kind's raw item from dust gathered (yield 1 per dust), uses 1 energy/s, stops in low power, overflows to the output buffer. Config `collector`. Replicator recipe in Modules (Diversified).
+- Tests: `CollectorsTest` (5 unit), `CollectorGameTests` (4: yield, no module no items, energy and low power, buffer overflow). Mutation-checked: zero yield and ignoring low power fail them. `ObtainabilityGameTests` covers the new module (62 parts) and now visits chassis in a fixed order (the map order differed between runs, and a Ship-first order hit a legitimate inventory-full refusal).
+- Placeholder icon `cloud_collector.png` (generated). Not seen in a real client.
+- The block version is the Cloud Siphon (above).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

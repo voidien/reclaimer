@@ -28,6 +28,14 @@ public final class ModItems {
     public static final DeferredItem<ModuleItem> MATTER_HARVESTER = tool("matter_harvester", ModuleStats.simple(ModuleKind.TOOL, 1, 0.25f), "harvester");
     public static final DeferredItem<ModuleItem> NANITE_SWARM = tool("nanite_swarm", ModuleStats.simple(ModuleKind.TOOL, 1, 0.15f), "nanite_swarm");
 
+    /** Raw-item collector: a tool-mount module, not a wheel tool. One raw item per dust gathered (the Replicator makes half that). */
+    public static final DeferredItem<ModuleItem> CLOUD_COLLECTOR = module("cloud_collector", ModuleStats.collector(1, 0.3f,
+            new ModuleStats.Collector(1f, 1f, java.util.Map.of(
+                    com.voidreclaimer.dust.DustKinds.METALLIC, VoidReclaimer.id("metallic_grains"),
+                    com.voidreclaimer.dust.DustKinds.SILICATE, VoidReclaimer.id("silicon_grit"),
+                    com.voidreclaimer.dust.DustKinds.ICE, VoidReclaimer.id("raw_ice_shards"),
+                    com.voidreclaimer.dust.DustKinds.CARBON, VoidReclaimer.id("carbon_flakes")))));
+
     public static final DeferredItem<ModuleItem> CORE_MK1 = module("core_mk1", ModuleStats.core(1, 0.2f, new ModuleStats.Core(100f, 1.0f)));
     public static final DeferredItem<ModuleItem> CORE_MK2 = module("core_mk2", ModuleStats.core(2, 0.5f, new ModuleStats.Core(250f, 1.5f)));
     /** Ship sections are tier 3 and Titan sections tier 4, and a section can't be above the core's tier: these two open them. */
