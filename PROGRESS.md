@@ -496,8 +496,8 @@ From an outside audit, each checked against the code first (several claims were 
 ## Replicator screen, part 2: queue reorder: done
 - Drag a waiting job to a new place (`MOVE` action, `ReplicatorLogic.reorder`); the running job stays first. Unit tests and a GameTest. Not seen in game yet.
 
-## Body inventory screen (part 1): done
-- E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
+## Body inventory screen (parts 1 and 2): done
+- E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Part 2 adds the 3D body preview and the dust reserves beside the slots.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
