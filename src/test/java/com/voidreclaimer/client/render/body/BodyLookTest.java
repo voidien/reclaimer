@@ -60,6 +60,13 @@ class BodyLookTest {
     }
 
     @Test
+    void aSteadyCruiseUnderThrustKeepsTheThrustPose() {
+        assertEquals(BodyLook.Pose.THRUST, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, true));
+        assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, false));
+        assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.0, 0.0, false, 0.0, 0.0, true));
+    }
+
+    @Test
     void stoppingNeedsSomethingToStopBeforeItCountsAsBraking() {
         assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.0, 0.005, false));
     }

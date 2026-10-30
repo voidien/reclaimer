@@ -120,8 +120,10 @@ public final class BodyLook {
      *
      * @param forward the motion's part along the facing, per tick
      * @param lateral the motion's part to the right, per tick
+     * @param thrusting whether the body is under thrust (a thrust key is held, or unknown); a steady cruise under thrust
+     *                  keeps the thrust pose instead of dropping to idle once the speed stops changing
      */
-    public static Pose pose(double speed, double previousSpeed, boolean lowPower, double forward, double lateral) {
+    public static Pose pose(double speed, double previousSpeed, boolean lowPower, double forward, double lateral, boolean thrusting) {
         if (lowPower) {
             return Pose.LOW_POWER;
         }
@@ -140,12 +142,20 @@ public final class BodyLook {
         if (change < -ACCEL_THRESHOLD && previousSpeed > REST_SPEED) {
             return Pose.BRAKE;
         }
+        if (thrusting && speed > REST_SPEED) {
+            return Pose.THRUST;
+        }
         return Pose.IDLE;
     }
 
-    /** {@link #pose(double, double, boolean, double, double)} for a body moving straight ahead. */
+    /** {@link #pose(double, double, boolean, double, double, boolean)} with no thrust key held. */
+    public static Pose pose(double speed, double previousSpeed, boolean lowPower, double forward, double lateral) {
+        return pose(speed, previousSpeed, lowPower, forward, lateral, false);
+    }
+
+    /** {@link #pose(double, double, boolean, double, double, boolean)} for a body moving straight ahead, with no thrust key held. */
     public static Pose pose(double speed, double previousSpeed, boolean lowPower) {
-        return pose(speed, previousSpeed, lowPower, speed, 0.0);
+        return pose(speed, previousSpeed, lowPower, speed, 0.0, false);
     }
 
     /** Animation id inside a body rig's animation file: {@code animation.void_reclaimer.<rig>.<state>}. */
