@@ -69,6 +69,10 @@ neoForge {
         gameTestServer {
             type = 'gameTestServer'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // ./gradlew runGameTestServer -PgametestFilter=ZeroGMining (class or test name, comma-separated)
+            if (project.hasProperty('gametestFilter')) {
+                systemProperty 'void_reclaimer.gametestFilter', project.property('gametestFilter')
+            }
         }
 
         // Create Aeronautics / Sable tests, kept out of gameTestServer: ./gradlew runGameTestAeronautics
