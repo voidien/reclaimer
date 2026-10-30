@@ -167,7 +167,7 @@ class BodyLookTest {
         assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f));
         assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f));
         assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1.2f));
-        assertEquals(4f * 2.1f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f, "a ship: about 25 blocks");
-        assertEquals(4f * 4f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-4f, "capped for the Titan: about 128 blocks");
+        assertEquals(4f * 3.3f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f, "a ship: about 40 blocks");
+        assertEquals(4f * 5f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-4f, "capped for the Titan: about 160 blocks");
     }
 }
