@@ -115,6 +115,9 @@ See `CLAUDE.md` → Testing.
 - **Don't start a second `helper.startSequence()` from inside a running sequence step** (the sequence list is iterated while it ticks). Chain steps on one sequence instead.
 - **Long jobs:** to skip a long Replicator job, rewrite the job's progress with `Replicator.store` (see `ReplicatorGameTests.kitsDeliverEveryPartAndKeepSalvagePrices`).
 
+### Test client helper commands
+`tools/client-test/xt.py` also has `chord ctrl+f` (modifiers plus a key), `type "text" 0.3` (a gap between keys, for boxes that refilter on every key) and `mdrag DX DY [steps [shot.png]]` (hold the middle mouse button and move; the optional PNG is taken while the button is held, which is how the orbit camera was checked: the camera swings round the body and eases back after release).
+
 ### JEI recipe screenshots (done 2026-10-30)
 `python3 tools/client-test/jei_shots.py [--out build/jei-shots] [--only item,item]` screenshots JEI's recipe view for every item our machine recipes make and writes `index.html` beside the PNGs. It needs the headless client at **1920x1080 on a 1920x1080 Xvfb** (at 1280 wide JEI shrinks its list and the search box is too small to use): temporarily add `programArguments.addAll '--quickPlaySingleplayer', 'New World', '--width', '1920', '--height', '1080'` to the `client` run in `build.gradle` (never commit it), start `Xvfb :99 -screen 0 1920x1080x24`, run `DISPLAY=:99 ./gradlew runClient`, wait for "joined the game", then run the script. Gotchas found while building it: JEI drops keys typed too fast (`xt type "text" 0.3` takes a gap), the `r` key typed into a focused search box instead of showing recipes (click the result to show recipes), and a recipe with several pages shows only its first.
 
