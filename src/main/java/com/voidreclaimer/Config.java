@@ -28,6 +28,7 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue THRUST_ENERGY_COST;
     public static final ModConfigSpec.DoubleValue BRAKE_ENERGY_COST;
     public static final ModConfigSpec.DoubleValue SPEED_CHECK_TOLERANCE;
+    public static final ModConfigSpec.DoubleValue HOVER_WEIGHT_FACTOR;
 
     public static final ModConfigSpec.DoubleValue DUST_CAPACITY;
     public static final ModConfigSpec.DoubleValue DUST_TRICKLE;
@@ -154,6 +155,9 @@ public final class Config {
         SPEED_CHECK_TOLERANCE = BUILDER
                 .comment("Server speed check: movement over one second may exceed top speed by this factor before it is corrected.")
                 .defineInRange("speedCheckTolerance", 1.5, 1.0, 10.0);
+        HOVER_WEIGHT_FACTOR = BUILDER
+                .comment("Ruined Earth: weight the thrusters must cancel = the body's gravity times this. Vanilla gravity is 0.08 blocks/tick²; a starter Drone's thrust is about 0.075.")
+                .defineInRange("hoverWeightFactor", 0.6, 0.0, 4.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust a new body starts with: enough for the Dust Sensor, Scaffold, Thruster Mk I and Rotor Arm. Granted once, when a player first wakes up.").push("starter");

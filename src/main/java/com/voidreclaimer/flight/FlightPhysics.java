@@ -27,13 +27,35 @@ public final class FlightPhysics {
      * speed bleed off smoothly instead of snapping.
      */
     public static Vec3 step(Vec3 velocity, Vec3 thrust, boolean powered, boolean dampener, FlightStats stats, CloudDrag drag) {
+        return step(velocity, thrust, powered, dampener, stats, drag, 0.0);
+    }
+
+    /**
+     * One tick of thruster physics under gravity, as on ruined Earth.
+     *
+     * <p>{@code weight} is the downward acceleration (blocks/tick²) the body must out-thrust; 0 is zero-G and gives
+     * exactly the weightless step. With the dampener on, weight comes first: thrust is spent cancelling it (up to the
+     * body's whole thrust, see {@link #weightSupport}) and only the remainder steers. A body that cannot cover its
+     * weight still falls, but slower, and does not steer. With the dampener off, or without power, the weight pulls in
+     * full. Braking happens before weight is added, so a falling body slows to the fall speed its unsupported weight
+     * allows instead of being stopped dead.
+     */
+    public static Vec3 step(Vec3 velocity, Vec3 thrust, boolean powered, boolean dampener, FlightStats stats, CloudDrag drag,
+                            double weight) {
         double startSpeed = velocity.length();
+        double support = weightSupport(stats, weight, dampener, powered);
         if (powered) {
             if (thrust.lengthSqr() > 1.0E-6) {
-                velocity = velocity.add(thrust.normalize().scale(stats.acceleration()));
+                double steering = stats.acceleration() - support;
+                if (steering > 0.0) {
+                    velocity = velocity.add(thrust.normalize().scale(steering));
+                }
             } else if (dampener) {
                 velocity = brake(velocity, stats.brakeDeceleration());
             }
+        }
+        if (weight > 0.0) {
+            velocity = velocity.add(0.0, -(weight - support), 0.0);
         }
         if (drag.density() > 0.0) {
             velocity = velocity.scale(1.0 - drag.dragPerTick() * drag.density());
@@ -46,6 +68,23 @@ public final class FlightPhysics {
             }
         }
         return capSpeed(velocity, stats.maxSpeed());
+    }
+
+    /**
+     * Acceleration (blocks/tick²) the thrusters spend cancelling {@code weight} this tick: all of it, or all the thrust
+     * there is when that is less. Nothing without the dampener (the body is not holding station) or without power.
+     */
+    public static double weightSupport(FlightStats stats, double weight, boolean dampener, boolean powered) {
+        if (!powered || !dampener || weight <= 0.0) {
+            return 0.0;
+        }
+        return Math.min(stats.acceleration(), weight);
+    }
+
+    /** The share of the body's thrust spent holding up its weight, 0 to 1: what hovering costs in energy. */
+    public static double hoverShare(FlightStats stats, double weight, boolean dampener, boolean powered) {
+        double acceleration = stats.acceleration();
+        return acceleration <= 0.0 ? 0.0 : weightSupport(stats, weight, dampener, powered) / acceleration;
     }
 
     /** Max fraction of speed shed per tick when above a cloud's reduced top speed. */
