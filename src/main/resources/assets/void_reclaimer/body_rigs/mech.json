@@ -183,7 +183,7 @@
     }
   },
   "poses": {
-    "idle": "zoom_flight",
+    "idle": "idle_ambient",
     "thrust": "zoom_flight",
     "back": "fly_back",
     "strafe_left": "fly_left",
