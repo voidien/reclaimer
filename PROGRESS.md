@@ -597,6 +597,25 @@ From an outside audit, each checked against the code first (several claims were 
 - Test: `HoverGameTests.everyPlayerBodyCanHoverAtTheDefaultWeight` ties the real Drone, Mech, Ship and Shuttle presets (empty and full) to the config default, so a future stats change that breaks hovering fails the build.
 - Also seen in the real client (headless, with every candidate addon loaded): the hover HUD and `TOO HEAVY: SINKING` text work on ruined Earth; a Mech walks with the vanilla hand until its thrusters engage; a quick tap of Space engages it and it drops straight back to walking, because it is on the ground with no up-thrust held (hold Space to take off).
 
+## Addon compatibility spike: results (2026-10-30)
+Done on a never-merged branch (`spike-addon-compat` in a separate worktree; `-PspikeMods=` picked a subset of the candidates as `localRuntime` + `testRuntimeOnly`). **No addon was made required**: the owner decides the required set. Everything below was run against Create 6.0.10, Aeronautics 1.3.2 and Sable 2.0.6 on NeoForge 21.1.265, with Sodium, ModernFix, FerriteCore and ImmediatelyFast.
+
+| Addon (version) | Alone: loads as a mod, our GameTests pass | Notes |
+|---|---|---|
+| Create Crafts & Additions 1.7.2 (beta) | yes | no log problems |
+| Create: New Age 1.2.0 | yes | 25 recipe parse errors in the log (`neoforge:never` condition with an empty body in `pressing/` and `sequenced_assembly/` recipes), not crashes; the recipes are skipped |
+| CC: Tweaked 1.120.2 (alpha) | yes | **use the NeoForge file**: Modrinth's maven resolved the Fabric jar for the version *number*, which NeoForge silently ignores (my first CC run "passed" without loading it); pin it by version id `1ewzHZYg` |
+| Create: Avionics 0.7.0 (alpha) | yes, with CC: Tweaked | fails without it (`computercraft` >= 1.115 is a hard dependency) |
+| Create Propulsion: Simulated 1.1.5 | yes | harmless warnings about fuel overrides for fluids of mods that are not present (tfmg, northstar, mekanism...) |
+| Create: Aeroworks 1.5.0 | yes | no log problems |
+| Steam 'n' Rails 0.3.0-beta.2 | yes | 276 loot-table parse errors for TerraFirmaCraft track variants (their items do not exist without TFC); harmless |
+| Crafts & Additions bridges for Aeronautics and Sable | yes, with Crafts & Additions | no log problems |
+
+- **All nine together:** the whole suite passes (150 GameTests at the time), `runData` succeeds and writes no diff, and the client starts, creates a world, and plays on ruined Earth with no crash and no mixin failure from our mod. Loading everything adds only the noise above. Exit code 124 on the full run is the known GameTest JVM that does not exit, not a failure.
+- **Not tested** (so not proven): any actual feature interplay. Nothing here checks that Propulsion thrusters work in deep space under our Sable setup, that Crafts & Additions power can feed our machines, that Avionics sees our blocks, or that Steam 'n' Rails tracks work in the void. Those are the next integration steps, one small PR each, and each needs its own look in a client.
+- **Maturity:** Crafts & Additions and Steam 'n' Rails are betas, CC: Tweaked and Avionics are alphas. Required addons should probably be the releases (New Age, plus Propulsion and Aeroworks if the ship track wants them) and Crafts & Additions on the strength of its download count; CC: Tweaked and Avionics are a risk while alpha. This is a recommendation, not a decision.
+- **Pitfall for later:** Modrinth maven coordinates resolve by version number across loaders; when an addon has several loaders, use the version id (check the jar for `META-INF/neoforge.mods.toml`).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
