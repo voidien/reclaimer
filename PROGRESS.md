@@ -502,7 +502,7 @@ From an outside audit, each checked against the code first (several claims were 
 - E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
 
 ## Orbit camera: done
-- Hold the orbit key (middle mouse) in third person to look round the body, scroll to zoom, release to ease back. `CameraOrbitMixin` is a new client-only mixin. Checked in a headless client (mixin applies, no errors); the feel of the orbit is not tried by hand.
+- Hold the orbit key (middle mouse) in third person to look round the body, scroll to zoom, release to ease back. Uses `ViewportEvent.ComputeCameraAngles` (no mixin). The feel of the orbit is not tried by hand.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

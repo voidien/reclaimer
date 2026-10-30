@@ -10,11 +10,13 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 
 /**
  * Orbit camera: in third person, hold the orbit key (middle mouse by default) and move the mouse to look around your body, scroll
- * to zoom. The body does not turn; releasing the key eases the camera back. The angles are applied by
- * {@code CameraOrbitMixin} where the camera is positioned.
+ * to zoom. The body does not turn; releasing the key eases the camera back. The angles are added in NeoForge's
+ * {@code ViewportEvent.ComputeCameraAngles}, which fires before the third-person camera is moved back along its rotation, so the
+ * camera swings round the body.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class OrbitCamera {
@@ -60,6 +62,16 @@ public final class OrbitCamera {
             return;
         }
         STATE.tick(held, dx, dy);
+    }
+
+    /** Adds the orbit offsets to the angles the third-person camera is positioned from. */
+    @SubscribeEvent
+    static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+        if (STATE.offset()) {
+            float partial = (float) event.getPartialTick();
+            event.setYaw(event.getYaw() + yawOffset(partial));
+            event.setPitch(Math.max(-90f, Math.min(90f, event.getPitch() + pitchOffset(partial))));
+        }
     }
 
     /** While orbiting the mouse must not turn the body. */
