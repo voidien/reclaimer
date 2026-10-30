@@ -27,6 +27,39 @@ class ReplicatorLogicTest {
     private static final ReplicatorData UNLOCKED = ReplicatorData.EMPTY.withUnlocked(Milestones.AWAKENING);
     private static final DustData RICH = DustData.of(10, 10, 0, 0);
 
+    private static ReplicatorData queueOf(String... names) {
+        ReplicatorData data = UNLOCKED;
+        DustData dust = DustData.of(100, 100, 0, 0);
+        for (String name : names) {
+            ReplicatorLogic.Queued q = ReplicatorLogic.queue(data, dust, ResourceLocation.fromNamespaceAndPath("void_reclaimer", "replicator/" + name), RECIPE);
+            data = q.data();
+            dust = q.dust();
+        }
+        return data;
+    }
+
+    private static List<String> order(ReplicatorData data) {
+        return data.jobs().stream().map(j -> j.recipe().getPath().substring("replicator/".length())).toList();
+    }
+
+    @Test
+    void reorderMovesAWaitingJobAndNeverTheRunningOne() {
+        ReplicatorData data = queueOf("a", "b", "c", "d");
+        assertEquals(List.of("a", "d", "b", "c"), order(ReplicatorLogic.reorder(data, 3, 1)));
+        assertEquals(List.of("a", "c", "b", "d"), order(ReplicatorLogic.reorder(data, 1, 2)));
+        assertEquals(List.of("a", "c", "d", "b"), order(ReplicatorLogic.reorder(data, 1, 99)), "targets clamp to the end of the queue");
+        assertEquals(List.of("a", "d", "b", "c"), order(ReplicatorLogic.reorder(data, 3, 0)), "nothing goes in front of the running job");
+    }
+
+    @Test
+    void invalidOrUselessMovesChangeNothing() {
+        ReplicatorData data = queueOf("a", "b", "c");
+        assertSame(data, ReplicatorLogic.reorder(data, 0, 2), "the running job stays put");
+        assertSame(data, ReplicatorLogic.reorder(data, -1, 1));
+        assertSame(data, ReplicatorLogic.reorder(data, 3, 1), "out of range");
+        assertSame(data, ReplicatorLogic.reorder(data, 1, 1), "same place");
+    }
+
     @Test
     void queuePaysDustUpFront() {
         ReplicatorLogic.Queued queued = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE);

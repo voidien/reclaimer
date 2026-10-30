@@ -80,6 +80,17 @@ public final class Replicator {
         return true;
     }
 
+    /** Moves queued job {@code from} to {@code to} (see {@link ReplicatorLogic#reorder}). Returns whether the queue changed. */
+    public static boolean move(ServerPlayer player, int from, int to) {
+        ReplicatorData data = data(player);
+        ReplicatorData moved = ReplicatorLogic.reorder(data, from, to);
+        if (moved == data) {
+            return false;
+        }
+        store(player, moved);
+        return true;
+    }
+
     /** Moves as much of the output buffer as fits into the inventory. */
     public static void collect(ServerPlayer player) {
         ReplicatorData data = data(player);

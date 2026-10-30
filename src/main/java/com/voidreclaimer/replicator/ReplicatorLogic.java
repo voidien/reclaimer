@@ -45,6 +45,25 @@ public final class ReplicatorLogic {
     }
 
     /**
+     * Moves queued job {@code from} to position {@code to} (clamped to the queue). The first job is being worked on and never
+     * moves, and nothing moves in front of it, so progress is never lost. Anything invalid, or a move to the same place,
+     * returns {@code data} itself.
+     */
+    public static ReplicatorData reorder(ReplicatorData data, int from, int to) {
+        int size = data.jobs().size();
+        if (from < 1 || from >= size) {
+            return data;
+        }
+        int target = Math.max(1, Math.min(size - 1, to));
+        if (target == from) {
+            return data;
+        }
+        List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
+        jobs.add(target, jobs.remove(from));
+        return data.withJobs(jobs);
+    }
+
+    /**
      * Result of one work tick.
      *
      * @param data     updated data
