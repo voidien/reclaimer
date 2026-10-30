@@ -18,6 +18,8 @@ Examples:
   python3 tools/art/rd_generate.py --balance
   python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette     # fix existing art (rd_edit.py)
   python3 tools/art/rd_generate.py --asset ashen_slag --restyle --strength 0.5   # restyle a placeholder in place
+  python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "add cooling fins"   # see rd_model.py
+  python3 tools/art/rd_generate.py --model-export core_mk2_model --target minecraft
 
 See docs/art/ASSETS.md for the workflow and tools/art/README.md for the options.
 """
@@ -1084,6 +1086,12 @@ def main(argv=None):
                         'block/NAME), keeping RD\'s group names as bones')
     p.add_argument('--balance', action='store_true', help='show the account balance')
     p.add_argument('--index', action='store_true', help='rewrite art/rd/index.html')
+    p.add_argument('--model-revise', metavar='ASSET',
+                   help="revise the asset's RD model with --prompt (a new version; paid, asks first; see rd_model.py)")
+    p.add_argument('--model-export', metavar='ASSET', help="export the asset's RD model (free) as each --target")
+    p.add_argument('--target', action='append',
+                   help='--model-export: minecraft (resource pack, default), blockbench, obj, atlas, turntable, axis_views, blender, web')
+    p.add_argument('--version', type=int, help='--model-revise/--model-export: the model version (default: the newest)')
     p.add_argument('--restyle', action='store_true',
                    help="image jobs start from the asset's current texture (image-to-image), so the result keeps its layout")
     p.add_argument('--strength', type=float, default=0.6,
@@ -1137,6 +1145,9 @@ def main(argv=None):
     if args.fix:
         import rd_edit
         return rd_edit.run(sys.modules[__name__], args, rows, key)
+    if args.model_revise or args.model_export:
+        import rd_model
+        return (rd_model.revise if args.model_revise else rd_model.export)(sys.modules[__name__], args, key)
 
     state = load_state()
     if args.resume:

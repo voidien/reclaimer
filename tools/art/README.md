@@ -274,3 +274,17 @@ style guide's look: the way to turn programmer art into real art.
 
 Rows come from `docs/art/assets.csv`: an asset has to be listed there to be restyled.
 
+## Revising and exporting low-poly models (`--model-revise`, `--model-export`)
+For an asset whose RD model has been generated (`--method 3d`), `rd_model.py` works on that model again:
+
+    python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "add two cyan cooling fins"
+    python3 tools/art/rd_generate.py --model-export core_mk2_model --target minecraft --target obj
+
+- **Revise** saves a new version of the model from an instruction (`--version N` revises an older one). It runs like a
+  model job: polled, then its render, turntable, `.bbmodel` and atlas are saved and `--promote <asset>` works as usual.
+  Paid ($0.08 for Lite models, $0.20 to $1.50 by size for full ones; the size is not stored, so 64 is assumed for the
+  estimate), with the usual balance check and question, and an Idempotency-Key so a retry is not paid twice.
+- **Export** is free: `minecraft` (a Java resource-pack zip, best with the blocky style), `blockbench`, `obj`, `atlas`,
+  `turntable`, `axis_views`, `blender`, `web`. Files land in `art/rd/<asset>/export/`.
+- Animating a model already exists: rows with method `RD 3D animate`.
+
