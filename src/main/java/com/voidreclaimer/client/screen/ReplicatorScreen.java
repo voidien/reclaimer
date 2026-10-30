@@ -129,6 +129,64 @@ public final class ReplicatorScreen extends Screen {
                 .bounds(left + LIST_WIDTH + 14, top + HEIGHT - 24, WIDTH - LIST_WIDTH - 20, 18).build());
     }
 
+    // ---- for JEI (see compat.jei): the screen's bounds and the item under the mouse --------------------------
+
+    /** An item drawn on the screen and where, so a recipe viewer can look it up. */
+    public record ItemHit(ItemStack stack, int x, int y, int width, int height) {}
+
+    public int guiLeft() {
+        return left;
+    }
+
+    public int guiTop() {
+        return top;
+    }
+
+    public int guiWidth() {
+        return WIDTH;
+    }
+
+    public int guiHeight() {
+        return HEIGHT;
+    }
+
+    /** The recipe result, queued job or output item under the mouse, or null. Locked recipes show no item. */
+    @Nullable
+    public ItemHit itemAt(double mouseX, double mouseY) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || tab == bodyTab) {
+            return null;
+        }
+        ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
+        if (tab < categoryTabs) {
+            List<RecipeHolder<ReplicatorRecipe>> recipes = recipesForTab(data);
+            for (int i = scroll; i < Math.min(recipes.size(), scroll + VISIBLE_ROWS); i++) {
+                ReplicatorRecipe recipe = recipes.get(i).value();
+                int itemX = left + 6 + 3;
+                int itemY = top + 38 + (i - scroll) * ROW + 3;
+                if (data.isUnlocked(recipe.milestone()) && inside(mouseX, mouseY, itemX, itemY, 16, 16)) {
+                    return new ItemHit(recipe.result(), itemX, itemY, 16, 16);
+                }
+            }
+        }
+        int queueX = left + LIST_WIDTH + 18;
+        for (int i = 0; i < data.jobs().size(); i++) {
+            int itemY = top + 54 + i * 18;
+            if (inside(mouseX, mouseY, queueX, itemY, 16, 16)) {
+                return new ItemHit(data.jobs().get(i).result(), queueX, itemY, 16, 16);
+            }
+        }
+        int bufferY = top + HEIGHT - 28 - 46;
+        for (int i = 0; i < Math.min(data.buffer().size(), ReplicatorData.BUFFER_SLOTS); i++) {
+            int slotX = queueX + (i % 5) * 18;
+            int slotY = bufferY + 10 + (i / 5) * 18;
+            if (inside(mouseX, mouseY, slotX, slotY, 16, 16)) {
+                return new ItemHit(data.buffer().get(i), slotX, slotY, 16, 16);
+            }
+        }
+        return null;
+    }
+
     private void selectTab(int index) {
         tab = index;
         scroll = 0;
