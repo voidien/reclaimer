@@ -140,6 +140,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.title", "Restore at:");
         add("screen.void_reclaimer.respawn.spawn", "Deep space spawn (free)");
         add("screen.void_reclaimer.respawn.core", "%s (%s)");
+        add("screen.void_reclaimer.respawn.spawn.detail", "Always available");
+        add("screen.void_reclaimer.respawn.distance", "%s m from here");
+        add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
         add("hud.void_reclaimer.death_marker", "DROPS %sm");
 
         add("commands.void_reclaimer.dyson.get", "Dyson Sphere: %s satellites, %s truss modules (shell complete at %s), skybox tier %s");

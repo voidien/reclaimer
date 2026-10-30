@@ -496,6 +496,8 @@ From an outside audit, each checked against the code first (several claims were 
 ## Replicator screen, part 2: queue reorder: done
 - Drag a waiting job to a new place (`MOVE` action, `ReplicatorLogic.reorder`); the running job stays first. Unit tests and a GameTest. Not seen in game yet.
 
+## Respawn screen: done
+- Card panel for the spawn and charged cores (name, charge pips, distance), plus a placeholder AI line on death. Not seen in game (needs a death in a world with a Backup Core).
 ## Body inventory screen (part 1): done
 - E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
 
