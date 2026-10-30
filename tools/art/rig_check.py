@@ -61,24 +61,11 @@ def distance(a, b):
     return math.dist(a, b)
 
 
-# Effect groups belong under the effect bone of their part: (prefix of the orphan, bone it goes under; {side} is the
-# l/r token that follows the prefix). The first match that exists in the model wins.
-PARENT_HINTS = [
-    ('fx_flame_boot_', 'fx_boot_{side}'),
-    ('fx_flame_', 'fx_jet_{side}'),
-    ('fx_tool_', 'fx_tool'),
-    ('fx_watch_', 'fx_watch'),
-]
-
-
 def suggest_parent(name, groups, roots):
     """Where an unparented group belongs: by its name's hint, else the closest parented non-effect bone to its pivot."""
-    for prefix, template in PARENT_HINTS:
-        if name.startswith(prefix):
-            side = name[len(prefix):].split('_')[0]
-            candidate = template.format(side=side)
-            if candidate in groups and not groups[candidate]['top'] or candidate in roots:
-                return candidate
+    candidate = bbgeo.hint_parent(name)
+    if candidate in groups and (not groups[candidate]['top'] or candidate in roots):
+        return candidate
     best, best_d = None, None
     for other, info in groups.items():
         if other == name or other.startswith('fx_') or (info['top'] and other not in roots):
