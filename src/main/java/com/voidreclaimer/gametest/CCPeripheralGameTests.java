@@ -4,7 +4,9 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.compat.cc.CCCompat;
 import com.voidreclaimer.compat.cc.DysonPeripheral;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
+import com.voidreclaimer.compat.cc.SpawnTravelPeripherals;
 import com.voidreclaimer.compat.cc.SpirePeripheral;
+import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.machine.CloudSiphonBlockEntity;
 import com.voidreclaimer.machine.ElectrolyzerBlockEntity;
@@ -26,6 +28,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -209,6 +212,81 @@ public final class CCPeripheralGameTests {
             } finally {
                 earth.setBlock(earthPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
+            helper.succeed();
+        });
+    }
+
+    /** The peripheral CC finds through its block capability, for our plain blocks (no block entity). */
+    private static dan200.computercraft.api.peripheral.IPeripheral capability(ServerLevel level, BlockPos pos) {
+        return level.getCapability(dan200.computercraft.api.peripheral.PeripheralCapability.get(), pos, Direction.UP);
+    }
+
+    private static void requireLuaFunction(GameTestHelper helper, Class<?> type, String name) {
+        boolean found = Arrays.stream(type.getMethods()).anyMatch(m -> m.getName().equals(name)
+                && m.isAnnotationPresent(dan200.computercraft.api.lua.LuaFunction.class));
+        helper.assertTrue(found, type.getSimpleName() + "." + name + " is not a Lua function");
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theSpawnAndTravelBlocksArePeripherals(GameTestHelper helper) {
+        BlockPos base = new BlockPos(60_300, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, base, 8, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            var coreLua = new SpawnTravelPeripherals.BackupCore();
+
+            // Backup Core (block entity: a generic peripheral).
+            BackupCoreBlockEntity core = place(level, base, ModBlocks.BACKUP_CORE.get(), BackupCoreBlockEntity.class);
+            core.setName("Home");
+            core.setCharges(2);
+            requireMethods(helper, Lookup.of(level, base), "Backup Core", "getName", "getOwner", "getCharges", "getMaxCharges", "getSunProgress");
+            helper.assertTrue("Home".equals(coreLua.getName(core)) && coreLua.getCharges(core) == 2
+                    && coreLua.getMaxCharges(core) == com.voidreclaimer.core.CoreCharging.MAX_CHARGES, "Backup Core values");
+            helper.assertTrue(coreLua.getOwner(core) == null, "an unplaced core has an owner");
+
+            // Tether Anchor (plain block: a capability peripheral).
+            BlockPos anchorPos = base.east(3);
+            level.setBlock(anchorPos, ModBlocks.TETHER_ANCHOR.get().defaultBlockState(), 3);
+            var anchor = capability(level, anchorPos);
+            helper.assertTrue(anchor instanceof SpawnTravelPeripherals.TetherAnchor && "void_reclaimer:tether_anchor".equals(anchor.getType()),
+                    "CC finds no Tether Anchor peripheral: " + anchor);
+            requireLuaFunction(helper, SpawnTravelPeripherals.TetherAnchor.class, "getTethered");
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, anchorPos.getX() + 0.5, anchorPos.getY() + 1, anchorPos.getZ() + 2.5);
+            try {
+                helper.assertTrue(((SpawnTravelPeripherals.TetherAnchor) anchor).getTethered().isEmpty(), "someone is tethered already");
+                com.voidreclaimer.tether.Tether.toggleClip(player, anchorPos);
+                helper.assertTrue(((SpawnTravelPeripherals.TetherAnchor) anchor).getTethered().contains(player.getGameProfile().getName()),
+                        "the clipped player is not listed: " + ((SpawnTravelPeripherals.TetherAnchor) anchor).getTethered());
+            } finally {
+                TestPlayers.remove(player);
+            }
+
+            // Atmospheric Portal Frame (plain block): nil alone, then a 3 x 3 frame, unlit and lit.
+            BlockPos origin = base.west(6);
+            for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-1, -1, 0), origin.offset(3, 3, 0))) {
+                level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            BlockPos bottom = origin.below();
+            level.setBlock(bottom, ModBlocks.PORTAL_FRAME.get().defaultBlockState(), 3);
+            var frame = capability(level, bottom);
+            helper.assertTrue(frame instanceof SpawnTravelPeripherals.PortalFrame, "CC finds no portal frame peripheral: " + frame);
+            requireLuaFunction(helper, SpawnTravelPeripherals.PortalFrame.class, "getPortal");
+            helper.assertTrue(((SpawnTravelPeripherals.PortalFrame) frame).getPortal() == null, "a lone frame block reports a portal");
+            for (int i = 0; i < 3; i++) {
+                for (BlockPos pos : List.of(origin.east(i).below(), origin.east(i).above(3), origin.west().above(i), origin.east(3).above(i))) {
+                    level.setBlock(pos, ModBlocks.PORTAL_FRAME.get().defaultBlockState(), 3);
+                }
+            }
+            Map<String, Object> unlit = ((SpawnTravelPeripherals.PortalFrame) frame).getPortal();
+            helper.assertTrue(unlit != null && Boolean.FALSE.equals(unlit.get("lit")) && Integer.valueOf(3).equals(unlit.get("width"))
+                    && Integer.valueOf(3).equals(unlit.get("height")) && "x".equals(unlit.get("axis")), "unlit frame " + unlit);
+            helper.assertTrue(com.voidreclaimer.earth.AtmosphericPortals.tryLight(level, bottom), "the test frame did not light");
+            helper.assertTrue(Boolean.TRUE.equals(((SpawnTravelPeripherals.PortalFrame) frame).getPortal().get("lit")), "a lit frame reads as unlit");
+
+            for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-1, -1, 0), origin.offset(3, 3, 0))) {
+                level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            level.setBlock(base, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(anchorPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });
     }

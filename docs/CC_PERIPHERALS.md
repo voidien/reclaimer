@@ -71,6 +71,21 @@ if not ok then print("no pulse: " .. why) end
 while spire.isRunning() do print(("%.0f%%"):format(spire.getProgress() * 100)) sleep(1) end
 ```
 
+## Spawn and travel (`SpawnTravelPeripherals`)
+Read-only.
+
+| Block | Function | Returns |
+|---|---|---|
+| Backup Core | `getName()` | its name |
+| | `getOwner()` | the owner's name (or UUID), nil before anyone placed it |
+| | `getCharges()`, `getMaxCharges()` | respawn charges stored, and the most it holds |
+| | `getSunProgress()` | sunlight's progress toward the next charge, 0 to 1 |
+| Tether Anchor | `getTethered()` | names of the players clipped to it |
+| Atmospheric Portal Frame | `getPortal()` | nil if this block is not part of a closed frame, else `{ lit, width, height, axis }` (interior size; axis `"x"` or `"z"`) |
+
+The Tether Anchor and the portal frame have no block entity, so they are attached through CC's block capability; the
+functions are the same to a computer.
+
 ## Coming next
-The Backup Core, Tether Anchor and Atmospheric Portal frame. Item upgrades (turtle and pocket
-computer) come after.
+Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
+pocket computer), as their own step.
