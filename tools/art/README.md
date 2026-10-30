@@ -199,6 +199,7 @@ python3 tools/art/rd_generate.py --promote-as entity/starship --source art/rd/st
 ```
 - **Written:** `geo/entity/starship.geo.json`, `textures/entity/starship.png` and `animations/entity/starship.animation.json`. Also `entity/` or `block/`.
 - **Bones** keep RD's group names (`nose`, `wing_l`, ...) under a root bone named after the model.
+- **Lost parents are repaired.** RD's Re-rig can leave effect groups (`fx_flame_*`, `fx_tool_*`, `fx_watch_*`) at the model's top level, where no bone moves them (a flame floats where the foot was). The promote puts them back under their effect bone (`fx_boot_l`, `fx_jet_l`, `fx_tool`, `fx_watch`; `bbgeo.PARENT_HINTS`) and prints each move.
 - **Size:** RD's size is kept unless you pass `--fit`, `--scale` or `--scale-like` (e.g. `--scale-like body/ship` makes it as long as the Ship rig).
 - **Animations** are converted the way Blockbench's own Bedrock export does it: rotation X/Y and position X negated, positions scaled with the model. Step keys are held until the next key, because GeckoLib reads only a keyframe's `post` value. Loop modes map to GeckoLib's (`loop`, `hold_on_last_frame`, play once).
 - **Checks:** `GeoModelLoadTest` loads every animation through GeckoLib and checks that each moved bone exists in its model. For body animations, that means the rig or any section or module.
