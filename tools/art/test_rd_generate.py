@@ -325,6 +325,59 @@ class RdGenerateTest(unittest.TestCase):
         rows = {r['asset']: r for r in rd.load_rows()}
         self.assertEqual((task['width'], task['height']), tuple(rd.target_size(rows['asteroid_silicate'])))
 
+    def mask_file(self, w, h, opaque_box):
+        x0, y0, x1, y1 = opaque_box
+        px = [[(255, 0, 0, 255 if x0 <= x < x1 and y0 <= y < y1 else 0) for x in range(w)] for y in range(h)]
+        path = os.path.join(self.tmp, 'mask.png')
+        with open(path, 'wb') as f:
+            f.write(rd.png_write(px))
+        return path
+
+    def tool_call(self, tool_id):
+        return next(c[2] for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/edit/tools/%s/tasks' % tool_id)
+
+    def test_edit_needs_a_prompt_and_sends_it(self):
+        self.put_texture('block/asteroid_silicate.png')
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'edit', '--yes'])
+        self.assertEqual(Fake.state['charged'], 0)
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'edit', '--prompt', 'sand-tan rock', '--seed', '7', '--yes'])
+        call = self.tool_call('image_edit')
+        self.assertEqual((call['prompt'], call['seed']), ('sand-tan rock', 7))
+        self.assertTrue(os.path.exists(self.staged('asteroid_silicate', 'v1.png')), 'the URL result is downloaded as a variant')
+
+    def test_inpaint_checks_the_mask_and_sends_it(self):
+        self.put_texture('block/asteroid_silicate.png')
+        size = rd.png_read(self.read(os.path.join(self.tmp, rd.TEXTURES, 'block', 'asteroid_silicate.png')))
+        w, h = len(size[0]), len(size)
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'inpaint', '--prompt', 'x', '--yes'])  # no mask
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'inpaint', '--prompt', 'x', '--yes',
+                     '--mask', self.mask_file(w + 1, h, (0, 0, 2, 2))])  # wrong size
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'inpaint', '--prompt', 'x', '--yes',
+                     '--mask', self.mask_file(w, h, (0, 0, w, h))])  # opaque everywhere: would repaint it all
+        self.assertEqual(Fake.state['charged'], 0, 'nothing paid for a bad mask')
+        mask = self.mask_file(w, h, (0, 0, w // 2, h // 2))
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'inpaint', '--prompt', 'rough flakes', '--mask', mask, '--yes'])
+        call = self.tool_call('inpainting')
+        self.assertEqual(base64.b64decode(call['mask_image']), self.read(mask))
+        self.assertEqual(call['prompt'], 'rough flakes')
+
+    def test_outpaint_and_seam_send_their_fields(self):
+        self.put_texture('block/asteroid_silicate.png')
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'outpaint', '--expand', '0,0,0,0', '--yes'])
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'outpaint', '--expand', '0,4,8,0', '--yes'])
+        call = self.tool_call('outpainting')
+        self.assertEqual((call['expand_left'], call['expand_right'], call['expand_top'], call['expand_bottom']), (0, 4, 8, 0))
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'seam', '--axes', 'x', '--yes'])
+        call = self.tool_call('seam_tiling')
+        self.assertEqual((call['tile_x'], call['tile_y']), (True, False))
+        with self.assertRaises(SystemExit):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'seam', '--axes', 'z', '--yes'])
+
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')
         os.makedirs(folder)

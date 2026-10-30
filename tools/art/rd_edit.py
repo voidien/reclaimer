@@ -3,6 +3,9 @@
     python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette        # onto its style-guide palette
     python3 tools/art/rd_generate.py --fix carbon_flakes=2 --tool pixel            # Pixel Fixer on staged variant 2
     python3 tools/art/rd_generate.py --fix ashen_slag --tool reduce --colors 8 --dry-run
+    python3 tools/art/rd_generate.py --fix carbon_flakes --tool edit --prompt "a pile of black carbon flakes, no blade"
+    python3 tools/art/rd_generate.py --fix carbon_flakes --tool inpaint --mask mask.png --prompt "rough black flakes"
+    python3 tools/art/rd_generate.py --fix ashen_slag --tool seam --axes xy           # make a block texture tile
 
 The input is the asset's current file in the mod, or a staged variant with ``asset=n``. The result is saved as the
 asset's next variant (art/rd/<asset>/v<N>.png) and shows on the contact sheet, so ``--promote asset=N`` puts it in
@@ -25,6 +28,10 @@ TOOLS = {
     'downscale': ('k_centroid_downscale', 0.001),
     'unbg': ('background_remover', 0.01),
     'correct': ('pixel_correction', 0.001),
+    'edit': ('image_edit', 0.18),
+    'inpaint': ('inpainting', 0.18),
+    'outpaint': ('outpainting', 0.18),
+    'seam': ('seam_tiling', 0.18),
     'pixel': ('/pixel-fixer/standard', 0.002),
     'pixel-neural': ('/pixel-fixer/neural', 0.005),
 }
@@ -61,7 +68,50 @@ def body_for(rd, tool, row, png, args):
     elif tool == 'pixel-neural':
         w, h = rd.target_size(row)
         body.update(width=w, height=h)
+    elif tool in ('edit', 'inpaint', 'outpaint'):
+        if tool != 'outpaint' and not args.prompt:
+            sys.exit('--tool %s needs --prompt "what to paint"' % tool)
+        if args.prompt:
+            body['prompt'] = args.prompt
+        if args.seed is not None:
+            body['seed'] = args.seed
+        if tool == 'inpaint':
+            body['mask_image'] = mask_b64(rd, args.mask, png)
+        if tool == 'outpaint':
+            body.update(expansion(args.expand))
+    elif tool == 'seam':
+        axes = (args.axes or 'xy').lower()
+        if not axes or set(axes) - set('xy'):
+            sys.exit('--axes must be x, y or xy')
+        body.update(tile_x='x' in axes, tile_y='y' in axes)
+        if args.seed is not None:
+            body['seed'] = args.seed
     return body
+
+
+def mask_b64(rd, path, png):
+    """The inpainting mask: an RGBA PNG the size of the input, transparent where the image must stay as it is."""
+    if not path:
+        sys.exit('--tool inpaint needs --mask mask.png (RGBA, the size of the image; opaque where to repaint)')
+    with open(path, 'rb') as f:
+        data = f.read()
+    mask, image = rd.png_read(data), rd.png_read(png)
+    if (len(mask[0]), len(mask)) != (len(image[0]), len(image)):
+        sys.exit('the mask is %dx%d but the image is %dx%d' % (len(mask[0]), len(mask), len(image[0]), len(image)))
+    if all(px[3] > 12 for line in mask for px in line):
+        sys.exit('the mask is opaque everywhere, which would repaint the whole image: make the parts to keep transparent')
+    return base64.b64encode(data).decode()
+
+
+def expansion(spec):
+    """--expand L,R,T,B in pixels: how far outpainting grows each side."""
+    try:
+        left, right, top, bottom = (int(v) for v in (spec or '').split(','))
+    except ValueError:
+        sys.exit('--tool outpaint needs --expand LEFT,RIGHT,TOP,BOTTOM in pixels, e.g. 0,0,8,0')
+    if min(left, right, top, bottom) < 0 or max(left, right, top, bottom) <= 0:
+        sys.exit('--expand needs at least one positive side and no negative one')
+    return {'expand_left': left, 'expand_right': right, 'expand_top': top, 'expand_bottom': bottom}
 
 
 def price(rd, tool, body, key):

@@ -241,3 +241,18 @@ makes a genuinely new run. The Pixel Fixer needs at least a 16x16 image.
 
 Example: `python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette` (the asteroid that came out orange).
 
+### Repainting part of an image
+The same `--fix` command with RD's generative edit tools ($0.18 a run, run as RD tasks like the others):
+
+| `--tool` | RD tool | Needs | What it does |
+|---|---|---|---|
+| `edit` | `image_edit` | `--prompt` | repaints the whole image from an instruction, keeping its layout ("make the flakes rough, no blade") |
+| `inpaint` | `inpainting` | `--prompt`, `--mask mask.png` | repaints only the masked part |
+| `outpaint` | `outpainting` | `--expand L,R,T,B` (pixels), optional `--prompt` | grows the canvas and paints the new border |
+| `seam` | `seam_tiling` | `--axes x`, `y` or `xy` (default) | makes a block texture tile without visible seams |
+
+`--seed N` fixes the seed. The mask is an RGBA PNG the size of the image: transparent where it must stay as it is,
+opaque where to repaint (only alpha counts). The tool refuses a mask of the wrong size, or one that is opaque everywhere
+(that would repaint the whole image). For consistent variants of one asset, derive them from one base with `edit` and a
+prompt that pins the layout, rather than generating each from scratch (RD's advice).
+
