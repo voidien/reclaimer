@@ -29,6 +29,16 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> ASHEN_SLAG = BLOCKS.registerSimpleBlock("ashen_slag",
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.2f).sound(SoundType.BASALT));
 
+    /** Frame of the Atmospheric Portal: build a flat rectangle of these and light it with a Portal Igniter. */
+    public static final DeferredBlock<Block> PORTAL_FRAME = BLOCKS.registerSimpleBlock("portal_frame",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(3.0f, 8.0f).sound(SoundType.COPPER).requiresCorrectToolForDrops());
+
+    /** The pane inside a lit frame. Not an item. */
+    public static final DeferredBlock<com.voidreclaimer.earth.AtmosphericPortalBlock> ATMOSPHERIC_PORTAL = BLOCKS.registerBlock("atmospheric_portal",
+            com.voidreclaimer.earth.AtmosphericPortalBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).noCollission().noOcclusion().strength(-1.0f)
+                    .sound(SoundType.GLASS).lightLevel(state -> 11).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).noLootTable());
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 16.0,
+    "void_reclaimer:ice": 24.0,
+    "void_reclaimer:metallic": 40.0,
+    "void_reclaimer:silicate": 32.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 8,
+    "id": "void_reclaimer:portal_frame"
+  },
+  "ticks": 400
+}

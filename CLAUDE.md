@@ -407,7 +407,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 **Act III slice (2026-10-30 interview, owner's answers)**
 - **Terrain:** custom generator (`earth/RuinedEarthChunkGenerator`), 1024 x 1024 planet, void outside (no vanilla per-dimension border in 1.21.1). Normal gravity on ruined_earth; thrusters will work as hover there (not built yet). Ashen Slag is the surface block.
 - **Portal:** craftable frame blocks big enough for the Ship (about 12 x 5.6 inside), lit by an activation item; arriving builds a matching return gate at the landing area. **Sky:** one era for the whole dimension (ruined, healing, restored), set by a debug command first; blending by restoration percent comes later. **Spire:** a single block that pulses for free in the slice; the pulse is an expanding wave over a long period (about 15 s, config), rewrites blocks and biomes from a data-driven mapping, and resends chunks when it ends.
-- **PR order:** (1) dimension (done), (2) sky eras (done, see PROGRESS.md), (3) portal, (4) Spire pulse, then hover flight on Earth.
+- **PR order:** (1) dimension (done), (2) sky eras (done, see PROGRESS.md), (3a) portal frame and lighting (done), (3b) portal travel and the return gate, (4) Spire pulse, then hover flight on Earth.
 
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).

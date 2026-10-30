@@ -34,6 +34,10 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.MODULES, Milestones.AWAKENING);
         replicator(output, "cloud_collector", ModItems.CLOUD_COLLECTOR.get(), 1, DustCost.of(30, 25, 15, 20), 60,
                 ReplicatorCategories.MODULES, Milestones.DIVERSIFIED);
+        replicator(output, "portal_frame", ModItems.PORTAL_FRAME.get(), 8, DustCost.of(40, 32, 24, 16), 20,
+                ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
+        replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
+                ReplicatorCategories.TOOLS, Milestones.STARSHIP);
         replicator(output, "scaffold", ModItems.SCAFFOLD.get(), 8, DustCost.of(0, 8, 0, 0), 5,
                 ReplicatorCategories.BLOCKS, Milestones.AWAKENING);
         replicator(output, "salvage_tool", ModItems.SALVAGE_TOOL.get(), 1, DustCost.of(15, 5, 0, 0), 30,

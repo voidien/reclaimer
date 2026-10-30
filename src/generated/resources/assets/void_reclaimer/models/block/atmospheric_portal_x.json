@@ -1,0 +1,29 @@
+{
+  "elements": [
+    {
+      "faces": {
+        "north": {
+          "texture": "#portal"
+        },
+        "south": {
+          "texture": "#portal"
+        }
+      },
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        10
+      ]
+    }
+  ],
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "void_reclaimer:block/atmospheric_portal",
+    "portal": "void_reclaimer:block/atmospheric_portal"
+  }
+}

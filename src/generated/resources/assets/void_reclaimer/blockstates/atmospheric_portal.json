@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "void_reclaimer:block/atmospheric_portal_x"
+    },
+    "axis=z": {
+      "model": "void_reclaimer:block/atmospheric_portal_z"
+    }
+  }
+}
