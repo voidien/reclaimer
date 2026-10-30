@@ -94,6 +94,8 @@ public final class Config {
 
     public static final ModConfigSpec.DoubleValue DRILL_ENERGY;
     public static final ModConfigSpec.DoubleValue DRILL_DUST_YIELD;
+    public static final ModConfigSpec.BooleanValue COLLECTOR_ENABLED;
+    public static final ModConfigSpec.DoubleValue COLLECTOR_YIELD;
 
     public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
     public static final ModConfigSpec.LongValue DYSON_SHELL_TOTAL;
@@ -245,6 +247,12 @@ public final class Config {
         RECEIVER_RPM = BUILDER.comment("Rotation speed the Quantum Receiver outputs.").defineInRange("receiverRpm", 128, 1, 256);
         RECEIVER_MAX_STRESS = BUILDER.comment("Stress in SU the Receiver gives once the shell is complete; before that it is proportional to the trusses launched.")
                 .defineInRange("receiverMaxStress", 262_144.0, 0.0, 100_000_000.0);
+        BUILDER.pop();
+
+        BUILDER.comment("The Cloud Collector module: raw items out of dust clouds while flying.").push("collector");
+        COLLECTOR_ENABLED = BUILDER.comment("Whether installed collector modules produce items.").define("enabled", true);
+        COLLECTOR_YIELD = BUILDER.comment("Multiplier on every collector module's yield (items per dust gathered).")
+                .defineInRange("yield", 1.0, 0.0, 100.0);
         BUILDER.pop();
 
         BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");

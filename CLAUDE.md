@@ -308,6 +308,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`); socket id = GeckoLib bone (5b) |
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
 | `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
+| `void_reclaimer:module` `collector` spec | Part of the module data component (`api.body.ModuleStats.Collector`) | On module items: `yield` (items per dust gathered), `energy_per_second`, `outputs` (dust kind id → item id). Run by `dust.Collectors` from `DustTicker` |
 | `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
 | `void_reclaimer:tool_module_type` built-ins `drill`, `harvester` | Code registry entries | Mechanical Drill and Matter Harvester: `breakSpeed` on `#void_reclaimer:asteroid_blocks`; the break rules are in `asteroid.Drilling` |
 | `void_reclaimer:freezing` recipes | Recipe type (`machine.FreezingRecipe`) | `ingredient`, `results`; run by the Encased Fan type below |
@@ -338,11 +339,17 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 
 **Design doc "Nebulae to Planetary Genesis" (decided 2026-10-29)**
 - The doc extends this plan; it is an idea framework, not a bible. The repo's systems stay (Replicator from the start, body, energy, dust). Where they disagree, ask before changing anything.
-- Nebulae are the existing dust clouds: Ice, Carbon, Silicon (`silicate` in code), Metallic. Raw items (Ice Shards, Carbon Flakes, Silicon Grit, Metallic Grains) come from (a) the Replicator turning stored dust into raw items and (b) a collector part that pulls items out of a cloud. Neither is built yet.
+- Nebulae are the existing dust clouds: Ice, Carbon, Silicon (`silicate` in code), Metallic. Raw items (Ice Shards, Carbon Flakes, Silicon Grit, Metallic Grains) come from (a) the Replicator turning stored dust into raw items and (b) a collector part that pulls items out of a cloud. (a) is built (Replicator "Raw" tab); (b) is built as the Cloud Collector, see below.
 - The 33 existing Replicator recipes keep their dust prices until told otherwise.
 - Body size classes stay Drone, Mech, Ship; the doc's Starship is the Ship class. Display strings still say "Ship".
 - The Overworld lock and the planned `ruined_earth` dimension are unchanged for now (Act II's return home is undecided).
 - Lore and recipes come only from the user's doc. Placeholder texts are marked `[Placeholder, lore text pending.]` in lang.
+
+**Cloud Collector module (2026-10-30, owner's choices)**
+- A module with a `collector` spec on a **tool mount** (it is not a wheel tool: if selected on the wheel it does nothing). While installed and powered, dust gathered in a cloud also produces raw items of the cloud's kind: `yield` items per dust (default 1.0, twice the Replicator's 0.5), so the rate follows density, distance flown and the body's dust intake. `dust.Collectors.collect` is called by `DustTicker` after `DustGainEvent`, so a cancelled gain also cancels the items.
+- Costs `energy_per_second` (default 1) while in a cloud; stops in low power. Items go to the inventory, overflow to the Replicator output buffer; with both full it pauses. Fractions are carried per player (lost on logout, under one item).
+- Config `collector.enabled` and `collector.yield` (a global multiplier). Replicator Modules tab, Diversified milestone, 30/25/15/20 dust (placeholder).
+- **Next (PR B, owner's choices):** a Cloud Collector **block** for a base inside a cloud: Create rotation with a power interface so an electricity addon can supply it, only works in dense clouds (minimum density in config), output scaled by density.
 
 **Dyson Sphere (foundations, 2026-10-29)**
 - `dyson.DysonSphereData` (saved, synced attachment on the deep space level): satellites and truss modules launched, plus the server's `latticeStart` and `shellTotal` thresholds so clients can draw the shell. `DysonSphereData.of(level)` works from any dimension on the server.

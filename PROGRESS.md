@@ -454,6 +454,12 @@ From an outside audit, each checked against the code first (several claims were 
 ## Everything obtainable (test): done
 - `ObtainabilityGameTests`: all 61 section and module items are made through the Replicator and installed. It found no missing recipe, unreachable milestone or unaffordable price. Mutation-checked: refusing cosmetic installs fails it and names the two cosmetic modules. Reachability uses a fully satisfied milestone context, not a play-through.
 
+## Cloud Collector module: done
+- `cloud_collector` module (tool mount) with a data-driven `collector` spec; `dust.Collectors` makes the cloud kind's raw item from dust gathered (yield 1 per dust), uses 1 energy/s, stops in low power, overflows to the output buffer. Config `collector`. Replicator recipe in Modules (Diversified).
+- Tests: `CollectorsTest` (5 unit), `CollectorGameTests` (4: yield, no module no items, energy and low power, buffer overflow). Mutation-checked: zero yield and ignoring low power fail them. `ObtainabilityGameTests` covers the new module (62 parts) and now visits chassis in a fixed order (the map order differed between runs, and a Ship-first order hit a legitimate inventory-full refusal).
+- Placeholder icon `cloud_collector.png` (generated). Not seen in a real client.
+- Not here: the collector block (PR B).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
