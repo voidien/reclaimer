@@ -45,7 +45,7 @@ Last updated 2026-10-30, after the owner's first playtest, the collector work an
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
-- **To-do: run one GameTest class (owner asked for this).** `runGameTestServer` always runs all 127 tests (about 3 minutes), which dominates every iteration. Add a way to run one class or one test (for example a Gradle property that sets the NeoForge game test filter, or a run configuration with a test prefix), prove it with a deliberately failing test, and document it here and in `CLAUDE.md` > Testing. Goal: under a minute per iteration. Small PR of its own.
+- **Running one GameTest class or test (done):** see "Commands" under "Working tricks".
 - **Playtest feedback, round 1 (owner, 2026-10-30, up to stage 5 of `docs/PLAYTEST.md`).** Work through these as small PRs; decisions already made are in brackets.
   - Bugs: punch-break (fixed in its PR); drone bobbing in a 1x1 tunnel when touching the ground; Mech plays its flying animation once and then idle; Mech idle animation and the blue foot flames floating mid-air; energy bar drawn as a comb (the art strips are 90x9 and were squeezed into 9x9; fix = draw one cell with the sub-region `blitSprite`); Ship, Shuttle and Titan are "too large" in F5 (camera distance/scale, not invisible); 70 hearts of health shown for a big body.
   - Start of the game: [starter dust + guided first craft of the Dust Sensor, plus a faint built-in hum for the bare Drone]; early dust collection is boring when clouds are far apart (open).
@@ -98,7 +98,7 @@ The owner wants to run Claude Code on their own PC. A new session there starts f
 ## Working tricks
 ### Commands
 - `./gradlew build` (includes unit tests).
-- `./gradlew runGameTestServer`: look for `All N required tests passed`.
+- `./gradlew runGameTestServer`: look for `All N required tests passed`. Add `-PgametestFilter=ZeroGMining` to run only the tests whose class or method name contains the text (comma-separated alternatives, ignoring case); about 30 s for one class instead of about 3 minutes. Only `runGameTestServer` passes the property on.
 - `./gradlew runData`: commit the output in `src/generated/resources`. CI fails if it's stale.
 - For a GameTest failure, grep the log for `failed at` and the message.
 

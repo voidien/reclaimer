@@ -82,6 +82,7 @@ Commands: `./gradlew build` (includes unit tests), `./gradlew runGameTestServer`
   - `GameTestServerMixin` makes the GameTest server load datapack dimensions, so tests can use `deep_space`.
   - `TestPlayers` creates real survival `ServerPlayer`s on a fake connection. Call `doTick()` to run player ticks.
   - The GameTest world persists between local runs: clear your test area first, and give each test its own coordinates.
+  - Run a subset with `./gradlew runGameTestServer -PgametestFilter=<terms>` (class or method name contains any comma-separated term; `GameTestRegistryMixin`, test-only). Use it while iterating, and run the whole suite before pushing.
   - Wait a few ticks after force-loading a chunk before placing blocks; scheduled ticks set earlier are dropped.
 - Every phase adds unit tests and GameTests for its logic.
 - Verify new tests can fail: break the feature and check that the test catches it.
