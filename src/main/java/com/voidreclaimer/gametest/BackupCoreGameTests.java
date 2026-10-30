@@ -44,7 +44,7 @@ public final class BackupCoreGameTests {
         return (BackupCoreBlockEntity) level.getBlockEntity(pos);
     }
 
-    @GameTest(template = "empty", timeoutTicks = 100)
+    @GameTest(template = "empty", timeoutTicks = 400)
     public static void placingRegistersCoresUpToTheLimitAndSunlightCharges(GameTestHelper helper) {
         BlockPos origin = new BlockPos(57_000, 80, 0);
         NaniteGameTests.inLoadedArea(helper, origin, 6, () -> {
@@ -66,10 +66,11 @@ public final class BackupCoreGameTests {
                 space.destroyBlock(origin.offset(6, 0, 0), false);
                 helper.assertTrue(BackupCores.list(player).cores().size() == BackupCoreList.MAX_CORES - 1, "removed core still listed");
 
-                helper.runAfterDelay(41, () -> {
+                // The core charges when its update tick finds sky light, which a fresh chunk only has once the light engine has caught
+                // up: wait for the charge instead of a fixed delay.
+                helper.succeedWhen(() -> {
                     helper.assertTrue(first.sunFraction() > 0f, "sunlight did not charge");
                     TestPlayers.remove(player);
-                    helper.succeed();
                 });
             } catch (RuntimeException | AssertionError e) {
                 TestPlayers.remove(player);
