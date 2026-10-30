@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
@@ -33,6 +34,8 @@ public class CloudSiphonBlockEntity extends KineticBlockEntity {
     private double density;
     private Item item;
     private float power;
+    private int stored;
+    private final IEnergyStorage energy = new Energy();
 
     public CloudSiphonBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -45,6 +48,19 @@ public class CloudSiphonBlockEntity extends KineticBlockEntity {
     /** What automation sees: items come out, nothing goes in. */
     public IItemHandler items() {
         return handler;
+    }
+
+    /**
+     * Forge Energy input, from any energy mod (Crafts & Additions, New Age and so on): the buffer tops the shaft's power up
+     * to full while the siphon is working, so a siphon with no shaft runs on electricity alone. Nothing can be taken out.
+     */
+    public IEnergyStorage energy() {
+        return energy;
+    }
+
+    /** FE in the buffer. */
+    public int storedEnergy() {
+        return stored;
     }
 
     /** The raw inventory, for tests and drops. */
@@ -72,7 +88,17 @@ public class CloudSiphonBlockEntity extends KineticBlockEntity {
             sampleTimer = SAMPLE_TICKS - 1;
             sample();
         }
-        float perSecond = CloudSiphonMath.itemsPerSecond(density, power, Config.SIPHON_MIN_DENSITY.get(), Config.SIPHON_RATE.get());
+        float running = power;
+        if (item != null && density >= Config.SIPHON_MIN_DENSITY.get()) {
+            // Only a siphon that is actually working draws energy.
+            CloudSiphonMath.EnergyUse use = CloudSiphonMath.topUp(power, stored, Config.SIPHON_FE_PER_TICK.get());
+            running = use.power();
+            if (use.drained() > 0) {
+                stored -= use.drained();
+                setChanged();
+            }
+        }
+        float perSecond = CloudSiphonMath.itemsPerSecond(density, running, Config.SIPHON_MIN_DENSITY.get(), Config.SIPHON_RATE.get());
         if (item == null || perSecond <= 0f) {
             return;
         }
@@ -106,6 +132,7 @@ public class CloudSiphonBlockEntity extends KineticBlockEntity {
         super.write(tag, registries, clientPacket);
         tag.put("inventory", inventory.serializeNBT(registries));
         tag.putFloat("progress", progress);
+        tag.putInt("energy", stored);
     }
 
     @Override
@@ -113,6 +140,48 @@ public class CloudSiphonBlockEntity extends KineticBlockEntity {
         super.read(tag, registries, clientPacket);
         inventory.deserializeNBT(registries, tag.getCompound("inventory"));
         progress = tag.getFloat("progress");
+        stored = Math.max(0, tag.getInt("energy"));
+    }
+
+    /** Takes energy up to the configured buffer; gives none back. Off when the per-tick draw is 0. */
+    private final class Energy implements IEnergyStorage {
+        @Override
+        public int receiveEnergy(int maxReceive, boolean simulate) {
+            if (Config.SIPHON_FE_PER_TICK.get() <= 0) {
+                return 0;
+            }
+            int accepted = Math.max(0, Math.min(maxReceive, Config.SIPHON_FE_BUFFER.get() - stored));
+            if (!simulate && accepted > 0) {
+                stored += accepted;
+                setChanged();
+            }
+            return accepted;
+        }
+
+        @Override
+        public int extractEnergy(int maxExtract, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public int getEnergyStored() {
+            return stored;
+        }
+
+        @Override
+        public int getMaxEnergyStored() {
+            return Config.SIPHON_FE_PER_TICK.get() <= 0 ? 0 : Config.SIPHON_FE_BUFFER.get();
+        }
+
+        @Override
+        public boolean canExtract() {
+            return false;
+        }
+
+        @Override
+        public boolean canReceive() {
+            return Config.SIPHON_FE_PER_TICK.get() > 0;
+        }
     }
 
     /** Items can be taken out of every slot and none can be put in. */

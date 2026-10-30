@@ -85,6 +85,8 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue SIPHON_STRESS;
     public static final ModConfigSpec.DoubleValue SIPHON_RATE;
     public static final ModConfigSpec.DoubleValue SIPHON_MIN_DENSITY;
+    public static final ModConfigSpec.IntValue SIPHON_FE_PER_TICK;
+    public static final ModConfigSpec.IntValue SIPHON_FE_BUFFER;
     public static final ModConfigSpec.IntValue MACHINE_MIN_RPM;
     public static final ModConfigSpec.DoubleValue MASS_DRIVER_STRESS;
     public static final ModConfigSpec.IntValue MASS_DRIVER_MIN_RPM;
@@ -255,6 +257,10 @@ public final class Config {
         SIPHON_STRESS = BUILDER.comment("Stress the Cloud Siphon needs, in SU per RPM.").defineInRange("siphonStress", 4.0, 0.0, 1024.0);
         SIPHON_RATE = BUILDER.comment("Raw items per second a Cloud Siphon makes at full cloud density and 64 RPM.").defineInRange("siphonRate", 0.5, 0.0, 1000.0);
         SIPHON_MIN_DENSITY = BUILDER.comment("Cloud density below which a Cloud Siphon makes nothing (thin dust).").defineInRange("siphonMinDensity", 0.4, 0.0, 1.0);
+        SIPHON_FE_PER_TICK = BUILDER.comment("Forge Energy per tick a Cloud Siphon with no shaft needs to run at full power (energy tops a shaft up to full and never costs more than that). 0 turns the energy input off.")
+                .defineInRange("siphonFePerTick", 40, 0, 1_000_000);
+        SIPHON_FE_BUFFER = BUILDER.comment("Forge Energy a Cloud Siphon can hold (100 ticks of full power by default).")
+                .defineInRange("siphonFeBuffer", 4000, 0, 100_000_000);
         MACHINE_MIN_RPM = BUILDER.comment("Slowest rotation at which the Electrolyzer and the Spinner work.").defineInRange("minRpm", 16, 1, 256);
         MACHINE_CYCLE_TICKS = BUILDER.comment("Ticks per cycle at 64 RPM; faster rotation shortens it in proportion.").defineInRange("cycleTicks", 60, 1, 24000);
         ELECTROLYZER_TANK = BUILDER.comment("Capacity in mB of each Electrolyzer tank.").defineInRange("electrolyzerTank", 4000, 250, 100000);

@@ -41,6 +41,8 @@ public final class MachineSetup {
                 (entity, side) -> entity.items());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.CLOUD_SIPHON.get(),
                 (entity, side) -> entity.items());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, com.voidreclaimer.registry.ModBlockEntities.CLOUD_SIPHON.get(),
+                (entity, side) -> entity.energy());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.PAYLOAD_CHAMBER.get(),
                 (entity, side) -> entity.items());
     }
