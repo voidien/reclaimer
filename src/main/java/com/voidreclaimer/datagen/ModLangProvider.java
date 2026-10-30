@@ -148,6 +148,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
         add("hud.void_reclaimer.death_marker", "DROPS %sm");
 
+        add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");
+        add("commands.void_reclaimer.sky.era.set", "Ruined Earth sky era set to %s");
+        add("commands.void_reclaimer.sky.era.unknown", "Unknown sky era '%s' (ruined, healing or restored)");
+        add("commands.void_reclaimer.sky.era.no_dimension", "The ruined_earth dimension is not loaded");
         add("commands.void_reclaimer.dyson.get", "Dyson Sphere: %s satellites, %s truss modules (shell complete at %s), skybox tier %s");
         add("commands.void_reclaimer.dyson.set", "Dyson Sphere: %s satellites, %s truss modules, skybox tier %s");
         add("commands.void_reclaimer.asteroid.locate", "Nearest asteroid: %s, %s, at %s %s %s, about %s blocks wide, %s blocks away");

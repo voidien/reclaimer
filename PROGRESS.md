@@ -530,6 +530,13 @@ From an outside audit, each checked against the code first (several claims were 
 ### Placeholder assets
 - `textures/block/ashen_slag.png` (16x16 programmer art).
 
+## Act III slice, part 2: the three-era sky: done
+- `SkyEra` (ruined, healing, restored) is a saved, synced attachment on the `ruined_earth` level (`ModAttachments.EARTH_SKY_ERA`, like the Dyson counters). `EarthSky.get/set` is the server side; `/void_reclaimer sky era get|set <era>` (op) is the debug command. One era for the whole dimension; blending by restoration percent comes later.
+- `SkyLook` (pure, unit-tested) holds each era's colors, fog distance, sun tint and clouds. Ruined: brown smog, 90-block fog, big dim red sun, no clouds. Healing: thinning haze, 220-block fog, pale sun, clouds. Restored: clear blue, 512-block fog, white sun, clouds. All numbers are guesses to tune by eye.
+- Client: `RuinedEarthEffects` (a `DimensionSpecialEffects` registered as `void_reclaimer:ruined_earth`, used by the dimension type) draws a gradient dome and a tinted sun through the `renderSky` hook; `RuinedEarthFog` sets fog color and distance from `ViewportEvent`. No chunk rendering is touched (Sodium-safe), no raw Tesselator HUD drawing.
+- Tests: `SkyEraTest` (4 unit tests), one GameTest that runs the real command. Mutation-checked.
+- **Not seen in a real client yet**: the sky, fog and sun are unchecked by eye.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

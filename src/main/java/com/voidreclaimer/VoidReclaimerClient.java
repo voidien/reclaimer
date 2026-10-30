@@ -79,6 +79,7 @@ public final class VoidReclaimerClient {
 
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
         event.register(DeepSpaceEffects.ID, new DeepSpaceEffects());
+        event.register(com.voidreclaimer.client.render.RuinedEarthEffects.ID, new com.voidreclaimer.client.render.RuinedEarthEffects());
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
