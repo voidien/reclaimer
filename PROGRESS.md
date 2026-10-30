@@ -682,6 +682,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
 - First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
 
+## CC: Tweaked peripherals, part 4: spawn and travel blocks: done
+- `SpawnTravelPeripherals` (read-only): Backup Core (`getName`, `getOwner`, `getCharges`, `getMaxCharges`, `getSunProgress`; a generic peripheral), Tether Anchor (`getTethered`) and Atmospheric Portal Frame (`getPortal`: nil, or `{lit, width, height, axis}`). The last two have no block entity, so they are `IPeripheral`s on CC's block capability, registered by `CCCompat.registerCapabilities` only when CC is loaded.
+- Every existing block with state or actions now has a peripheral (`docs/CC_PERIPHERALS.md`). Item upgrades (turtle, pocket computer) are the next CC step.
+- Tests: `CCPeripheralGameTests.theSpawnAndTravelBlocksArePeripherals` (the core through CC's provider, the anchor and frame through CC's capability with their `@LuaFunction`s; a clipped player is listed; a lone frame block, an unlit 3 x 3 frame and a lit one). Mutation-checked: without the frame's capability registration it fails.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
