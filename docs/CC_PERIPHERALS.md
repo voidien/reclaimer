@@ -29,6 +29,31 @@ local siphon = peripheral.find("void_reclaimer:cloud_siphon")
 print(("density %.2f, %d FE"):format(siphon.getDensity(), siphon.getEnergy()))
 ```
 
+## Dyson launch chain (`DysonPeripheral`)
+Read-only: the Mass Driver fires on its own once wound up, and a player cannot make it launch either.
+
+| Block | Function | Returns |
+|---|---|---|
+| Kinetic Drive Base | `isAssembled()` | whether the Payload Chamber and Barrel Nozzle sit on top of it |
+| | `getProgress()` | wind-up of the next launch, 0 to 1 |
+| | `getLaunches()` | payloads this driver has fired |
+| | `getSpeed()` | shaft speed in RPM |
+| | `hasPayload()` | whether the chamber above holds a payload |
+| | `getSphere()` | the Dyson Sphere (below) |
+| Payload Chamber | `getItems()` | its slots: `{ [slot] = { name, count } }` |
+| Sub-Light Quantum Receiver | `getSpeed()` | the speed it turns the network at (RPM), 0 before any truss is launched |
+| | `getStressCapacity()` | the stress capacity it adds, in SU |
+| | `getSphere()` | the Dyson Sphere (below) |
+
+`getSphere()` returns `{ satellites, trusses, shellTotal, tier, shellProgress, sunlight }`: launches so far, the sky tier
+(0 to 4), how much of the shell is built (0 to 1) and how much of the star's light still reaches deep space (1 to 0).
+
+```lua
+local driver = peripheral.find("void_reclaimer:kinetic_drive_base")
+local s = driver.getSphere()
+print(("tier %d, shell %.0f%%"):format(s.tier, s.shellProgress * 100))
+```
+
 ## Coming next
-The Dyson launch chain (Kinetic Mass Driver, Quantum Receiver), the Terraforming Spire, and the Backup Core, Tether Anchor
-and Atmospheric Portal frame. Item upgrades (turtle and pocket computer) come after.
+The Terraforming Spire, and the Backup Core, Tether Anchor and Atmospheric Portal frame. Item upgrades (turtle and pocket
+computer) come after.

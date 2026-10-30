@@ -3,6 +3,12 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.compat.cc.CCCompat;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
+import com.voidreclaimer.machine.QuantumReceiverBlockEntity;
+import com.voidreclaimer.machine.PayloadChamberBlockEntity;
+import com.voidreclaimer.machine.MassDriverBaseBlockEntity;
+import com.voidreclaimer.machine.MassDriver;
+import com.voidreclaimer.dyson.DysonSphereData;
+import com.voidreclaimer.compat.cc.DysonPeripheral;
 import com.voidreclaimer.machine.CloudSiphonBlockEntity;
 import com.voidreclaimer.machine.ElectrolyzerBlockEntity;
 import com.voidreclaimer.machine.SpinnerBlockEntity;
@@ -123,6 +129,46 @@ public final class CCPeripheralGameTests {
             helper.assertTrue(Integer.valueOf(3).equals(lua.getItems(spinner).get(1).get("count")), "Spinner getItems " + lua.getItems(spinner));
 
             for (BlockPos pos : List.of(siphonPos, electrolyzerPos, spinnerPos)) {
+                level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theDysonLaunchChainIsAPeripheral(GameTestHelper helper) {
+        BlockPos base = new BlockPos(60_100, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, base, 6, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            DysonPeripheral lua = new DysonPeripheral();
+            MassDriverBaseBlockEntity driver = place(level, base, ModBlocks.KINETIC_DRIVE_BASE.get(), MassDriverBaseBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, base), "Kinetic Drive Base",
+                    "isAssembled", "getProgress", "getLaunches", "getSpeed", "hasPayload", "getSphere");
+            helper.assertFalse(lua.isAssembled(driver), "a lone base reads as assembled");
+            helper.assertFalse(lua.hasPayload(driver), "a lone base has a payload");
+
+            PayloadChamberBlockEntity chamber = place(level, MassDriver.chamberPos(base), ModBlocks.PAYLOAD_CHAMBER.get(),
+                    PayloadChamberBlockEntity.class);
+            level.setBlock(MassDriver.nozzlePos(base), ModBlocks.MAGNETIC_BARREL_NOZZLE.get().defaultBlockState(), 3);
+            chamber.inventory().setStackInSlot(0, new ItemStack(ModMaterials.DYSON_SWARM_SATELLITE_PAYLOAD.get()));
+            helper.assertTrue(lua.isAssembled(driver), "the full stack does not read as assembled");
+            helper.assertTrue(lua.hasPayload(driver), "a loaded chamber does not read as loaded");
+            requireMethods(helper, Lookup.of(level, MassDriver.chamberPos(base)), "Payload Chamber", "getItems");
+            helper.assertTrue(lua.getItems(chamber).size() == 1, "chamber getItems " + lua.getItems(chamber));
+
+            Map<String, Object> sphere = lua.getSphere(driver);
+            DysonSphereData data = DysonSphereData.of(level);
+            helper.assertTrue(Long.valueOf(data.satellites()).equals(sphere.get("satellites"))
+                    && Long.valueOf(data.trusses()).equals(sphere.get("trusses"))
+                    && Integer.valueOf(data.tier()).equals(sphere.get("tier")), "getSphere " + sphere);
+
+            BlockPos receiverPos = base.east(4);
+            QuantumReceiverBlockEntity receiver = place(level, receiverPos, ModBlocks.QUANTUM_RECEIVER.get(), QuantumReceiverBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, receiverPos), "Quantum Receiver", "getSpeed", "getStressCapacity", "getSphere");
+            helper.assertTrue(lua.getSpeed(receiver) == receiver.getGeneratedSpeed(), "receiver getSpeed");
+            helper.assertTrue(lua.getSphere(receiver).equals(sphere), "the receiver sees a different sphere");
+
+            for (BlockPos pos : List.of(base, MassDriver.chamberPos(base), MassDriver.nozzlePos(base), receiverPos)) {
                 level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
             helper.succeed();
