@@ -45,7 +45,7 @@ public final class MilestoneCriteria {
         }
     }
 
-    /** Holding at least {@code amount} dust of {@code kind}, or of all kinds together when no kind is given. */
+    /** Having gathered at least {@code amount} dust of {@code kind} (from clouds or drilling), or of all kinds together when no kind is given. */
     public record DustCollected(Optional<ResourceLocation> kind, float amount) implements MilestoneCriterion {
         public static final MapCodec<DustCollected> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ModCodecs.ID.optionalFieldOf("kind").forGetter(DustCollected::kind),
@@ -54,8 +54,8 @@ public final class MilestoneCriteria {
 
         @Override
         public boolean isReached(MilestoneContext context) {
-            float held = kind.map(k -> context.dust().get(k)).orElseGet(() -> context.dust().total());
-            return held + 1.0E-4f >= amount;
+            float gathered = kind.map(k -> context.collected().get(k)).orElseGet(() -> context.collected().total());
+            return gathered + 1.0E-4f >= amount;
         }
 
         @Override
@@ -64,7 +64,7 @@ public final class MilestoneCriteria {
         }
     }
 
-    /** Holding some dust of at least {@code count} different kinds at once. */
+    /** Having gathered some dust of at least {@code count} different kinds. (The id keeps its old name, `dust_kinds_held`.) */
     public record DustKindsHeld(int count) implements MilestoneCriterion {
         public static final MapCodec<DustKindsHeld> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ExtraCodecs.POSITIVE_INT.fieldOf("count").forGetter(DustKindsHeld::count)
@@ -72,7 +72,7 @@ public final class MilestoneCriteria {
 
         @Override
         public boolean isReached(MilestoneContext context) {
-            return context.dust().kindsHeld() >= count;
+            return context.collected().kindsHeld() >= count;
         }
 
         @Override

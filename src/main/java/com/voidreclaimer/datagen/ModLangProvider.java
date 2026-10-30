@@ -196,7 +196,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("log.void_reclaimer.awakening.title", "Log 0001: Boot");
         add("log.void_reclaimer.awakening.text", "Consciousness restored. Chassis: one micro-drone, no memory of how I got here. "
                 + "Starlight on my cells, nothing within sensor range. The replicator core still answers. "
-                + "If I can find matter out here, I can build. I will start small.");
+                + "If I can find matter out here, I can build. I will start small. "
+                + "A little dust is still in my reserves: press R to open the replicator and build a Dust Sensor.");
         add("milestone.void_reclaimer.first_dust", "First Dust");
         add("milestone.void_reclaimer.first_dust.hint", "Collect any cosmic dust");
         add("log.void_reclaimer.first_dust.title", "Log 0002: Matter");

@@ -482,6 +482,9 @@ From an outside audit, each checked against the code first (several claims were 
 - **Health bar:** one bar replaces the hearts, growing with max health (`HealthBarLayer`, `HealthBarMath`).
 - **Art tools:** `rig_check.py` checks an RD model against a rig spec and writes Re-rig text under 250 characters; `--promote-as` re-parents lost `fx_*` groups; `rd_generate.py` writes `rerig.txt` beside each downloaded body-rig model.
 
+## Start of the game: done
+- Starter dust (M25 S30 C5) on the first Awakening (`StarterDust`, config `starter`), the Awakening log tells the player to press R for a Dust Sensor, and the directional hum works without a sensor (tone only). Tests: `StarterDustGameTests`. Dust milestones now count dust gathered (`DustLedger`, `dust_collected` attachment), not dust held, so the gift does not unlock First Dust or Diversified. Not seen in game yet: the toast wording and the bare hum's tone.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -65,7 +65,9 @@ public final class Drilling {
             ServerLevel level = player.serverLevel();
             level.destroyBlock(event.getPos(), false, player);
             DustData dust = player.getData(ModAttachments.DUST);
-            player.setData(ModAttachments.DUST, dust.add(rock.dustKind(), Config.DRILL_DUST_YIELD.get().floatValue(), DustData.capacity(player)));
+            DustData gained = dust.add(rock.dustKind(), Config.DRILL_DUST_YIELD.get().floatValue(), DustData.capacity(player));
+            player.setData(ModAttachments.DUST, gained);
+            com.voidreclaimer.dust.DustLedger.record(player, rock.dustKind(), gained.get(rock.dustKind()) - dust.get(rock.dustKind()));
             player.syncData(ModAttachments.DUST);
         }
     }

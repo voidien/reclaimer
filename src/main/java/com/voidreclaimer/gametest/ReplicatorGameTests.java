@@ -63,7 +63,11 @@ public final class ReplicatorGameTests {
         try {
             Replicator.checkMilestones(player);
             player.setData(ModAttachments.DUST, DustData.of(50, 50, 0, 0));
-            // Dust alone doesn't unlock until the milestone check runs.
+            // Held dust (a gift, say) isn't first dust: only dust gathered from a cloud or by drilling counts.
+            Replicator.checkMilestones(player);
+            helper.assertTrue(Replicator.queue(player, SALVAGE_TOOL) == ReplicatorLogic.QueueResult.LOCKED, "salvage tool unlocked by held dust");
+            player.setData(ModAttachments.DUST_COLLECTED, DustData.of(50, 50, 0, 0));
+            // Gathering alone doesn't unlock until the milestone check runs.
             helper.assertTrue(Replicator.queue(player, SALVAGE_TOOL) == ReplicatorLogic.QueueResult.LOCKED, "salvage tool unlocked too early");
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.queue(player, SALVAGE_TOOL) == ReplicatorLogic.QueueResult.QUEUED, "salvage tool not unlocked by first dust");

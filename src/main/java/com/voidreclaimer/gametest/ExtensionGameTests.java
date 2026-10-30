@@ -101,6 +101,8 @@ public final class ExtensionGameTests {
             helper.assertTrue(Replicator.queue(player, PLASMA_GLASS) == ReplicatorLogic.QueueResult.LOCKED, "recipe not locked");
 
             player.setData(ModAttachments.DUST, DustData.EMPTY.add(PLASMA, 5f, 200f));
+            helper.assertFalse(checkAndUnlocked(player, PLASMA_HOARDER), "holding plasma is not gathering it");
+            player.setData(ModAttachments.DUST_COLLECTED, DustData.EMPTY.add(PLASMA, 5f, 200f));
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.data(player).isUnlocked(PLASMA_HOARDER), "milestone not reached at 5 plasma");
             helper.assertTrue(Replicator.queue(player, PLASMA_GLASS) == ReplicatorLogic.QueueResult.QUEUED, "recipe not queued");
@@ -135,6 +137,11 @@ public final class ExtensionGameTests {
             TestPlayers.remove(fixed);
             TestPlayers.remove(cancelled);
         }
+    }
+
+    private static boolean checkAndUnlocked(ServerPlayer player, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.milestone.Milestone> milestone) {
+        Replicator.checkMilestones(player);
+        return Replicator.data(player).isUnlocked(milestone);
     }
 
     /** MilestoneReachedEvent fires once per milestone reached in play. */

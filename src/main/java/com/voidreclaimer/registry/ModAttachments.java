@@ -57,6 +57,16 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<FlightTracker>> FLIGHT_TRACKER = ATTACHMENT_TYPES.register("flight_tracker",
             () -> AttachmentType.builder(FlightTracker::new).build());
 
+    /**
+     * Dust the player has actually gathered (from clouds and by drilling), per kind, over the whole game. Milestones count this,
+     * not the reserve, so a gift of starter dust or a refund never reaches them. Persisted, kept on death, server only.
+     */
+    public static final Supplier<AttachmentType<DustData>> DUST_COLLECTED = ATTACHMENT_TYPES.register("dust_collected",
+            () -> AttachmentType.builder(() -> DustData.EMPTY)
+                    .serialize(DustData.CODEC)
+                    .copyOnDeath()
+                    .build());
+
     /** Per-player dust reserve. Persisted, kept on death, synced to the owning player. */
     public static final Supplier<AttachmentType<DustData>> DUST = ATTACHMENT_TYPES.register("dust",
             () -> AttachmentType.builder(() -> DustData.EMPTY)

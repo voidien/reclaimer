@@ -139,6 +139,17 @@ class ReplicatorLogicTest {
     }
 
     @Test
+    void dustMilestonesCountWhatWasGatheredNotWhatIsHeld() {
+        DustData gift = DustData.of(25, 30, 0, 5);
+        MilestoneContext gifted = new MilestoneContext(gift, DustData.EMPTY, 0, Float.MAX_VALUE, 0, java.util.Set.of());
+        assertFalse(reached(Milestones.FIRST_DUST, gifted), "starter dust is not first dust");
+        assertFalse(reached(Milestones.DIVERSIFIED, gifted), "starter dust does not make the AI diversified");
+        MilestoneContext gathered = new MilestoneContext(DustData.EMPTY, DustData.of(1, 1, 0, 1), 0, Float.MAX_VALUE, 0, java.util.Set.of());
+        assertTrue(reached(Milestones.FIRST_DUST, gathered), "gathered dust counts even after it was spent");
+        assertTrue(reached(Milestones.DIVERSIFIED, gathered));
+    }
+
+    @Test
     void milestonesAndUnlockDiff() {
         assertTrue(reached(Milestones.AWAKENING, MilestoneContext.of(DustData.EMPTY)));
         assertFalse(reached(Milestones.FIRST_DUST, MilestoneContext.of(DustData.EMPTY)));

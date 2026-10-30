@@ -50,6 +50,7 @@ public final class DustTicker {
             return;
         }
         player.setData(ModAttachments.DUST, updated);
+        DustLedger.record(player, kind, updated.get(kind) - old.get(kind));
         if (Mth.floor(updated.get(kind)) != Mth.floor(old.get(kind)) || player.tickCount % PERIODIC_SYNC_TICKS == 0) {
             player.syncData(ModAttachments.DUST);
         }

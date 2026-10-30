@@ -313,6 +313,8 @@ public final class ModCommands {
         }
         float clamped = Math.min(amount, DustData.capacity(player));
         player.setData(ModAttachments.DUST, player.getData(ModAttachments.DUST).with(kind, clamped));
+        // A setup command stands in for having gathered it, so milestones still unlock in test worlds.
+        com.voidreclaimer.dust.DustLedger.raiseTo(player, kind, clamped);
         player.syncData(ModAttachments.DUST);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.dust.set", player.getDisplayName(),
                 DustKinds.name(source.registryAccess(), kind), format(clamped)), true);
