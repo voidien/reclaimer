@@ -11,6 +11,9 @@
     "InventoryLockMixin",
     "SlotLockMixin"
   ],
+  "client": [
+    "CameraPhotoMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

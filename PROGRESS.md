@@ -504,6 +504,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Orbit camera: done
 - Hold the orbit key (middle mouse) in third person to look round the body, scroll to zoom, release to ease back. Uses `ViewportEvent.ComputeCameraAngles` (no mixin). The feel of the orbit is not tried by hand.
 
+## Photo mode: done
+- F8 opens a free camera with the HUD hidden (drag to look, WASD/Space/Shift to move, scroll FOV, Q/E roll, Enter screenshot). `CameraPhotoMixin` is a small client-only mixin. Checked in a headless client (HUD hides and returns, camera moves, no mixin errors); the controls' feel is not tried by hand.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
