@@ -6,6 +6,7 @@
   "block.void_reclaimer.asteroid_silicate": "Silicate Asteroid Rock",
   "block.void_reclaimer.backup_core": "Backup Core",
   "block.void_reclaimer.backup_core.default_name": "Core %s",
+  "block.void_reclaimer.cloud_siphon": "Cloud Siphon",
   "block.void_reclaimer.electrolyzer": "Electrolyzer",
   "block.void_reclaimer.kinetic_drive_base": "Kinetic Drive Base",
   "block.void_reclaimer.magnetic_barrel_nozzle": "Magnetic Barrel Nozzle",

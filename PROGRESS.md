@@ -454,6 +454,12 @@ From an outside audit, each checked against the code first (several claims were 
 ## Everything obtainable (test): done
 - `ObtainabilityGameTests`: all 61 section and module items are made through the Replicator and installed. It found no missing recipe, unreachable milestone or unaffordable price. Mutation-checked: refusing cosmetic installs fails it and names the two cosmetic modules. Reachability uses a fully satisfied milestone context, not a play-through.
 
+## Cloud Siphon block: done
+- `cloud_siphon` block: shaft-driven, in a dense cloud (min density 0.4) it makes the cloud kind's raw item, 0.5 per second at full density and 64 RPM; 9 extract-only output slots; `CollectorPowerEvent` lets an addon supply the power. `dust.RawItems` maps kinds to raw items. Config `machines.siphon*` and the `cloudSiphon` toggle; Replicator Blocks tab.
+- Tests: `CloudSiphonMathTest` (4 unit), `CloudSiphonGameTests` (5: output at the expected rate, extract-only, nothing below minimum speed, in empty space or in the thin fringe of a cloud, addon power without rotation, full output pauses). Mutation-checked: dropping the density minimum fails the fringe test, and not posting the event fails the addon test.
+- Placeholders: generated block textures `cloud_siphon_side/end.png`. Static model (no rotation animation, like the other machines). Not seen in a real client.
+- The module's own raw-item map (`ModItems.CLOUD_COLLECTOR`) and `RawItems` hold the same four pairs; unify them if a third user appears.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

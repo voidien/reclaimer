@@ -76,6 +76,9 @@ public final class Config {
 
     public static final ModConfigSpec.DoubleValue ELECTROLYZER_STRESS;
     public static final ModConfigSpec.DoubleValue SPINNER_STRESS;
+    public static final ModConfigSpec.DoubleValue SIPHON_STRESS;
+    public static final ModConfigSpec.DoubleValue SIPHON_RATE;
+    public static final ModConfigSpec.DoubleValue SIPHON_MIN_DENSITY;
     public static final ModConfigSpec.IntValue MACHINE_MIN_RPM;
     public static final ModConfigSpec.DoubleValue MASS_DRIVER_STRESS;
     public static final ModConfigSpec.IntValue MASS_DRIVER_MIN_RPM;
@@ -220,10 +223,14 @@ public final class Config {
         BUILDER.comment("Custom Create machines. All amounts are placeholders until the design settles them.").push("machines");
         toggle("electrolyzer", "The Electrolyzer block (water into oxygen and hydrogen) works and the Replicator can make it.");
         toggle("spinner", "The Spinner block (graphite into carbon thread) works and the Replicator can make it.");
+        toggle("cloudSiphon", "The Cloud Siphon block (raw items out of a dense dust cloud) works and the Replicator can make it.");
         toggle("fanFreezing", "Encased Fans blowing through powder snow freeze items (Water Bucket into Packed Ice).");
         toggle("spoutCasting", "Spouts can cast Liquid Silicon into a Quartz Wafer on an empty Depot.");
         ELECTROLYZER_STRESS = BUILDER.comment("Stress the Electrolyzer needs, in SU per RPM.").defineInRange("electrolyzerStress", 4.0, 0.0, 1024.0);
         SPINNER_STRESS = BUILDER.comment("Stress the Spinner needs, in SU per RPM.").defineInRange("spinnerStress", 2.0, 0.0, 1024.0);
+        SIPHON_STRESS = BUILDER.comment("Stress the Cloud Siphon needs, in SU per RPM.").defineInRange("siphonStress", 4.0, 0.0, 1024.0);
+        SIPHON_RATE = BUILDER.comment("Raw items per second a Cloud Siphon makes at full cloud density and 64 RPM.").defineInRange("siphonRate", 0.5, 0.0, 1000.0);
+        SIPHON_MIN_DENSITY = BUILDER.comment("Cloud density below which a Cloud Siphon makes nothing (thin dust).").defineInRange("siphonMinDensity", 0.4, 0.0, 1.0);
         MACHINE_MIN_RPM = BUILDER.comment("Slowest rotation at which the Electrolyzer and the Spinner work.").defineInRange("minRpm", 16, 1, 256);
         MACHINE_CYCLE_TICKS = BUILDER.comment("Ticks per cycle at 64 RPM; faster rotation shortens it in proportion.").defineInRange("cycleTicks", 60, 1, 24000);
         ELECTROLYZER_TANK = BUILDER.comment("Capacity in mB of each Electrolyzer tank.").defineInRange("electrolyzerTank", 4000, 250, 100000);

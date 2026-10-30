@@ -82,6 +82,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.tab.materials", "Raw");
         add(ModItems.ELECTROLYZER.get(), "Electrolyzer");
         add(ModItems.SPINNER.get(), "Spinner");
+        add(ModItems.CLOUD_SIPHON.get(), "Cloud Siphon");
         add(ModItems.KINETIC_DRIVE_BASE.get(), "Kinetic Drive Base");
         add(ModItems.PAYLOAD_CHAMBER.get(), "Payload Chamber");
         add(ModItems.MAGNETIC_BARREL_NOZZLE.get(), "Magnetic Barrel Nozzle");

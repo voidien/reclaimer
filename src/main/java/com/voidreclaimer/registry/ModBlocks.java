@@ -51,6 +51,12 @@ public final class ModBlocks {
                     com.voidreclaimer.machine.SpinnerBlockEntity.class, ModBlockEntities.SPINNER::get),
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
 
+    /** Sits in a dense dust cloud and condenses it into raw items; turned by a shaft. */
+    public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.CloudSiphonBlockEntity>> CLOUD_SIPHON =
+            BLOCKS.registerBlock("cloud_siphon", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
+                    com.voidreclaimer.machine.CloudSiphonBlockEntity.class, ModBlockEntities.CLOUD_SIPHON::get),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+
     /** The Kinetic Mass Driver: the drive base (shaft input, controller), the payload chamber and the barrel nozzle, stacked in that order. */
     public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.MassDriverBaseBlockEntity>> KINETIC_DRIVE_BASE =
             BLOCKS.registerBlock("kinetic_drive_base", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,

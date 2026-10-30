@@ -310,6 +310,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
 | `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
 | `void_reclaimer:tool_module_type` built-ins `drill`, `harvester` | Code registry entries | Mechanical Drill and Matter Harvester: `breakSpeed` on `#void_reclaimer:asteroid_blocks`; the break rules are in `asteroid.Drilling` |
+| `CollectorPowerEvent` | Event, mutable power | About once a second for each Cloud Siphon: `power` starts as the shaft's (1.0 at 64 RPM, 0 below the minimum speed); an addon (electricity) raises it to run the block without rotation |
 | `void_reclaimer:freezing` recipes | Recipe type (`machine.FreezingRecipe`) | `ingredient`, `results`; run by the Encased Fan type below |
 | `void_reclaimer:freezing` fan type | Create registry entry (`create:fan_processing_type`) | `machine.FreezingFanType`, priority 450, active in powder snow; registered through `MachineSetup.FAN_TYPES` |
 | Spout behaviors | Create `BlockSpoutingBehaviour.BY_BLOCK` | `machine.SpoutCasting` on the Depot; add more casting by registering for another block |
@@ -343,6 +344,11 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - Body size classes stay Drone, Mech, Ship; the doc's Starship is the Ship class. Display strings still say "Ship".
 - The Overworld lock and the planned `ruined_earth` dimension are unchanged for now (Act II's return home is undecided).
 - Lore and recipes come only from the user's doc. Placeholder texts are marked `[Placeholder, lore text pending.]` in lang.
+
+**Cloud Siphon block (2026-10-30, owner's choices)**
+- `cloud_siphon` (`machine/CloudSiphonBlockEntity`, a Create kinetic block with a shaft axis) sits in a **dense** dust cloud and condenses it into the cloud kind's raw item (`dust.RawItems`: Metallic Grains, Silicon Grit, Raw Ice Shards, Carbon Flakes). Items per second = density x power x `machines.siphonRate` (0.5), and nothing below `machines.siphonMinDensity` (0.4). Config also has `siphonStress` (4 SU per RPM) and the `cloudSiphon` toggle.
+- Power is rotation for now (1.0 at 64 RPM, proportional, 0 below `minRpm`), behind `CollectorPowerEvent` so an electricity addon can supply it. Density and power are sampled once a second.
+- Nine output slots; Create funnels, belts and hoppers can only take from them. A full output pauses it; nothing is lost. Replicator Blocks tab (Diversified), 35/25/20/25 dust (placeholder). Named "Cloud Siphon" because "Cloud Collector" is the module's item.
 
 **Dyson Sphere (foundations, 2026-10-29)**
 - `dyson.DysonSphereData` (saved, synced attachment on the deep space level): satellites and truss modules launched, plus the server's `latticeStart` and `shellTotal` thresholds so clients can draw the shell. `DysonSphereData.of(level)` works from any dimension on the server.

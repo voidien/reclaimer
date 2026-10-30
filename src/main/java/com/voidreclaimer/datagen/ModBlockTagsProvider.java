@@ -16,11 +16,11 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(),
+        tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(), ModBlocks.CLOUD_SIPHON.get(),
                 ModBlocks.KINETIC_DRIVE_BASE.get(), ModBlocks.PAYLOAD_CHAMBER.get(), ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), ModBlocks.QUANTUM_RECEIVER.get());
         // Create's wrench picks these up whole.
         tag(net.minecraft.tags.BlockTags.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "wrench_pickup")))
-                .add(ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(),
+                .add(ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(), ModBlocks.CLOUD_SIPHON.get(),
                         ModBlocks.KINETIC_DRIVE_BASE.get(), ModBlocks.PAYLOAD_CHAMBER.get(), ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), ModBlocks.QUANTUM_RECEIVER.get());
         tag(ModBlocks.ASTEROID_BLOCKS).add(ModBlocks.ASTEROID_SILICATE.get(), ModBlocks.ASTEROID_ICE.get(),
                 ModBlocks.ASTEROID_CARBON.get(), ModBlocks.ASTEROID_METALLIC.get());

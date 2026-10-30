@@ -56,6 +56,7 @@ public final class ModRecipeProvider extends RecipeProvider {
 
         // Machines. Prices are placeholders; the design doc gives no recipe for them.
         machineRecipe(output, "electrolyzer", ModItems.ELECTROLYZER.get(), DustCost.of(30, 20, 10, 10), "electrolyzer");
+        machineRecipe(output, "cloud_siphon", ModItems.CLOUD_SIPHON.get(), DustCost.of(35, 25, 20, 25), "cloudSiphon");
         machineRecipe(output, "spinner", ModItems.SPINNER.get(), DustCost.of(25, 15, 0, 15), "spinner");
         // The Mass Driver's three blocks; placeholder prices (the design doc gives none).
         machineRecipe(output, "kinetic_drive_base", ModItems.KINETIC_DRIVE_BASE.get(), DustCost.of(40, 30, 10, 30), "massDriver");
