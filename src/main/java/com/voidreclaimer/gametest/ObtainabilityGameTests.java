@@ -71,7 +71,7 @@ public final class ObtainabilityGameTests {
     /** The most dust of any kind the biggest body can store: every chassis with Mk II storage pods on all storage mounts. */
     private static float biggestCapacity(ServerPlayer player) {
         float best = 0;
-        for (ResourceKey<Chassis> key : BuiltinBodies.CHASSIS.keySet()) {
+        for (ResourceKey<Chassis> key : chassisKeys()) {
             BodyData body = Bodies.preset(key);
             for (BodyData.Mount mount : List.copyOf(body.modules().keySet())) {
                 if (mount.kind() == ModuleKind.STORAGE) {
@@ -124,10 +124,15 @@ public final class ObtainabilityGameTests {
         return -1;
     }
 
+    /** The built-in chassis in a fixed order: the map's own order differs between runs. */
+    private static List<ResourceKey<Chassis>> chassisKeys() {
+        return BuiltinBodies.CHASSIS.keySet().stream().sorted(Comparator.comparing(key -> key.location().getPath())).toList();
+    }
+
     /** Installs the crafted section into some chassis that has a socket for it. Returns an error text, or null. */
     private static String installSection(ServerPlayer player, Item item) {
         List<String> tried = new ArrayList<>();
-        for (ResourceKey<Chassis> key : BuiltinBodies.CHASSIS.keySet()) {
+        for (ResourceKey<Chassis> key : chassisKeys()) {
             BodyData body = Bodies.preset(key);
             Chassis chassis = BuiltinBodies.CHASSIS.get(key);
             // The best core, so the tier gate (tested elsewhere) doesn't stand in the way of finding a socket.
@@ -150,7 +155,9 @@ public final class ObtainabilityGameTests {
                 }
                 BodyRules.Check result = Bodies.installSection(player, socket.id(), slot);
                 if (result != BodyRules.Check.OK) {
-                    return "install into " + key.location().getPath() + "/" + socket.id() + " gave " + result;
+                    // E.g. a layout switch that hands back more parts than the inventory has room for: try the next place.
+                    tried.add(key.location().getPath() + "/" + socket.id() + " install=" + result);
+                    continue;
                 }
                 // A core section switches the layout, so it sits in the new chassis' core socket, not the one it went into.
                 boolean core = Parts.section(item.getDefaultInstance()).isCore();
@@ -164,7 +171,7 @@ public final class ObtainabilityGameTests {
     /** Installs the crafted module on some mount of some chassis. Returns an error text, or null. */
     private static String installModule(ServerPlayer player, Item item) {
         List<String> tried = new ArrayList<>();
-        for (ResourceKey<Chassis> key : BuiltinBodies.CHASSIS.keySet()) {
+        for (ResourceKey<Chassis> key : chassisKeys()) {
             Bodies.store(player, Bodies.preset(key));
             BodyView view = Bodies.view(player);
             for (BodyData.Mount mount : view.mounts()) {
@@ -179,7 +186,8 @@ public final class ObtainabilityGameTests {
                 }
                 BodyRules.Check result = Bodies.installModule(player, mount, slot);
                 if (result != BodyRules.Check.OK) {
-                    return "install on " + key.location().getPath() + "/" + mount.socket() + " gave " + result;
+                    tried.add(key.location().getPath() + "/" + mount.socket() + " install=" + result);
+                    continue;
                 }
                 return Bodies.data(player).module(mount).is(item) ? null : "install said OK but the module is not on the body";
             }

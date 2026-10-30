@@ -44,6 +44,7 @@ public final class DustTicker {
         if (gainEvent.isCanceled()) {
             return;
         }
+        Collectors.collect(player, kind, gainEvent.getAmount());
         DustData updated = old.add(kind, gainEvent.getAmount(), DustData.capacity(player));
         if (updated.equals(old)) {
             return;

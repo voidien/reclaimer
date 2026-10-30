@@ -38,6 +38,8 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("itemGroup.void_reclaimer", "Void Reclaimer");
         add(ModItems.DUST_SENSOR.get(), "Dust Sensor");
+        add(ModItems.CLOUD_COLLECTOR.get(), "Cloud Collector");
+        add("item.void_reclaimer.cloud_collector.tooltip", "Tool-mount module: while you fly through a dust cloud it also makes raw items of the cloud's kind, one per dust gathered. Uses energy; stops in low power.");
         add("item.void_reclaimer.dust_sensor.tooltip", "Sensor module: cloud readout, pulse (B), hum and scanner view (N). Install it in a sensor slot.");
         add("dust.void_reclaimer.metallic", "Metallic");
         add("dust.void_reclaimer.silicate", "Silicate");
