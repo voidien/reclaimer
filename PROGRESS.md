@@ -537,6 +537,16 @@ From an outside audit, each checked against the code first (several claims were 
 - Tests: `SkyEraTest` (4 unit tests), one GameTest that runs the real command. Mutation-checked.
 - **Not seen in a real client yet**: the sky, fog and sun are unchecked by eye.
 
+## Act III slice, part 3a: Atmospheric Portal frame and lighting: done
+- **Atmospheric Portal Frame** (`portal_frame`) and **Portal Igniter** (`portal_igniter`): Replicator recipes gated by the `starship` milestone (placeholder prices: 8 frames for 40/32/24/16 dust, an igniter for 12/10/8/12).
+- `PortalShape` (pure, 7 unit tests): finds the closed flat rectangle of frame blocks around an empty interior, either orientation (width along X or Z). Corners are not needed. Interior 3 x 3 up to 32 x 32, so the Ship (about 12 x 5.6) fits.
+- Right-clicking any frame block with the Igniter (`AtmosphericPortals.tryLight`) fills the interior with `atmospheric_portal` panes (thin, no collision, light 11, translucent) and uses the igniter up (not in creative). Breaking any frame block removes the whole portal (`updateShape`, like the Nether portal).
+- **Travel is not built yet** (part 3b: entering the pane, the `Portal` interface, the return gate on ruined Earth and the saved link between them). Lit portals are inert for now.
+- Tests: `PortalShapeTest` (7), `PortalGameTests` (3: Ship-sized frame lights and breaks together, a gap does not light, the igniter lights and is used up). Mutation-checked.
+
+### Placeholder assets
+- `textures/block/portal_frame.png`, `textures/block/atmospheric_portal.png`, `textures/item/portal_igniter.png` (16x16 programmer art, no animation on the pane yet).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

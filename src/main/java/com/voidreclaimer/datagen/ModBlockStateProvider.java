@@ -23,11 +23,41 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         machine(ModBlocks.QUANTUM_RECEIVER.get(), "quantum_receiver");
         simpleBlockWithItem(ModBlocks.PAYLOAD_CHAMBER.get(), cubeAll(ModBlocks.PAYLOAD_CHAMBER.get()));
         simpleBlockWithItem(ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), cubeAll(ModBlocks.MAGNETIC_BARREL_NOZZLE.get()));
+        simpleBlockWithItem(ModBlocks.PORTAL_FRAME.get(), cubeAll(ModBlocks.PORTAL_FRAME.get()));
+        portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_ICE.get(), cubeAll(ModBlocks.ASTEROID_ICE.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_CARBON.get(), cubeAll(ModBlocks.ASTEROID_CARBON.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_METALLIC.get(), cubeAll(ModBlocks.ASTEROID_METALLIC.get()));
+    }
+
+    /** The portal pane: a thin translucent plate, one model per width axis. */
+    private void portal() {
+        var acrossX = pane("atmospheric_portal_x", 6, 10, true);
+        var acrossZ = pane("atmospheric_portal_z", 6, 10, false);
+        getVariantBuilder(ModBlocks.ATMOSPHERIC_PORTAL.get())
+                .partialState().with(com.voidreclaimer.earth.AtmosphericPortalBlock.AXIS, net.minecraft.core.Direction.Axis.X)
+                .modelForState().modelFile(acrossX).addModel()
+                .partialState().with(com.voidreclaimer.earth.AtmosphericPortalBlock.AXIS, net.minecraft.core.Direction.Axis.Z)
+                .modelForState().modelFile(acrossZ).addModel();
+    }
+
+    private net.neoforged.neoforge.client.model.generators.BlockModelBuilder pane(String name, int from, int to, boolean faceNorthSouth) {
+        var texture = modLoc("block/atmospheric_portal");
+        var model = models().getBuilder(name).texture("portal", texture).texture("particle", texture).renderType("translucent");
+        var element = model.element();
+        if (faceNorthSouth) {
+            element.from(0, 0, from).to(16, 16, to)
+                    .face(net.minecraft.core.Direction.NORTH).texture("#portal").end()
+                    .face(net.minecraft.core.Direction.SOUTH).texture("#portal").end();
+        } else {
+            element.from(from, 0, 0).to(to, 16, 16)
+                    .face(net.minecraft.core.Direction.EAST).texture("#portal").end()
+                    .face(net.minecraft.core.Direction.WEST).texture("#portal").end();
+        }
+        element.end();
+        return model;
     }
 
     /** A kinetic machine: a column model turned to its shaft axis. */

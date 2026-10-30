@@ -83,6 +83,9 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ASTEROID_SILICATE.get(), "Silicate Asteroid Rock");
         add(ModItems.ASTEROID_ICE.get(), "Ice Asteroid Rock");
         add(ModItems.ASHEN_SLAG.get(), "Ashen Slag");
+        add(ModItems.PORTAL_FRAME.get(), "Atmospheric Portal Frame");
+        add(ModItems.PORTAL_IGNITER.get(), "Portal Igniter");
+        add(ModBlocks.ATMOSPHERIC_PORTAL.get(), "Atmospheric Portal");
         add(ModItems.ASTEROID_CARBON.get(), "Carbon Asteroid Rock");
         add(ModItems.ASTEROID_METALLIC.get(), "Metallic Asteroid Rock");
         add("replicator.void_reclaimer.tab.materials", "Raw");
@@ -492,6 +495,8 @@ public final class ModLangProvider extends LanguageProvider {
 
     /** One short gameplay hint per built-in Replicator recipe (not lore); a recipe's own {@code description} overrides it. */
     private void addReplicatorDescriptions() {
+        add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
+        add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");
         add("replicator.void_reclaimer.description.backup_core", "A respawn point. Place it in deep space; after a death you can come back to it, spending one charge.");
         add("replicator.void_reclaimer.description.body_blueprint", "Saves your body's layout. Apply it later to queue the Replicator jobs for any parts you are missing.");
         add("replicator.void_reclaimer.description.brass_trim", "Cosmetic brass plating for a cosmetic mount. It changes how your body looks, not how it flies.");
