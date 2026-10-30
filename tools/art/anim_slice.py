@@ -184,7 +184,7 @@ def main(argv=None):
             data = json.load(f)
     data['animations'][new] = anim
     with open(target, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=1)
+        json.dump(data, f, indent='\t')
         f.write('\n')
     print('%s: %d bones, %.2f s, written to %s' % (new, len(anim.get('bones', {})), anim.get('animation_length', 0), target))
     return 0
