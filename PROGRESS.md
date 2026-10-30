@@ -491,6 +491,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Replicator screen, part 1: descriptions: done
 - A description line per built-in recipe (81), an optional `description` field on Replicator recipes (synced; the sync codec is hand-written because `StreamCodec.composite` stops at six fields), a description box under the list and a hover tooltip on rows; the panel is taller (244). Not seen in game yet.
 
+## Replicator screen, part 2: queue reorder: done
+- Drag a waiting job to a new place (`MOVE` action, `ReplicatorLogic.reorder`); the running job stays first. Unit tests and a GameTest. Not seen in game yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
