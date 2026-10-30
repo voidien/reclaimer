@@ -97,6 +97,14 @@ class Fake(http.server.BaseHTTPRequestHandler):
                 imgs = [checker(b['width'], b['height']) for _ in range(b['num_images'])]
             return self.reply({'status': 'succeeded', 'result': {
                 'base64_images': [base64.b64encode(i).decode() for i in imgs], 'balance_cost': 0.06 * b['num_images']}})
+        if self.path.startswith('/v2/edit/tasks/'):
+            t = s['tasks'][self.path.rsplit('/', 1)[1]]
+            t['polls'] += 1
+            if t['polls'] < 2:
+                return self.reply({'status': 'running'})
+            return self.reply({'status': 'succeeded', 'task_id': self.path.rsplit('/', 1)[1], 'result': {
+                'tool_id': t['tool'], 'balance_cost': 0.001, 'base64_images': [],
+                'output_urls': [self.base() + '/files/fixed.png']}})
         if self.path.startswith('/v2/lowpoly/tasks/'):
             t = s['tasks'][self.path.rsplit('/', 1)[1]]
             t['polls'] += 1
@@ -138,6 +146,20 @@ class Fake(http.server.BaseHTTPRequestHandler):
             s['styles'] = s.get('styles', 0) + 1
             return self.reply({'id': 'st%d' % s['styles'], 'prompt_style': 'user__void_reclaimer_%d' % s['styles'],
                                'name': b['name'], 'type': 'user'}, 201)
+        if self.path.startswith('/v2/edit/tools/') and self.path.endswith('/estimate'):
+            return self.reply({'tool_id': self.path.split('/')[4], 'balance_cost': 0.001, 'credit_cost': 1})
+        if self.path.startswith('/v2/edit/tools/') and self.path.endswith('/tasks'):
+            cid = b.get('custom_id')
+            if cid in s['idem']:
+                return self.reply({'status': 'accepted', 'task_id': s['idem'][cid]}, 202)
+            tid = 't%d' % len(s['tasks'])
+            s['tasks'][tid] = {'body': b, 'polls': 0, 'tool': self.path.split('/')[4]}
+            s['idem'][cid] = tid
+            s['charged'] += 1
+            return self.reply({'status': 'accepted', 'task_id': tid}, 202)
+        if self.path.startswith('/v2/pixel-fixer/'):
+            s['charged'] += 1
+            return self.reply({'base64_images': [base64.b64encode(checker(16, 16, transparent_corner=False)).decode()]})
         if self.path == '/v2/lowpoly/estimate':
             return self.reply({'operation': 'generate', 'size': 32, 'cost': 0.5})
         if self.path == '/v2/lowpoly/generate':
@@ -243,6 +265,65 @@ class RdGenerateTest(unittest.TestCase):
         rd.record_promoted(rd.TEXTURES + 'item/quartz_wafer.png')
         self.assertEqual(self.read(listed).decode().split(), ['block/asteroid_ice.png', 'item/quartz_wafer.png'],
                          'sorted, and recording twice adds nothing')
+
+    def put_texture(self, rel):
+        dst = os.path.join(self.tmp, rd.TEXTURES, rel)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy(os.path.join(REAL_REPO, rd.TEXTURES, rel), dst)
+        return dst
+
+    def test_fix_dry_run_prices_offline_and_sends_nothing(self):
+        self.put_texture('block/asteroid_silicate.png')
+        del os.environ['RD_API_KEY']
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'palette', '--dry-run'])
+        self.assertEqual(Fake.state['calls'], [], 'a dry run sends nothing')
+        self.assertFalse(os.path.exists(self.staged('asteroid_silicate')))
+
+    def test_fix_palette_uses_the_style_palette_becomes_a_variant_and_never_pays_twice(self):
+        self.put_texture('block/asteroid_silicate.png')
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'palette'])
+        estimate = [c for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/palette_converter/estimate')]
+        self.assertEqual(len(estimate), 1, 'a free estimate first')
+        task = next(c[2] for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/edit/tools/palette_converter/tasks')
+        rows = {r['asset']: r for r in rd.load_rows()}
+        self.assertEqual(task['input_palette'], rd.palette_b64(rd.category_for(rows['asteroid_silicate'], 'image')),
+                         "the asset's own style-guide palette")
+        self.assertTrue(task['custom_id'], 'tasks carry a custom_id, so a retry is not charged again')
+        self.assertEqual(self.read(self.staged('asteroid_silicate', 'v1.png')), checker(64, 64), 'the result is variant 1')
+        self.assertEqual(Fake.state['charged'], 1)
+        with mock.patch('builtins.input', return_value='y'):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'palette'])
+        self.assertEqual(Fake.state['charged'], 1, 'the same fix again is not paid again')
+        self.assertFalse(os.path.exists(self.staged('asteroid_silicate', 'v2.png')))
+        self.assertIn('asteroid_silicate', self.read(self.staged('index.html')).decode(), 'the fix shows on the contact sheet')
+
+    def test_fix_asks_first_and_a_no_sends_nothing_paid(self):
+        self.put_texture('block/asteroid_silicate.png')
+        with mock.patch('builtins.input', return_value='n'):
+            rd.main(['--fix', 'asteroid_silicate', '--tool', 'reduce', '--colors', '8'])
+        self.assertEqual(Fake.state['charged'], 0)
+        self.assertFalse(any(c[1].endswith('/tasks') for c in Fake.state['calls'] if c[0] == 'POST'))
+
+    def test_pixel_fixer_on_a_staged_variant_and_remembered(self):
+        folder = self.staged('quartz_wafer')
+        os.makedirs(folder)
+        with open(os.path.join(folder, 'v1.png'), 'wb') as f:
+            f.write(checker(16, 16))
+        rd.main(['--fix', 'quartz_wafer=1', '--tool', 'pixel', '--yes'])
+        call = next(c for c in Fake.state['calls'] if c[0] == 'POST' and c[1] == '/v2/pixel-fixer/standard')
+        self.assertEqual(set(call[2]), {'input_image'}, 'the Pixel Fixer rejects unknown fields')
+        self.assertIsNone(call[3], 'no Idempotency-Key on Pixel Fixer requests')
+        self.assertTrue(os.path.exists(os.path.join(folder, 'v2.png')), 'the fix becomes the next variant')
+        rd.main(['--fix', 'quartz_wafer=1', '--tool', 'pixel', '--yes'])
+        self.assertEqual(Fake.state['charged'], 1, 'a done Pixel Fixer run is remembered, not repeated')
+
+    def test_fix_downscale_aims_at_the_target_size(self):
+        self.put_texture('block/asteroid_silicate.png')
+        rd.main(['--fix', 'asteroid_silicate', '--tool', 'downscale', '--yes'])
+        task = next(c[2] for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/k_centroid_downscale/tasks'))
+        rows = {r['asset']: r for r in rd.load_rows()}
+        self.assertEqual((task['width'], task['height']), tuple(rd.target_size(rows['asteroid_silicate'])))
 
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')

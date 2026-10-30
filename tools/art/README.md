@@ -2,6 +2,7 @@
 
 - `asset_list.py` writes `docs/art/ASSETS.md` and `docs/art/assets.csv` (every texture, model and animation, with prompts). Rerun it when assets change.
 - `rd_generate.py` generates the CSV's rows with the [Retro Diffusion API](https://github.com/Retro-Diffusion/api-examples), so prompts never have to be typed by hand.
+- `rd_edit.py` (used through `rd_generate.py --fix`) fixes art we already have with RD's edit tools and Pixel Fixer; see "Fixing existing art" below.
 - `test_rd_generate.py` tests it offline against a fake RD server (CI runs it): `python3 tools/art/test_rd_generate.py`.
 
 - `style_guide.py` builds `docs/art/STYLE_GUIDE.md` and the palettes in `docs/art/palettes/` from `docs/art/style.json`.
@@ -216,3 +217,27 @@ python3 tools/art/rd_generate.py --promote-as entity/starship --source art/rd/st
 
 **RD's Minecraft (Java) export isn't used:** it tilts boxes freely, which needs Minecraft 1.21.11+. Always promote from the `.bbmodel`.
 - The game draws these models from Phase 5b (body rendering) on.
+
+## Fixing existing art (`--fix`)
+Cheap repairs of an image we already have, with RD's canvas edit tools and Pixel Fixer. The input is the asset's
+current file in the mod (`--fix ASSET`) or a staged variant (`--fix ASSET=N`). The result is saved as the asset's next
+variant and shows on the contact sheet; promote it like any other (`--promote ASSET=N`).
+
+| `--tool` | RD tool | Price | What it does |
+|---|---|---|---|
+| `palette` (default) | `palette_converter` | $0.001 | maps every pixel onto the asset's style-guide palette (its category's) |
+| `reduce` | `color_reducer` | $0.001 | fewer colours (`--colors N`, default 16) |
+| `downscale` | `k_centroid_downscale` | $0.001 | down to the asset's target size |
+| `unbg` | `background_remover` | $0.01 | transparent background |
+| `correct` | `pixel_correction` | $0.001 | cleans stray pixels |
+| `pixel` | Pixel Fixer, standard | $0.002 | rebuilds soft or AI-rendered pixel art on its native grid |
+| `pixel-neural` | Pixel Fixer, neural | $0.005 | neural rebuild at the asset's target size |
+
+Dithering is off (our style guide has no dithering). Spending is as for generation: a free estimate (edit tools) or
+RD's fixed price (Pixel Fixer), the balance check, and `Spend about $X? [y/N]`; `--dry-run` prints the plan for free.
+Edit tools run as RD tasks with a `custom_id` built from the asset, the tool and the input image, so repeating a fix
+returns the first result instead of paying again; Pixel Fixer results are remembered in `art/rd/state.json`. `--again`
+makes a genuinely new run. The Pixel Fixer needs at least a 16x16 image.
+
+Example: `python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette` (the asteroid that came out orange).
+

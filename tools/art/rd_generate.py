@@ -16,6 +16,7 @@ Examples:
   python3 tools/art/rd_generate.py --asset 'mech_*' --method 3d --model-style blocky_lite --yes
   python3 tools/art/rd_generate.py --promote quartz_wafer=2                # copy variant 2 into the mod
   python3 tools/art/rd_generate.py --balance
+  python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette     # fix existing art (rd_edit.py)
 
 See docs/art/ASSETS.md for the workflow and tools/art/README.md for the options.
 """
@@ -1044,6 +1045,12 @@ def main(argv=None):
                         'block/NAME), keeping RD\'s group names as bones')
     p.add_argument('--balance', action='store_true', help='show the account balance')
     p.add_argument('--index', action='store_true', help='rewrite art/rd/index.html')
+    p.add_argument('--fix', action='append', metavar='ASSET[=N]',
+                   help="fix art we already have with an RD edit tool or the Pixel Fixer (see rd_edit.py): the mod's "
+                        "file, or staged variant N; the result becomes the next variant")
+    p.add_argument('--tool', default='palette',
+                   help='--fix tool: palette (style-guide palette), reduce, downscale, unbg, correct, pixel, pixel-neural')
+    p.add_argument('--colors', type=int, default=16, help='--fix --tool reduce: number of colours (default 16)')
     args = ARGS = p.parse_args(argv)
     rows = load_rows()
 
@@ -1076,6 +1083,9 @@ def main(argv=None):
     if args.balance:
         print(request('GET', '/inferences/credits', key))
         return 0
+    if args.fix:
+        import rd_edit
+        return rd_edit.run(sys.modules[__name__], args, rows, key)
 
     state = load_state()
     if args.resume:

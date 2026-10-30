@@ -661,6 +661,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: `CCPeripheralGameTests` (2): CC is loaded and our sources registered; CC's own generic peripheral provider (what a computer uses, reached by reflection because it is internal) offers our functions on each machine, and they return the machines' real state. Mutation-checked: removing one `@LuaFunction` fails it.
 - Not seen with a real computer in a client yet.
 
+## RD tools, part 1: fixing existing art (`--fix`): done
+- `tools/art/rd_edit.py`, used through `rd_generate.py --fix ASSET[=N] --tool ...`: RD canvas edit tools (`palette` onto the style-guide palette, `reduce`, `downscale`, `unbg`, `correct`) and the Pixel Fixer (`pixel`, `pixel-neural`) on the mod's file or a staged variant. The result becomes the next variant, shows on the contact sheet and is promoted as usual. Same spending safety as generation; edit tools run as RD tasks keyed by a `custom_id`, so repeats are free; Pixel Fixer results are remembered in the state file. See `tools/art/README.md` "Fixing existing art".
+- Tests: 5 new offline tests in `test_rd_generate.py` against the fake RD server (now with the edit-tool estimate, task and Pixel Fixer routes); 34 pass. Mutation-checked: the wrong palette and forgetting finished fixes each fail.
+- Not run against the real RD service yet (needs the owner's key): first real use is `--fix asteroid_silicate --tool palette`.
+- Next (agreed): part 2 repaint (`image_edit`, inpainting, outpainting, seam tiling), part 3 restyle placeholders (img2img, tile variation), part 4 low-poly revise and export. Low-poly animate and Blockbench export already exist.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
