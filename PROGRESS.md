@@ -498,6 +498,10 @@ From an outside audit, each checked against the code first (several claims were 
 
 ## Body inventory screen (parts 1 and 2): done
 - E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Part 2 adds the 3D body preview and the dust reserves beside the slots.
+## Respawn screen: done
+- Card panel for the spawn and charged cores (name, charge pips, distance), plus a placeholder AI line on death. Not seen in game (needs a death in a world with a Backup Core).
+## Body inventory screen (part 1): done
+- E opens the body inventory menu and screen (slots only, tab strip to the Replicator, Body and Logs); locked rows darkened. GameTests for the menu, slot rules and shift-click. Not seen in game; the body preview and dust display are the next PR.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
