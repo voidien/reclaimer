@@ -14,11 +14,11 @@ import net.minecraft.util.ByIdMap;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /** Client to server: a Replicator screen action. The server validates everything (unlock, queue size, dust). */
-public record ReplicatorActionPayload(Action action, Optional<ResourceLocation> recipe, int index) implements CustomPacketPayload {
+public record ReplicatorActionPayload(Action action, Optional<ResourceLocation> recipe, int index, int to) implements CustomPacketPayload {
     public static final Type<ReplicatorActionPayload> TYPE = new Type<>(VoidReclaimer.id("replicator_action"));
 
     public enum Action {
-        QUEUE, CANCEL, COLLECT;
+        QUEUE, CANCEL, COLLECT, MOVE;
 
         private static final IntFunction<Action> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
         static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
@@ -28,18 +28,24 @@ public record ReplicatorActionPayload(Action action, Optional<ResourceLocation> 
             Action.STREAM_CODEC, ReplicatorActionPayload::action,
             ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), ReplicatorActionPayload::recipe,
             ByteBufCodecs.VAR_INT, ReplicatorActionPayload::index,
+            ByteBufCodecs.VAR_INT, ReplicatorActionPayload::to,
             ReplicatorActionPayload::new);
 
     public static ReplicatorActionPayload queue(ResourceLocation recipe) {
-        return new ReplicatorActionPayload(Action.QUEUE, Optional.of(recipe), 0);
+        return new ReplicatorActionPayload(Action.QUEUE, Optional.of(recipe), 0, 0);
     }
 
     public static ReplicatorActionPayload cancel(int index) {
-        return new ReplicatorActionPayload(Action.CANCEL, Optional.empty(), index);
+        return new ReplicatorActionPayload(Action.CANCEL, Optional.empty(), index, 0);
+    }
+
+    /** Moves queued job {@code from} to position {@code to}; the job being worked on (index 0) never moves. */
+    public static ReplicatorActionPayload move(int from, int to) {
+        return new ReplicatorActionPayload(Action.MOVE, Optional.empty(), from, to);
     }
 
     public static ReplicatorActionPayload collect() {
-        return new ReplicatorActionPayload(Action.COLLECT, Optional.empty(), 0);
+        return new ReplicatorActionPayload(Action.COLLECT, Optional.empty(), 0, 0);
     }
 
     @Override
@@ -55,6 +61,7 @@ public record ReplicatorActionPayload(Action action, Optional<ResourceLocation> 
             case QUEUE -> payload.recipe().ifPresent(id -> Replicator.queue(player, id));
             case CANCEL -> Replicator.cancel(player, payload.index());
             case COLLECT -> Replicator.collect(player);
+            case MOVE -> Replicator.move(player, payload.index(), payload.to());
         }
     }
 }
