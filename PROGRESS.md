@@ -694,6 +694,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - `tools/art/asset_list.py` now lists the Act III slice placeholders as ordinary rows, so they show as placeholders and can be generated or restyled: Ashen Slag, the Atmospheric Portal Frame and pane and the Terraforming Spire (Blocks), and the Portal Igniter (Tools & modules). The future rows that remain are the animated portal pane and the Spire multiblock. Only those rows were added to `docs/art/assets.csv` and `ASSETS.md`; the rest of both files is unchanged.
 - **Decision pending (found, not changed):** a full run of `asset_list.py` no longer matches the committed list. Since the module models arrived, it lists them as `core_mk2 (module)` and so on under Body models (keys like `core_mk2_module` instead of `core_mk2_model`) and their skins under Body skins, and drops the "Missing module models" group. Regenerating would rename keys the art workflow already uses (staged work in `art/rd/`, promote commands) and breaks four `test_rd_generate.py` tests that use `core_mk2_model`. Until the owner decides, add rows by hand as here, or update the tests and the staged keys together in one PR.
 
+## RD tools, part 4: revising and exporting low-poly models: done
+- `tools/art/rd_model.py`, through `rd_generate.py --model-revise ASSET --prompt "..." [--version N]` (a new version of the asset's RD model; paid, priced from RD's table, asks, idempotent; polled and saved like any model job, so `--promote` works) and `--model-export ASSET --target minecraft|blockbench|obj|atlas|turntable|axis_views|blender|web` (free, into `art/rd/<asset>/export/`). Generate, animate and the Blockbench export already existed. See `tools/art/README.md`.
+- Tests: 3 new offline tests (44 pass). Mutation-checked: a revision without an Idempotency-Key, and one that skips the question, each fail.
+- **The four RD parts agreed on 2026-10-30 are all done** (fix, repaint, restyle, low-poly). None has run against the real RD service yet: that needs the owner's new key in `$RD_API_KEY`.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

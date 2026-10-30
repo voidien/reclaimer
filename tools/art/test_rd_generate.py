@@ -167,13 +167,22 @@ class Fake(http.server.BaseHTTPRequestHandler):
             s['tasks'][tid] = {'body': b, 'polls': 0, 'asset_id': 'a' + tid}
             s['charged'] += 1
             return self.reply({'task_id': tid, 'asset_id': 'a' + tid, 'cost': 0.5}, 202)
+        if self.path.endswith('/revise'):
+            key = self.headers.get('Idempotency-Key')
+            if key in s['idem']:
+                return self.reply({'task_id': s['idem'][key]}, 202)
+            tid = 't%d' % len(s['tasks'])
+            s['tasks'][tid] = {'body': b, 'polls': 0, 'asset_id': self.path.split('/')[4]}
+            s['idem'][key] = tid
+            s['charged'] += 1
+            return self.reply({'task_id': tid, 'asset_id': self.path.split('/')[4]}, 202)
         if self.path.endswith('/animate'):
             tid = 't%d' % len(s['tasks'])
             s['tasks'][tid] = {'body': b, 'polls': 0, 'animate': True}
             s['charged'] += 1
             return self.reply({'task_id': tid}, 202)
         if self.path.endswith('/export'):
-            name = {'blockbench': 'model.bbmodel', 'atlas': 'atlas.png'}[b['target']]
+            name = {'blockbench': 'model.bbmodel', 'atlas': 'atlas.png'}.get(b['target'], 'rd-%s.zip' % b['target'])
             return self.reply({'url': self.base() + '/files/' + name, 'filename': name})
         self.reply({'error': {'code': 'not_found'}}, 404)
 
@@ -412,6 +421,48 @@ class RdGenerateTest(unittest.TestCase):
     def test_restyle_skips_an_asset_with_no_texture(self):
         rd.main(['--asset', 'quartz_wafer', '--restyle', '--yes'])
         self.assertEqual(self.real_inference(), [], 'nothing to start from, nothing sent')
+
+    def generated_model(self):
+        rd.main(['--asset', 'core_mk2_model', '--model-style', 'blocky_lite', '--yes'])
+        return Fake.state['charged']
+
+    def test_revise_needs_a_model_and_a_prompt(self):
+        with self.assertRaises(SystemExit):
+            rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'fins', '--yes'])  # no model yet
+        self.generated_model()
+        with self.assertRaises(SystemExit):
+            rd.main(['--model-revise', 'core_mk2_model', '--yes'])  # no prompt
+        self.assertFalse(any(c[1].endswith('/revise') for c in Fake.state['calls'] if c[0] == 'POST'))
+
+    def test_revise_asks_makes_a_new_version_and_never_pays_twice(self):
+        before = self.generated_model()
+        with mock.patch('builtins.input', return_value='n'):
+            rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins'])
+        self.assertEqual(Fake.state['charged'], before, 'a no sends nothing')
+        rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
+        call = next(c for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/revise'))
+        self.assertEqual(call[2], {'prompt': 'add cooling fins', 'version': 1})
+        self.assertTrue(call[3], 'a revision carries an Idempotency-Key')
+        state = rd.load_state()
+        models = [j for j in state['assets']['core_mk2_model']['jobs'] if j['kind'] == 'model']
+        self.assertEqual(models[-1].get('revision'), 'add cooling fins')
+        self.assertEqual(models[-1]['status'], 'done', 'the revision was polled and saved like a model')
+        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'model.bbmodel')))
+        self.assertEqual(Fake.state['charged'], before + 1)
+        rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
+        self.assertEqual(Fake.state['charged'], before + 1, 'the same revision again is not paid again')
+
+    def test_export_is_free_and_lands_in_the_export_folder(self):
+        before = self.generated_model()
+        rd.main(['--model-export', 'core_mk2_model', '--target', 'minecraft', '--target', 'obj'])
+        exports = [c[2]['target'] for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/export')]
+        self.assertIn('minecraft', exports)
+        self.assertIn('obj', exports)
+        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'export', 'rd-minecraft.zip')))
+        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'export', 'rd-obj.zip')))
+        self.assertEqual(Fake.state['charged'], before, 'exports are free')
+        with self.assertRaises(SystemExit):
+            rd.main(['--model-export', 'core_mk2_model', '--target', 'fbx'])
 
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')
