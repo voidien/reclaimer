@@ -466,6 +466,9 @@ From an outside audit, each checked against the code first (several claims were 
 - Placeholder icon `cloud_collector.png` (generated). Not seen in a real client.
 - The block version is the Cloud Siphon (above).
 
+## Fix: punch-break in zero-G: done
+- Playtest note "I should be able to just punch and destroy the anchor and scaffold": nothing blocked it, but vanilla's airborne divisor (1/5) applied all the time in zero-G, so a Scaffold took about 6 s and an Anchor about 11 s by hand. `ZeroGMining` undoes the divisor where there is gravity none. Tests: `ZeroGMiningGameTests` (zero-G speed is at least 1.0; airborne where there is gravity still 0.2). Mutation-checked: without the handler the zero-G speed was 0.2 and the test failed.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

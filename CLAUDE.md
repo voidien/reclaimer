@@ -167,6 +167,7 @@ Programmer art for now: simple placeholder textures and models, and vanilla soun
 - The Overworld, Nether, and End are locked for good. Endgame travel goes to `ruined_earth`. Creative and spectator players may bypass the lock (ops can switch modes). Nether portals can't be lit in deep space.
 - Light: real darkness, with sky light from a fixed, dim, distant sun (`fixed_time` 12800 gives effective sky light 10/15). Vanilla sky light only travels downward, so the sun is drawn near the zenith. Undersides and enclosed spaces stay dark.
 - Zero-G covers everything: players and mobs via a `generic.gravity` modifier, other entities via NoGravity plus a tag, and falling blocks via a mixin. Fluids still flow. Thrown or hit things keep vanilla's light drag. Gravity generators (later) hook into `ZeroGravity.isZeroG(level, pos)`.
+- **Mining in zero-G:** vanilla divides mining speed by 5 for a player not on the ground, and in zero-G nobody is, so `space.ZeroGMining` multiplies it back (high priority, so tool modules and the asteroid rules see the corrected speed). Hand-mining a Scaffold or Tether Anchor is as fast as on the ground.
 - No fall damage in zero-G. Beds and respawn anchors do nothing in deep space and show a lore message (no explosions).
 - Respawn always goes to the deep space spawn until the **Backup Core** (built in Phase 4, Replicator recipe) provides a deep space respawn point.
 - **Energy** replaces hunger. Vanilla food is pinned full and hidden, and the energy bar takes its HUD slot.

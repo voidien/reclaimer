@@ -39,6 +39,16 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
+- **Playtest feedback, round 1 (owner, 2026-10-30, up to stage 5 of `docs/PLAYTEST.md`).** Work through these as small PRs; decisions already made are in brackets.
+  - Bugs: punch-break (fixed in its PR); drone bobbing in a 1x1 tunnel when touching the ground; Mech plays its flying animation once and then idle; Mech idle animation and the blue foot flames floating mid-air; energy bar drawn as a comb (the art strips are 90x9 and were squeezed into 9x9; fix = draw one cell with the sub-region `blitSprite`); Ship, Shuttle and Titan are "too large" in F5 (camera distance/scale, not invisible); 70 hearts of health shown for a big body.
+  - Start of the game: [starter dust + guided first craft of the Dust Sensor, plus a faint built-in hum for the bare Drone]; early dust collection is boring when clouds are far apart (open).
+  - Dust HUD: M/S/I/C text is unclear; wants labelled coloured icons with bars.
+  - Replicator: a short "what is this and why spend dust on it" description per recipe; reorder queued jobs; JEI on the Replicator screen.
+  - Inventory: [our tabbed screen replaces the inventory on E: Inventory, Replicator, Body, Logs; no armor slots or crafting grid for the Drone and Mech; R jumps to the Replicator tab].
+  - Respawn menu: layout and feel are off (redesign with the inventory work).
+  - Crafting: [Replicator for our early items, Create machines for the chain items, no vanilla table recipes for ours; every item having a Replicator recipe is a testing convenience only].
+  - Cameras: [an orbit camera and a photo mode]; scroll zoom and free rotation of the model. Check NeoForge's camera events before building (research in chat: Free Camera and Unbound Third Person show the two styles).
+  - Verification: wants the Create recipes checked by image: plan is a headless-client tool that opens every recipe in JEI and saves screenshots, plus a GameTest that every ingredient and result exists.
 - **Playtest checklist:** `docs/PLAYTEST.md` (first dust to first launch, with skip commands). The owner plays it and reports back by stage; fix what comes back.
 - **Two flaky GameTests (root cause not found, worth their own PR):**
   - `placingregisterscoresuptothelimitandsunlightcharges` ("sunlight did not charge"; failed on PRs #28 and #30) and `salvagetooldismantlesfordustwithoutdrops` (PR #27).
