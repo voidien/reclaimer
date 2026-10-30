@@ -49,6 +49,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.MATTER_HARVESTER.get());
                 output.accept(ModItems.ASTEROID_SILICATE.get());
                 output.accept(ModItems.ASTEROID_ICE.get());
+                output.accept(ModItems.ASHEN_SLAG.get());
                 output.accept(ModItems.ASTEROID_CARBON.get());
                 output.accept(ModItems.ASTEROID_METALLIC.get());
                 for (var material : ModMaterials.ALL) {

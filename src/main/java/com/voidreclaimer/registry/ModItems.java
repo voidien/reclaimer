@@ -178,7 +178,8 @@ public final class ModItems {
     // ---- blocks -------------------------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> SCAFFOLD = ITEMS.registerSimpleBlockItem(ModBlocks.SCAFFOLD);
-    public static final DeferredItem<BlockItem> ASTEROID_SILICATE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_SILICATE);
+    public static final DeferredItem<BlockItem> ASHEN_SLAG = ITEMS.registerSimpleBlockItem(ModBlocks.ASHEN_SLAG);
+    public static final DeferredItem<BlockItem> ASTEROID_SILICATE =ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_SILICATE);
     public static final DeferredItem<BlockItem> ASTEROID_ICE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_ICE);
     public static final DeferredItem<BlockItem> ASTEROID_CARBON = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_CARBON);
     public static final DeferredItem<BlockItem> ASTEROID_METALLIC = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_METALLIC);

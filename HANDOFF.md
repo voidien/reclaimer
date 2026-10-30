@@ -2,7 +2,7 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-30, after round 2 (PRs #49 to #86). The next piece of work is the Act III vertical slice (see "Start here").
+Last updated 2026-10-30, after round 2 (PRs #49 to #86). The Act III vertical slice is in progress (see "Start here" and the PROGRESS.md block "Act III slice").
 
 ## Start here (written 2026-10-30 at the owner's request)
 **The owner's answers for the next session:**

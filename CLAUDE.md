@@ -404,6 +404,11 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Silicon-Carbide Coating:** Silicon-Carbide Slurry + Carbon Composite Plate in a Basin, then a Press (Create basin compacting) makes 2 coatings (`carbonChain` toggle).
 - **Answered later the same day:** the Zero-G Precision Frame steps (Graphite, sheet, press; 2 loops), the truss counts (tier 3 at 50, tier 4 at 2000), the Catalyst Core order (sensor base, wafer, propellant, press), and the Starship: one milestone from the nebula chains (the Ship frame unlocks when the AI has made one item from each of the four chains: Coolant Frame Plate, Carbon Composite Plate, High-Efficiency Solar Cell, Micro-Alloy Sheet). Not yet built: the Starship milestone (Phase 10).
 
+**Act III slice (2026-10-30 interview, owner's answers)**
+- **Terrain:** custom generator (`earth/RuinedEarthChunkGenerator`), 1024 x 1024 planet, void outside (no vanilla per-dimension border in 1.21.1). Normal gravity on ruined_earth; thrusters will work as hover there (not built yet). Ashen Slag is the surface block.
+- **Portal:** craftable frame blocks big enough for the Ship (about 12 x 5.6 inside), lit by an activation item; arriving builds a matching return gate at the landing area. **Sky:** one era for the whole dimension (ruined, healing, restored), set by a debug command first; blending by restoration percent comes later. **Spire:** a single block that pulses for free in the slice; the pulse is an expanding wave over a long period (about 15 s, config), rewrites blocks and biomes from a data-driven mapping, and resends chunks when it ends.
+- **PR order:** (1) dimension (done), (2) sky eras, (3) portal, (4) Spire pulse, then hover flight on Earth.
+
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
 Act II, the Dyson Sphere (deep_space):

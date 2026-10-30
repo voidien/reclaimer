@@ -82,6 +82,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.MATTER_HARVESTER.get(), "Matter Harvester");
         add(ModItems.ASTEROID_SILICATE.get(), "Silicate Asteroid Rock");
         add(ModItems.ASTEROID_ICE.get(), "Ice Asteroid Rock");
+        add(ModItems.ASHEN_SLAG.get(), "Ashen Slag");
         add(ModItems.ASTEROID_CARBON.get(), "Carbon Asteroid Rock");
         add(ModItems.ASTEROID_METALLIC.get(), "Metallic Asteroid Rock");
         add("replicator.void_reclaimer.tab.materials", "Raw");
