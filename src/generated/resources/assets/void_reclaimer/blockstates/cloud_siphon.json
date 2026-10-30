@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "void_reclaimer:block/cloud_siphon",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "void_reclaimer:block/cloud_siphon"
+    },
+    "axis=z": {
+      "model": "void_reclaimer:block/cloud_siphon",
+      "x": 90
+    }
+  }
+}

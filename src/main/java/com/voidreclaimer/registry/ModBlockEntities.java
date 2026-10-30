@@ -20,6 +20,9 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.SpinnerBlockEntity>> SPINNER = BLOCK_ENTITIES.register("spinner",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.SpinnerBlockEntity::new, ModBlocks.SPINNER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.machine.CloudSiphonBlockEntity>> CLOUD_SIPHON = BLOCK_ENTITIES.register("cloud_siphon",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.CloudSiphonBlockEntity::new, ModBlocks.CLOUD_SIPHON.get()).build(null));
+
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.MassDriverBaseBlockEntity>> MASS_DRIVER_BASE = BLOCK_ENTITIES.register("kinetic_drive_base",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.MassDriverBaseBlockEntity::new, ModBlocks.KINETIC_DRIVE_BASE.get()).build(null));
 
