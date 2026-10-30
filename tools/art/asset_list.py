@@ -185,6 +185,11 @@ for k, d in {'energy_full': 'full segment', 'energy_half': 'half-filled segment'
     add(G, k, 'gui/sprites/hud/%s.png' % k, '90x9', 'no', 'RD image',
         'pixel art HUD energy bar, 90x9, ten cyan battery cells in a row, ' + d + ', transparent background',
         'Replaces the hunger bar slot. Must stay exactly 90x9.')
+for k, (d, c) in {'metallic': ('silver-grey metal grains', '#B8C2CC'), 'silicate': ('sandy tan rock grit', '#D9B38C'),
+                  'ice': ('pale cyan ice shards', '#9FE3FF'), 'carbon': ('dark grey-violet soot flakes', '#6E6A80')}.items():
+    add(G, 'dust_icon_' + k, 'gui/sprites/hud/dust_%s.png' % k, '9x9', 'no', 'RD image',
+        'tiny pixel art icon, 9x9, a small pile of ' + d + ' (' + c + '), dark 1px outline, transparent background',
+        'Beside the dust amounts in the HUD meter, the Replicator prices and the Dust Sensor panel. Must stay 9x9; it reads at a glance, so keep the shape simple and distinct from the other three kinds (placeholders: diamond, block, cross, disc).')
 gui = [
     ('replicator_panel', 'gui/replicator_panel.png', '256x256',
      'pixel art sci-fi machine GUI panel background, dark blue-grey with andesite metal frame and brass corners, empty inner areas',
@@ -193,9 +198,6 @@ gui = [
      'pixel art GUI tab button, andesite metal with brass edge, plus a highlighted variant', 'Same: code change needed.'),
     ('module_wheel', 'gui/sprites/hud/module_wheel.png', '128x128',
      'pixel art radial selection wheel, six segments, dark translucent metal with cyan highlight', 'Same: code change needed.'),
-    ('dust_meter_icons', 'gui/sprites/hud/dust_<kind>.png', '9x9',
-     'tiny pixel art icon of a dust grain cloud, one each for metallic, silicate, ice, carbon',
-     'Four files. Dust meter uses colored squares now; code change needed.'),
     ('milestone_toast_icon', 'gui/sprites/toast/milestone.png', '16x16',
      'pixel art icon of a glowing AI core with a data spark', 'Toast shows no icon now; code change needed.'),
     ('mod_logo', 'logo.png', '256x256',

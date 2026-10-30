@@ -485,6 +485,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Start of the game: done
 - Starter dust (M25 S30 C5) on the first Awakening (`StarterDust`, config `starter`), the Awakening log tells the player to press R for a Dust Sensor, and the directional hum works without a sensor (tone only). Tests: `StarterDustGameTests`. Dust milestones now count dust gathered (`DustLedger`, `dust_collected` attachment), not dust held, so the gift does not unlock First Dust or Diversified. Not seen in game yet: the toast wording and the bare hum's tone.
 
+## Dust HUD: done
+- Dust kinds have an optional `icon`; the meter, the Replicator prices and the sensor title draw it (`DustIcons`), the meter dims when idle (`DustMeterFade`), names show while a screen is open, price icons have a hover tooltip. **Placeholder art:** `textures/gui/sprites/hud/dust_{metallic,silicate,ice,carbon}.png` (9x9 programmer art) until the owner's RD icons. Not seen in game yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

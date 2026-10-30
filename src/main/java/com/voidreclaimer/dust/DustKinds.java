@@ -108,13 +108,18 @@ public final class DustKinds {
         return kind == null ? Component.literal(id.toString()) : kind.displayName(id);
     }
 
+    /** The built-in kinds' HUD sprite: {@code textures/gui/sprites/hud/dust_<kind>.png}. */
+    private static ResourceLocation icon(ResourceLocation kind) {
+        return VoidReclaimer.id("hud/dust_" + kind.getPath());
+    }
+
     private static Map<ResourceLocation, DustKind> builtin() {
         Map<ResourceLocation, DustKind> map = new LinkedHashMap<>();
         // Order and weights match the Phase 3 enum, so existing worlds keep their cloud kinds.
-        map.put(METALLIC, new DustKind(0xB8C2CC, 0.30, 0));
-        map.put(SILICATE, new DustKind(0xD9B38C, 0.35, 1));
-        map.put(ICE, new DustKind(0x9FE3FF, 0.20, 2));
-        map.put(CARBON, new DustKind(0x6E6A80, 0.15, 3));
+        map.put(METALLIC, new DustKind(0xB8C2CC, 0.30, 0, icon(METALLIC)));
+        map.put(SILICATE, new DustKind(0xD9B38C, 0.35, 1, icon(SILICATE)));
+        map.put(ICE, new DustKind(0x9FE3FF, 0.20, 2, icon(ICE)));
+        map.put(CARBON, new DustKind(0x6E6A80, 0.15, 3, icon(CARBON)));
         return Map.copyOf(map);
     }
 }
