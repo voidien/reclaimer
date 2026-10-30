@@ -306,7 +306,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `void_reclaimer:replicator_category` | Synced datapack registry (`api.replicator.ReplicatorCategory`) | Replicator tabs; `order`, `title` |
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
-| `void_reclaimer:replicator` recipes | Recipe type | `result` or `results` (kits), optional `title`; `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
+| `void_reclaimer:replicator` recipes | Recipe type | `result` or `results` (kits), optional `title` and `description`; `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
 | `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name` |
 | `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`); socket id = GeckoLib bone (5b) |
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
@@ -486,6 +486,10 @@ Parallel tracks, scheduled as they fit:
 - **Icons:** a dust kind has an optional `icon` (a 9x9 GUI sprite id, built-ins `hud/dust_<kind>`); without one a square in its colour is drawn (`client/hud/DustIcons`). The built-in icons are placeholders (diamond, block, cross, disc) until the owner's RD icons replace the four PNGs. They are listed in `docs/art/ASSETS.md`.
 - **Meter:** icon, bar and number per kind, with the full names beside the bars while any screen is open. It dims to 35% after about 10 seconds without a change, unless the player is in a cloud or a screen is open (`DustMeterFade`).
 - **Replicator prices** are icon plus amount (red when unaffordable); hovering an icon shows the name and the amount held. The Dust Sensor's cloud title has the kind's icon. JEI's price text is unchanged.
+
+**Replicator screen (2026-10-30, owner's choices)**
+- **Descriptions:** every built-in Replicator recipe has a one- or two-line gameplay hint, translation key `replicator.<namespace>.description.<name>` (recipe id `<namespace>:replicator/<name>`); a recipe may carry its own `description` text, which overrides it (datapack field, synced). The screen shows it in a box under the list for the selected recipe and as a tooltip on every unlocked row. `RecipeDescriptionTest` fails when a built-in recipe has none, so new recipes need a line in `ModLangProvider.addReplicatorDescriptions`.
+- The panel is 244 tall (was 200) to fit the description box.
 
 **Titan size class, Core Mk III and IV, whole-rig mounts (2026-10-29, defaults)**
 - **Titan:** a fourth size class (`titan`, scale 8, rank 3). The rig is 8.4 blocks long at scale 1, so the body is about 67 blocks long (the owner wants more than 50). Chassis `titan`, core socket `saucer`; sockets (ids are the art rig's bones): `neck`, `bridge`, `sensor` and `deflector`/`bay_door`/`pylon_l`/`pylon_r` with `nacelle_l`/`nacelle_r` under the pylons. Tier-4 section items `titan_saucer` (core section), `titan_neck`, `titan_bridge`, `titan_sensor_array`, `titan_deflector`, `titan_bay_door`, `titan_pylon` and `titan_nacelle`, with mounts: saucer core 1, storage 2, cosmetic 1; bridge sensor 1; sensor array sensor 2; bay door storage 2; nacelle thruster 3.
