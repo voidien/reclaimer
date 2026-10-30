@@ -473,6 +473,15 @@ From an outside audit, each checked against the code first (several claims were 
 ## Fix: punch-break in zero-G: done
 - Playtest note "I should be able to just punch and destroy the anchor and scaffold": nothing blocked it, but vanilla's airborne divisor (1/5) applied all the time in zero-G, so a Scaffold took about 6 s and an Anchor about 11 s by hand. `ZeroGMining` undoes the divisor where there is gravity none. Tests: `ZeroGMiningGameTests` (zero-G speed is at least 1.0; airborne where there is gravity still 0.2). Mutation-checked: without the handler the zero-G speed was 0.2 and the test failed.
 
+## Playtest round 1 fixes (2026-10-30): done
+- **GameTest filter:** `./gradlew runGameTestServer -PgametestFilter=<terms>` runs only tests whose class or method name matches (`GameTestRegistryMixin`, `GameTestFilter`, test-only). One class takes about 30 s instead of about 3 minutes.
+- **Drone bobbing against a floor:** touching a surface fed vanilla's walking view-bob; `ThrusterFlight.calmWalkBob` zeroes it every tick. Cause read from vanilla code, not yet confirmed by eye.
+- **Mech animation:** a steady cruise under thrust keeps the thrust pose (`BodyLook.pose` has a `thrusting` input). The owner's re-rigged Mech is imported (flames and tool/watch pieces parented by `--promote-as`, new `idle_ambient` and `idle_impatient`; idle plays `idle_ambient`).
+- **Velocity lean:** rig spec `lean` (`BodyLean`); the Mech leans 22 pitch / 16 roll degrees into its motion. Angles are untested by eye.
+- **Camera:** bodies above the Mech sit further back in third person (Ship and Shuttle about 40 blocks, Titan about 160). Whether the Ship and Shuttle should also shrink waits until the owner has tried it.
+- **Health bar:** one bar replaces the hearts, growing with max health (`HealthBarLayer`, `HealthBarMath`).
+- **Art tools:** `rig_check.py` checks an RD model against a rig spec and writes Re-rig text under 250 characters; `--promote-as` re-parents lost `fx_*` groups; `rd_generate.py` writes `rerig.txt` beside each downloaded body-rig model.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
