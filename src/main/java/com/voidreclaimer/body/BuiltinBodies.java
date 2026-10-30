@@ -150,7 +150,7 @@ public final class BuiltinBodies {
         ship.add(socket("rcs_aft", "keel", 0, 2, 16, "control", RCS_CLUSTER));
         ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE));
         ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN));
-        map.put(SHIP, new Chassis(SHIP_SIZE, "keel", List.copyOf(ship)));
+        map.put(SHIP, new Chassis(SHIP_SIZE, "keel", List.copyOf(ship), new Chassis.Cockpit(1.5f, 0.2f, 0f)));
 
         // The Shuttle: a second Ship-class layout. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> shuttle = new ArrayList<>();
@@ -166,7 +166,7 @@ public final class BuiltinBodies {
         shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
         shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
         shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
-        map.put(SHUTTLE, new Chassis(SHIP_SIZE, "body", List.copyOf(shuttle)));
+        map.put(SHUTTLE, new Chassis(SHIP_SIZE, "body", List.copyOf(shuttle), new Chassis.Cockpit(3.0f, 0.2f, 0f)));
 
         // The Titan: the saucer is the core. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> titan = new ArrayList<>();
@@ -180,7 +180,7 @@ public final class BuiltinBodies {
         titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON));
         titan.add(socket("nacelle_l", "pylon_l", 22, 38, -34, "propulsion", TITAN_NACELLE));
         titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE));
-        map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan)));
+        map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan), new Chassis.Cockpit(3.0f, 0.6f, 0f)));
         return Map.copyOf(map);
     }
 

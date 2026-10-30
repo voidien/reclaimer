@@ -1,4 +1,8 @@
 {
+  "cockpit": {
+    "forward": 3.0,
+    "up": 0.6
+  },
   "core_socket": "saucer",
   "size_class": "void_reclaimer:titan",
   "sockets": [

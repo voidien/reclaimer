@@ -507,6 +507,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Photo mode: done
 - F8 opens a free camera with the HUD hidden (drag to look, WASD/Space/Shift to move, scroll FOV, Q/E roll, Enter screenshot). `CameraPhotoMixin` is a small client-only mixin. Checked in a headless client (HUD hides and returns, camera moves, no mixin errors); the controls' feel is not tried by hand.
 
+## First person in big ships (5b-2a, first step): done
+- Ship, Shuttle and Titan chassis have a `cockpit`: first person has no hand and the camera sits forward of the eyes. The offsets are guesses; not seen in game. Still to do: the Drone and Mech first-person pieces (art), and a camera that follows the ship's roll when 6-DOF exists.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
