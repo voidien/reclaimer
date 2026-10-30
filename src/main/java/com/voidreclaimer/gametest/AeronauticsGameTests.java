@@ -36,6 +36,8 @@ public final class AeronauticsGameTests {
     private static final int WATCH_TICKS = 100;
     /** A sub-level that sits still reads within this many blocks of where it started. */
     private static final double STILL = 1.0;
+    private static final Pattern ANGULAR = Pattern.compile("Angular Velocity: (\\S+) (\\S+) (\\S+)");
+    private static final double TURNING = 0.05;
     private static final int SETTLE_TICKS = 10;
     private static final int SAMPLE_TICKS = 40;
     /** A pushed ship travels at least this far in {@link #SAMPLE_TICKS}. */
@@ -154,8 +156,8 @@ public final class AeronauticsGameTests {
                 + (powered ? "minecraft:redstone_block" : "minecraft:stone")));
     }
 
-    /** The same ship with an Ion Thruster, nozzle east: no motor, and a charged buffer instead of fuel. */
-    private static void ionShip(GameTestHelper helper, BlockPos pos, boolean charged, java.util.function.Consumer<List<String>> then) {
+    /** The same ship with an electric thruster, nozzle east: no motor, and a charged buffer instead of fuel. */
+    private static void electricShip(GameTestHelper helper, BlockPos pos, String thrusterBlock, boolean charged, java.util.function.Consumer<List<String>> then) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
@@ -166,9 +168,9 @@ public final class AeronauticsGameTests {
             clearArea(server, space, pos);
             List<String> log = new ArrayList<>();
             cross(server, space, pos, true, log);
-            log.addAll(command(server, space, pos, "setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " void_reclaimer:ion_thruster[facing=east]"));
+            log.addAll(command(server, space, pos, "setblock " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + thrusterBlock + "[facing=east]"));
             if (charged) {
-                var thruster = (com.voidreclaimer.ship.IonThrusterBlockEntity) space.getBlockEntity(pos);
+                var thruster = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(pos);
                 log.add("charged " + thruster.energy().receiveEnergy(8000, false));
             }
             helper.runAfterDelay(10, () -> {
@@ -183,7 +185,7 @@ public final class AeronauticsGameTests {
         BlockPos pos = new BlockPos(83_000, 200, 3_000);
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
-        ionShip(helper, pos, true, log -> watch(helper, server, space, pos, log, (first, second) -> {
+        electricShip(helper, pos, "void_reclaimer:ion_thruster", true, log -> watch(helper, server, space, pos, log, (first, second) -> {
             double west = first.x - second.x;
             if (west < PUSHED) {
                 helper.fail("the ship moved " + String.format("%.2f", west) + " blocks west, from " + first + " to " + second + "; setup: " + log);
@@ -198,7 +200,68 @@ public final class AeronauticsGameTests {
         BlockPos pos = new BlockPos(84_000, 200, 3_000);
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
-        ionShip(helper, pos, false, log -> coasts(helper, server, space, pos, log));
+        electricShip(helper, pos, "void_reclaimer:ion_thruster", false, log -> coasts(helper, server, space, pos, log));
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void anRcsThrusterPushesItsShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(85_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        electricShip(helper, pos, "void_reclaimer:rcs_thruster", true, log -> watch(helper, server, space, pos, log, (first, second) -> {
+            double west = first.x - second.x;
+            if (west < PUSHED) {
+                helper.fail("the ship moved " + String.format("%.2f", west) + " blocks west, from " + first + " to " + second + "; setup: " + log);
+            } else {
+                helper.succeed();
+            }
+        }));
+    }
+
+    /** What RCS is for: a jet at the end of a long ship, firing across it, starts the ship turning. */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void anOffCentreRcsThrusterTurnsItsShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(86_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            List<String> log = new ArrayList<>();
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            log.addAll(command(server, space, pos, "fill " + (x + 1) + " " + y + " " + z + " " + (x + 8) + " " + y + " " + z + " minecraft:stone"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:rcs_thruster[facing=up]"));
+            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + z + " minecraft:redstone_block"));
+            var thruster = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(pos);
+            log.add("charged " + thruster.energy().receiveEnergy(2000, false));
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
+                helper.runAfterDelay(1, () -> {
+                    nameShip(server, space, pos);
+                    helper.runAfterDelay(SAMPLE_TICKS, () -> {
+                        List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
+                        double spin = angularSpeed(info);
+                        removeShip(server, space, pos);
+                        if (spin < TURNING) {
+                            helper.fail("the ship did not turn: angular speed " + spin + "; info: " + info);
+                        } else {
+                            helper.succeed();
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    private static double angularSpeed(List<String> info) {
+        for (String line : info) {
+            Matcher m = ANGULAR.matcher(line);
+            if (m.find()) {
+                return Math.sqrt(Math.pow(Double.parseDouble(m.group(1)), 2) + Math.pow(Double.parseDouble(m.group(2)), 2)
+                        + Math.pow(Double.parseDouble(m.group(3)), 2));
+            }
+        }
+        return 0.0;
     }
 
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */

@@ -5,10 +5,14 @@ import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModFluids;
+import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
+import com.voidreclaimer.ship.ElectricThrusterBlockEntity;
 import com.voidreclaimer.ship.IonThrusterBlockEntity;
+import com.voidreclaimer.ship.RcsThrusterBlockEntity;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -172,5 +176,37 @@ public final class ThrusterGameTests {
             tickIon(thruster, 5);
             helper.assertTrue(thruster.storedEnergy() == 0 && thruster.force() == 0.0, "still pushing on an empty buffer: " + thruster.force());
         });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theRcsThrusterIsAWeakerElectricThruster(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(61_800, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            level.setBlock(pos, ModBlocks.RCS_THRUSTER.get().defaultBlockState(), 3);
+            level.setBlock(pos.above(), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            RcsThrusterBlockEntity thruster = (RcsThrusterBlockEntity) level.getBlockEntity(pos);
+            try {
+                thruster.energy().receiveEnergy(1000, false);
+                ElectricThrusterBlockEntity.serverTick(level, pos, thruster.getBlockState(), thruster);
+                helper.assertTrue(Math.abs(thruster.force() - Config.RCS_THRUST.get()) < 1e-6, "force " + thruster.force());
+                helper.assertTrue(thruster.force() < Config.ION_THRUST.get(), "RCS is not weaker than an Ion Thruster");
+                helper.assertTrue(thruster.storedEnergy() == 1000 - Config.RCS_FE_PER_TICK.get(), "energy left " + thruster.storedEnergy());
+                helper.succeed();
+            } finally {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 3);
+            }
+        });
+    }
+
+    /** It stayed a material of the Sequenced Assembly chain with the same id, and it can now be placed. */
+    @GameTest(template = "empty")
+    public static void theRcsItemKeepsItsIdAndPlacesTheBlock(GameTestHelper helper) {
+        var item = ModMaterials.RCS_THRUSTER.get();
+        helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).equals(VoidReclaimer.id("rcs_thruster")), "the item id changed");
+        helper.assertTrue(item.getBlock() == ModBlocks.RCS_THRUSTER.get(), "it does not place the block");
+        helper.assertTrue(ModMaterials.ALL.stream().anyMatch(m -> m.item().get() == item), "it left the material list");
+        helper.succeed();
     }
 }

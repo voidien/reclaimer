@@ -114,6 +114,9 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue ION_THRUST;
     public static final ModConfigSpec.IntValue ION_FE_PER_TICK;
     public static final ModConfigSpec.IntValue ION_FE_BUFFER;
+    public static final ModConfigSpec.DoubleValue RCS_THRUST;
+    public static final ModConfigSpec.IntValue RCS_FE_PER_TICK;
+    public static final ModConfigSpec.IntValue RCS_FE_BUFFER;
 
     public static final ModConfigSpec.IntValue SPIRE_RADIUS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
@@ -313,6 +316,10 @@ public final class Config {
         ION_THRUST = BUILDER.comment("Force of an Ion Thruster at full throttle.").defineInRange("ionThrust", 60.0, 0.0, 1_000_000.0);
         ION_FE_PER_TICK = BUILDER.comment("Forge Energy per tick an Ion Thruster uses at full throttle.").defineInRange("ionFePerTick", 80, 0, 1_000_000);
         ION_FE_BUFFER = BUILDER.comment("Forge Energy an Ion Thruster can hold.").defineInRange("ionFeBuffer", 8000, 1, 100_000_000);
+        toggle("rcsPush", "A placed RCS Thruster pushes ships.");
+        RCS_THRUST = BUILDER.comment("Force of an RCS Thruster at full throttle.").defineInRange("rcsThrust", 40.0, 0.0, 1_000_000.0);
+        RCS_FE_PER_TICK = BUILDER.comment("Forge Energy per tick an RCS Thruster uses at full throttle.").defineInRange("rcsFePerTick", 20, 0, 1_000_000);
+        RCS_FE_BUFFER = BUILDER.comment("Forge Energy an RCS Thruster can hold.").defineInRange("rcsFeBuffer", 2000, 1, 100_000_000);
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");

@@ -2,7 +2,7 @@ package com.voidreclaimer.compat.cc;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
-import com.voidreclaimer.ship.IonThrusterBlockEntity;
+import com.voidreclaimer.ship.ElectricThrusterBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 import java.util.List;
@@ -18,33 +18,33 @@ public final class ThrusterPeripheral implements GenericPeripheral {
         return VoidReclaimer.id("thrusters").toString();
     }
 
-    // ---- Ion Thruster -----------------------------------------------------------------------------------------------
+    // ---- Ion and RCS Thrusters --------------------------------------------------------------------------------------
 
     /** Redstone throttle, 0 to 1. */
     @LuaFunction(mainThread = true)
-    public final double getThrottle(IonThrusterBlockEntity thruster) {
+    public final double getThrottle(ElectricThrusterBlockEntity thruster) {
         return thruster.throttle();
     }
 
     /** The force it pushes with right now. */
     @LuaFunction(mainThread = true)
-    public final double getForce(IonThrusterBlockEntity thruster) {
+    public final double getForce(ElectricThrusterBlockEntity thruster) {
         return thruster.force();
     }
 
     @LuaFunction(mainThread = true)
-    public final boolean isFiring(IonThrusterBlockEntity thruster) {
+    public final boolean isFiring(ElectricThrusterBlockEntity thruster) {
         return thruster.force() > 0.0;
     }
 
     /** Forge Energy in the buffer. */
     @LuaFunction(mainThread = true)
-    public final int getEnergy(IonThrusterBlockEntity thruster) {
+    public final int getEnergy(ElectricThrusterBlockEntity thruster) {
         return thruster.storedEnergy();
     }
 
     @LuaFunction(mainThread = true)
-    public final int getEnergyCapacity(IonThrusterBlockEntity thruster) {
+    public final int getEnergyCapacity(ElectricThrusterBlockEntity thruster) {
         return thruster.energy().getMaxEnergyStored();
     }
 

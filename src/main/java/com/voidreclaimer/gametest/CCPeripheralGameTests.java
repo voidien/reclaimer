@@ -325,6 +325,11 @@ public final class CCPeripheralGameTests {
             helper.assertTrue(lua.getEnergy(thruster) == 500 && lua.getEnergyCapacity(thruster) == com.voidreclaimer.Config.ION_FE_BUFFER.get(),
                     "energy " + lua.getEnergy(thruster));
             helper.assertTrue(lua.getThrottle(thruster) == 0.0 && !lua.isFiring(thruster), "idle thruster reads as open");
+            // The RCS Thruster shares the functions through their common base class.
+            BlockPos rcs = pos.east(2);
+            level.setBlock(rcs, ModBlocks.RCS_THRUSTER.get().defaultBlockState(), 3);
+            requireMethods(helper, Lookup.of(level, rcs), "RCS Thruster", "getThrottle", "getForce", "isFiring", "getEnergy", "getEnergyCapacity");
+            level.setBlock(rcs, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });

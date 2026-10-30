@@ -33,6 +33,9 @@ public final class ModBlockStateProvider extends BlockStateProvider {
                 modLoc("block/ion_thruster_back"), modLoc("block/ion_thruster_nozzle"));
         directionalBlock(ModBlocks.ION_THRUSTER.get(), ion);
         simpleBlockItem(ModBlocks.ION_THRUSTER.get(), ion);
+        // The RCS Thruster's item keeps its flat icon (a material): only the placed block needs a model here.
+        directionalBlock(ModBlocks.RCS_THRUSTER.get(), models().cubeBottomTop("rcs_thruster", modLoc("block/rcs_thruster_side"),
+                modLoc("block/rcs_thruster_back"), modLoc("block/rcs_thruster_nozzle")));
         portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));

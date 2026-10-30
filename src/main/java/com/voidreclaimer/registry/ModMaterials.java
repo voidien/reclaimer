@@ -12,7 +12,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
  */
 public final class ModMaterials {
     /** One material: its registry name, and its English name for the lang file. */
-    public record Material(String id, String name, DeferredItem<Item> item) {}
+    public record Material(String id, String name, DeferredItem<? extends Item> item) {}
 
     /** The transitional item of a Sequenced Assembly recipe: its registry name and English name. */
     public record Incomplete(String id, String name, DeferredItem<SequencedAssemblyItem> item) {}
@@ -56,7 +56,8 @@ public final class ModMaterials {
     public static final DeferredItem<Item> ZERO_G_PRECISION_FRAME = add("zero_g_precision_frame", "Zero-G Precision Frame");
     public static final DeferredItem<Item> DYSON_SWARM_SATELLITE_PAYLOAD = add("dyson_swarm_satellite_payload", "Dyson Swarm Satellite Payload");
     public static final DeferredItem<Item> DYSON_SHELL_TRUSS_MODULE = add("dyson_shell_truss_module", "Dyson Shell Truss Module");
-    public static final DeferredItem<Item> RCS_THRUSTER = add("rcs_thruster", "RCS Thruster");
+    /** A material that can also be placed: a block item, with the same id it always had. */
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> RCS_THRUSTER = addBlock("rcs_thruster", "RCS Thruster", ModBlocks.RCS_THRUSTER);
     public static final DeferredItem<Item> REACTION_WHEEL_GYROSCOPE = add("reaction_wheel_gyroscope", "Reaction Wheel Gyroscope");
     public static final DeferredItem<Item> ATMOSPHERIC_CATALYST_CORE = add("atmospheric_catalyst_core", "Atmospheric Catalyst Core");
 
@@ -83,6 +84,12 @@ public final class ModMaterials {
 
     private static DeferredItem<Item> add(String id, String name) {
         DeferredItem<Item> item = ModItems.ITEMS.registerSimpleItem(id);
+        ALL.add(new Material(id, name, item));
+        return item;
+    }
+
+    private static DeferredItem<net.minecraft.world.item.BlockItem> addBlock(String id, String name, net.neoforged.neoforge.registries.DeferredBlock<?> block) {
+        DeferredItem<net.minecraft.world.item.BlockItem> item = ModItems.ITEMS.registerSimpleBlockItem(id, block);
         ALL.add(new Material(id, name, item));
         return item;
     }

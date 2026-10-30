@@ -54,6 +54,11 @@ public final class ModBlocks {
             com.voidreclaimer.ship.IonThrusterBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 6.0f).sound(SoundType.COPPER).lightLevel(state -> 3));
 
+    /** The RCS Thruster placed: a small Forge Energy jet for fine rotation. Its item is a material, {@code ModMaterials.RCS_THRUSTER}. */
+    public static final DeferredBlock<com.voidreclaimer.ship.RcsThrusterBlock> RCS_THRUSTER = BLOCKS.registerBlock("rcs_thruster",
+            com.voidreclaimer.ship.RcsThrusterBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(2.0f, 6.0f).sound(SoundType.COPPER));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));
