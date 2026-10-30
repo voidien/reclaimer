@@ -682,6 +682,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: 3 new offline tests (37 pass). Mutation-checked: dropping the opaque-mask guard, and not sending the mask, each fail.
 - First real uses to try: `carbon_flakes` (reads as a dagger) with `edit` or `inpaint`; `ashen_slag` with `seam`.
 
+## CC: Tweaked peripherals, part 4: spawn and travel blocks: done
+- `SpawnTravelPeripherals` (read-only): Backup Core (`getName`, `getOwner`, `getCharges`, `getMaxCharges`, `getSunProgress`; a generic peripheral), Tether Anchor (`getTethered`) and Atmospheric Portal Frame (`getPortal`: nil, or `{lit, width, height, axis}`). The last two have no block entity, so they are `IPeripheral`s on CC's block capability, registered by `CCCompat.registerCapabilities` only when CC is loaded.
+- Every existing block with state or actions now has a peripheral (`docs/CC_PERIPHERALS.md`). Item upgrades (turtle, pocket computer) are the next CC step.
+- Tests: `CCPeripheralGameTests.theSpawnAndTravelBlocksArePeripherals` (the core through CC's provider, the anchor and frame through CC's capability with their `@LuaFunction`s; a clipped player is listed; a lone frame block, an unlit 3 x 3 frame and a lit one). Mutation-checked: without the frame's capability registration it fails.
 ## RD tools, part 3: restyling placeholders (`--restyle`): done
 - `rd_generate.py --restyle` turns image jobs into image-to-image jobs on the asset's current texture (scaled up to the job size, `--strength`, default 0.6), so programmer art keeps its layout and takes the style; `--tile-variation` sends block textures through `rd_tile__tile_variation`. A restyle always runs (it is new work) and repeating it is not paid twice (the request body, including the image, is in the idempotency key). See `tools/art/README.md` "Restyling placeholders".
 - Tests: 4 new offline tests (41 pass). Mutation-checked: skipping a restyle as already generated, and not sending the texture, each fail.
