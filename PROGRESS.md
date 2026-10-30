@@ -451,6 +451,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Body minimum brightness: done
 - `BodyLight.atLeast` (pure, `BodyLightTest`) lifts the light the body rig is drawn with to client config `body.minLight` (default 8). Not yet compared in a real client.
 
+## Everything obtainable (test): done
+- `ObtainabilityGameTests`: all 61 section and module items are made through the Replicator and installed. It found no missing recipe, unreachable milestone or unaffordable price. Mutation-checked: refusing cosmetic installs fails it and names the two cosmetic modules. Reachability uses a fully satisfied milestone context, not a play-through.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
