@@ -77,6 +77,7 @@ jobs:
         run: |
           python3 tools/art/test_rd_generate.py
           python3 tools/art/test_rig_check.py
+          python3 tools/art/test_anim_slice.py
 
       - name: GameTests
         if: needs.changes.outputs.full == 'true'

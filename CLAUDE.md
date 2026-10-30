@@ -502,6 +502,8 @@ Parallel tracks, scheduled as they fit:
 
 **Layered animation poses (2026-10-30, owner's request)**
 - A rig spec may have `layers`: layer name to (pose key to animation), at most 3, in name order. `BodyAnimatable` registers three extra GeckoLib controllers after the main one; a layer animation only moves the bones it keys, the rest stays with the main animation. A rig with a layer for `module_work` no longer swings its whole body for tool work. The Mech has one: `swing_tool_arms` (`swing_tool` cut to `arm_r` and its descendants with `tools/art/anim_slice.py`) on layer `tool_arm`.
+**Animation reuse (2026-10-30, owner's request)**
+- `tools/art/anim_slice.py` cuts, mirrors, retimes and bone-filters an animation into a new one (see the art README); layered poses in the rig spec, which play such a part on top of the main animation, come next.
 
 **Titan size class, Core Mk III and IV, whole-rig mounts (2026-10-29, defaults)**
 - **Titan:** a fourth size class (`titan`, scale 8, rank 3). The rig is 8.4 blocks long at scale 1, so the body is about 67 blocks long (the owner wants more than 50). Chassis `titan`, core socket `saucer`; sockets (ids are the art rig's bones): `neck`, `bridge`, `sensor` and `deflector`/`bay_door`/`pylon_l`/`pylon_r` with `nacelle_l`/`nacelle_r` under the pylons. Tier-4 section items `titan_saucer` (core section), `titan_neck`, `titan_bridge`, `titan_sensor_array`, `titan_deflector`, `titan_bay_door`, `titan_pylon` and `titan_nacelle`, with mounts: saucer core 1, storage 2, cosmetic 1; bridge sensor 1; sensor array sensor 2; bay door storage 2; nacelle thruster 3.
