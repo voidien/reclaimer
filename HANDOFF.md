@@ -2,7 +2,7 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures and the first RD module model) was merged into `main`.
+Last updated 2026-10-30, after the owner's first playtest, the collector work and the first two playtest fixes. The owner is moving to running Claude Code on their own PC; see "Taking over on a PC" below.
 
 ## Where things stand
 - **`main`** has Phases 1 to 10 done, plus everything around them. In order:
@@ -14,7 +14,13 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Phase 5b-1 body rendering in third person (the GeckoLib body replaces the player model; see the Phase 5b-1 block in `CLAUDE.md`).
   - The Titan size class (a 67-block ship body from the owner's RD model), Core Mk III and IV, and module mounts on whole-model rigs (see the Titan block in `CLAUDE.md`). The Titan unlocks at Dyson tier 3 (decided; one constant, `TITAN_UNLOCK`). Open: its module models.
   - The art pipeline (`tools/art/`, see "Art workflow" below), art drop 1, RD art pass 1, and the Test Starship placeholder entity.
-- **Last verified on `main`:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
+- **Since the last update (2026-10-29 to 2026-10-30), all merged:**
+  - Housekeeping: body minimum brightness (`body.minLight`), the "everything is obtainable" GameTest (`ObtainabilityGameTests`), the playtest checklist (`docs/PLAYTEST.md`), the settings screen under Mods > Void Reclaimer > Config.
+  - CI trimming (`changes` job in `build.yml`): docs-only PRs skip CI, drafts run build and unit tests only, client-only PRs skip GameTests, datagen and Aeronautics.
+  - Raw-item collection: the Cloud Collector module (tool mount, data-driven spec) and the Cloud Siphon block (Create rotation, dense clouds, `CollectorPowerEvent` for addon power). See their blocks in `CLAUDE.md`.
+  - Playtest fixes: hand mining in zero-G no longer 5x slower; the energy bar draws one battery cell at a time. PR #47 (energy bar) may still be open: check `gh pr list`.
+- **Last verified on `main` (2026-10-30):** 154 unit tests; 127 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green.
+- **Older note:** build with 112 unit tests; 103 GameTests (`runGameTestServer`); the Aeronautics GameTests; CI green. Two GameTests are flaky, see "Open items".
 - **Not done yet** (revised plan in `CLAUDE.md`):
   - **5b-2:** first-person body rendering (the vanilla hand still shows) and the 3D assembly view in the Body tab. Third person is done (`client/render/body/`).
   - **7b:** Aeronautics ships (Space Thruster, Helm). Stations and helper drones.
@@ -27,7 +33,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
 
 ## The user's standing instructions
 - **Clarifying questions:** ask them before each phase (their preference, and `CLAUDE.md` workflow rule 2). Wait for a go-ahead on the file list.
-- **Merge in batches (2026-10-29, replaces "merge once CI is green"):** keep PRs open and merge them only when at least 5 are open and green. Each PR branches from the latest `main` on its own (never stacked), so they can merge in any order; `PROGRESS.md` and `CLAUDE.md` will conflict, resolve with a base merge.
+- **Merging:** merge your own PRs once CI is green. (The owner once said to wait for five open PRs, then said "open and merge the PRs"; the latter is what has been practised since. Ask if they want batching.) Each PR branches from the latest `main` on its own, never stacked; `PROGRESS.md` and `CLAUDE.md` conflict when two PRs both add a section before `## Phases`, so merge `main` into the second and keep both sides.
 - **"Stop listening to pull requests unless they are from me":**
   - Don't subscribe to PR activity for PRs you open.
   - Check CI the next time the user writes, and merge if it's green.
@@ -39,6 +45,7 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
+- **To-do: run one GameTest class (owner asked for this).** `runGameTestServer` always runs all 127 tests (about 3 minutes), which dominates every iteration. Add a way to run one class or one test (for example a Gradle property that sets the NeoForge game test filter, or a run configuration with a test prefix), prove it with a deliberately failing test, and document it here and in `CLAUDE.md` > Testing. Goal: under a minute per iteration. Small PR of its own.
 - **Playtest feedback, round 1 (owner, 2026-10-30, up to stage 5 of `docs/PLAYTEST.md`).** Work through these as small PRs; decisions already made are in brackets.
   - Bugs: punch-break (fixed in its PR); drone bobbing in a 1x1 tunnel when touching the ground; Mech plays its flying animation once and then idle; Mech idle animation and the blue foot flames floating mid-air; energy bar drawn as a comb (the art strips are 90x9 and were squeezed into 9x9; fix = draw one cell with the sub-region `blitSprite`); Ship, Shuttle and Titan are "too large" in F5 (camera distance/scale, not invisible); 70 hearts of health shown for a big body.
   - Start of the game: [starter dust + guided first craft of the Dust Sensor, plus a faint built-in hum for the bare Drone]; early dust collection is boring when clouds are far apart (open).
@@ -77,6 +84,16 @@ Last updated 2026-10-29, after the RD art pass 1 PR (promoted icons, textures an
   - **Never commit its jar** (licence). `libs/` is gitignored on the spike branch.
   - The jar is built locally with `cargo build`. Copy the native library into `build/generated/nativeResources`, then run `./gradlew jar -x copyAllSable64Natives -x buildAllSable64Natives`.
   - Load it on the spike branch with `-PspikeF64=true`.
+
+## Taking over on a PC
+The owner wants to run Claude Code on their own PC. A new session there starts from these files, so keep them current.
+- **Read first:** `CLAUDE.md`, this file, `PROGRESS.md`. The first task is the to-do and the playtest feedback list under "Open items".
+- **Needs:** Java 21 (Temurin), Git, the GitHub CLI `gh` logged in, Python 3. Gradle comes from the wrapper (`./gradlew`; on Windows `gradlew.bat`, or use Git Bash/WSL so the shell snippets here work). The first build downloads Minecraft, NeoForge, Create, Aeronautics, Sable, JEI and the performance mods (see `gradle.properties`); later builds are much faster because the Gradle caches stay warm.
+- **Faster there:** warm caches and a local GPU client. `./gradlew runClient` opens the real game (Sodium, ModernFix, FerriteCore and ImmediatelyFast load with it); with a real display you can play the playtest checklist yourself and screenshot what you see instead of the headless harness in `tools/client-test/` (Linux, Xvfb).
+- **Not faster:** CI (same wherever you push from), and the upstream Aeronautics start-up deadlock that makes `runData` hang now and then (CI and local both retry; run `./gradlew --stop` and try again).
+- **Commands that matter:** `./gradlew build` (unit tests), `./gradlew runGameTestServer` (look for `All N required tests passed`), `./gradlew runData` (commit `src/generated`), `./gradlew runClient`.
+- **Check before every push** (CLAUDE.md workflow rule 8): build, GameTests, and `runData` if datagen changed. A flaky test gets a root-cause fix, not a re-run.
+- **Branches:** one small PR per branch from the latest `main`; never push to `main`. The cloud sessions used branch names like `fix-...` and the one the harness assigned; use any clear name on the PC.
 
 ## Working tricks
 ### Commands
