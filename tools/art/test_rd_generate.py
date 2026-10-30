@@ -339,6 +339,9 @@ class RdGenerateTest(unittest.TestCase):
             rd.main(['--asset', 'drone (body)', '--asset', 'animation.void_reclaimer.drone.idle'])
         self.assertTrue(any(c[1].endswith('/animate') for c in Fake.state['calls']))
         self.assertTrue(os.path.exists(self.staged('drone_body', 'model.bbmodel')))
+        self.assertTrue(os.path.exists(self.staged('drone_body', 'rerig.txt')),
+                        'a downloaded body-rig model is checked against its rig spec')
+        self.assertFalse(os.path.exists(self.staged('drone_hull_section', 'rerig.txt')), 'sections are not rigs')
 
     def test_model_style_blocky_or_lite(self):
         # Without --model-style a model batch prices both styles and asks; picking Lite is the go-ahead.
@@ -568,6 +571,22 @@ class RdGenerateTest(unittest.TestCase):
         tree = bbgeo.read_bbmodel(model)[0]
         self.assertEqual([('fx_flame_boot_l', 'fx_boot_l')], bbgeo.reparent_effects(tree))
         self.assertEqual([], bbgeo.reparent_effects(tree), 'already moved: nothing left to do')
+
+    def test_a_body_rig_model_gets_a_rig_report_beside_it(self):
+        folder = os.path.join(self.tmp, 'mech (body)')
+        os.makedirs(folder)
+        with open(os.path.join(folder, 'model.bbmodel'), 'w') as f:
+            f.write(bbmodel())
+        with mock.patch('sys.stdout'):
+            rd.rig_report(folder)
+        with open(os.path.join(folder, 'rerig.txt')) as f:
+            self.assertIn('Add a bone named', f.read())
+        other = os.path.join(self.tmp, 'quartz_wafer')
+        os.makedirs(other)
+        with open(os.path.join(other, 'model.bbmodel'), 'w') as f:
+            f.write(bbmodel())
+        rd.rig_report(other)
+        self.assertFalse(os.path.exists(os.path.join(other, 'rerig.txt')), 'only body rigs are checked')
 
     def test_scale_like_sizes_the_whole_model_like_ours(self):
         import bbgeo
