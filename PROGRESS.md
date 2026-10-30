@@ -667,6 +667,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Not run against the real RD service yet (needs the owner's key): first real use is `--fix asteroid_silicate --tool palette`.
 - Next (agreed): part 2 repaint (`image_edit`, inpainting, outpainting, seam tiling), part 3 restyle placeholders (img2img, tile variation), part 4 low-poly revise and export. Low-poly animate and Blockbench export already exist.
 
+## Fix: flaky Test Starship spawn GameTest (root cause): done
+- `StarshipEntityGameTests.spawnCommandPutsOneShipAheadOfTheSource` failed now and then with "found 2" or "found 0". Two test bugs: old ships were discarded in `prepare()`, before the forced chunks had loaded their entities, so a ship an earlier run left in the persistent GameTest world reappeared and was counted; and the new ship was searched for within 0.5 blocks of its anchor, while a spawned ship sits at its drift position, up to the drift radius away. Old ships are now cleared once the chunks tick entities (in `whenTicking`), and ships are matched by their anchor within the drift radius. The game code was fine.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
