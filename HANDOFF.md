@@ -2,7 +2,7 @@
 
 How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done and the known issues. This file covers everything else: where things stand, the user's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
-Last updated 2026-10-30, after the owner's first playtest, the collector work and the first two playtest fixes. The owner is moving to running Claude Code on their own PC; see "Taking over on a PC" below.
+Last updated 2026-10-30, after playtest round 1 group A (PRs #49 to #60). Work now runs on the owner's PC; see "Taking over on a PC" below.
 
 ## Where things stand
 - **`main`** has Phases 1 to 10 done, plus everything around them. In order:
@@ -45,7 +45,10 @@ Last updated 2026-10-30, after the owner's first playtest, the collector work an
   - Back up the file first (e.g. `cp X /tmp/x.bak`) and restore from it.
 
 ## Open items
-- **Running one GameTest class or test (done):** see "Commands" under "Working tricks".
+- **Done in round 1 (see PROGRESS.md):** GameTest filter, drone floor bob, Mech cruise animation and re-rigged Mech, velocity lean (Mech), camera distance, health bar, art tools (rig check, reparent, rerig.txt). **Still to look at in game:** the lean angles, the health bar's look, the camera, the flames following the feet.
+- **Waiting on the owner:** whether Ship and Shuttle should shrink (scale 3.0 to about 2.0) after seeing the new camera. The owner's longer-term goal is ships that travel and face freely in every direction (roll, 6-DOF); only the Mech lean exists.
+- **Next, in the owner's order:** the rest of the feedback list: start of the game (starter dust, guided first craft, bare-drone hum), dust HUD (labelled icons and bars), Replicator screen (descriptions, queue reorder, JEI), the inventory screen, the respawn menu, cameras (orbit, photo mode), and an image check of the Create recipes. Then layered animation poses and an animation slice/mirror tool.
+- **Working notes from this session:** the owner wants questions asked interview style (AskUserQuestion) and wants work to continue while CI or tests run. A GameTest JVM can outlive its Gradle run and hold `run/world/session.lock`; kill it (`ps -eo pid,args | grep gameTestServerRun`) before the next run. The auto-mode classifier blocked `gh pr merge` until the owner said "merge"; ask before merging.
 - **Playtest feedback, round 1 (owner, 2026-10-30, up to stage 5 of `docs/PLAYTEST.md`).** Work through these as small PRs; decisions already made are in brackets.
   - Bugs: punch-break (fixed in its PR); drone bobbing in a 1x1 tunnel when touching the ground; Mech plays its flying animation once and then idle; Mech idle animation and the blue foot flames floating mid-air; energy bar drawn as a comb (the art strips are 90x9 and were squeezed into 9x9; fix = draw one cell with the sub-region `blitSprite`); Ship, Shuttle and Titan are "too large" in F5 (camera distance/scale, not invisible); 70 hearts of health shown for a big body.
   - Start of the game: [starter dust + guided first craft of the Dust Sensor, plus a faint built-in hum for the bare Drone]; early dust collection is boring when clouds are far apart (open).
