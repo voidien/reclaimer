@@ -59,6 +59,11 @@ public final class ModBlocks {
             com.voidreclaimer.ship.RcsThrusterBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(2.0f, 6.0f).sound(SoundType.COPPER));
 
+    /** The pilot's chair: sit to fly the ship it is built into. GeckoLib model. */
+    public static final DeferredBlock<com.voidreclaimer.ship.HelmBlock> HELM = BLOCKS.registerBlock("helm",
+            com.voidreclaimer.ship.HelmBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GREEN).strength(2.5f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

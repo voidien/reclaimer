@@ -26,10 +26,13 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
  * force acts at the block, so one placed off-centre also turns the ship. The server tick decides the force; the physics
  * tick only reads it.
  */
-public class ChemicalThrusterBlockEntity extends KineticBlockEntity implements BlockEntitySubLevelActor {
+public class ChemicalThrusterBlockEntity extends KineticBlockEntity implements BlockEntitySubLevelActor, ThrusterLike {
     private final FluidTank tank = new FluidTank(Config.THRUSTER_TANK.getDefault(), stack -> fuelOf(stack) != null);
     /** Fractions of a mB already burned but not yet taken from the tank. */
     private double burnDebt;
+    /** A Helm's throttle, or -1 when redstone decides; it holds for the game tick it was set in and the next, whatever the tick order. */
+    private double commanded = -1;
+    private long commandedAt = Long.MIN_VALUE;
     private volatile double force;
 
     public ChemicalThrusterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -59,12 +62,33 @@ public class ChemicalThrusterBlockEntity extends KineticBlockEntity implements B
         return force;
     }
 
-    /** Redstone throttle, 0 to 1. */
+    /** The throttle, 0 to 1: a Helm's command this tick, else redstone. */
     public double throttle() {
+        if (commanded >= 0 && level != null && level.getGameTime() - commandedAt <= 1) {
+            return commanded;
+        }
         return level == null ? 0.0 : ThrusterMath.throttle(level.getBestNeighborSignal(worldPosition));
     }
 
+    @Override
+    public void setCommandedThrottle(double throttle) {
+        commanded = Math.max(0.0, Math.min(1.0, throttle));
+        commandedAt = level == null ? 0 : level.getGameTime();
+    }
+
+    /** Force at full throttle with the fuel and spin it has. */
+    @Override
+    public double maxForce() {
+        ThrusterFuel fuel = fuelOf(tank.getFluid());
+        if (fuel == null || tank.isEmpty() || level == null) {
+            return 0.0;
+        }
+        double spin = MachineMath.progressPerTick(getSpeed(), Config.MACHINE_MIN_RPM.get());
+        return ThrusterMath.chemicalForce(Config.CHEMICAL_THRUST.get(), fuel.thrust(), 1.0, spin);
+    }
+
     /** The way the ship is pushed: away from the nozzle. */
+    @Override
     public Direction pushDirection() {
         return getBlockState().getValue(ChemicalThrusterBlock.FACING).getOpposite();
     }

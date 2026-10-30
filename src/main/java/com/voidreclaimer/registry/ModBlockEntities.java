@@ -44,5 +44,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.ship.RcsThrusterBlockEntity>> RCS_THRUSTER = BLOCK_ENTITIES.register("rcs_thruster",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.ship.RcsThrusterBlockEntity::new, ModBlocks.RCS_THRUSTER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.ship.HelmBlockEntity>> HELM = BLOCK_ENTITIES.register("helm",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.ship.HelmBlockEntity::new, ModBlocks.HELM.get()).build(null));
+
     private ModBlockEntities() {}
 }

@@ -737,6 +737,18 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Test: `ThrusterGameTests.tfmgFuelsBurnAtTheirOwnStrengths` loads each real TFMG fluid, so a wrong id fails it; each goes in the tank and pushes at its own strength. Mutation-checked: a fuel missing from the data map fails it.
 - **The four approved 7b PRs are done.** Next, and each needs the owner first: the Helm interview (6-DOF controls and camera), then the Create Propulsion vacuum spike.
 
+## Helm, part 1: the seat and the six axes: done
+- **Helm** (`helm`): the pilot's chair, from the owner's low-poly cockpit chair model (`geo/block/helm.geo.json`, GeckoLib; the `turn_180` animation plays on sitting). Right-click to sit (an invisible `HelmSeat` entity; sneak to leave). The chair's facing is the ship's nose. Replicator recipe behind `starship` (placeholder price).
+- **Flying:** while seated, W/S, A/D, Space/Shift move the ship and Q/E roll, arrow keys pitch and yaw (new keybinds under Void Reclaimer). The mouse only looks. Each tick the Helm finds its ship (Sable sub-level), lists its thrusters, and `ThrustAllocator` sets a throttle per thruster from the six axes: a thruster opens in proportion to how well its force (for the movement keys) or its torque about the centre of mass (for the rotation keys) serves the request, and stays shut if it works against it. No thruster the right way means no movement that way: the ship you build is the ship you fly. A Helm's throttle beats redstone for that tick and the next.
+- `HelmPeripheral` (read-only: on-ship, pilot, thruster count, what the ship can do each way, fuel and energy totals), per the standing rule.
+- **Tests:** `ThrustAllocatorTest` (10, pure: every axis, angled thrusters, the centre of mass, coverage, the pilot's right for all four facings, the codec), `CCPeripheralGameTests.theHelmIsAPeripheral`, and two real-ship `AeronauticsGameTests`: a seated pilot pressing W moves the ship ahead through its stern thruster, and the arrow key yaws it through a bow jet while no keys means no movement. Mutation-checked: an allocator that opens nothing and a Helm that never commands each fail both pilot tests.
+- **Found on the way:** the pilot's right is `forward x up`, not `up x forward` (Minecraft is left-handed); a wrong sign slipped through the ship tests, which cannot tell left from right on a straight push, and is now pinned by unit tests. In the test harness a cross-dimension teleport can leave a stale `ServerPlayer` reference: compare players by UUID. A `DirectionalKineticBlock` takes its shaft from the face opposite its nozzle, which the test ship's motor placement first got wrong.
+- **Decisions pending (taken unattended):** without a ship the Helm does nothing (no "walk the block" mode); the seat sits 0.35 blocks up the chair; leaving is vanilla's sneak-to-dismount, and Shift is heave-down only while another axis is held.
+- **Not seen in a client:** the chair model, the sit animation, riding a moving ship, the keys. The holds (RCS lock and dampener), the HUD and camera roll are PRs 2 and 3.
+
+### Placeholder assets
+- `textures/item/helm.png` (16x16 programmer-art chair icon) and `textures/block/helm_particle.png`. The chair itself is the owner's model.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

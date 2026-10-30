@@ -90,6 +90,14 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.PORTAL_IGNITER.get(), "Portal Igniter");
         add(ModItems.CHEMICAL_THRUSTER.get(), "Chemical Thruster");
         add(ModItems.ION_THRUSTER.get(), "Ion Thruster");
+        add(ModItems.HELM.get(), "Helm");
+        add("entity.void_reclaimer.helm_seat", "Helm Seat");
+        add("key.void_reclaimer.roll_left", "Ship: Roll Left");
+        add("key.void_reclaimer.roll_right", "Ship: Roll Right");
+        add("key.void_reclaimer.pitch_up", "Ship: Nose Up");
+        add("key.void_reclaimer.pitch_down", "Ship: Nose Down");
+        add("key.void_reclaimer.yaw_left", "Ship: Yaw Left");
+        add("key.void_reclaimer.yaw_right", "Ship: Yaw Right");
         add(ModItems.TERRAFORMING_SPIRE.get(), "Terraforming Spire");
         add("message.void_reclaimer.spire.started", "Genesis Pulse started.");
         add("message.void_reclaimer.spire.busy", "A Genesis Pulse is already sweeping out from this Spire.");
@@ -510,6 +518,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.terraforming_spire", "Fires the Genesis Pulse: a wave sweeps out over 256 by 256 blocks of ruined Earth, turning Ashen Slag into soil and the biome into plains. Right-click it, or power it with redstone.");
         add("replicator.void_reclaimer.description.chemical_thruster", "Pushes a block ship. Build it into the ship with the nozzle pointing away from where you want to go, turn it with a shaft, pipe in Nebulite Propellant, and open the throttle with redstone.");
         add("replicator.void_reclaimer.description.ion_thruster", "Pushes a block ship on Forge Energy. Weaker than a Chemical Thruster, but it needs no fuel and no shaft. Place it on a hull with the nozzle facing out, feed it electricity, and open the throttle with redstone.");
+        add("replicator.void_reclaimer.description.helm", "The pilot's chair of a block ship. Build it in, sit down, and the movement keys fly the ship through its thrusters: WASD and Space/Shift move it, Q/E roll, the arrow keys pitch and yaw. The ship's nose is the way the chair faces.");
         add("replicator.void_reclaimer.description.backup_core", "A respawn point. Place it in deep space; after a death you can come back to it, spending one charge.");
         add("replicator.void_reclaimer.description.body_blueprint", "Saves your body's layout. Apply it later to queue the Replicator jobs for any parts you are missing.");
         add("replicator.void_reclaimer.description.brass_trim", "Cosmetic brass plating for a cosmetic mount. It changes how your body looks, not how it flies.");

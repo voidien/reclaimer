@@ -3,6 +3,7 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.compat.cc.CCCompat;
 import com.voidreclaimer.compat.cc.DysonPeripheral;
+import com.voidreclaimer.compat.cc.HelmPeripheral;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
 import com.voidreclaimer.compat.cc.SpawnTravelPeripherals;
 import com.voidreclaimer.compat.cc.SpirePeripheral;
@@ -19,6 +20,7 @@ import com.voidreclaimer.machine.SpinnerBlockEntity;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModMaterials;
 import com.voidreclaimer.ship.ChemicalThrusterBlockEntity;
+import com.voidreclaimer.ship.HelmBlockEntity;
 import com.voidreclaimer.ship.IonThrusterBlockEntity;
 import com.voidreclaimer.terraform.SpireBlockEntity;
 import java.util.Arrays;
@@ -330,6 +332,21 @@ public final class CCPeripheralGameTests {
             level.setBlock(rcs, ModBlocks.RCS_THRUSTER.get().defaultBlockState(), 3);
             requireMethods(helper, Lookup.of(level, rcs), "RCS Thruster", "getThrottle", "getForce", "isFiring", "getEnergy", "getEnergyCapacity");
             level.setBlock(rcs, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theHelmIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_600, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HelmPeripheral lua = new HelmPeripheral();
+            HelmBlockEntity helm = place(level, pos, ModBlocks.HELM.get(), HelmBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Helm", "isOnShip", "getPilot", "getThrusterCount", "getTranslation", "getRotation", "getSupplies");
+            helper.assertTrue(!lua.isOnShip(helm) && lua.getPilot(helm) == null && lua.getThrusterCount(helm) == 0, "a Helm in the world reads as a ship");
+            helper.assertTrue(lua.getTranslation(helm).size() == 6 && lua.getRotation(helm).size() == 6, "six axes each way");
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });

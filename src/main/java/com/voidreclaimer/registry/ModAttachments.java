@@ -107,6 +107,10 @@ public final class ModAttachments {
                     .serialize(com.voidreclaimer.earth.PortalLinks.CODEC)
                     .build());
 
+    /** Server-only, transient: the keys a seated pilot holds (sent by the client when they change). */
+    public static final Supplier<AttachmentType<com.voidreclaimer.ship.PilotInput>> PILOT_INPUT = ATTACHMENT_TYPES.register("pilot_input",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.ship.PilotInput.NONE).build());
+
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());
