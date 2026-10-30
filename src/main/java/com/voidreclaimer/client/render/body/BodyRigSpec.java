@@ -35,13 +35,19 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
  * @param mounts          where modules sit: {@code rig mount name -> bone and offset}; the name is
  *                        {@code mount_<kind>_<n>} on the core socket and {@code <socket>__mount_<kind>_<n>} elsewhere
  *                        ({@link BodyLook#rigMountBone}). A mount with no entry is not drawn.
+ * @param layers          extra animations played on top of the main one, each only moving the bones it keys: {@code layer name -> (pose key ->
+ *                        animation)}, in name order (at most {@link #MAX_LAYERS}). A pose that has a layer entry is no longer played by the
+ *                        main animation for {@code module_work}, so an arms-only swing can run while the body keeps flying
  * @param poses           animation per pose key ({@code idle}, {@code thrust}, {@code brake}, {@code back}, {@code strafe_left},
  *                        {@code strafe_right}, {@code low_power}, {@code module_work}); a missing pose falls back
  *                        ({@link BodyLook#fallbacks})
  */
 public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, ResourceLocation animations, String animationPrefix,
                           boolean grounded, float offsetY, float yaw, boolean pitches, Lean lean, Map<String, List<String>> sockets,
-                          Map<String, List<String>> socketParts, Map<String, Mount> mounts, Map<String, String> poses) {
+                          Map<String, List<String>> socketParts, Map<String, Mount> mounts, Map<String, String> poses,
+                          Map<String, Map<String, String>> layers) {
+    public static final int MAX_LAYERS = 3;
+
     /**
      * A module position on a rig: the bone it follows, an offset from that bone's pivot in pixels (the same axes as the
      * pivots in the {@code .geo.json}), and a turn about the vertical axis in degrees.
@@ -104,8 +110,27 @@ public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, Reso
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("sockets", Map.of()).forGetter(BodyRigSpec::sockets),
             Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).optionalFieldOf("socket_parts", Map.of()).forGetter(BodyRigSpec::socketParts),
             Codec.unboundedMap(Codec.STRING, Mount.CODEC).optionalFieldOf("mounts", Map.of()).forGetter(BodyRigSpec::mounts),
-            Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("poses", Map.of()).forGetter(BodyRigSpec::poses)
+            Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("poses", Map.of()).forGetter(BodyRigSpec::poses),
+            Codec.unboundedMap(Codec.STRING, Codec.unboundedMap(Codec.STRING, Codec.STRING)).optionalFieldOf("layers", Map.of()).forGetter(BodyRigSpec::layers)
     ).apply(instance, BodyRigSpec::new));
+
+    /** The layers in name order, up to {@link #MAX_LAYERS}. */
+    public List<Map<String, String>> layerList() {
+        return layers.entrySet().stream().sorted(Map.Entry.comparingByKey()).limit(MAX_LAYERS).map(Map.Entry::getValue).toList();
+    }
+
+    /** The animation id layer {@code index} plays for a pose key, or null. */
+    @Nullable
+    public String layerAnimation(int index, String poseKey) {
+        List<Map<String, String>> list = layerList();
+        String name = index < list.size() ? list.get(index).get(poseKey) : null;
+        return name == null ? null : animationPrefix + name;
+    }
+
+    /** Whether some layer plays an animation for this pose key (so the main animation leaves it alone). */
+    public boolean hasLayerFor(String poseKey) {
+        return layerList().stream().anyMatch(layer -> layer.containsKey(poseKey));
+    }
 
     /** The animation id for a pose key, or null when the rig has none for it. */
     @Nullable

@@ -94,6 +94,16 @@ public final class BodyLook {
         return keys;
     }
 
+    /** The pose keys a layer looks for, in order: the tool animation while swinging (not in low power), then the pose and its fallbacks. */
+    public static List<String> layerKeys(boolean swinging, Pose pose) {
+        List<String> keys = new ArrayList<>();
+        if (swinging && pose != Pose.LOW_POWER) {
+            keys.add(MODULE_WORK);
+        }
+        keys.addAll(fallbacks(pose));
+        return keys;
+    }
+
     /** Change in speed (blocks per tick, per tick) that counts as thrusting or braking; below it the body just coasts. */
     public static final double ACCEL_THRESHOLD = 0.002;
     /** Speed (blocks per tick) below which braking has nothing left to slow. */

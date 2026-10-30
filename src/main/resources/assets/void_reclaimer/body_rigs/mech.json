@@ -182,6 +182,11 @@
       "yaw": 180
     }
   },
+  "layers": {
+    "tool_arm": {
+      "module_work": "swing_tool_arms"
+    }
+  },
   "poses": {
     "idle": "idle_ambient",
     "thrust": "zoom_flight",

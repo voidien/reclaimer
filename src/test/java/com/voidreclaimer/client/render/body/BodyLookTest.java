@@ -60,6 +60,13 @@ class BodyLookTest {
     }
 
     @Test
+    void layersLookForTheToolAnimationFirstOnlyWhileSwingingAndPowered() {
+        assertEquals(java.util.List.of("module_work", "thrust", "idle"), BodyLook.layerKeys(true, BodyLook.Pose.THRUST));
+        assertEquals(java.util.List.of("thrust", "idle"), BodyLook.layerKeys(false, BodyLook.Pose.THRUST));
+        assertEquals(java.util.List.of("low_power", "idle"), BodyLook.layerKeys(true, BodyLook.Pose.LOW_POWER), "no tool work in low power");
+    }
+
+    @Test
     void aSteadyCruiseUnderThrustKeepsTheThrustPose() {
         assertEquals(BodyLook.Pose.THRUST, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, true));
         assertEquals(BodyLook.Pose.IDLE, BodyLook.pose(0.2, 0.2, false, 0.2, 0.0, false));
