@@ -654,6 +654,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - The unit-test JVM now gets 2 GB (`maxHeapSize`): with the extra mods it ran out of memory booting the mod at Gradle's default 512 MB.
 - Checked: 230 unit tests, 154 GameTests, the Aeronautics GameTests and `runData` (no diff) all pass with the five loaded. Nothing in our code uses them yet.
 
+## CC: Tweaked peripherals, part 1: foundation and factory machines: done
+- CC: Tweaked is an optional integration like JEI: `compileOnly` against its API (`maven.squiddev.cc`, 1.120.2), the full mod on `localRuntime`, `optional` in `neoforge.mods.toml`. `compat/cc/CCCompat` registers our generic sources at common setup only when `computercraft` is loaded.
+- `MachinePeripheral`: Cloud Siphon (`getDensity`, `getPower`, `getSpeed`, `getEnergy`, `getEnergyCapacity`, `getItems`), Electrolyzer (`getProgress`, `getSpeed`, `getTanks`), Spinner (`getProgress`, `getSpeed`, `getItems`). Read-only. `ElectrolyzerBlockEntity` and `SpinnerBlockEntity` gained `progress()` (share of the cycle, 0 to 1). Lua reference: `docs/CC_PERIPHERALS.md`.
+- Standing rule (owner): every new block or item with state or actions gets a peripheral in the same PR (`CLAUDE.md` "CC: Tweaked peripherals").
+- Tests: `CCPeripheralGameTests` (2): CC is loaded and our sources registered; CC's own generic peripheral provider (what a computer uses, reached by reflection because it is internal) offers our functions on each machine, and they return the machines' real state. Mutation-checked: removing one `@LuaFunction` fails it.
+- Not seen with a real computer in a client yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

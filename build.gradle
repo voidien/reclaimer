@@ -40,6 +40,11 @@ repositories {
         }
     }
     maven {
+        name = 'SquidDev (CC: Tweaked)'
+        url = 'https://maven.squiddev.cc'
+        content { includeGroup('cc.tweaked') }
+    }
+    maven {
         // CurseForge-only required addons (Advanced Electricity, Advanced Computer Technic).
         name = 'CurseMaven'
         url = 'https://cursemaven.com'
@@ -143,6 +148,13 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
+    // CC: Tweaked (optional, like JEI): compile against the API only; the full mod in dev runs and GameTests so peripherals
+    // can be tested. All CC code is in compat/cc and is only touched when "computercraft" is loaded.
+    compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cctweaked_version}"
+    compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-common-api:${cctweaked_version}"
+    compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cctweaked_version}"
+    localRuntime "cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cctweaked_version}"
+
     // Create: required dependency. The Modrinth release jar bundles Flywheel, Ponder and Registrate as nested jars, which javac
     // can't see: extractCreateLibs unpacks them (the exact versions Create runs with) for compiling only.
     implementation "maven.modrinth:create:${create_version}"
@@ -198,6 +210,7 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             loader_version_range   : loader_version_range,
             geckolib_version_range : geckolib_version_range,
             jei_version_range      : jei_version_range,
+            cctweaked_version_range: cctweaked_version_range,
             create_version_range   : create_version_range,
             aeronautics_version_range: aeronautics_version_range,
             sable_version_range    : sable_version_range,

@@ -95,3 +95,10 @@ type = "optional"
 versionRange = "${jei_version_range}"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "computercraft"
+type = "optional"
+versionRange = "${cctweaked_version_range}"
+ordering = "NONE"
+side = "BOTH"

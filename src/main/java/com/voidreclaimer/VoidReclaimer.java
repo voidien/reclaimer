@@ -37,6 +37,7 @@ public final class VoidReclaimer {
         ConfigCondition.CONDITIONS.register(modBus);
         com.voidreclaimer.machine.MachineSetup.FAN_TYPES.register(modBus);
         modBus.addListener(com.voidreclaimer.machine.MachineSetup::onCommonSetup);
+        modBus.addListener(com.voidreclaimer.compat.cc.CCCompat::onCommonSetup);
         modBus.addListener(com.voidreclaimer.machine.MachineSetup::registerCapabilities);
         ModChunkGenerators.CHUNK_GENERATORS.register(modBus);
         com.voidreclaimer.registry.ModMenus.MENUS.register(modBus);

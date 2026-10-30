@@ -148,6 +148,7 @@ src/main/java/com/voidreclaimer/
 │   ├── screen/                   replicator, assembly, machine screens
 │   └── render/                   GeckoLib body/part/drone renderers, player model replacement
 ├── compat/jei/                   @JeiPlugin + categories (only loaded when JEI present)
+├── compat/cc/                    CC: Tweaked generic peripherals (only loaded when CC present)
 ├── gametest/                     GameTests (./gradlew runGameTestServer) + TestPlayers helper
 └── datagen/                      GatherDataEvent providers (recipes, loot, tags, lang, models)
 
@@ -437,6 +438,13 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Not usable now:** Create: Power Grid (crashes with TFMG 1.2.0: its TFMG integration needs 1.3.x), Create: Radars (hard-requires Create Big Cannons; no combat in this game). Create: Avionics only works with CC: Tweaked (hard dependency), not with Advanced Computer Technic's computers.
 - **Distribution:** two required addons are CurseForge-only (one All Rights Reserved), so a Modrinth modpack cannot bundle them; players need the CurseForge app or a manual download.
 - **Risk:** Advanced Electricity and Computer Technic were first released for 1.21.1 on 2026-10-29 with a few hundred downloads; expect updates and breakage, and re-run the GameTests when they change.
+
+**CC: Tweaked peripherals (decided 2026-10-30 by the owner; standing rule)**
+- **Every new block or item with state worth reading or an action worth taking gets a CC: Tweaked peripheral API in the same PR** (a generic peripheral in `compat/cc/`, registered in `CCCompat.Sources.all()`, with a row in `docs/CC_PERIPHERALS.md` and a test in `CCPeripheralGameTests`). Existing blocks are being covered in four PRs: factory machines (done), the Dyson launch chain, the Terraforming Spire, and the Backup Core, Tether Anchor and portal frame (read-only). Item upgrades (turtle and pocket computer, e.g. a Mechanical Drill turtle, a Dust Sensor pocket computer) come after.
+- **Optional like JEI:** `compileOnly` against CC's API (`cc.tweaked:cc-tweaked-1.21.1-*-api` from `maven.squiddev.cc`), the full mod on `localRuntime` (dev runs and GameTests), `optional` in `neoforge.mods.toml`. Only `CCCompat.onCommonSetup` runs without CC; it checks `isLoaded()` before touching anything else in the package.
+- **Generic peripherals:** a class implementing `GenericPeripheral` whose `@LuaFunction(mainThread = true)` methods take our block entity as the first argument. No changes to our block classes; CC attaches them to computers next to the block or on wired modems.
+- **Control follows player rules:** a computer can do what a player can by right-click or redstone, through the same code paths and checks, never more.
+- **Ship scripting (owner's route 3):** Create: Avionics with CC: Tweaked (both optional). Advanced Computer Technic's CogScript has no extension API (hard-coded functions, a single device slot), so we do not patch it.
 
 **Revised phase plan (2026-10-29, after Phase 7; replaces the order above)**
 Done: 1-7 (spawn, flight, dust, replicator, body data and sections, Foundations, asteroids, machines).
