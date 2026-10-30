@@ -722,6 +722,16 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ### Placeholder assets
 - `textures/block/ion_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
 
+## 7b ships, part 3: the RCS block: done
+- The **RCS Thruster** can now be placed: `rcs_thruster` stays the same item (same id, same Sequenced Assembly recipe, still a material with its flat icon), now a block item. Placed, it is a small jet: force 40, 20 FE per tick, 2000 FE buffer, redstone throttle (config `rcsThrust`, `rcsFePerTick`, `rcsFeBuffer`, toggle `rcsPush`; the older toggle `rcsThruster` is still the recipe). Placed away from the centre of mass it turns the ship: one jet on the end of a 9-block beam spins it at about 1.3 rad/s within 2 s.
+- `ship/ElectricThrusterBlockEntity` is now the base of the Ion and RCS thrusters; `ThrusterPeripheral` works on the base, so the RCS Thruster has the same functions.
+- Tests: `ThrusterGameTests` (2 more: it is a weaker electric thruster; the item keeps its id and places the block), two real-ship `AeronauticsGameTests` (it pushes a ship; off-centre it turns one, read from `sable info`'s angular velocity), the peripheral test. Mutation-checked: no push from electric thrusters fails all three ship tests.
+- **Decisions pending (taken unattended):** the owner chose "an RCS block" without saying what powers it. It runs on Forge Energy like the Ion Thruster, the simplest choice that fits small jets (no shaft or fuel line to route). It is a full cube for now; a small model can replace it.
+- Not seen in a client.
+
+### Placeholder assets
+- `textures/block/rcs_thruster_side.png`, `_nozzle.png`, `_back.png` (16x16 programmer art; not yet in `docs/art/assets.csv`).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -62,6 +62,6 @@ public class IonThrusterBlock extends Block implements EntityBlock {
         if (level.isClientSide() || type != ModBlockEntities.ION_THRUSTER.get()) {
             return null;
         }
-        return (BlockEntityTicker<T>) (BlockEntityTicker<IonThrusterBlockEntity>) IonThrusterBlockEntity::serverTick;
+        return (BlockEntityTicker<T>) (BlockEntityTicker<IonThrusterBlockEntity>) ElectricThrusterBlockEntity::serverTick;
     }
 }

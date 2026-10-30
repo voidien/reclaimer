@@ -1,5 +1,6 @@
 {
   "values": [
+    "void_reclaimer:rcs_thruster",
     "void_reclaimer:ion_thruster",
     "void_reclaimer:chemical_thruster",
     "void_reclaimer:portal_frame",
