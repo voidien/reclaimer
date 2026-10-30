@@ -410,7 +410,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **PR order:** (1) dimension (done), (2) sky eras (done, see PROGRESS.md), (3a) portal frame and lighting (done), (3b) portal travel and the return gate (done), (4) Spire pulse (done), then hover flight on Earth. **The Act III vertical slice is complete**; see the "Act III slice" blocks in `PROGRESS.md`.
 
 **Hover flight on Earth (2026-10-30 interview, owner's answers; not built yet)**
-- **Lift is real:** with gravity back on ruined Earth, weight acceleration = the body's `generic.gravity` times config `hover.weightFactor` (default about 0.6, one number to tune: a Mk I Drone has about 0.075 blocks/tick² of thrust against vanilla's 0.08). Zero-G is unchanged.
+- **Lift is real:** with gravity back on ruined Earth, weight acceleration = the body's `generic.gravity` times config `hover.weightFactor` (default 0.12 after measuring the real presets, see PROGRESS.md "Hover tuning"; first thought to be 0.6, one number to tune: a Mk I Drone has about 0.075 blocks/tick² of thrust against vanilla's 0.08). Zero-G is unchanged.
 - **Weight comes first:** with the dampener on, thrust is spent cancelling weight (up to the total), and only the remainder steers. If thrust cannot cover weight, the body still falls but more slowly (partial lift) and does not steer. Dampener off: gravity applies in full.
 - **Energy:** hover costs the usual thrust cost times the share of thrust spent on weight, times the body's energy multiplier. Heavier bodies therefore drain more with no extra constants. Low power mode has no thrust, so the body falls.
 - **Fall damage on Earth is vanilla** (it is only cancelled in zero-G). The owner wants to discuss hazards across the whole project later.

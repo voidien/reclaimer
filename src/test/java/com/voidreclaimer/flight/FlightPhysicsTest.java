@@ -146,7 +146,7 @@ class FlightPhysicsTest {
         assertEquals(expected.z, actual.z, EPS, "z");
     }
 
-    /** Hover tests: gravity 0.048 (vanilla 0.08 times the default factor 0.6). */
+    /** Hover tests: a weight of 0.048, chosen to sit between the WEAK and STRONG test bodies (not the real default weight). */
     private static final double WEIGHT = 0.048;
     /** Accel 0.075: more than WEIGHT, so it can hover with 0.027 left to steer. */
     private static final FlightStats STRONG = new FlightStats(1.0, 0.075, 0.04, 0.5);

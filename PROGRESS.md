@@ -569,7 +569,7 @@ From an outside audit, each checked against the code first (several claims were 
 
 ## Hover flight on Earth, part 1: the physics: done
 - `FlightPhysics.step(..., weight)` adds gravity to thruster flight (pure, no caller yet, so no behaviour change): with the dampener on, thrust cancels weight first (`weightSupport`, up to all of it) and only the remainder steers; a body too weak to cover its weight falls at the unsupported weight (partial lift) and does not steer; dampener off or no power means full weight. `hoverShare` is the share of thrust spent on weight, which is what hovering will cost in energy. With weight 0 it is exactly the old step (tested).
-- Config `flight.hoverWeightFactor` (default 0.6): the weight the thrusters must cancel is the body's gravity times this (vanilla 0.08, so 0.048; a Mk I Drone's thrust is about 0.075).
+- Config `flight.hoverWeightFactor` (default 0.12, see "Hover tuning" below): the weight the thrusters must cancel is the body's gravity times this (vanilla 0.08).
 - Tests: 7 new `FlightPhysicsTest` cases; mutation-checked (weight support forced to 0 fails four of them).
 - Next: part 2 (always-thruster bodies on Earth: `ThrusterFlight`, server energy, HUD, GameTests), part 3 (Mech walking).
 
@@ -589,6 +589,13 @@ From an outside audit, each checked against the code first (several claims were 
 - On ruined Earth a walking body moves like a normal player (vanilla movement, jump, fall damage) until Space engages its thrusters; then it flies with the same hover model as every other body. Engaging is the new `FlightInput` flag `engaged` (client controller: Space while walking and able to fly; sent with the input payload). It disengages on the ground with no up-thrust held (`FlightInput.shouldDisengage`: after letting go of Space, or on landing). In zero-G a walking body always flies, as before. Drone, Ship and the rest fly all the time.
 - Tests: `FlightInputTest` (engaged is a flag and not a key, survives the codec, the disengage rule), `ChassisCockpitTest` (only the Mech walks; the flag round-trips and is omitted when false), `HoverGameTests` (a Mech walks until engaged, Drone and Ship always fly, a Mech always flies in zero-G). Mutation-checked: `walks` forced false fails the Mech test.
 - **Not tested by a GameTest, not seen in a client:** the client controller (engaging on Space, disengaging on landing) is client-only, like all input. **Decision pending:** engaging needs Space pressed on the ground, and a Mech hovering still (no keys) stays engaged until it lands; a Mech in creative with thrusters off just walks.
+
+## Hover tuning: the weight factor default, from measured presets: done
+- **Found by looking at it in the headless client:** with the first default (0.6, weight 0.048) the HUD showed TOO HEAVY: SINKING for the Drone and the Ship presets. My estimate of a starter body's acceleration (about 0.075) had used the wrong mass. Measured thrust over mass of the presets (`full` = every socket filled): Drone 0.035 / 0.015, Mech 0.035 / 0.023, Ship 0.016 / 0.014, Shuttle 0.015 / 0.014, Titan 0.0044 / 0.0044 blocks/tick². Vanilla gravity is 0.08.
+- **Decision taken unattended:** the default is now **0.12** (weight 0.0096): every player body hovers with a little thrust left to steer (the full Drone spends about 63% of its thrust holding up, the Ship about 67%, the Mech about 42%), and the Titan stays too heavy to lift on Earth, which fits a 67-block ship. The owner can change `flight.hoverWeightFactor`; a bigger number means a heavier planet.
+- Steering is gentle by design (weight comes first): the full Ship has about 0.0046 blocks/tick² left, so it reaches 10 m/s in about 11 s. If that feels too slow, lower the factor (0.08 gives the Ship twice the spare); if bodies should struggle more, raise it.
+- Test: `HoverGameTests.everyPlayerBodyCanHoverAtTheDefaultWeight` ties the real Drone, Mech, Ship and Shuttle presets (empty and full) to the config default, so a future stats change that breaks hovering fails the build.
+- Also seen in the real client (headless, with every candidate addon loaded): the hover HUD and `TOO HEAVY: SINKING` text work on ruined Earth; a Mech walks with the vanilla hand until its thrusters engage; a quick tap of Space engages it and it drops straight back to walking, because it is on the ground with no up-thrust held (hold Space to take off).
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

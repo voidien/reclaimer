@@ -160,4 +160,29 @@ public final class HoverGameTests {
             TestPlayers.remove(player);
         }
     }
+
+    /**
+     * Ties the real presets to the config default: at the default weight factor every player body can hold itself up
+     * and has thrust left to steer. (The Titan, with a tenth of the others' thrust per mass, is deliberately not asked.)
+     */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void everyPlayerBodyCanHoverAtTheDefaultWeight(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 27_000.5, 80, 0.5);
+        try {
+            double weight = Attributes.GRAVITY.value().getDefaultValue() * Config.HOVER_WEIGHT_FACTOR.getDefault();
+            for (var chassis : java.util.List.of(BuiltinBodies.DRONE, BuiltinBodies.MECH, BuiltinBodies.SHIP, BuiltinBodies.SHUTTLE)) {
+                for (boolean full : new boolean[] {false, true}) {
+                    Bodies.store(player, Bodies.preset(chassis, full));
+                    double acceleration = FlightStats.of(player).acceleration();
+                    helper.assertTrue(acceleration > weight, chassis.location().getPath() + " (full=" + full + ") cannot hover at the default weight: "
+                            + acceleration + " <= " + weight);
+                    helper.assertTrue(FlightPhysics.hoverShare(FlightStats.of(player), weight, true, true) < 1.0,
+                            chassis.location().getPath() + " spends all its thrust on weight");
+                }
+            }
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
 }

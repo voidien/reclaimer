@@ -156,8 +156,10 @@ public final class Config {
                 .comment("Server speed check: movement over one second may exceed top speed by this factor before it is corrected.")
                 .defineInRange("speedCheckTolerance", 1.5, 1.0, 10.0);
         HOVER_WEIGHT_FACTOR = BUILDER
-                .comment("Ruined Earth: weight the thrusters must cancel = the body's gravity times this. Vanilla gravity is 0.08 blocks/tick²; a starter Drone's thrust is about 0.075.")
-                .defineInRange("hoverWeightFactor", 0.6, 0.0, 4.0);
+                .comment("Ruined Earth: weight the thrusters must cancel = the body's gravity times this (vanilla gravity is 0.08 blocks/tick²). "
+                        + "Thrust over mass of the full presets is Drone 0.015, Mech 0.023, Ship 0.014, Shuttle 0.014, Titan 0.0044, so 0.12 (weight 0.0096) lets "
+                        + "every player body hover and leaves the Titan too heavy.")
+                .defineInRange("hoverWeightFactor", 0.12, 0.0, 4.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust a new body starts with: enough for the Dust Sensor, Scaffold, Thruster Mk I and Rotor Arm. Granted once, when a player first wakes up.").push("starter");
