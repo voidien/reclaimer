@@ -494,6 +494,9 @@ From an outside audit, each checked against the code first (several claims were 
 ## Replicator screen, part 2: queue reorder: done
 - Drag a waiting job to a new place (`MOVE` action, `ReplicatorLogic.reorder`); the running job stays first. Unit tests and a GameTest. Not seen in game yet.
 
+## Respawn screen: done
+- Card panel for the spawn and charged cores (name, charge pips, distance), plus a placeholder AI line on death. Not seen in game (needs a death in a world with a Backup Core).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

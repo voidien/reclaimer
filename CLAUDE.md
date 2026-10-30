@@ -492,6 +492,9 @@ Parallel tracks, scheduled as they fit:
 - The panel is 244 tall (was 200) to fit the description box.
 - **Reorder:** drag a waiting job in the queue to a new place (`ReplicatorActionPayload` action `MOVE`, `ReplicatorLogic.reorder`, `Replicator.move`). The job being worked on never moves and nothing goes in front of it, so progress is never lost; the server validates every move.
 
+**Respawn screen (2026-10-30, owner's choices)**
+- The death screen's core list is a "Restore at" panel of cards (`DeathScreenCores`): the free deep space spawn and every charged Backup Core, each with its name, charge pips (`core/RespawnCards`) and the distance from the death spot; the chosen card is sent to the server as before (`RespawnChoicePayload`). A short AI line sits under the score; its text is a placeholder marked `[Placeholder, lore text pending.]` in the lang file.
+
 **Titan size class, Core Mk III and IV, whole-rig mounts (2026-10-29, defaults)**
 - **Titan:** a fourth size class (`titan`, scale 8, rank 3). The rig is 8.4 blocks long at scale 1, so the body is about 67 blocks long (the owner wants more than 50). Chassis `titan`, core socket `saucer`; sockets (ids are the art rig's bones): `neck`, `bridge`, `sensor` and `deflector`/`bay_door`/`pylon_l`/`pylon_r` with `nacelle_l`/`nacelle_r` under the pylons. Tier-4 section items `titan_saucer` (core section), `titan_neck`, `titan_bridge`, `titan_sensor_array`, `titan_deflector`, `titan_bay_door`, `titan_pylon` and `titan_nacelle`, with mounts: saucer core 1, storage 2, cosmetic 1; bridge sensor 1; sensor array sensor 2; bay door storage 2; nacelle thruster 3.
 - **Titan rig:** whole-model rig spec `body_rigs/titan.json` over the owner's RD ship (`geo/entity/titan`): `warp_cruise` is idle and thrust, `bay_open` is not used yet (no docking), `body_rotate` and `bridge_spin` were left out. The model's front is +Z, so `yaw` is 180; it `pitches` with the view like a Ship.
