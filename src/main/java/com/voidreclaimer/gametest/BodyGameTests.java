@@ -371,4 +371,24 @@ public final class BodyGameTests {
             TestPlayers.remove(player);
         }
     }
+
+    /** The assembly view marks what a held Blueprint wants changed. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void aBlueprintKnowsWhichSocketsDifferFromTheBody(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 94_600.5, 80, 0.5);
+        try {
+            Bodies.store(player, Bodies.preset(BuiltinBodies.MECH, true));
+            var paper = new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.BODY_BLUEPRINT.get());
+            com.voidreclaimer.body.Blueprints.save(player, paper);
+            var design = paper.get(com.voidreclaimer.registry.ModDataComponents.BLUEPRINT.get());
+            helper.assertTrue(design != null, "nothing was saved");
+            helper.assertTrue(design.differsFrom(Bodies.data(player)).isEmpty(), "a body differs from its own design: " + design.differsFrom(Bodies.data(player)));
+            var view = Bodies.view(player);
+            var changed = com.voidreclaimer.body.BodyRules.removeSection(view, "left_hand").body();
+            helper.assertTrue(design.differsFrom(changed).equals(java.util.Set.of("left_hand")), "after taking a hand off: " + design.differsFrom(changed));
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
 }

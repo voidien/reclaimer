@@ -41,6 +41,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     private boolean reRendering;
     /** How far sections are spread for the next draws, 0 to 1; only the assembly view sets it, round its own draw. */
     private static float explode;
+    private static boolean showWear;
     @Nullable
     private static BodyView previewView;
     @Nullable
@@ -109,6 +110,15 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         previewView = view;
         ghostSocket = socket;
         ghostMount = mount;
+    }
+
+    /** Tints worn sections for the draws until this is set back to false: the assembly view's look at what needs repair. */
+    public static void setShowWear(boolean show) {
+        showWear = show;
+    }
+
+    static boolean showWear() {
+        return showWear;
     }
 
     static boolean isGhost(String socket) {

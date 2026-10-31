@@ -58,6 +58,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer sky era get|set <ruined|healing|restored>}: the ruined Earth sky era</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
+ *   <li>{@code /void_reclaimer wear <player> <condition>}: sets every section's condition, 1 new and 0 spent</li>
  *   <li>{@code /void_reclaimer scene <name>}: builds a ready-made test setup in deep space and moves you to it ({@link com.voidreclaimer.debug.TestScenes})</li>
  *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
  * </ul>
@@ -72,6 +73,16 @@ public final class ModCommands {
         com.voidreclaimer.starship.TestStarship.spawn(source.getLevel(), pos);
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.starship.spawned",
                 String.format(Locale.ROOT, "%.1f %.1f %.1f", pos.x, pos.y, pos.z)), true);
+        return 1;
+    }
+
+    /** Sets every section on a body to a condition, 1 new and 0 spent, to look at wear without waiting for it. */
+    private static int wear(CommandSourceStack source, ServerPlayer player, float condition) {
+        com.voidreclaimer.body.BodyData body = com.voidreclaimer.body.Bodies.data(player);
+        for (String socket : java.util.List.copyOf(body.sections().keySet())) {
+            body = body.withSection(socket, com.voidreclaimer.body.Wear.withCondition(body.section(socket), condition));
+        }
+        com.voidreclaimer.body.Bodies.store(player, body);
         return 1;
     }
 
@@ -101,6 +112,10 @@ public final class ModCommands {
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal(VoidReclaimer.MOD_ID)
                 .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("wear")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("condition", FloatArgumentType.floatArg(0f, 1f))
+                                        .executes(ctx -> wear(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), FloatArgumentType.getFloat(ctx, "condition"))))))
                 .then(Commands.literal("scene")
                         .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
                                 .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(

@@ -10,6 +10,7 @@
 #   tools/client-test/quick.sh gui             with a screen open: print its buttons, click regions and overlaps (F6 outlines them on screen)
 #   tools/client-test/quick.sh test NAME       run a GameTest in the live client and print its result, to watch it: the method name, any case
 #   tools/client-test/quick.sh gclick X Y      left click at GUI coordinates (the window is 1280x720 at GUI scale 3)
+#   tools/client-test/quick.sh gsclick X Y     the same with shift held
 #   tools/client-test/quick.sh ghover X Y      move the mouse to GUI coordinates
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
 #   tools/client-test/quick.sh key KEYSYM      press a key
@@ -151,6 +152,7 @@ test)
     tail -n +"$lines" "$LOG" | grep -aE "CHAT\] .*(test|Test)|failed at" | sed -E 's/^.*(CHAT\] |LogTestReporter\/\]: )//' | head -6 | cut -c1-200
     ;;
 gclick) $XT click $(($2 * SCALE)) $(($3 * SCALE)) ;;
+gsclick) $XT sclick $(($2 * SCALE)) $(($3 * SCALE)) ;;
 ghover) $XT hover $(($2 * SCALE)) $(($3 * SCALE)) ;;
 gdrag) $XT drag $(($2 * SCALE)) $(($3 * SCALE)) $(($4 * SCALE)) $(($5 * SCALE)) ;;
 key) $XT key "$2" ;;
@@ -160,7 +162,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,20p' "$0" | sed 's/^# \?//'
+    sed -n '2,21p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac

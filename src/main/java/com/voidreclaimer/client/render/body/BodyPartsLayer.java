@@ -189,7 +189,8 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             return;
         }
         RenderType base = RenderType.entityCutoutNoCull(texture);
-        renderer.reRender(model, poseStack, bufferSource, animatable, base, bufferSource.getBuffer(base), partialTick, light, overlay, 0xFFFFFFFF);
+        int tint = BodyRenderer.showWear() && folder.equals("section") ? com.voidreclaimer.body.Wear.tint(com.voidreclaimer.body.Wear.condition(stack)) : 0xFFFFFFFF;
+        renderer.reRender(model, poseStack, bufferSource, animatable, base, bufferSource.getBuffer(base), partialTick, light, overlay, tint);
         // Additive: the masks are opaque black with white accents, so a normal layer would paint the part black.
         RenderType accent = RenderType.eyes(BodyTextures.accent(part));
         renderer.reRender(model, poseStack, bufferSource, animatable, accent, bufferSource.getBuffer(accent), partialTick,

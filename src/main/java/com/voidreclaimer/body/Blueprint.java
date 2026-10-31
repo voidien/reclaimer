@@ -76,4 +76,20 @@ public record Blueprint(String coreSocket, Map<String, Item> sections, Map<BodyD
     static boolean wants(Item wanted, ItemStack stack) {
         return !stack.isEmpty() && stack.is(wanted);
     }
+
+    /** The sockets whose section, or a module on them, differs from this design. */
+    public java.util.Set<String> differsFrom(com.voidreclaimer.body.BodyData body) {
+        java.util.Set<String> sockets = new java.util.LinkedHashSet<>();
+        sections.forEach((socket, item) -> {
+            if (!wants(item, socket.equals(coreSocket) ? body.core() : body.section(socket))) {
+                sockets.add(socket);
+            }
+        });
+        modules.forEach((mount, item) -> {
+            if (!wants(item, body.module(mount))) {
+                sockets.add(mount.socket());
+            }
+        });
+        return sockets;
+    }
 }

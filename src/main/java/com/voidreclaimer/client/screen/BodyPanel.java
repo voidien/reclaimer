@@ -14,11 +14,15 @@ import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.body.Parts;
 import com.voidreclaimer.body.Wear;
+import com.voidreclaimer.body.assembly.BodyPairs;
 import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.network.BodyActionPayload;
+import com.voidreclaimer.network.ReplicatorActionPayload;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.registry.ModRecipeTypes;
 import com.voidreclaimer.replicator.ReplicatorData;
+import com.voidreclaimer.replicator.ReplicatorRecipe;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +38,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -362,6 +367,7 @@ final class BodyPanel {
                 graphics.drawString(font, seq, tx, ty, DIM, false);
                 ty += 10;
             }
+            renderQueueable(graphics, player, view, socketId, tx, ty + 2, mouseX, mouseY, hover);
             return;
         }
         int perRow = Math.max(1, (rightWidth() - 2) / STEP);
@@ -388,9 +394,105 @@ final class BodyPanel {
                         ? Component.translatable("body.void_reclaimer.click_install").withColor(ACCENT)
                         : Component.translatable(BodyRules.messageKey(check)).withColor(WARN);
             }
-            regions.add(new Region(sx, sy, SLOT, SLOT, () -> PacketDistributor.sendToServer(mount == null
-                    ? BodyActionPayload.installSection(socketId, slot) : BodyActionPayload.installModule(mount, slot))));
+            regions.add(new Region(sx, sy, SLOT, SLOT, () -> install(player, view, socketId, mount, slot, stack)));
         }
+        Socket partner = BodyPairs.partner(view.chassis(), socketId);
+        if (partner != null) {
+            int hintY = ty + (candidates.size() + perRow - 1) / perRow * STEP + 1;
+            graphics.drawString(font, font.plainSubstrByWidth(Component.translatable("body.void_reclaimer.pair_hint").getString(), rightWidth() - 4), tx, hintY, DIM, false);
+        }
+    }
+
+    /** Installs a part; with shift held, the same on the other side of the body too, if there is one and a second part to fit. */
+    private void install(LocalPlayer player, BodyView view, String socketId, @Nullable BodyData.Mount mount, int slot, ItemStack stack) {
+        PacketDistributor.sendToServer(mount == null ? BodyActionPayload.installSection(socketId, slot) : BodyActionPayload.installModule(mount, slot));
+        Socket partner = net.minecraft.client.gui.screens.Screen.hasShiftDown() ? BodyPairs.partner(view.chassis(), socketId) : null;
+        if (partner == null) {
+            return;
+        }
+        int second = secondSlot(player, slot, stack);
+        if (second < 0) {
+            return;
+        }
+        if (mount == null) {
+            if (BodyRules.canInstallSection(view, partner.id(), stack) == BodyRules.Check.OK) {
+                PacketDistributor.sendToServer(BodyActionPayload.installSection(partner.id(), second));
+            }
+        } else if (view.section(partner.id()) != null) {
+            BodyData.Mount other = new BodyData.Mount(partner.id(), mount.kind(), mount.index());
+            if (view.mounts(partner.id()).contains(other) && BodyRules.canInstallModule(view, other, stack) == BodyRules.Check.OK) {
+                PacketDistributor.sendToServer(BodyActionPayload.installModule(other, second));
+            }
+        }
+    }
+
+    /** Where a second copy of {@code stack} is: the same slot if it holds two, or else another; -1 for none. */
+    private static int secondSlot(LocalPlayer player, int slot, ItemStack stack) {
+        var items = player.getInventory().items;
+        if (items.get(slot).getCount() >= 2) {
+            return slot;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            if (i != slot && ItemStack.isSameItemSameComponents(items.get(i), stack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** With nothing to fit in the inventory: the unlocked Replicator recipes that make a part that would, to queue with a click. */
+    private void renderQueueable(GuiGraphics graphics, LocalPlayer player, BodyView view, String socketId, int tx, int ty, int mouseX, int mouseY, Hover hover) {
+        ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
+        List<RecipeHolder<ReplicatorRecipe>> recipes = new ArrayList<>();
+        for (RecipeHolder<ReplicatorRecipe> holder : player.level().getRecipeManager().getAllRecipesFor(ModRecipeTypes.REPLICATOR.get())) {
+            if (data.isUnlocked(holder.value().milestone()) && fits(view, socketId, holder.value().result())) {
+                recipes.add(holder);
+            }
+        }
+        if (recipes.isEmpty()) {
+            return;
+        }
+        graphics.drawString(font, Component.translatable("body.void_reclaimer.can_queue"), tx, ty, DIM, false);
+        int perRow = Math.max(1, (rightWidth() - 2) / STEP);
+        for (int i = 0; i < recipes.size(); i++) {
+            int sx = tx + (i % perRow) * STEP;
+            int sy = ty + 11 + (i / perRow) * STEP;
+            ItemStack result = recipes.get(i).value().result();
+            boolean over = inside(mouseX, mouseY, sx, sy, SLOT, SLOT);
+            graphics.fill(sx, sy, sx + SLOT, sy + SLOT, over ? 0xFF2A3644 : 0xFF1E2630);
+            graphics.renderItem(result, sx, sy);
+            if (over) {
+                hover.stack = result;
+                hover.line = Component.translatable("body.void_reclaimer.click_queue").withColor(ACCENT);
+            }
+            var id = recipes.get(i).id();
+            regions.add(new Region(sx, sy, SLOT, SLOT, () -> PacketDistributor.sendToServer(ReplicatorActionPayload.queue(id))));
+        }
+    }
+
+    /** Whether a recipe's result could go in this socket or on the selected mount. */
+    private boolean fits(BodyView view, String socketId, ItemStack result) {
+        if (selectedMount != null) {
+            return Parts.isModule(result, selectedMount.kind());
+        }
+        Socket socket = view.chassis().socket(socketId);
+        SectionStats section = Parts.section(result);
+        if (section == null || socket == null) {
+            return false;
+        }
+        return socketId.equals(view.chassis().coreSocket()) ? section.isCore() : socket.accepts(section.socketType());
+    }
+
+    /** The first Body Blueprint with a saved design in the inventory, or null. */
+    @Nullable
+    static com.voidreclaimer.body.Blueprint heldBlueprint(LocalPlayer player) {
+        for (ItemStack stack : player.getInventory().items) {
+            var design = stack.get(com.voidreclaimer.registry.ModDataComponents.BLUEPRINT.get());
+            if (design != null) {
+                return design;
+            }
+        }
+        return null;
     }
 
     /** "Condition 63%  [Repair: M3 S2]" for a worn section; nothing for a new one. Returns the next line's y. */
