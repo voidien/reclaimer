@@ -26,6 +26,9 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
  * at full brightness (the lights, trim and pipes glow).
  */
 public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
+    /** A part previewed but not installed: see-through and cool. */
+    private static final int GHOST = 0xA8A0E0FF;
+
     public BodyPartsLayer(GeoRenderer<BodyAnimatable> renderer) {
         super(renderer);
     }
@@ -53,7 +56,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             if (view.chassis().socket(name).mirror()) {
                 poseStack.scale(-1f, 1f, 1f);
             }
-            drawPart("section", section, name, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
+            drawPart("section", section, name, BodyRenderer.isGhost(name), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             drawInnerModules(name, section, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             poseStack.popPose();
         }
@@ -63,7 +66,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             if (!module.isEmpty()) {
                 poseStack.pushPose();
                 moveToPivot(poseStack, bone);
-                drawPart("module", module, mount.socket(), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
+                drawPart("module", module, mount.socket(), BodyRenderer.isGhost(mount), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
                 poseStack.popPose();
             }
         }
@@ -87,7 +90,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             // Offsets use the axes of the pivots in the .geo.json file, where x is mirrored against the rendered model.
             poseStack.translate(-place.x() / 16f, place.y() / 16f, place.z() / 16f);
             poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(place.yaw()));
-            drawPart("module", module, entry.mount().socket(), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
+            drawPart("module", module, entry.mount().socket(), BodyRenderer.isGhost(entry.mount()), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
             poseStack.popPose();
         }
     }
@@ -115,7 +118,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             }
             poseStack.pushPose();
             moveToPivot(poseStack, mountBone.get());
-            drawPart("module", module, socket, frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
+            drawPart("module", module, socket, BodyRenderer.isGhost(mount), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
             poseStack.popPose();
         }
     }
@@ -170,7 +173,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
     }
 
     /** Draws one part's model with the paint of the section in {@code paintSocket}; nothing when the art has no model for the item. */
-    private void drawPart(String folder, ItemStack stack, String paintSocket, BodyRenderer.Frame frame, PoseStack poseStack,
+    private void drawPart(String folder, ItemStack stack, String paintSocket, boolean ghost, BodyRenderer.Frame frame, PoseStack poseStack,
                           MultiBufferSource bufferSource, BodyAnimatable animatable, float partialTick, int light, int overlay) {
         BakedGeoModel model = model(folder, stack);
         if (model == null) {
@@ -180,6 +183,11 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         Cosmetics cosmetics = frame.cosmetics();
         var access = net.minecraft.client.Minecraft.getInstance().level.registryAccess();
         ResourceLocation texture = BodyTextures.INSTANCE.painted(part, access, cosmetics.casing(paintSocket));
+        if (ghost) {
+            RenderType glass = RenderType.entityTranslucent(texture);
+            renderer.reRender(model, poseStack, bufferSource, animatable, glass, bufferSource.getBuffer(glass), partialTick, LightTexture.FULL_BRIGHT, overlay, GHOST);
+            return;
+        }
         RenderType base = RenderType.entityCutoutNoCull(texture);
         renderer.reRender(model, poseStack, bufferSource, animatable, base, bufferSource.getBuffer(base), partialTick, light, overlay, 0xFFFFFFFF);
         // Additive: the masks are opaque black with white accents, so a normal layer would paint the part black.

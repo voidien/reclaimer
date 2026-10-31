@@ -349,4 +349,26 @@ public final class BodyGameTests {
             }
         });
     }
+
+    /** The assembly view's hover preview has to say what really happens when the part goes in. */
+    @GameTest(template = "empty", timeoutTicks = 60)
+    public static void aPreviewMatchesWhatInstallingReallyDoes(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 94_500.5, 80, 0.5);
+        try {
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.STORAGE_MK1.get()));
+            var view = Bodies.view(player);
+            var mount = view.mounts().stream().filter(m -> m.kind() == com.voidreclaimer.api.body.ModuleKind.STORAGE && view.data().module(m).isEmpty()).findFirst().orElse(null);
+            helper.assertTrue(mount != null, "the starter body has no free storage mount");
+            var stack = player.getMainHandItem();
+            var preview = Bodies.withModule(view, mount, stack, player.registryAccess());
+            helper.assertTrue(view.data().module(mount).isEmpty(), "the preview changed the real body");
+            helper.assertTrue(Bodies.installModule(player, mount, player.getInventory().selected) == com.voidreclaimer.body.BodyRules.Check.OK, "the install was refused");
+            var real = Bodies.stats(player);
+            helper.assertTrue(real.equals(preview.stats()), "preview " + preview.stats() + " but really " + real);
+            helper.assertFalse(com.voidreclaimer.body.assembly.StatDelta.between(view.stats(), real).isEmpty(), "storage changed nothing, so this checks nothing");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
 }

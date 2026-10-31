@@ -3,11 +3,15 @@ package com.voidreclaimer.client.screen;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.assembly.AssemblyCamera;
+import com.voidreclaimer.body.assembly.StatDelta;
 import com.voidreclaimer.client.render.body.BodyBounds;
 import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.client.render.body.BoneProbe;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -51,6 +55,10 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private static final double PICK_RADIUS = 6.0;
     private static final int MARKER_SOCKET = 0xFF7FD4FF;
     private static final int MARKER_MOUNT = 0xFFFFC857;
+    private static final int CHANGES_BACK = 0xD0101418;
+    private static final int TEXT = 0xFFDDE6EE;
+    private static final int BETTER = 0xFF70E080;
+    private static final int WORSE = 0xFFFF7060;
     private static final float START_PITCH = -18f;
 
     private final AssemblyCamera camera = new AssemblyCamera(START_YAW, START_PITCH);
@@ -143,9 +151,54 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         camera.advance(lastFrame == 0L ? 0f : (now - lastFrame) / 1000f);
         lastFrame = now;
         graphics.drawString(font, title, GUTTER, 6, ACCENT, false);
+        // What the panel drew under the mouse last frame; the panel comes after the model, over it.
+        BodyView current = Bodies.view(player);
+        BodyPanel.Preview hovered = panel.preview();
+        BodyView preview = hovered == null ? null : previewOf(current, hovered, player);
+        BodyRenderer.setPreview(preview, hovered == null ? null : hovered.socket(), hovered == null ? null : hovered.mount());
         renderBody(graphics, player);
+        BodyRenderer.setPreview(null, null, null);
         renderMarkers(graphics, player, mouseX, mouseY);
+        if (preview != null) {
+            renderChanges(graphics, hovered.stack().getHoverName(), StatDelta.between(current.stats(), preview.stats()));
+        }
         panel.render(graphics, player, mouseX, mouseY);
+    }
+
+    private static BodyView previewOf(BodyView view, BodyPanel.Preview part, LocalPlayer player) {
+        return part.mount() != null ? Bodies.withModule(view, part.mount(), part.stack(), player.registryAccess())
+                : Bodies.withSection(view, part.socket(), part.stack(), player.registryAccess());
+    }
+
+    /** The stats a hovered part would change, in the view's bottom right: green is better, red worse. */
+    private void renderChanges(GuiGraphics graphics, Component part, List<StatDelta.Row> rows) {
+        List<Component> labels = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+        int labelWidth = 0;
+        int valueWidth = 0;
+        for (StatDelta.Row row : rows) {
+            Component label = Component.translatable("assembly.void_reclaimer.stat." + row.key());
+            String value = number(row.before()) + " > " + number(row.after());
+            labels.add(label);
+            values.add(value);
+            labelWidth = Math.max(labelWidth, font.width(label));
+            valueWidth = Math.max(valueWidth, font.width(value));
+        }
+        int boxWidth = Math.max(labelWidth + valueWidth + 12, font.width(part) + 6);
+        int x = viewRight - boxWidth - 3;
+        int y = viewBottom - (rows.size() + 1) * 10 - 7;
+        graphics.fill(x, y, viewRight - 3, y + (rows.size() + 1) * 10 + 4, CHANGES_BACK);
+        graphics.drawString(font, part, x + 3, y + 3, ACCENT, false);
+        for (int i = 0; i < rows.size(); i++) {
+            int rowY = y + 13 + i * 10;
+            graphics.drawString(font, labels.get(i), x + 3, rowY, TEXT, false);
+            graphics.drawString(font, values.get(i), x + labelWidth + 9, rowY, rows.get(i).better() ? BETTER : WORSE, false);
+        }
+    }
+
+    private static String number(double value) {
+        double abs = Math.abs(value);
+        return String.format(Locale.ROOT, abs >= 100 || value == Math.rint(value) ? "%.0f" : abs >= 1 ? "%.1f" : "%.3f", value);
     }
 
     /** Where a marker counts as on the far side: just behind the body's middle, so the edges of a thin body stay reachable. */
