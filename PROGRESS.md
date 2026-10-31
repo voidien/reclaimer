@@ -939,6 +939,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Assembly view, part 2: hover previews: done
 - Hovering a part that fits draws it on the model as a translucent ghost and lists what it would change, green for better and red for worse, without installing it. A whole-model rig's section shows its limb, not tinted, since it has no separate model. `Bodies.withSection`/`withModule` build the body it would become; `body/assembly/StatDelta` (pure) compares two bodies. An addon's `BodyStatsEvent` changes are not in the preview, as there is no entity to pass it. Tests: `StatDeltaTest` (4), `BodyGameTests.aPreviewMatchesWhatInstallingReallyDoes`. Seen on the Mech.
 
+## Fix: a new ship could lose the contents of its blocks: done
+- **The bug:** a ship assembled at the wrong moment kept its blocks but lost what was in them: thrusters with an empty tank or no charge, and a barrel's items gone for good. `ServerChunkCache.getChunk` remembers the last four chunks it found, and Sable changes a plot's chunks without telling it. So the lookup could answer with a removed ship's dead chunk, or with Sable's shared empty chunk for a plot chunk someone had looked at before it existed. `SubLevelAssemblyHelper.moveBlocks` writes a block into the real chunk, then asks the level for its block entity: with the wrong answer the saved data went to the dead chunk or nowhere, and the old block entity had been emptied already.
+- **The fix:** `LevelPlotMixin` empties that lookup memory whenever a plot gains a chunk or is removed, whoever did the looking (`ServerChunkCacheInvoker` reaches the private method). It is also why a removed ship's blocks are gone at once now, not at the next tick.
+- **How narrow it was:** the assembly had to come in the same tick as the removal or the look; a 1-tick gap after a removal and a 3-tick gap after a look were both fine.
+- Tests: `aShipTakingAPlotFreedThisTickKeepsItsFuel` and `aShipKeepsItsContentsWhenItsPlotWasLookedAtFirst`, each in a batch of its own. Mutation-checked: without the hook on a new chunk the second fails, without the hook on removal the first fails.
+- **Not proven:** that this is what made `aChemicalThrusterPushesItsShip`, `anOffCentreRcsThrusterTurnsItsShip` and `anIonThrusterPushesItsShip` fail now and then with a ship that never moved. It fits (no push, the block entity's data missing, every thruster kind), and a full suite run shows ships assembled and removed within a few ticks of each other and `HelmSeat.follow` looking at a plot's centre right after its ship is removed, but no failing run was caught with this in its log. See Known issues.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
@@ -961,6 +968,7 @@ Original plan, with where each stands (the revised plan for what is left is in `
 - [ ] Holo-displays (parked; plan in `docs/HOLO_DISPLAYS_PLAN.md`)
 
 ## Known issues
+- The Aeronautics thruster tests that failed now and then with a ship that never moved may or may not be cured by "Fix: a new ship could lose the contents of its blocks": the cause it fixes is proven, the link to those failures is not. If one comes back, its failure message now shows the thruster's state before assembly, just after it, and at the end.
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.
 - Sounds were not heard during testing (the headless test client has no audio device). The sound events, `sounds.json`, and the triggering logic are in place, but volume and pitch need a listen on a real machine.
 - Dust Sensor markers use the FOV setting, not the dynamic FOV (sprint or speed effects), so markers can be slightly off-position while the FOV is changing.
