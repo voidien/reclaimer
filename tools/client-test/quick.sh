@@ -5,6 +5,7 @@
 #   tools/client-test/quick.sh swap            compile, then replace the changed classes in the running game
 #   tools/client-test/quick.sh shot NAME       screenshot to build/client-shots/NAME.png
 #   tools/client-test/quick.sh cmd "/command"  run a chat command
+#   tools/client-test/quick.sh photo NAME [d]  four views (see PhotoScript) joined into build/client-shots/NAME.png, facts printed
 #   tools/client-test/quick.sh gclick X Y      left click at GUI coordinates (the window is 1280x720 at GUI scale 3)
 #   tools/client-test/quick.sh ghover X Y      move the mouse to GUI coordinates
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
@@ -96,6 +97,20 @@ shot)
 cmd)
     $XT key t; sleep 0.4; $XT type "$2"; sleep 0.2; $XT key Return; sleep 0.6
     ;;
+photo)
+    shots=run/screenshots
+    mkdir -p "$SHOTS"
+    # A sheet is fresh when its last file is newer than this moment; an older sheet of the same name is overwritten.
+    touch build/client-photo.stamp
+    sleep 0.05
+    $XT key t; sleep 0.4; $XT type "/vrphoto sheet $2 ${3:-0}"; sleep 0.1; $XT key Return
+    for _ in $(seq 1 100); do [ "$shots/$2_top.txt" -nt build/client-photo.stamp ] && break; sleep 0.2; done
+    [ "$shots/$2_top.txt" -nt build/client-photo.stamp ] || { echo "no sheet appeared" >&2; exit 1; }
+    sleep 0.4
+    montage "$shots/$2_front.png" "$shots/$2_side.png" "$shots/$2_three_quarter.png" "$shots/$2_top.png" -tile 2x2 -geometry 640x360+1+1 "$SHOTS/$2.png"
+    echo "$ROOT/$SHOTS/$2.png"
+    cut -c1-400 "$shots/$2_front.txt"
+    ;;
 gclick) $XT click $(($2 * SCALE)) $(($3 * SCALE)) ;;
 ghover) $XT hover $(($2 * SCALE)) $(($3 * SCALE)) ;;
 gdrag) $XT drag $(($2 * SCALE)) $(($3 * SCALE)) $(($4 * SCALE)) $(($5 * SCALE)) ;;
@@ -106,7 +121,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,16p' "$0" | sed 's/^# \?//'
+    sed -n '2,17p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac

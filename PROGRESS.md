@@ -878,6 +878,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Tests:** `DebugReadoutGameTests` (3: the first block along the view with its contents and not the one behind it; an entity in front of a block; empty space). Mutation-checked (entities ignored; inventory not counted). Seen in the headless client.
 - **Not covered:** a ship's blocks live in Sable's plot, so the look ray reads the world and not a ship; the ship overlay comes later.
 
+## Photo mode by command: done
+- `/vrphoto` (client command, `client/camera/PhotoScript`) puts the camera at exact spots, orbits a focus, and takes named shots: `sheet` takes four views of the focus with the facts beside each, and `tools/client-test/quick.sh photo NAME [distance]` joins them into one picture and prints the facts, in about 5 s. T in photo mode opens chat without leaving it.
+- **Tests:** `PhotoStateTest` (the orbit stands at its distance looking at the focus; place and field of view limits; the sheet's four views). Seen in the headless client on the Drone, Mech and Ship. It is client-only input, so there is no GameTest.
+- **Found with it on the first day:** bodies were drawn at scale squared and their parts at scale cubed, see the fix below.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
