@@ -87,6 +87,22 @@ public final class ModCommands {
     }
 
     /** Builds a test scene in deep space and puts the player where it can be seen. */
+    private static final java.util.List<net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis>> SHELL_BODIES = java.util.List.of(
+            com.voidreclaimer.body.BuiltinBodies.DRONE, com.voidreclaimer.body.BuiltinBodies.MECH, com.voidreclaimer.body.BuiltinBodies.SHIP,
+            com.voidreclaimer.body.BuiltinBodies.SHUTTLE, com.voidreclaimer.body.BuiltinBodies.TITAN);
+
+    /** Debug: nothing in survival makes a shell yet. */
+    private static int spawnShell(CommandSourceStack source, String name, boolean full) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var chassis = SHELL_BODIES.stream().filter(key -> key.location().getPath().equals(name)).findFirst();
+        if (chassis.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.link.unknown", name));
+            return 0;
+        }
+        com.voidreclaimer.link.BodyHost.shellAhead(source.getPlayerOrException(), com.voidreclaimer.body.Bodies.preset(chassis.get(), full));
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.link.spawned", name), true);
+        return 1;
+    }
+
     private static int scene(CommandSourceStack source, String name) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var scene = java.util.Arrays.stream(com.voidreclaimer.debug.TestScenes.Scene.values()).filter(s -> s.id().equals(name)).findFirst();
         if (scene.isEmpty()) {
@@ -116,6 +132,14 @@ public final class ModCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("condition", FloatArgumentType.floatArg(0f, 1f))
                                         .executes(ctx -> wear(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), FloatArgumentType.getFloat(ctx, "condition"))))))
+                .then(Commands.literal("link")
+                        .then(Commands.literal("spawn")
+                                .then(Commands.argument("body", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                        .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                                SHELL_BODIES.stream().map(key -> key.location().getPath()), builder))
+                                        .executes(ctx -> spawnShell(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "body"), false))
+                                        .then(Commands.literal("full")
+                                                .executes(ctx -> spawnShell(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "body"), true))))))
                 .then(Commands.literal("scene")
                         .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
                                 .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(

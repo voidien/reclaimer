@@ -55,6 +55,8 @@ public final class VoidReclaimer {
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modBus);
         modBus.addListener(ModPayloads::register);
+        modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent event) ->
+                event.put(com.voidreclaimer.registry.ModEntities.BODY_HOST.get(), com.voidreclaimer.link.BodyHost.attributes().build()));
         StarterNebula.init();
     }
 

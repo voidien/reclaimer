@@ -161,6 +161,7 @@ src/main/java/com/voidreclaimer/
 │   ├── hud/                      dust meter, Dust Sensor overlay
 │   ├── screen/                   replicator, assembly, machine screens
 │   └── render/                   GeckoLib body/part/drone renderers, player model replacement
+├── link/                         remote control: BodyHost (a body nobody is in), HostRole
 ├── ship/                         7b: block ship thrusters (Sable actors), ThrusterMath, the Helm (seat, PilotInput, ThrustAllocator, Ships)
 ├── compat/jei/                   @JeiPlugin + categories (only loaded when JEI present)
 ├── compat/cc/                    CC: Tweaked generic peripherals (only loaded when CC present)
@@ -365,6 +366,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `#void_reclaimer:launch_frame` | Block tag | Blocks that may form the Launch Complex's ring (Scaffold, Portal Frame, Create's industrial iron block and andesite casing) |
 
 ### Fixed sets (enums by design)
+- `HostRole` (`link`): what a `BodyHost` is for (shell, wreck, mirror). Each is a rule of remote control, not content; an unknown saved role reads as a shell, so a body is never lost.
 - `ModuleKind` (`api.body`): the mount kinds sections offer (core, thruster, storage, sensor, tool, cosmetic). Each has its own rule in `BodyStats`; new behaviour comes from new modules of these kinds (tools: `ToolModuleType`). Sections themselves are open (socket types are free ids).
 
 ## Conventions
