@@ -895,6 +895,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 
 ## Fix: exact dust checks raced another test's Dyson tier change: done
 - `HelperCollectGameTests.aFullCollectorWithItsOwnerFarAwayWaits` failed once on CI: its owner had dust. `Dyson.set` checks every online player's milestones when the tier changes, so a test player who had not reached Awakening got the starter dust at a moment set by whichever test changed the tier. Any test asserting an exact dust amount was exposed. Test players now start past Awakening (`TestPlayers.join`); tests about the first moments call `notYetAwake`. Test: `StarterDustGameTests.aTestPlayersDustIsNotChangedByAnotherTestsMilestoneCheck`. Mutation-checked. The game itself is unaffected: a real player reaches Awakening within seconds of joining.
+## Photo mode: attachment labels: done
+- L in photo mode (`/vrphoto labels true`) names every socket and mount on the body, read from the real render matrices (`client/render/body/BoneProbe`), and the shot's text file lists them in blocks from the feet along the body's own axes. Sheets now start from the way the body really faces (`BodyRenderer.facing`): an upright Mech's body lags its view. Tests: `BoneProbeTest`. Seen on the fully fitted Mech.
+- The first read gave the Mech's mount positions for the attachment review the owner asked for; that review comes after the debug tools.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
