@@ -27,6 +27,7 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 - **Tests:** every feature adds unit tests and GameTests. Mutation-check each new test: back the file up, break the feature, see the test fail, restore. A flaky test gets a root-cause fix, never a skip or a rerun.
 - **Every new block or item with state or actions gets a CC: Tweaked peripheral** in the same PR (`CLAUDE.md` "CC: Tweaked peripherals").
 - **Docs:** keep `CLAUDE.md`, `PROGRESS.md` and this file current in the same PR. Two PRs that both add a block before `## Phases` in `PROGRESS.md` conflict: merge `main` into the second and keep both blocks. No model names in commits, PRs or code. Name the phase in the commit message.
+- **Speak up (`CLAUDE.md` rule 10):** the owner wants a collaborator. Bring up debug tools and recommendations whenever you see them, for your own work and through any agent you spawn. In an unattended stretch, collect them under "Ideas for the owner" in `PROGRESS.md` and raise them at the end.
 - **Agents:** the Opus reviewer agent (`.claude/agents/reviewer.md`) only for risky gameplay, saved data, networking or extension-point changes; other agents only when they save real time (a council on a stuck bug, parallel independent work).
 
 ## This machine (the owner's PC, Arch-based, zsh)

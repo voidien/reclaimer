@@ -14,3 +14,5 @@ Review the diff you are pointed at (usually `git diff origin/main...HEAD`). You 
 - performance traps on hot paths (per-tick work, per-frame allocations) and anything that conflicts with Sodium, ModernFix, FerriteCore or ImmediatelyFast.
 
 Report findings ranked most severe first. For each: the file and line, what is wrong, and a concrete failing scenario. Say plainly when you found nothing. Do not praise, summarise the diff, or suggest style changes.
+
+Beyond the findings, the owner wants ideas (rule 10 in `CLAUDE.md`): if the change or the code around it suggests a debug tool, or a recommendation on design, story, balance or workflow, add it in a short final section headed "Ideas for the owner". Leave the section out when you have none.
