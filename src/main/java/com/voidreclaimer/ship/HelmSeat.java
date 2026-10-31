@@ -51,6 +51,7 @@ public class HelmSeat extends Entity {
         HelmSeat seat = new HelmSeat(ModEntities.HELM_SEAT.get(), level);
         seat.entityData.set(HELM, helm.immutable());
         seat.setPos(where.x, where.y + SEAT_HEIGHT, where.z);
+        HelmSeats.track(seat);
         return seat;
     }
 
@@ -63,6 +64,17 @@ public class HelmSeat extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide()) {
+            return;
+        }
+        follow();
+    }
+
+    /**
+     * Keeps the seat at its Helm, or removes it when the Helm or its ship is gone. Called from the seat's own tick and
+     * every server tick from {@link HelmSeats}, since a seat whose chunk is not entity-ticking does not tick on its own.
+     */
+    public void follow() {
+        if (isRemoved()) {
             return;
         }
         if (getPassengers().isEmpty() || !(level().getBlockEntity(helmPos()) instanceof HelmBlockEntity)) {
@@ -112,6 +124,7 @@ public class HelmSeat extends Entity {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         NbtUtils.readBlockPos(tag, "helm").ifPresent(pos -> entityData.set(HELM, pos));
+        HelmSeats.track(this);
     }
 
     @Override

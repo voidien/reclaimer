@@ -52,7 +52,9 @@ public final class Ships {
             return null;
         }
         LevelPlot plot = container.getPlot(new ChunkPos(pos));
-        return plot == null ? null : plot.getSubLevel();
+        SubLevel ship = plot == null ? null : plot.getSubLevel();
+        // A removed ship's plot lingers for a while: its blocks are nowhere in the world any more.
+        return ship instanceof ServerSubLevel server && server.isRemoved() ? null : ship;
     }
 
     /** The ship's blocks' bounds in its own coordinates, from its plot. */

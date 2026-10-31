@@ -332,7 +332,17 @@ public final class AeronauticsGameTests {
         player = current != null ? current : player;
         helper.assertTrue(helm.seat(player), "the pilot could not sit at " + helmPos + " (player at " + player.position() + ")");
         // A cross-dimension teleport can hand the server a fresh ServerPlayer object for the same player: compare by id.
-        helper.assertTrue(helm.pilot() != null && helm.pilot().getUUID().equals(player.getUUID()), "the Helm does not see its pilot: " + helm.pilot());
+        if (helm.pilot() == null || !helm.pilot().getUUID().equals(player.getUUID())) {
+            var seats = space.getEntities(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), e -> true).stream()
+                    .map(e -> e.position() + "->" + ((com.voidreclaimer.ship.HelmSeat) e).helmPos() + " carrying " + e.getPassengers()).toList();
+            var vehicle = player.getVehicle();
+            helper.fail("the Helm does not see its pilot: " + helm.pilot() + "; entityTicking " + space.isPositionEntityTicking(BlockPos.containing(where))
+                    + ", chunk " + space.getChunkSource().hasChunk(BlockPos.containing(where).getX() >> 4, BlockPos.containing(where).getZ() >> 4)
+                    + ", byUuid " + (vehicle == null ? "none" : space.getEntity(vehicle.getUUID())) + ", removed " + (vehicle != null && vehicle.isRemoved())
+                    + "; helm at " + helmPos + " in world at " + where + ", ship " + ship
+                    + " plot " + ship.getPlot().getChunkMin() + ".." + ship.getPlot().getChunkMax() + ", player at " + player.position()
+                    + " riding " + player.getVehicle() + ", seats " + seats);
+        }
         player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_INPUT, keys);
         return player;
     }
@@ -429,19 +439,46 @@ public final class AeronauticsGameTests {
             ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
             helper.runAfterDelay(5, () -> {
                 removeShip(server, space, pos);
-                helper.runAfterDelay(5, () -> {
+                // A real player ticks and so keeps the chunks around them entity-ticking, which is what lets the seat
+                // tick and notice; a test player only ticks when told to.
+                tickPlayer(helper, server, player.getUUID(), UNSEAT_TICKS, () -> {
                     ServerPlayer now = server.getPlayerList().getPlayer(player.getUUID());
                     Vec3 at = now == null ? null : now.position();
                     boolean riding = now != null && now.getVehicle() != null;
+                    String why = "";
+                    if (riding && now.getVehicle() instanceof com.voidreclaimer.ship.HelmSeat seat) {
+                        BlockPos helmPos = seat.helmPos();
+                        why = "; seat removed " + seat.isRemoved() + " at " + seat.position() + ", helm " + helmPos + " entity " + space.getBlockEntity(helmPos)
+                                + ", shipAt(server) " + com.voidreclaimer.ship.Ships.shipAt(space, helmPos) + ", shipAt(level) " + com.voidreclaimer.ship.Ships.shipAt((net.minecraft.world.level.Level) space, helmPos)
+                                + ", inPlots " + com.voidreclaimer.ship.Ships.inPlots(space, helmPos) + ", worldSpot " + com.voidreclaimer.ship.HelmSeat.worldSpot(space, helmPos)
+                                + ", seat chunk entityTicking " + space.isPositionEntityTicking(seat.blockPosition()) + ", helm chunk loaded " + space.hasChunk(helmPos.getX() >> 4, helmPos.getZ() >> 4)
+                                + ", helm chunk entityTicking " + space.isPositionEntityTicking(helmPos);
+                    }
                     TestPlayers.remove(player);
                     if (now == null || riding || at.distanceTo(Vec3.atCenterOf(pos)) > 16) {
-                        helper.fail("the pilot was not left in the world: at " + at + ", riding " + riding + "; setup: " + log);
+                        helper.fail("the pilot was not left in the world: at " + at + ", riding " + riding + why + "; setup: " + log);
                     } else {
                         helper.succeed();
                     }
                 });
             });
         }));
+    }
+
+    /** Ticks per the player's turn to be left alone after the ship is gone: the chunk has to become entity-ticking first. */
+    private static final int UNSEAT_TICKS = 40;
+
+    /** Runs the player's own tick once per game tick for {@code ticks} ticks, then {@code then}. */
+    private static void tickPlayer(GameTestHelper helper, MinecraftServer server, java.util.UUID player, int ticks, Runnable then) {
+        ServerPlayer now = server.getPlayerList().getPlayer(player);
+        if (now != null) {
+            now.doTick();
+        }
+        if (ticks <= 0) {
+            then.run();
+        } else {
+            helper.runAfterDelay(1, () -> tickPlayer(helper, server, player, ticks - 1, then));
+        }
     }
 
     /** The Helm on the test ship at {@code pos}, or null. */

@@ -49,6 +49,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** What the Helm found last tick, for the HUD and the peripheral. */
     private volatile Readout readout = Readout.EMPTY;
+    /**
+     * The seat this Helm spawned (server only, not saved). Kept here because an entity added to a chunk that is not yet
+     * entity-ticking is invisible to entity lookups until the chunk is, which would lose the pilot for those ticks;
+     * {@link HelmSeats} keeps such a seat moving.
+     */
+    @Nullable
+    private HelmSeat seat;
 
     /** What the Helm saw last tick: whether it is on a ship, how many thrusters, and what the ship can do. */
     /**
@@ -124,6 +131,7 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
             seat.discard();
             return false;
         }
+        this.seat = seat;
         triggerAnim(CONTROLLER, SIT_ANIMATION);
         return true;
     }
@@ -134,6 +142,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (level == null) {
             return null;
         }
+        if (seat != null && (seat.isRemoved() || !seat.helmPos().equals(worldPosition))) {
+            seat = null;
+        }
+        if (seat != null) {
+            return seat.getFirstPassenger() instanceof Player player ? player : null;
+        }
+        // A seat restored from a save (or spawned before a reload) is only found by looking: it was saved with the Helm's position.
         for (HelmSeat seat : level.getEntitiesOfClass(HelmSeat.class, new AABB(worldPosition).inflate(1.0))) {
             if (seat.helmPos().equals(worldPosition) && seat.getFirstPassenger() instanceof Player player) {
                 return player;
