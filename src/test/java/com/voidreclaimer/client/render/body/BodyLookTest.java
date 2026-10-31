@@ -180,11 +180,13 @@ class BodyLookTest {
 
     @Test
     void bigBodiesGetTheCameraFurtherBackSmallOnesKeepTheirs() {
-        // Vanilla multiplies the distance by the body scale after this: 4 * factor * scale is what the camera really gets.
-        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f));
-        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1f));
-        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1.2f));
-        assertEquals(4f * 3.3f, BodyRenderEvents.cameraDistance(4f, 3f), 1e-4f, "a ship: about 40 blocks");
-        assertEquals(4f * 5f, BodyRenderEvents.cameraDistance(4f, 8f), 1e-4f, "capped for the Titan: about 160 blocks");
+        // Vanilla multiplies the distance by the body scale after this: result * scale is what the camera really gets.
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 0.4f, 1.2f), "a Drone keeps vanilla's distance");
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 1.2f, 1.1f), "so does a Mech");
+        assertEquals(BodyRenderEvents.CAMERA_FIT * 2.4f, BodyRenderEvents.cameraDistance(4f, 3f, 2.4f), 1e-4f, "a ship: by its own size");
+        float ship = BodyRenderEvents.cameraDistance(4f, 3f, 2.4f) * 3f;
+        float titan = BodyRenderEvents.cameraDistance(4f, 8f, 4.8f) * 8f;
+        assertEquals(titan / ship, (4.8f * 8f) / (2.4f * 3f), 1e-4f, "each stands back in step with its real size, so each fills the same share of the screen");
+        assertEquals(4f, BodyRenderEvents.cameraDistance(4f, 3f, 0f), "no model loaded yet: vanilla's distance");
     }
 }

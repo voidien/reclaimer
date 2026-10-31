@@ -16,6 +16,8 @@ public final class BodyBounds {
     /** Room for sections a composed rig plugs in at its bones: their models are not part of the rig. */
     private static final float SECTION_ROOM = 1f;
     private static final float DEFAULT_RADIUS = 1f;
+    /** Read every frame by the camera, so measured once per baked model; a resource reload makes new models. */
+    private static final java.util.Map<BakedGeoModel, Float> RADII = new java.util.WeakHashMap<>();
 
     private BodyBounds() {}
 
@@ -28,9 +30,13 @@ public final class BodyBounds {
         if (model == null) {
             return DEFAULT_RADIUS;
         }
+        return RADII.computeIfAbsent(model, baked -> measure(baked, spec == null));
+    }
+
+    private static float measure(BakedGeoModel model, boolean composed) {
         float[] box = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         for (GeoBone bone : model.topLevelBones()) {
-            reach(bone, spec == null, box);
+            reach(bone, composed, box);
         }
         float x = box[3] - box[0];
         float y = box[4] - box[1];

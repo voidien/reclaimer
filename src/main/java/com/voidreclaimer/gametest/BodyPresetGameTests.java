@@ -56,12 +56,17 @@ public final class BodyPresetGameTests {
         check(helper, BuiltinBodies.SHUTTLE, 89_120.5, false);
     }
 
-    /** The Shuttle is a second layout of the Ship size class: same scale, own chassis. */
+    /** The Shuttle has its own scale and layout, at the Ship's rank so parts and unlocks treat the two alike. */
     @GameTest(template = "empty", timeoutTicks = 60)
-    public static void shuttleSharesTheShipSizeClassButHasItsOwnLayout(GameTestHelper helper) {
-        helper.assertTrue(BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE).sizeClass().equals(BuiltinBodies.SHIP_SIZE), "not Ship class");
-        helper.assertTrue(!BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE).sockets().equals(BuiltinBodies.CHASSIS.get(BuiltinBodies.SHIP).sockets()), "same sockets as the Ship");
-        helper.assertTrue(BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.SHIP_SIZE).scale() == 3.0, "the Ship size class changed");
+    public static void shuttleIsSmallerThanTheShipAtTheSameRank(GameTestHelper helper) {
+        var shuttle = BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE);
+        helper.assertTrue(shuttle.sizeClass().equals(BuiltinBodies.SHUTTLE_SIZE), "not its own size class");
+        helper.assertTrue(!shuttle.sockets().equals(BuiltinBodies.CHASSIS.get(BuiltinBodies.SHIP).sockets()), "the same layout as the Ship");
+        var ship = BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.SHIP_SIZE);
+        var size = BuiltinBodies.SIZE_CLASSES.get(BuiltinBodies.SHUTTLE_SIZE);
+        helper.assertTrue(size.scale() == 2.0, "the Shuttle's scale changed: " + size.scale());
+        helper.assertTrue(ship.scale() == 3.0, "the Ship's scale changed: " + ship.scale());
+        helper.assertTrue(size.rank() == ship.rank(), "a different rank changes what fits and what unlocks");
         helper.succeed();
     }
 

@@ -524,6 +524,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.size.drone", "Drone");
         add("body.void_reclaimer.size.mech", "Mech");
         add("body.void_reclaimer.size.ship", "Ship");
+        add("body.void_reclaimer.size.shuttle", "Shuttle");
         add("body.void_reclaimer.size.titan", "Titan");
         add("body.void_reclaimer.casing.andesite", "Andesite");
         add("body.void_reclaimer.casing.brass", "Brass");
