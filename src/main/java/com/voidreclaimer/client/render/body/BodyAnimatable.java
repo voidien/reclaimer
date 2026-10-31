@@ -1,6 +1,7 @@
 package com.voidreclaimer.client.render.body;
 
 import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.link.BodyHost;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoReplacedEntity;
@@ -24,9 +26,9 @@ import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * The single animatable GeckoLib uses for every body (one instance cache entry per player). Its controller plays the rig's
+ * The single animatable GeckoLib uses for every body (one instance cache entry per entity). Its controller plays the rig's
  * {@code idle}, {@code thrust}, {@code brake} or {@code low_power} animation, picked by {@link BodyLook#pose}, and
- * {@code module_work} while the player swings (using a tool).
+ * {@code module_work} while the wearer swings (using a tool).
  */
 public final class BodyAnimatable implements GeoReplacedEntity {
     public static final BodyAnimatable INSTANCE = new BodyAnimatable();
@@ -39,7 +41,7 @@ public final class BodyAnimatable implements GeoReplacedEntity {
 
     private BodyAnimatable() {}
 
-    /** Per-player memory of the last speed and the pose being held. */
+    /** Per-entity memory of the last speed and the pose being held. */
     private static final class Motion {
         int tick = Integer.MIN_VALUE;
         double speed;
@@ -68,12 +70,12 @@ public final class BodyAnimatable implements GeoReplacedEntity {
     private PlayState playLayer(int index, AnimationState<BodyAnimatable> state) {
         Entity entity = state.getData(DataTickets.ENTITY);
         BodyRenderer.Frame frame = BodyRenderer.frame();
-        if (!(entity instanceof Player player) || frame == null || frame.spec() == null || BodyRenderer.exploding()) {
+        if (!(entity instanceof LivingEntity wearer) || frame == null || frame.spec() == null || BodyRenderer.exploding()) {
             return PlayState.STOP;
         }
-        BodyLook.Pose pose = pose(player);
+        BodyLook.Pose pose = pose(wearer);
         ResourceLocation file = frame.animationResource();
-        for (String key : BodyLook.layerKeys(player.swinging, pose)) {
+        for (String key : BodyLook.layerKeys(wearer.swinging, pose)) {
             String name = frame.spec().layerAnimation(index, key);
             if (name != null && hasAnimation(file, name)) {
                 return state.setAndContinue(RawAnimation.begin().thenLoop(name));
@@ -84,20 +86,20 @@ public final class BodyAnimatable implements GeoReplacedEntity {
 
     private PlayState play(AnimationState<BodyAnimatable> state) {
         Entity entity = state.getData(DataTickets.ENTITY);
-        if (!(entity instanceof Player player)) {
+        if (!(entity instanceof LivingEntity wearer)) {
             return PlayState.STOP;
         }
         BodyRenderer.Frame frame = BodyRenderer.frame();
         if (frame == null || BodyRenderer.exploding()) {
             return PlayState.STOP;
         }
-        BodyLook.Pose pose = pose(player);
+        BodyLook.Pose pose = pose(wearer);
         List<String> keys = new ArrayList<>();
         boolean layered = frame.spec() != null && frame.spec().hasLayerFor(BodyLook.MODULE_WORK);
-        if (player.swinging && pose != BodyLook.Pose.LOW_POWER && !layered) {
+        if (wearer.swinging && pose != BodyLook.Pose.LOW_POWER && !layered) {
             keys.add(BodyLook.MODULE_WORK);
         }
-        if (pose == BodyLook.Pose.IDLE && BodyLook.idleVariant(idleTicks(player))) {
+        if (pose == BodyLook.Pose.IDLE && BodyLook.idleVariant(idleTicks(wearer))) {
             keys.add(BodyLook.IDLE_LONG);
         }
         keys.addAll(BodyLook.fallbacks(pose));
@@ -116,40 +118,48 @@ public final class BodyAnimatable implements GeoReplacedEntity {
         return animations != null && animations.getAnimation(name) != null;
     }
 
-    private BodyLook.Pose pose(Player player) {
-        Motion motion = motions.computeIfAbsent(player.getId(), id -> new Motion());
-        if (motion.tick != player.tickCount) {
-            Vec3 step = player.position().subtract(player.xo, player.yo, player.zo);
+    private BodyLook.Pose pose(LivingEntity wearer) {
+        Motion motion = motions.computeIfAbsent(wearer.getId(), id -> new Motion());
+        if (motion.tick != wearer.tickCount) {
+            Vec3 step = wearer.position().subtract(wearer.xo, wearer.yo, wearer.zo);
             motion.previousSpeed = motion.speed;
             motion.speed = step.length();
-            motion.tick = player.tickCount;
-            float yaw = player.getYRot();
-            BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, !Energy.canPowerSystems(player),
-                    BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw), thrusting(player));
-            if (now != motion.pose && (player.tickCount >= motion.heldUntil || now == BodyLook.Pose.LOW_POWER)) {
+            motion.tick = wearer.tickCount;
+            float yaw = wearer.getYRot();
+            BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, lowPower(wearer),
+                    BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw), thrusting(wearer));
+            if (now != motion.pose && (wearer.tickCount >= motion.heldUntil || now == BodyLook.Pose.LOW_POWER)) {
                 motion.pose = now;
-                motion.heldUntil = player.tickCount + HOLD_TICKS;
+                motion.heldUntil = wearer.tickCount + HOLD_TICKS;
             } else if (now == motion.pose) {
-                motion.heldUntil = player.tickCount + HOLD_TICKS;
+                motion.heldUntil = wearer.tickCount + HOLD_TICKS;
             }
         }
         if (motion.pose != BodyLook.Pose.IDLE) {
             motion.idleSince = -1;
         } else if (motion.idleSince < 0) {
-            motion.idleSince = player.tickCount;
+            motion.idleSince = wearer.tickCount;
         }
         return motion.pose;
     }
 
     /** How long the body has been idle, in ticks (0 when it is not). */
-    private long idleTicks(Player player) {
-        Motion motion = motions.get(player.getId());
-        return motion == null || motion.idleSince < 0 ? 0 : Math.max(0, player.tickCount - motion.idleSince);
+    private long idleTicks(LivingEntity wearer) {
+        Motion motion = motions.get(wearer.getId());
+        return motion == null || motion.idleSince < 0 ? 0 : Math.max(0, wearer.tickCount - motion.idleSince);
     }
 
-    /** The local player's held keys; other players' input isn't known here, so their steady motion counts as thrust. */
-    private static boolean thrusting(Player player) {
-        return !player.isLocalPlayer() || player.getData(ModAttachments.FLIGHT_INPUT).isThrusting();
+    /** A player on their energy; a host with nobody in it is asleep, unless it stands for a player who is only away. */
+    private static boolean lowPower(LivingEntity wearer) {
+        if (wearer instanceof BodyHost host) {
+            return host.role().dormant();
+        }
+        return wearer instanceof Player player && !Energy.canPowerSystems(player);
+    }
+
+    /** The local player's held keys; other players' input isn't known here, so their steady motion counts as thrust. Hosts have no keys. */
+    private static boolean thrusting(LivingEntity wearer) {
+        return wearer instanceof Player player && (!player.isLocalPlayer() || player.getData(ModAttachments.FLIGHT_INPUT).isThrusting());
     }
 
     @Override
