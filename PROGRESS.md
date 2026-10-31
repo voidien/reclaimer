@@ -951,6 +951,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **The fix:** gaining dust never lowers a reserve. A negative amount (an addon's `DustGainEvent` can send one) still takes dust away.
 - Tests: `gainingDustNeverLowersAReserveAboveCapacity` (unit), `gatheringLeavesAReserveAboveCapacityAlone` (GameTest). Mutation-checked: without the fix the unit test fails and the GameTest reads 300 falling to 200.
 
+## Fix: a Docking Clamp could pull in a ship from far away: done
+- **The bug:** a clamp asks every ship what sits in its front cell, in that ship's own coordinates, and never checked that the answer lay in that ship's plot. From far away those coordinates run on into another ship's plot, so a far ship could count as a visitor because of a block that was not its own, and be merged into the station. Found by reading the code while chasing the plot lookup bug, then reproduced.
+- **The fix:** `dock()` only counts a block in the ship's own plot, which also stops the clamp looking up plot chunks that do not exist.
+- Test: `aClampIgnoresAFarShipWhoseCoordinatesLandInAnotherShip`, which places a station exactly where a far ship's coordinates land on a third ship's block and fails if the setup misses. Mutation-checked: without the fix it reads "the clamp pulled in a ship from far away".
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
