@@ -53,6 +53,7 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
         add("key.void_reclaimer.orbit_camera", "Orbit Camera (hold, third person)");
+        add("key.void_reclaimer.assembly", "Body Assembly");
         add("key.void_reclaimer.photo_mode", "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, O overlay, P freeze, period step, comma slow, T chat, Enter shot)");
         add("screen.void_reclaimer.photo_mode", "Photo mode");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
@@ -288,6 +289,11 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.collect", "Collect output");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");
         add("commands.void_reclaimer.scene.unknown", "No test scene called %s");
+        add("replicator.void_reclaimer.assembly", "3D view");
+        add("assembly.void_reclaimer.title", "Body assembly");
+        add("assembly.void_reclaimer.back", "Back");
+        add("assembly.void_reclaimer.grid", "Grid: %s blocks");
+        add("assembly.void_reclaimer.grid_one", "Grid: 1 block");
         add("replicator.void_reclaimer.queue", "Queue %s/%s");
         add("replicator.void_reclaimer.output", "Output");
         add("replicator.void_reclaimer.paused", "PAUSED: low power");

@@ -34,6 +34,10 @@ public final class ModKeyMappings {
     public static final KeyMapping ORBIT_CAMERA = new KeyMapping("key.void_reclaimer.orbit_camera",
             KeyConflictContext.IN_GAME, InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE, CATEGORY);
 
+    /** Opens the full-window body assembly view. Unbound by default: the Body tab has a button for it. */
+    public static final KeyMapping ASSEMBLY = new KeyMapping("key.void_reclaimer.assembly",
+            KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, CATEGORY);
+
     /** Photo mode: a free camera with the HUD hidden. Inside: drag to look, WASD/Space/Shift to move (Ctrl fast), scroll for FOV, Q/E to roll, R resets roll, G debug layer, Enter for a screenshot. */
     public static final KeyMapping PHOTO_MODE = new KeyMapping("key.void_reclaimer.photo_mode",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
@@ -67,6 +71,7 @@ public final class ModKeyMappings {
         event.register(MODULE_WHEEL);
         event.register(ORBIT_CAMERA);
         event.register(PHOTO_MODE);
+        event.register(ASSEMBLY);
         event.register(TOGGLE_RCS_LOCK);
         event.register(ROLL_LEFT);
         event.register(ROLL_RIGHT);
