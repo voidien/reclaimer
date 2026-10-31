@@ -153,7 +153,7 @@ public final class AeronauticsGameTests {
     }
 
     /** A cross of blocks around a thruster, redstone on top if it is powered: the force goes close to the centre of mass. */
-    private static void cross(MinecraftServer server, ServerLevel space, BlockPos pos, boolean powered, List<String> log) {
+    static void cross(MinecraftServer server, ServerLevel space, BlockPos pos, boolean powered, List<String> log) {
         for (BlockPos arm : List.of(pos.north(), pos.south(), pos.below())) {
             log.addAll(command(server, space, pos, "setblock " + arm.getX() + " " + arm.getY() + " " + arm.getZ() + " minecraft:stone"));
         }
@@ -604,9 +604,9 @@ public final class AeronauticsGameTests {
         return null;
     }
 
-    private static final Pattern LINEAR = Pattern.compile("Linear Velocity: (\\S+) (\\S+) (\\S+)");
+    static final Pattern LINEAR = Pattern.compile("Linear Velocity: (\\S+) (\\S+) (\\S+)");
 
-    private static double linearSpeed(List<String> info) {
+    static double linearSpeed(List<String> info) {
         for (String line : info) {
             Matcher m = LINEAR.matcher(line);
             if (m.find()) {
@@ -720,7 +720,7 @@ public final class AeronauticsGameTests {
     }
 
     /** Deep space has asteroids now, and a fresh world may put one where a test wants its sub-level. */
-    private static void clearArea(MinecraftServer server, ServerLevel space, BlockPos pos) {
+    static void clearArea(MinecraftServer server, ServerLevel space, BlockPos pos) {
         space.getChunk(pos);
         removeShipsFromEarlierRuns(server, space, pos);
         command(server, space, pos, "fill " + (pos.getX() - 10) + " " + (pos.getY() - 10) + " " + (pos.getZ() - 10) + " "
@@ -739,19 +739,19 @@ public final class AeronauticsGameTests {
      * Tests run side by side, so each names its ship and reads and removes it by that name: selectors by position reach
      * other tests' ships. The name comes from the test's own coordinates.
      */
-    private static String shipSelector(BlockPos pos) {
+    static String shipSelector(BlockPos pos) {
         return "@e[name=vr_test_" + pos.getX() + ",limit=1]";
     }
 
-    private static void nameShip(MinecraftServer server, ServerLevel space, BlockPos pos) {
+    static void nameShip(MinecraftServer server, ServerLevel space, BlockPos pos) {
         command(server, space, pos, "sable name set @n vr_test_" + pos.getX());
     }
 
-    private static Vec3 shipPosition(MinecraftServer server, ServerLevel space, BlockPos pos) {
+    static Vec3 shipPosition(MinecraftServer server, ServerLevel space, BlockPos pos) {
         return position(command(server, space, pos, "sable info " + shipSelector(pos)));
     }
 
-    private static void removeShip(MinecraftServer server, ServerLevel space, BlockPos pos) {
+    static void removeShip(MinecraftServer server, ServerLevel space, BlockPos pos) {
         remove(server, space, pos, shipSelector(pos));
     }
 
@@ -790,7 +790,7 @@ public final class AeronauticsGameTests {
         return null;
     }
 
-    private static List<String> command(MinecraftServer server, ServerLevel level, BlockPos pos, String command) {
+    static List<String> command(MinecraftServer server, ServerLevel level, BlockPos pos, String command) {
         List<String> out = new ArrayList<>();
         CommandSource sink = new CommandSource() {
             @Override

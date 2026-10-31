@@ -1,0 +1,7 @@
+{
+  "dimension": "void_reclaimer:ruined_earth",
+  "priority": 1000,
+  "base_gravity": [0.0, -11.0, 0.0],
+  "base_pressure": 1.0,
+  "universal_drag": 0.09
+}

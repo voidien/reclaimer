@@ -124,7 +124,9 @@ public final class ServerFlightHandler {
         }
         // The oldest entry was recorded `ticks` ticks before the current position.
         Vec3 start = tracker.oldest();
-        double maxSpeed = FlightStats.of(player).maxSpeed();
+        // The wind over ruined Earth can carry the body faster than its own top speed.
+        double maxSpeed = FlightStats.of(player).maxSpeed()
+                + (player.level().dimension() == com.voidreclaimer.earth.RuinedEarth.DIMENSION ? Config.EARTH_WIND_SPEED.get() / 20.0 : 0.0);
         double tolerance = Config.SPEED_CHECK_TOLERANCE.get();
         if (!FlightPhysics.exceedsSpeedLimit(start, position, ticks, maxSpeed, tolerance, SLACK_BLOCKS)) {
             return false;

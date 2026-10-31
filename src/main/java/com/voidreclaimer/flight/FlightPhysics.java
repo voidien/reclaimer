@@ -42,6 +42,23 @@ public final class FlightPhysics {
      */
     public static Vec3 step(Vec3 velocity, Vec3 thrust, boolean powered, boolean dampener, FlightStats stats, CloudDrag drag,
                             double weight) {
+        return step(velocity, thrust, powered, dampener, stats, drag, weight, Vec3.ZERO);
+    }
+
+    /**
+     * Per tick, a body in wind moves this fraction of the way from its own horizontal velocity to the wind's: a free
+     * body is carried at wind speed after a few seconds, and a dampener whose brake is stronger than the strongest
+     * push ({@code WIND_COUPLING} times the wind speed) holds still. Ships use the same coupling.
+     */
+    public static final double WIND_COUPLING = 0.02;
+
+    /**
+     * One tick of thruster physics under gravity and in wind ({@code wind} is the air's horizontal velocity in
+     * blocks/tick; zero anywhere but ruined Earth). The wind acts after thrust and braking, before the cloud and the
+     * top speed, so a key or the dampener always has the last word over the drift.
+     */
+    public static Vec3 step(Vec3 velocity, Vec3 thrust, boolean powered, boolean dampener, FlightStats stats, CloudDrag drag,
+                            double weight, Vec3 wind) {
         double startSpeed = velocity.length();
         double support = weightSupport(stats, weight, dampener, powered);
         if (powered) {
@@ -57,6 +74,9 @@ public final class FlightPhysics {
         if (weight > 0.0) {
             velocity = velocity.add(0.0, -(weight - support), 0.0);
         }
+        if (wind.x != 0.0 || wind.z != 0.0) {
+            velocity = velocity.add(windDrift(velocity, wind));
+        }
         if (drag.density() > 0.0) {
             velocity = velocity.scale(1.0 - drag.dragPerTick() * drag.density());
             double cloudMax = stats.maxSpeed() * (1.0 - drag.speedPenalty() * drag.density());
@@ -68,6 +88,11 @@ public final class FlightPhysics {
             }
         }
         return capSpeed(velocity, stats.maxSpeed());
+    }
+
+    /** The change of velocity the wind makes this tick: a fraction of the horizontal difference between the air and the body. */
+    public static Vec3 windDrift(Vec3 velocity, Vec3 wind) {
+        return new Vec3((wind.x - velocity.x) * WIND_COUPLING, 0.0, (wind.z - velocity.z) * WIND_COUPLING);
     }
 
     /**

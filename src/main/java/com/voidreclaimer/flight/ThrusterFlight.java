@@ -98,7 +98,8 @@ public final class ThrusterFlight {
                 player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
                 stats,
                 cloudDrag(player),
-                weight(player));
+                weight(player),
+                com.voidreclaimer.earth.EarthWind.at(player.level(), player.position()));
         return tether(player, next, stats);
     }
 
