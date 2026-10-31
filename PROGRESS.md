@@ -773,6 +773,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - `tools/pr.sh "title" "body"` pushes and opens the PR against `main` (the repository's default branch is not `main`; a PR against it gets no CI, which cost 40 minutes once).
 - `tools/client-test/bootstrap_world.sh` creates the headless client's `vrtest` world through the menus once, so a client check on a fresh machine is a script, not an hour.
 
+## Create Propulsion vacuum spike: done, no bridge needed
+- Propulsion's thrusters multiply their thrust by an atmospheric factor from Sable's air pressure: at zero pressure the factor is 1 (full thrust), at sea level 0.2 with the default config (`USE_ATMOSPHERIC_PRESSURE`, `ATMOSPHERIC_PRESSURE_AMOUNT`). Deep space already declares `base_pressure` 0 (`dimension_physics/deep_space.json`), so they push at full strength there with nothing from us.
+- **Test:** `aCreatePropulsionThrusterPushesItsShipInVacuum`: a redstone-powered Creative Thruster on a balanced cross moves its ship more than 3 blocks along its axis in 2 s; mutation-checked (no redstone, no push).
+- **Not done:** the Helm does not command Propulsion's thrusters (they are not `ThrusterLike`); an adapter is a later, separate step if the owner wants mixed ships.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
