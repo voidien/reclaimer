@@ -970,6 +970,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **The fix:** `dock()` only counts a block in the ship's own plot, which also stops the clamp looking up plot chunks that do not exist.
 - Test: `aClampIgnoresAFarShipWhoseCoordinatesLandInAnotherShip`, which places a station exactly where a far ship's coordinates land on a third ship's block and fails if the setup misses. Mutation-checked: without the fix it reads "the clamp pulled in a ship from far away".
 
+## Fix: a Backup Core aboard an unloaded station was forgotten: done
+- **The bug:** a core aboard a station is listed by the ship's own coordinates. While the ship was unloaded nothing could be read there, so the next refresh of the list (the Backup Core screen, the death screen) took it for gone and dropped it for good, however many charges it held.
+- **The fix:** a listed core whose coordinates belong to no loaded ship stays as listed, and works again when the ship comes back. While the ship is away, picking it gives the "unavailable" message and the free spawn.
+- **Limit:** the code cannot tell an unloaded ship from one that is gone, so a core on a ship that was deleted while its owner was offline stays listed and takes one of the three slots.
+- Test: `aBackupCoreStaysListedWhileItsShipIsUnloaded` (Aeronautics suite) really unloads the ship, then brings it back and respawns at the core. Mutation-checked: without the fix it reads "the core was forgotten while its ship was unloaded".
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

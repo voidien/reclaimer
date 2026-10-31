@@ -81,18 +81,27 @@ public final class BackupCores {
     @Nullable
     private static BackupCoreBlockEntity core(ServerPlayer player, GlobalPos pos) {
         ServerLevel level = player.server.getLevel(pos.dimension());
-        if (level == null) {
+        if (level == null || onUnloadedShip(level, pos.pos())) {
             return null;
         }
         level.getChunk(pos.pos());
         return level.getBlockEntity(pos.pos()) instanceof BackupCoreBlockEntity core && core.isOwnedBy(player.getUUID()) ? core : null;
     }
 
-    /** Re-reads every listed core: updates names and charges, and drops cores that no longer exist. */
+    /** A core aboard a ship is listed by the ship's own coordinates, and an unloaded ship has nothing there to read. */
+    private static boolean onUnloadedShip(ServerLevel level, BlockPos pos) {
+        return com.voidreclaimer.ship.Ships.inPlots(level, pos) && com.voidreclaimer.ship.Ships.shipAt(level, pos) == null;
+    }
+
+    /** Re-reads every listed core: updates names and charges, and drops cores that no longer exist. One aboard an unloaded ship stays as listed. */
     public static void refresh(ServerPlayer player) {
         BackupCoreList list = list(player);
         BackupCoreList updated = list;
         for (BackupCoreList.Entry entry : list.cores()) {
+            ServerLevel level = player.server.getLevel(entry.pos().dimension());
+            if (level != null && onUnloadedShip(level, entry.pos().pos())) {
+                continue;
+            }
             BackupCoreBlockEntity core = core(player, entry.pos());
             updated = core == null ? updated.without(entry.pos())
                     : updated.with(new BackupCoreList.Entry(entry.pos(), core.name(), core.charges()));
