@@ -929,6 +929,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Shuttle size and a camera that fits: done
 - The owner chose scale 2.0 for the Shuttle now that bodies draw at their true size, so it gets its own size class at the Ship's rank: parts and unlocks treat the two alike. It is about 17 blocks long. The third-person camera for big bodies now stands 3 model radii back, measured from the real model (`BodyBounds`, cached per model), so each fills about the same share of the screen: Ship about 20 blocks away, Shuttle about 30, Titan about 115. Drone and Mech keep vanilla's distance. Tests: `BodyLookTest`, `BodyPresetGameTests`. Seen in the client.
 
+## Fix: a Helm seat could follow a new ship into its old plot: done
+- Two Helm GameTests failed on a slow machine: a pilot could not sit, and a pilot was carried off. Sable gives a removed ship's plot to the next ship, so an identical ship has its Helm at the same plot position, and a seat knowing only that position followed the new ship, taking its pilot along. This could happen in play. A seat now remembers its ship's id (saved with it) and leaves when the ship at that position is a different one. Test: `AeronauticsGameTests.aSeatDoesNotFollowANewShipIntoItsOldPlot`, which fails without the fix.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -128,6 +128,7 @@ public final class AeronauticsGameTests {
      * and a redstone block as the throttle. Then it is assembled into a Sable sub-level.
      */
     private static void thrusterShip(GameTestHelper helper, BlockPos pos, boolean fuelled, boolean powered, java.util.function.Consumer<List<String>> then) {
+        Object[] placed = new Object[1];
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
@@ -138,6 +139,7 @@ public final class AeronauticsGameTests {
             cross(server, space, pos, powered, log);
             log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + z + " create:creative_motor[facing=east]"));
             log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:chemical_thruster[facing=east]"));
+            placed[0] = space.getBlockEntity(pos);
             if (fuelled) {
                 var thruster = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(pos);
                 int filled = thruster.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(
@@ -146,7 +148,13 @@ public final class AeronauticsGameTests {
                 log.add("filled " + filled);
             }
             helper.runAfterDelay(10, () -> {
+                if (space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity before) {
+                    log.add("before assembly: fuel " + before.tank().getFluidAmount() + " same entity " + (before == placed[0]));
+                } else {
+                    log.add("before assembly: no thruster at " + pos);
+                }
                 log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
+                log.add("just after assembly: " + thrusterState(server, space, pos));
                 then.accept(log);
             });
         });
@@ -270,6 +278,24 @@ public final class AeronauticsGameTests {
         return 0.0;
     }
 
+    /** The blocks of a Helm ship, fuelled and charged, not yet assembled. */
+    private static void helmHull(MinecraftServer server, ServerLevel space, BlockPos pos, List<String> log) {
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        // Keel from the bow (z-3) to the stern (z+2); the Helm in the middle, on top of the keel.
+        // Keel from the bow (z-3) to the stern; the Helm on top in the middle; the motor on the keel feeds the
+        // stern thruster from its back (a south-facing nozzle takes its shaft from the north).
+        log.addAll(command(server, space, pos, "fill " + x + " " + y + " " + (z - 3) + " " + x + " " + y + " " + (z + 1) + " minecraft:stone"));
+        log.addAll(command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]"));
+        log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 2) + " create:creative_motor[facing=south]"));
+        log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 3) + " void_reclaimer:chemical_thruster[facing=south]"));
+        log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z - 4) + " void_reclaimer:rcs_thruster[facing=west]"));
+        var main = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z + 3));
+        main.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 4000),
+                net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+        var jet = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z - 4));
+        jet.energy().receiveEnergy(2000, false);
+    }
+
     /**
      * A ship with a Helm facing north, a Chemical Thruster at the stern (nozzle south, so it pushes north) and an RCS jet at
      * the bow pushing east (yaw). No redstone anywhere: only the pilot's keys open throttles.
@@ -285,19 +311,7 @@ public final class AeronauticsGameTests {
             clearArea(server, space, pos);
             int x = pos.getX(), y = pos.getY(), z = pos.getZ();
             List<String> log = new ArrayList<>();
-            // Keel from the bow (z-3) to the stern (z+2); the Helm in the middle, on top of the keel.
-            // Keel from the bow (z-3) to the stern; the Helm on top in the middle; the motor on the keel feeds the
-            // stern thruster from its back (a south-facing nozzle takes its shaft from the north).
-            log.addAll(command(server, space, pos, "fill " + x + " " + y + " " + (z - 3) + " " + x + " " + y + " " + (z + 1) + " minecraft:stone"));
-            log.addAll(command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]"));
-            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 2) + " create:creative_motor[facing=south]"));
-            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 3) + " void_reclaimer:chemical_thruster[facing=south]"));
-            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z - 4) + " void_reclaimer:rcs_thruster[facing=west]"));
-            var main = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z + 3));
-            main.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 4000),
-                    net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-            var jet = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(new BlockPos(x, y, z - 4));
-            jet.energy().receiveEnergy(2000, false);
+            helmHull(server, space, pos, log);
             helper.runAfterDelay(10, () -> {
                 log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
                 then.accept(log);
@@ -457,6 +471,47 @@ public final class AeronauticsGameTests {
                     TestPlayers.remove(player);
                     if (now == null || riding || at.distanceTo(Vec3.atCenterOf(pos)) > 16) {
                         helper.fail("the pilot was not left in the world: at " + at + ", riding " + riding + why + "; setup: " + log);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        }));
+    }
+
+    /**
+     * Sable gives a removed ship's plot to the next ship, so an identical ship has its Helm at the same plot position. A seat knowing
+     * only that position followed the new ship, carrying its pilot off to wherever the new ship was. In a batch of its own: with other
+     * tests' ships coming and going the next free plot could be any of them.
+     */
+    @GameTest(template = "empty", timeoutTicks = 300, batch = "reused_plot")
+    public static void aSeatDoesNotFollowANewShipIntoItsOldPlot(GameTestHelper helper) {
+        BlockPos first = new BlockPos(94_000, 200, 3_000);
+        BlockPos second = new BlockPos(94_000, 200, 3_300);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(second.getX() >> 4, second.getZ() >> 4, true);
+        helmShip(helper, first, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, first);
+            ServerPlayer player = pilot(helper, space, first, com.voidreclaimer.ship.PilotInput.NONE);
+            clearArea(server, space, second);
+            helmHull(server, space, second, log);
+            helper.runAfterDelay(10, () -> {
+                BlockPos oldHelm = ((com.voidreclaimer.ship.HelmSeat) player.getVehicle()).helmPos();
+                // The same tick: the seat has no chance to notice the first ship is gone before the second takes its plot.
+                removeShip(server, space, first);
+                log.addAll(command(server, space, second, "sable assemble connected " + second.getX() + " " + second.getY() + " " + second.getZ()));
+                boolean sameSpot = space.getBlockEntity(oldHelm) instanceof com.voidreclaimer.ship.HelmBlockEntity;
+                tickPlayer(helper, server, player.getUUID(), UNSEAT_TICKS, () -> {
+                    ServerPlayer now = server.getPlayerList().getPlayer(player.getUUID());
+                    Vec3 at = now == null ? null : now.position();
+                    boolean riding = now != null && now.getVehicle() != null;
+                    TestPlayers.remove(player);
+                    removeShip(server, space, second);
+                    if (!sameSpot) {
+                        helper.fail("the second ship did not take the first one's plot, so this checks nothing; setup: " + log);
+                    } else if (now == null || riding || at.distanceTo(Vec3.atCenterOf(first)) > 16) {
+                        helper.fail("the pilot went with the new ship: at " + at + ", riding " + riding);
                     } else {
                         helper.succeed();
                     }
@@ -657,7 +712,10 @@ public final class AeronauticsGameTests {
         for (int chunks = 1; chunks <= 8; chunks++) {
             space.setChunkForced((pos.getX() >> 4) - chunks, pos.getZ() >> 4, true);
         }
-        thrusterShip(helper, pos, true, true, log -> watch(helper, server, space, pos, log, (first, second) -> {
+        thrusterShip(helper, pos, true, true, log -> {
+            Runnable snapshot = () -> log.add(thrusterState(server, space, pos));
+            helper.runAfterDelay(SETTLE_TICKS + SAMPLE_TICKS - 5, snapshot);
+            watch(helper, server, space, pos, log, (first, second) -> {
             // Watched early and from rest: the ship is never perfectly balanced, so it soon starts to turn with its thrust.
             double west = first.x - second.x;
             if (west < PUSHED) {
@@ -665,7 +723,27 @@ public final class AeronauticsGameTests {
             } else {
                 helper.succeed();
             }
-        }));
+            });
+        });
+    }
+
+    /** What a Chemical Thruster aboard the named test ship has right now: an exact zero push means one of these is missing. */
+    private static String thrusterState(MinecraftServer server, ServerLevel space, BlockPos pos) {
+        StringBuilder state = new StringBuilder("thrusters:");
+        for (var ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (ship instanceof dev.ryanhcode.sable.sublevel.ServerSubLevel server2 && !server2.isRemoved()
+                    && pos.getCenter().distanceTo(new net.minecraft.world.phys.Vec3(server2.logicalPose().position().x(),
+                    server2.logicalPose().position().y(), server2.logicalPose().position().z())) < 64.0) {
+                for (var thruster : com.voidreclaimer.ship.Ships.thrustersOf(space, server2)) {
+                    if (thruster instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity chemical) {
+                        state.append(" speed ").append(chemical.getSpeed()).append(" network ").append(chemical.hasNetwork())
+                                .append(" source ").append(chemical.hasSource()).append(" throttle ").append(chemical.throttle())
+                                .append(" fuel ").append(chemical.tank().getFluidAmount()).append(" force ").append(chemical.force());
+                    }
+                }
+            }
+        }
+        return state.toString();
     }
 
     /**

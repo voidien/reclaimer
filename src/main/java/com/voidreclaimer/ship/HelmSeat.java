@@ -24,6 +24,13 @@ public class HelmSeat extends Entity {
     private static final EntityDataAccessor<BlockPos> HELM = SynchedEntityData.defineId(HelmSeat.class, EntityDataSerializers.BLOCK_POS);
     /** How far above the Helm's bottom the seat floats. */
     static final double SEAT_HEIGHT = 0.35;
+    /**
+     * The ship the seat was taken on, or null off a ship. The Helm's position alone is not enough: Sable gives a removed ship's plot
+     * to the next ship, so another ship's Helm can turn up at the very same position, and the seat must not follow it there.
+     */
+    @Nullable
+    private java.util.UUID ship;
+
     public HelmSeat(EntityType<?> type, Level level) {
         super(type, level);
         setNoGravity(true);
@@ -50,6 +57,8 @@ public class HelmSeat extends Entity {
     public static HelmSeat at(Level level, BlockPos helm, Vec3 where) {
         HelmSeat seat = new HelmSeat(ModEntities.HELM_SEAT.get(), level);
         seat.entityData.set(HELM, helm.immutable());
+        dev.ryanhcode.sable.sublevel.SubLevel ship = Ships.shipAt(level, helm);
+        seat.ship = ship == null ? null : ship.getUniqueId();
         seat.setPos(where.x, where.y + SEAT_HEIGHT, where.z);
         HelmSeats.track(seat);
         return seat;
@@ -80,6 +89,13 @@ public class HelmSeat extends Entity {
         if (getPassengers().isEmpty() || !(level().getBlockEntity(helmPos()) instanceof HelmBlockEntity)) {
             discard();
             return;
+        }
+        if (ship != null) {
+            dev.ryanhcode.sable.sublevel.SubLevel now = Ships.shipAt(level(), helmPos());
+            if (now == null || !ship.equals(now.getUniqueId())) {
+                discard();
+                return;
+            }
         }
         // Ride the ship: Sable carries entities that stand on a ship, but not one with no physics, so the seat keeps
         // itself at the Helm (and vanilla keeps the pilot on the seat). A Helm whose ship is gone has no place in the
@@ -124,11 +140,15 @@ public class HelmSeat extends Entity {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         NbtUtils.readBlockPos(tag, "helm").ifPresent(pos -> entityData.set(HELM, pos));
+        ship = tag.hasUUID("ship") ? tag.getUUID("ship") : null;
         HelmSeats.track(this);
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.put("helm", NbtUtils.writeBlockPos(helmPos()));
+        if (ship != null) {
+            tag.putUUID("ship", ship);
+        }
     }
 }
