@@ -9,7 +9,7 @@ import org.joml.Vector3f;
  * Projects a world-space direction onto the screen. Directions in view land at their screen position; anything
  * off-screen or behind the camera is pinned to the screen border in its direction, like a compass marker.
  */
-final class ScreenProjection {
+public final class ScreenProjection {
     private ScreenProjection() {}
 
     /**
@@ -17,13 +17,13 @@ final class ScreenProjection {
      * @param y        GUI y
      * @param onScreen whether the direction is within view (not pinned to the border)
      */
-    record Point(int x, int y, boolean onScreen) {}
+    public record Point(int x, int y, boolean onScreen) {}
 
     /**
      * @param margin       distance kept from the top and side edges
      * @param bottomMargin distance kept from the bottom edge (larger, to stay clear of the hotbar and status bars)
      */
-    static Point project(Camera camera, Vec3 direction, double fovDegrees, int width, int height, int margin, int bottomMargin) {
+    public static Point project(Camera camera, Vec3 direction, double fovDegrees, int width, int height, int margin, int bottomMargin) {
         Vector3f forward = camera.getLookVector();
         Vector3f up = camera.getUpVector();
         Vector3f left = camera.getLeftVector();

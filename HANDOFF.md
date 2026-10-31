@@ -67,7 +67,7 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 
 ### Photo mode as a diagnostic
 F8 (photo mode), then G: exact facts about whatever the camera looks at, read from the server. Enter saves `run/screenshots/photo_<time>.png` and a `.txt` beside it with the full facts: read the text file instead of guessing from pixels.
-`tools/client-test/quick.sh photo NAME [distance]` shoots four views of the body in about 5 s and prints the facts; `/vrphoto focus x y z` first to look at something else. `/vrphoto debug true` shows the hit box, which is the fastest way to compare a model with its real size. The sea-lantern room in `vrtest` is too small for a Ship at fit distance: `/tp @s 300 200 300` first.
+`tools/client-test/quick.sh photo NAME [distance]` shoots four views of the body in about 5 s and prints the facts; `/vrphoto focus x y z` first to look at something else. `/vrphoto labels true` names every socket and mount and lists their positions in the text file. `/vrphoto debug true` shows the hit box, which is the fastest way to compare a model with its real size. The sea-lantern room in `vrtest` is too small for a Ship at fit distance: `/tp @s 300 200 300` first.
 
 ### Test client helper commands
 `tools/client-test/xt.py` has `chord ctrl+f` (modifiers plus a key), `type "text" 0.3` (a gap between keys, for boxes that refilter on every key) and `mdrag DX DY [steps [shot.png]]` (hold the middle mouse button and move; the optional PNG is taken while the button is held, which is how the orbit camera was checked).

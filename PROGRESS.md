@@ -890,6 +890,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: the Ship's far side was not mirrored: done
 - Once the Ship drew at its true size, one wing was seen to run through the hull: both wings use one model that reaches one way. Measured over every Ship section: the wing, the hardpoint and the hull segment are lopsided, the rest are centred. `Socket` gains an optional `mirror` (old chassis files and the old constructor are unchanged), set on `wing_starboard`, `hull_2/4/6` and `hardpoint_2/4/6`, and `BodyPartsLayer` flips those sections. Tests in `ChassisCockpitTest`. Seen in the headless client.
 
+## Photo mode: attachment labels: done
+- L in photo mode (`/vrphoto labels true`) names every socket and mount on the body, read from the real render matrices (`client/render/body/BoneProbe`), and the shot's text file lists them in blocks from the feet along the body's own axes. Sheets now start from the way the body really faces (`BodyRenderer.facing`): an upright Mech's body lags its view. Tests: `BoneProbeTest`. Seen on the fully fitted Mech.
+- The first read gave the Mech's mount positions for the attachment review the owner asked for; that review comes after the debug tools.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
