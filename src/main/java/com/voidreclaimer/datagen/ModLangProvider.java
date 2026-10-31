@@ -163,6 +163,22 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.PAYLOAD_CHAMBER.get(), "Payload Chamber");
         add(ModItems.MAGNETIC_BARREL_NOZZLE.get(), "Magnetic Barrel Nozzle");
         add(ModItems.LAUNCH_CONTROLLER.get(), "Launch Controller");
+        add(ModItems.HELPER_DRONE.get(), "Helper Drone");
+        add(com.voidreclaimer.registry.ModEntities.HELPER_DRONE.get(), "Helper Drone");
+        add("replicator.void_reclaimer.description.helper_drone", "A small flying worker. Sneak-use it on the inventory to take from, then on the one to bring to, and release it: it ferries items between them, 16 at a time. Sneak-use the drone with an empty hand to take it back.");
+        add("tooltip.void_reclaimer.helper.source", "From: %s");
+        add("tooltip.void_reclaimer.helper.destination", "To: %s");
+        add("tooltip.void_reclaimer.helper.none", "not set (sneak-use on an inventory)");
+        add("message.void_reclaimer.helper.source_set", "Source set: %s %s %s. Sneak-use the destination next.");
+        add("message.void_reclaimer.helper.destination_set", "Destination set: %s %s %s. Release the drone.");
+        add("message.void_reclaimer.helper.not_a_container", "That block holds no items.");
+        add("message.void_reclaimer.helper.picked_up", "Helper Drone taken back.");
+        add("message.void_reclaimer.helper.empty", "nothing");
+        add("message.void_reclaimer.helper.carrying", "%s x %s");
+        add("message.void_reclaimer.helper.status.idle", "Idle: set both links and release it again. Carrying %s.");
+        add("message.void_reclaimer.helper.status.to_source", "Flying to the source. Carrying %s.");
+        add("message.void_reclaimer.helper.status.to_destination", "Flying to the destination. Carrying %s.");
+        add("message.void_reclaimer.helper.status.waiting", "Waiting: nothing to take or no room to give. Carrying %s.");
         add(com.voidreclaimer.registry.ModBlocks.LAUNCH_PAD.get(), "Launch Pad");
         add(ModItems.QUANTUM_RECEIVER.get(), "Sub-Light Quantum Receiver");
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {

@@ -175,6 +175,10 @@ public final class ModItems {
     public static final DeferredItem<com.voidreclaimer.starship.TestStarshipItem> TEST_STARSHIP = ITEMS.register("test_starship",
             () -> new com.voidreclaimer.starship.TestStarshipItem(new Item.Properties()));
 
+    /** The Helper Drone: sneak-use on two inventories to link them, then release it. */
+    public static final DeferredItem<com.voidreclaimer.helper.HelperDroneItem> HELPER_DRONE = ITEMS.register("helper_drone",
+            () -> new com.voidreclaimer.helper.HelperDroneItem(new Item.Properties().stacksTo(16)));
+
     // ---- blocks -------------------------------------------------------------------------------------------
 
     public static final DeferredItem<BlockItem> SCAFFOLD = ITEMS.registerSimpleBlockItem(ModBlocks.SCAFFOLD);

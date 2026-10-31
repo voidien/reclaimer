@@ -35,6 +35,9 @@ public final class ModDataComponents {
                     .networkSynchronized(com.voidreclaimer.body.Blueprint.STREAM_CODEC));
 
     /** Body module stats; a default component on module items. */
+    /** A Helper Drone item's source and destination. */
+    public static final Supplier<DataComponentType<com.voidreclaimer.helper.HelperLinks>> HELPER_LINKS = COMPONENTS.registerComponentType("helper_links",
+            builder -> builder.persistent(com.voidreclaimer.helper.HelperLinks.CODEC).networkSynchronized(com.voidreclaimer.helper.HelperLinks.STREAM_CODEC));
     public static final Supplier<DataComponentType<ModuleStats>> MODULE = COMPONENTS.registerComponentType("module",
             builder -> builder.persistent(ModuleStats.CODEC).networkSynchronized(ModuleStats.STREAM_CODEC));
 

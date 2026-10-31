@@ -72,6 +72,7 @@ public final class VoidReclaimerClient {
     private static void onRegisterRenderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.TEST_STARSHIP.get(), com.voidreclaimer.client.render.TestStarshipRenderer::new);
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+        event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.HELPER_DRONE.get(), com.voidreclaimer.client.render.HelperDroneRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.HELM.get(), com.voidreclaimer.client.render.HelmRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.LAUNCH_CONTROLLER.get(), com.voidreclaimer.client.render.LaunchComplexRenderer::new);
     }
