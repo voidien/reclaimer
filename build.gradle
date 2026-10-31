@@ -79,6 +79,9 @@ neoForge {
 
         gameTestServer {
             type = 'gameTestServer'
+            // An explicit heap: the default (a quarter of the machine's RAM) differs between CI runners and laptops.
+            // ./gradlew runGameTestServer -PgametestHeap=1200m runs the suite in a small heap to catch memory growth.
+            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
             // ./gradlew runGameTestServer -PgametestFilter=ZeroGMining (class or test name, comma-separated)
             if (project.hasProperty('gametestFilter')) {
@@ -91,6 +94,7 @@ neoForge {
             type = 'gameTestServer'
             // Its own directory: Gradle runs tasks in parallel and the two GameTest worlds must not collide.
             gameDirectory = file('run-aero')
+            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id + '_aero'
             // ./gradlew runGameTestAeronautics -PgametestFilter=theHoldsStop (same filter as runGameTestServer)
             if (project.hasProperty('gametestFilter')) {

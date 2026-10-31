@@ -830,6 +830,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **In-game check (not done, no client here):** assemble a complex and look at it from 100+ blocks and from inside the pad; load payloads and watch the gun lean and kick; check the sky streak starts above the tower.
 - **Decisions pending (unattended):** the lean and kick angles, the 192-block view distance, no collision for the tower.
 
+## Test infrastructure: the GameTest server's memory: done
+- CI's main GameTest server ran out of its 4 GB heap (`OutOfMemoryError` while saving chunks) once the suite passed 186 tests. A class histogram at the end of a local run showed 2.4 GB live, almost all loaded chunks: over 860,000 `LevelChunkSection`s, because a deep-space chunk is 254 sections (Y -2032..2031) with light arrays for each, about 1 MB in memory, and every test force-loads its own chunk (which loads the 5 x 5 around it) for the whole run: about 3,000 chunks. Releasing finished tests' chunks during the run was tried and made it worse: every unloaded chunk is saved, and the pending chunk NBT of thousands of 254-section chunks piled up faster than the disk took it (2.2 million `HashMap`s), with later tests timing out while the server caught up. So the chunks stay; the GameTest JVMs get an explicit `-Xmx6G` (the default is a quarter of the machine's RAM: 4 GB on CI's runner, where the suite no longer fits) and `-PgametestHeap=<size>` runs them in another heap.
+- Also found and fixed: `TestPlayers` joined players over an `EmbeddedChannel`, which keeps every outbound message until something reads it; the channel now drops outbound packets at the head of its pipeline. `NaniteGameTests.inLoadedArea` no longer gives up waiting for the chunk to tick entities after 100 ticks (a test that started in a chunk that did not tick entities yet could not see the entities it spawned); it waits as long as the test's own timeout allows.
+- **Known issue:** the suite's memory grows with the number of tests, about 25 MB per test. A later refactor should let tests of one class share a test area (and clear it) instead of each taking a fresh chunk.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
