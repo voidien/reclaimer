@@ -37,6 +37,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <li>{@code orbit yaw pitch distance}: circle the focus</li>
  * <li>{@code debug true|false}: the debug layer</li>
  * <li>{@code labels true|false}: the body's socket and mount names, and their positions in the text file</li>
+ * <li>{@code time freeze|step|slow|normal}: freeze or step the world, quarter speed, normal; leaving photo mode restores it</li>
  * <li>{@code shot name}: {@code screenshots/name.png} and {@code .txt}</li>
  * <li>{@code sheet name [distance]}: four views of the focus ({@link PhotoSheet}), {@code name_front} and so on; distance 0 or none
  * fits the body</li>
@@ -90,6 +91,11 @@ public final class PhotoScript {
                     later(mc -> PhotoDebug.setLabels(on));
                     return 1;
                 })))
+                .then(Commands.literal("time")
+                        .then(Commands.literal("freeze").executes(c -> time(PhotoDebug.Time.TOGGLE_FREEZE)))
+                        .then(Commands.literal("step").executes(c -> time(PhotoDebug.Time.STEP)))
+                        .then(Commands.literal("slow").executes(c -> time(PhotoDebug.Time.TOGGLE_SLOW)))
+                        .then(Commands.literal("normal").executes(c -> time(PhotoDebug.Time.RESET))))
                 .then(Commands.literal("shot").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
                     String name = StringArgumentType.getString(c, "name");
                     later(mc -> queue(new Shot(null, 0f, 0f, 0.0, name)));
@@ -147,6 +153,11 @@ public final class PhotoScript {
                 PhotoMode.state().setFov(fov);
             }
         });
+        return 1;
+    }
+
+    private static int time(PhotoDebug.Time action) {
+        later(mc -> PhotoDebug.time(mc, action));
         return 1;
     }
 

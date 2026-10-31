@@ -5,6 +5,7 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.client.hud.ScreenProjection;
 import com.voidreclaimer.client.render.body.BoneProbe;
 import com.voidreclaimer.debug.DebugReadout;
+import com.voidreclaimer.debug.DebugTime;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -52,6 +53,7 @@ public final class PhotoDebug {
 
     private static boolean on;
     private static boolean labels;
+    private static boolean timeChanged;
     private static boolean chunkBorders;
     private static boolean hitBoxes;
     private static int age;
@@ -72,6 +74,34 @@ public final class PhotoDebug {
     public static void setLabels(boolean value) {
         labels = value;
         BoneProbe.capture(value);
+    }
+
+    /** What photo mode's time keys ask for. */
+    public enum Time { TOGGLE_FREEZE, STEP, TOGGLE_SLOW, RESET }
+
+    /** Changes time on the integrated server. Leaving photo mode always puts it back. */
+    public static void time(Minecraft mc, Time action) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        if (server == null) {
+            return;
+        }
+        timeChanged |= action != Time.RESET;
+        server.execute(() -> {
+            switch (action) {
+                case TOGGLE_FREEZE -> DebugTime.setFrozen(server, !server.tickRateManager().isFrozen());
+                case STEP -> DebugTime.step(server, 1);
+                case TOGGLE_SLOW -> DebugTime.setSlow(server, server.tickRateManager().tickrate() == DebugTime.NORMAL_RATE);
+                case RESET -> DebugTime.reset(server);
+            }
+        });
+    }
+
+    /** Called when photo mode ends: only touches time if photo mode changed it, so a player's own {@code /tick} settings stay. */
+    static void resetTime(Minecraft mc) {
+        if (timeChanged) {
+            timeChanged = false;
+            time(mc, Time.RESET);
+        }
     }
 
     /** Turns the layer on or off with photo mode's G key. */
@@ -125,7 +155,12 @@ public final class PhotoDebug {
             }
             ServerPlayer player = server.getPlayerList().getPlayer(id);
             target = DebugReadout.target(level, from, look);
-            return DebugReadout.lines(level, from, look, player);
+            List<String> lines = new ArrayList<>(DebugReadout.lines(level, from, look, player));
+            String time = DebugTime.describe(server);
+            if (!time.isEmpty()) {
+                lines.add(0, time);
+            }
+            return lines;
         });
     }
 
