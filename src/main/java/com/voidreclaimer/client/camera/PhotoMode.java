@@ -70,6 +70,7 @@ public final class PhotoMode {
         chatting = false;
         PhotoDebug.set(mc, false);
         PhotoDebug.setLabels(false);
+        PhotoDebug.resetTime(mc);
         mc.options.hideGui = hudWasHidden;
     }
 

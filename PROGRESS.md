@@ -907,6 +907,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - This answers the owner's question about an easier test dimension: a copy of deep space would be a second thing to keep in step, and the arena gives the light, contrast and room inside the real one.
 - **Seen with the arena:** the Ship's section art renders almost pure black even on a lit floor, unlike the Mech, Shuttle and Titan. Not investigated yet.
 
+## Photo mode: time controls: done
+- In photo mode P freezes the world, period steps one tick, comma runs it at quarter speed, and `/vrphoto time freeze|step|slow|normal` does the same by command (`debug/DebugTime`, the server's tick manager). A shot's facts show the state. Leaving photo mode restores normal time, only if photo mode changed it. Tests: `DebugTimeGameTests`, mutation-checked. Seen in the client: `/tick query` reads normal after leaving.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

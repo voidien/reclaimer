@@ -353,7 +353,7 @@
   "key.void_reclaimer.cloud_scanner": "Toggle Cloud Scanner",
   "key.void_reclaimer.module_wheel": "Module Wheel (hold)",
   "key.void_reclaimer.orbit_camera": "Orbit Camera (hold, third person)",
-  "key.void_reclaimer.photo_mode": "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, T chat, Enter shot)",
+  "key.void_reclaimer.photo_mode": "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, P freeze, period step, comma slow, T chat, Enter shot)",
   "key.void_reclaimer.pitch_down": "Ship: Nose Down",
   "key.void_reclaimer.pitch_up": "Ship: Nose Up",
   "key.void_reclaimer.recall": "Tether Recall (hold)",
