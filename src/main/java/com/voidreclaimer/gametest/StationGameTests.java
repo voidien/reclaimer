@@ -260,6 +260,68 @@ public final class StationGameTests {
         });
     }
 
+    /**
+     * A Backup Core aboard a station is listed by the ship's own coordinates. While the ship is unloaded nothing can be read
+     * there, which says nothing about the core: it stays on the list, and works again when the ship comes back.
+     */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aBackupCoreStaysListedWhileItsShipIsUnloaded(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(105_000, 200, 3_000);
+        String name = "vr_test_" + pos.getX();
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        int chunkX = pos.getX() >> 4, chunkZ = pos.getZ() >> 4;
+        space.setChunkForced(chunkX, chunkZ, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + pos.getX() + " " + pos.getY() + " " + (pos.getZ() + 2) + " minecraft:stone");
+            command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            helper.runAfterDelay(2, () -> {
+                AeronauticsGameTests.nameShip(server, space, pos.south());
+                var ship = shipNamed(space, name);
+                helper.assertTrue(ship != null, "the ship was not built");
+                BlockPos corePos = StationAssembly.blocksOf(space, ship).get(0).above();
+                var player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY(), pos.getZ() + 2_000.5);
+                var state = ModBlocks.BACKUP_CORE.get().defaultBlockState();
+                space.setBlock(corePos, state, 3);
+                state.getBlock().setPlacedBy(space, corePos, state, player, new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.BACKUP_CORE.get()));
+                ((com.voidreclaimer.core.BackupCoreBlockEntity) space.getBlockEntity(corePos)).setCharges(2);
+                var where = net.minecraft.core.GlobalPos.of(space.dimension(), corePos);
+                space.setChunkForced(chunkX, chunkZ, false);
+                whenShip(helper, space, name, false, 80, () -> {
+                    com.voidreclaimer.core.BackupCores.refresh(player);
+                    boolean listed = com.voidreclaimer.core.BackupCores.list(player).get(where).filter(entry -> entry.charges() == 2).isPresent();
+                    space.setChunkForced(chunkX, chunkZ, true);
+                    whenShip(helper, space, name, true, 80, () -> {
+                        com.voidreclaimer.core.BackupCores.refresh(player);
+                        com.voidreclaimer.core.BackupCores.select(player, java.util.Optional.of(where));
+                        var respawn = com.voidreclaimer.core.BackupCores.respawnAtSelectedCore(player);
+                        var core = space.getBlockEntity(corePos) instanceof com.voidreclaimer.core.BackupCoreBlockEntity back ? back : null;
+                        TestPlayers.remove(player);
+                        remove(server, space, pos, name);
+                        helper.assertTrue(listed, "the core was forgotten while its ship was unloaded");
+                        helper.assertTrue(core != null, "the core did not come back with its ship");
+                        helper.assertTrue(respawn != null, "no respawn at the core once its ship was back");
+                        helper.assertTrue(core.charges() == 1, "the respawn did not spend a charge: " + core.charges());
+                        helper.assertTrue(respawn.pos().distanceTo(Vec3.atCenterOf(pos)) < 16.0, "respawned away from the ship: " + respawn.pos());
+                        helper.succeed();
+                    });
+                });
+            });
+        });
+    }
+
+    /** Runs {@code then} once the named ship is loaded or not, as asked, looking every 5 ticks. */
+    private static void whenShip(GameTestHelper helper, ServerLevel space, String name, boolean loaded, int looks, Runnable then) {
+        if ((shipNamed(space, name) != null) == loaded) {
+            then.run();
+        } else if (looks <= 0) {
+            helper.fail("the ship never " + (loaded ? "came back" : "unloaded"));
+        } else {
+            helper.runAfterDelay(5, () -> whenShip(helper, space, name, loaded, looks - 1, then));
+        }
+    }
+
     /** The Docking Clamp aboard the station named {@code name}, or null. */
     static com.voidreclaimer.station.DockingClampBlockEntity clampOf(ServerLevel space, String name) {
         for (var ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
