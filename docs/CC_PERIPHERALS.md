@@ -30,11 +30,20 @@ print(("density %.2f, %d FE"):format(siphon.getDensity(), siphon.getEnergy()))
 ```
 
 ## Dyson launch chain (`DysonPeripheral`)
-Read-only: the Mass Driver fires on its own once wound up, and a player cannot make it launch either.
+The Launch Complex fires on its own once wound up; a program can assemble or set it down but cannot make it launch, as a player cannot either.
 
 | Block | Function | Returns |
 |---|---|---|
-| Kinetic Drive Base | `isAssembled()` | whether the Payload Chamber and Barrel Nozzle sit on top of it |
+| Launch Controller | `isAssembled()` | whether the ring is complete and the pad filled |
+| | `assemble()` | assembles the complex: `assembled`, `already_assembled`, `ring_incomplete`, `blocked` or `failed` |
+| | `disassemble()` | sets it down: `disassembled`, `not_assembled` or `failed` |
+| | `getProgress()` | wind-up of the next launch, 0 to 1 |
+| | `getLaunches()` | payloads this complex has fired |
+| | `getSpeed()` | shaft speed in RPM |
+| | `hasPayload()` | whether a payload is loaded |
+| | `getItems()` | its two payload slots: `{ [slot] = { name, count } }` |
+| | `getSphere()` | the Dyson Sphere (below) |
+| Kinetic Drive Base (old, inert) | `isAssembled()` | whether the Payload Chamber and Barrel Nozzle sit on top of it |
 | | `getProgress()` | wind-up of the next launch, 0 to 1 |
 | | `getLaunches()` | payloads this driver has fired |
 | | `getSpeed()` | shaft speed in RPM |

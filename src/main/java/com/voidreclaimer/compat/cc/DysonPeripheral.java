@@ -2,6 +2,8 @@ package com.voidreclaimer.compat.cc;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dyson.DysonSphereData;
+import com.voidreclaimer.launch.LaunchComplex;
+import com.voidreclaimer.launch.LaunchControllerBlockEntity;
 import com.voidreclaimer.machine.MassDriver;
 import com.voidreclaimer.machine.MassDriverBaseBlockEntity;
 import com.voidreclaimer.machine.PayloadChamberBlockEntity;
@@ -13,9 +15,10 @@ import java.util.Map;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
- * Lua functions of the Dyson launch chain (CC: Tweaked generic peripheral): the Kinetic Drive Base (the Mass Driver's
- * controller), the Payload Chamber and the Sub-Light Quantum Receiver, plus the sphere's progress from either end.
- * Read-only: the driver fires on its own once wound up, and a player has no way to make it launch either.
+ * Lua functions of the Dyson launch chain (CC: Tweaked generic peripheral): the Launch Controller (the launch complex),
+ * the Sub-Light Quantum Receiver, the old inert Kinetic Drive Base and Payload Chamber, plus the sphere's progress from
+ * any of them. A program can assemble or set down the complex; it cannot make it launch (the complex fires on its own
+ * once wound up, as for a player).
  */
 public final class DysonPeripheral implements GenericPeripheral {
     @Override
@@ -36,7 +39,61 @@ public final class DysonPeripheral implements GenericPeripheral {
         return out;
     }
 
-    // ---- Kinetic Drive Base (Mass Driver) ---------------------------------------------------------------------------
+    // ---- Launch Controller (the launch complex) ---------------------------------------------------------------------
+
+    /** Whether the ring is complete and the pad filled. */
+    @LuaFunction(mainThread = true)
+    public final boolean isAssembled(LaunchControllerBlockEntity controller) {
+        return controller.assembled();
+    }
+
+    /** Assembles the complex: {@code assembled}, {@code already_assembled}, {@code ring_incomplete}, {@code blocked} or {@code failed}. */
+    @LuaFunction(mainThread = true)
+    public final String assemble(LaunchControllerBlockEntity controller) {
+        return LaunchComplex.assemble(controller).name().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** Sets the complex down: {@code disassembled}, {@code not_assembled} or {@code failed}. */
+    @LuaFunction(mainThread = true)
+    public final String disassemble(LaunchControllerBlockEntity controller) {
+        return LaunchComplex.disassemble(controller).name().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** Wind-up of the next launch, 0 to 1. */
+    @LuaFunction(mainThread = true)
+    public final double getProgress(LaunchControllerBlockEntity controller) {
+        return controller.progress();
+    }
+
+    /** Payloads this complex has fired. */
+    @LuaFunction(mainThread = true)
+    public final int getLaunches(LaunchControllerBlockEntity controller) {
+        return controller.launches();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final double getSpeed(LaunchControllerBlockEntity controller) {
+        return controller.getSpeed();
+    }
+
+    /** Whether a payload is loaded. */
+    @LuaFunction(mainThread = true)
+    public final boolean hasPayload(LaunchControllerBlockEntity controller) {
+        return controller.firstPayloadSlot() >= 0;
+    }
+
+    /** The controller's payload slots: slot number to {name, count}. */
+    @LuaFunction(mainThread = true)
+    public final Map<Integer, Map<String, Object>> getItems(LaunchControllerBlockEntity controller) {
+        return LuaValues.items(controller.inventory());
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Map<String, Object> getSphere(LaunchControllerBlockEntity controller) {
+        return sphere(controller);
+    }
+
+    // ---- Kinetic Drive Base (the old Mass Driver, inert) ------------------------------------------------------------
 
     /** Whether the Payload Chamber and Barrel Nozzle sit on top of this base. */
     @LuaFunction(mainThread = true)
