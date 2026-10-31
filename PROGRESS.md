@@ -8,6 +8,8 @@ Debug tools and recommendations noted during unattended stretches (`CLAUDE.md` r
 - **Load all test chunks before a batch:** `setChunkForced` loads a chunk inside each test's start, which starves fresh-world runs. Doing it once up front could shorten runs and even out when tests begin.
 - **The old Mass Driver blocks (the owner asked for ideas):** a cargo railgun firing crates between stations; a probe launcher that fires Remote Shells or relays to far spots; an asteroid tug that drags rock towards a base; or derelict relics found in space and salvaged for parts.
 - **Plain Mech preset:** it has a tier 1 core with tier 2 hands, which the rules would refuse. It only matters for testing.
+- **Stop `PROGRESS.md` conflicts:** every PR adds its entry in the same place, so almost every merge today conflicted and cost a CI rerun. One line in `.gitattributes`, `PROGRESS.md merge=union`, makes git keep both sides.
+- **A thread dump when CI's datagen hangs:** all three attempts on one run today hit the upstream start-up deadlock and failed the job. Capturing a thread dump of a hung attempt would show exactly which classes deadlock, which is what a workaround needs.
 
 ## Decisions pending (for the owner)
 Choices taken alone during unattended stretches, each the safest reversible default. The section named after each item has the details; the owner can overrule any of them.
@@ -997,6 +999,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - A host shows no name: GeckoLib labels every living entity, and on a host the label came out doubled. Why it is drawn twice was not found; a named shell will need its own label.
 - `/void_reclaimer link spawn` now puts the shell further off the bigger its body, because long bodies reach far past their hit box.
 - Seen in the client on the arena with a Mech, Drone, Ship and Shuttle, each spawned and then removed with `/kill`, with no errors. Tests: `HostRoleTest.onlyAMirrorIsAwake`, `aDebugShellAppearsAheadOfThePlayerAndIsTheirs`. Not seen: a shell's `low_power` animation on a rig that has one, and a Titan shell.
+
+## Remote control, part 3: holding a ship loaded: done
+- A seat on a ship needs that ship to stay loaded with nobody near it. `ship/ShipTickets` wraps Sable's force-load tickets: `hold` and `release`, by the id of whatever needs the ship.
+- **What the spike proved:** a held ship stayed loaded and readable for 200 ticks with its chunk released, then unloaded 25 ticks after the ticket went. Over a real server restart a held ship loaded itself, with nothing near it. So the plan's "assume nothing until the spike" is answered: it works.
+- **The trap it found:** Sable looks a ticket's type up by name when it loads its tickets, and a type made only when first used does not exist yet. It then logs `Unknown sub-level loading ticket type` and drops the ticket, and the ship stays unloaded: a seat's ship would have gone missing after every restart. `ShipTickets.init` makes the type when the mod is constructed.
+- Test: `aHeldShipStaysLoadedWithNothingNearIt`. Mutation-checked: without `init` it reads "the ticket type was not made when the mod started". A GameTest cannot restart the server, so the restart was checked by hand with a temporary two-run test, both ways.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
