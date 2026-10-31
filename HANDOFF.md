@@ -34,7 +34,8 @@ Last updated 2026-10-30, after PR #111. Read "Start here" first: it has the stat
 - Git has no global identity: commit with `git -c user.name=voidien -c user.email=99926166+voidien@users.noreply.github.com commit ...` (the identity the history uses).
 - Worktrees: `/home/void/projects/reclaimer-main` is the working checkout (branch from `origin/main` there). `/home/void/projects/reclaimer` is an old, stale checkout (branch `claude/void-reclaimer-setup-3w9028`): do not build there. `/home/void/projects/reclaimer-spike` is the addon spike (branch `spike-addon-compat`, never merge; `-PspikeMods=a,b,c` loads candidate addons, CurseForge ones through cursemaven, and its `build.gradle` has the client quickplay hack). `reclaimer-main` also holds one stash entry (`stash@{0}`, leftover from a conflicted pop; its content is already merged) that can be dropped.
 - Xvfb is installed for the headless client (`tools/client-test/`, see "In-game client checks"); `xdotool` is not needed (`xt.py` uses ctypes). Call `xt.py` with an absolute path. A fresh client run shows a Narrator screen, "Failed to Quick Play" and the experimental-settings screen: create a world through the GUI with commands allowed.
-- A GameTest JVM often hangs while saving worlds after the tests finish: kill it by PID (`ps -eo pid,args | grep gameTestServerRun`). Some foreground commands exceed 10 minutes: run long Gradle tasks with `timeout` or in the background.
+- **Run GameTests with `tools/gametest.sh [main|aero] [filter]`.** The server JVM often hangs after the tests and keeps the world lock (the next run dies with "session.lock: already locked"); the script prints the summary and failures, kills the JVM by PID with a pattern that matches only the JVM, and exits non-zero on failure. A `grep gameTest` kill pattern in a shell command matches and kills that shell. The Aeronautics suite runs in `run-aero/`, the main suite in `run/`.
+- **Open PRs with `tools/pr.sh "title" "body"`**: it pushes the branch and targets `main`; the repository's default branch is not `main`, and a PR against it gets no CI (cost 40 minutes once). Some foreground commands exceed 10 minutes: run long Gradle tasks with `timeout` or in the background.
 - Modrinth maven resolves version *numbers* across loaders (CC: Tweaked's number gave the Fabric jar): pin multi-loader mods by Modrinth version id and check the jar has `META-INF/neoforge.mods.toml`.
 
 ## Where things stand
@@ -161,7 +162,7 @@ Helpers are in `tools/client-test/` (`client.sh`, `xt.py`).
    - `source tools/client-test/client.sh; xstart`
    - `(DISPLAY=:99 nohup ./gradlew runClient > /tmp/client.log 2>&1 &)`
    - Wait for `joined the game` in the log, about 2 minutes.
-2. **First load:** the first load shows the "Experimental Settings" screen. Click "I know what I'm doing" at (878, 464).
+2. **First load:** on a machine without the `vrtest` world, quick play fails ("Could not find world"); run `tools/client-test/bootstrap_world.sh` once to create it through the menus (creative, commands on), then wait for `joined the game`. The first load may show an "Experimental Settings" screen: click "I know what I'm doing" at (878, 464).
 3. **Set up the player** with `run "/command"`. Useful commands:
    - `/void_reclaimer dust set @s void_reclaimer:metallic 200`
    - `/void_reclaimer milestone grant @s void_reclaimer:expansion`
