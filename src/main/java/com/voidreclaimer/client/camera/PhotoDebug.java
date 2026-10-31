@@ -2,6 +2,8 @@ package com.voidreclaimer.client.camera;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.client.hud.ScreenProjection;
+import com.voidreclaimer.client.render.body.BoneProbe;
 import com.voidreclaimer.debug.DebugReadout;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,8 +48,10 @@ public final class PhotoDebug {
     private static final int HEADING = 0xFF7FD4FF;
     /** A long data line in the panel; the text file always has all of it. */
     private static final int PANEL_LINE_CHARS = 120;
+    private static final float LABEL_SCALE = 0.5f;
 
     private static boolean on;
+    private static boolean labels;
     private static boolean chunkBorders;
     private static boolean hitBoxes;
     private static int age;
@@ -58,6 +62,16 @@ public final class PhotoDebug {
 
     public static boolean on() {
         return on;
+    }
+
+    public static boolean labels() {
+        return labels;
+    }
+
+    /** The body's socket and mount names over the model (L in photo mode); works with or without the rest of the layer. */
+    public static void setLabels(boolean value) {
+        labels = value;
+        BoneProbe.capture(value);
     }
 
     /** Turns the layer on or off with photo mode's G key. */
@@ -154,6 +168,42 @@ public final class PhotoDebug {
                 com.voidreclaimer.client.render.body.BodyRenderer.drawnBodyScale(), com.voidreclaimer.client.render.body.BodyRenderer.drawnPartScale());
     }
 
+    /** A dot and a small name at each socket and mount, bright when filled. Sockets are blue, mounts gold. */
+    public static void renderLabels(GuiGraphics graphics, Minecraft mc, int width, int height) {
+        Camera camera = mc.gameRenderer.getMainCamera();
+        for (BoneProbe.Point point : BoneProbe.latest()) {
+            Vec3 direction = new Vec3(point.at());
+            var screen = ScreenProjection.project(camera, direction, PhotoMode.state().fov(), width, height, 0, 0);
+            if (!screen.onScreen()) {
+                continue;
+            }
+            int colour = point.kind() == BoneProbe.Kind.SOCKET ? 0xFF7FD4FF : 0xFFFFC857;
+            colour = point.filled() ? colour : (colour & 0x00FFFFFF) | 0x90000000;
+            graphics.fill(screen.x() - 1, screen.y() - 1, screen.x() + 1, screen.y() + 1, colour);
+            graphics.pose().pushPose();
+            graphics.pose().translate(screen.x() + 2, screen.y() - 2, 0);
+            graphics.pose().scale(LABEL_SCALE, LABEL_SCALE, 1f);
+            graphics.drawString(mc.font, point.name(), 0, 0, colour, true);
+            graphics.pose().popPose();
+        }
+    }
+
+    /** The points as text, in blocks from the body's feet along the body's own axes, for the text file. */
+    private static List<String> pointLines(Minecraft mc) {
+        Vec3 fromBody = mc.gameRenderer.getMainCamera().getPosition().subtract(mc.player.position());
+        double yaw = Math.toRadians(com.voidreclaimer.client.render.body.BodyRenderer.facing(mc.player));
+        Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
+        Vec3 right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
+        List<String> lines = new ArrayList<>();
+        lines.add("Attachment points (blocks from the feet: right, up, forward; * means something is installed)");
+        BoneProbe.latest().stream().sorted(java.util.Comparator.comparing(BoneProbe.Point::name)).forEach(point -> {
+            Vec3 at = new Vec3(point.at()).add(fromBody);
+            lines.add(String.format(Locale.ROOT, "  %s %-34s %6.2f %6.2f %6.2f%s", point.kind() == BoneProbe.Kind.SOCKET ? "socket" : "mount ",
+                    point.name(), at.dot(right), at.y, at.dot(forward), point.filled() ? " *" : ""));
+        });
+        return lines;
+    }
+
     /** The panel and the crosshair; photo mode's screen calls this. */
     public static void render(GuiGraphics graphics, Minecraft mc, int width, int height) {
         int cx = width / 2;
@@ -191,11 +241,13 @@ public final class PhotoDebug {
         Screenshot.grab(mc.gameDirectory, name + ".png", mc.getMainRenderTarget(),
                 message -> mc.execute(() -> mc.gui.getChat().addMessage(message)));
         String camera = cameraLine(mc);
+        List<String> points = labels ? pointLines(mc) : List.of();
         age = 0;
         read(mc, PhotoMode.position(), look()).thenAccept(lines -> {
             List<String> file = new ArrayList<>();
             file.add(camera);
             file.addAll(lines);
+            file.addAll(points);
             Path path = mc.gameDirectory.toPath().resolve(Screenshot.SCREENSHOT_DIR).resolve(name + ".txt");
             try {
                 Files.createDirectories(path.getParent());

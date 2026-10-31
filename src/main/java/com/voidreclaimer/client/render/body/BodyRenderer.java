@@ -144,8 +144,15 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             } else {
                 hideFilledCaps(rigModel, view);
             }
+            boolean probed = player == Minecraft.getInstance().player;
+            if (probed) {
+                BoneProbe.begin();
+            }
             super.render(player, entityYaw, partialTick, poseStack, bufferSource,
                     BodyLight.atLeast(packedLight, com.voidreclaimer.ClientConfig.BODY_MIN_LIGHT.get()));
+            if (probed) {
+                BoneProbe.end();
+            }
         } finally {
             frame = null;
         }
@@ -230,6 +237,15 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         poseStack.mulPose(Axis.XP.rotationDegrees(angles.pitch()));
         poseStack.mulPose(Axis.ZP.rotationDegrees(angles.roll()));
         poseStack.translate(0.0, -pivot, 0.0);
+    }
+
+    /** The way a body's model faces, in degrees of yaw: the view for bodies that pitch with it, the body's own turn for an upright one. */
+    public static float facing(Player player) {
+        BodyView view = Bodies.view(player);
+        SectionStats core = Parts.section(view.data().core());
+        String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
+        BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
+        return (spec != null ? spec.pitches() : BodyLook.pitches(rig)) ? player.getYRot() : player.yBodyRot;
     }
 
     /** Where the rig's origin sits above the player's feet: its middle for flyers, the pelvis height for the upright Mech. */
