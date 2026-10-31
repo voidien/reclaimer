@@ -31,8 +31,8 @@ public final class NaniteGameTests {
         ServerLevel space = TestPlayers.deepSpace(helper);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         // Scheduled ticks set before this are dropped, so wait a few ticks; then wait for the chunk to really tick, which on a
-        // slow machine (CI) or a fresh world takes longer than a fixed delay. Entities in a chunk that does not tick them are
-        // invisible to lookups, so a test must never start before that: a chunk that never ticks lets the test time out.
+        // slow machine (CI) or a fresh world takes longer than a fixed delay. A chunk that never ticks gives up after 100 ticks:
+        // block tests do not need entity ticking. Tests that look up entities use inEntityTickingArea.
         helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, 0, () -> {
             BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
                     .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
@@ -40,8 +40,22 @@ public final class NaniteGameTests {
         }));
     }
 
+    /**
+     * Like {@link #inLoadedArea}, but never starts before the chunk ticks entities, however long that takes (the test's own
+     * timeout ends the wait): entities in a chunk that does not tick them neither move nor appear in lookups.
+     */
+    static void inEntityTickingArea(GameTestHelper helper, BlockPos pos, int radius, Runnable body) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, -100_000, () -> {
+            BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
+                    .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
+            body.run();
+        }));
+    }
+
     private static void waitTicking(GameTestHelper helper, ServerLevel space, BlockPos pos, int waited, Runnable then) {
-        if (space.isPositionEntityTicking(pos) || waited >= 2000) {
+        if (space.isPositionEntityTicking(pos) || waited >= 100) {
             then.run();
         } else {
             helper.runAfterDelay(1, () -> waitTicking(helper, space, pos, waited + 1, then));
