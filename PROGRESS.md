@@ -917,6 +917,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Photo mode: logistics overlay: done
 - The same overlay (O) also draws each helper drone's route, heading, job, phase and cargo, and the rotation of Create machines in the chunks around the camera, red when overstressed; stopped and overstressed machines go in a shot's text file. Tests: `DebugReadoutGameTests`. Seen on the drone and launch scenes.
 
+## Fix: attachment points on the Mech and Titan: done
+- The owner saw two things on the Mech: attachments not following the model, and the shoulder pieces too close to the head. The first was the scale bug (parts turned twice), fixed above: two sheets 90 degrees of heading apart now match. The second was real: the sensors sat 3 px from the middle, so the module's 3.9 px width cut 1.6 px into the head. They now sit at 5.2 px on the `chest` bone, on the shoulders, and no longer swing with the head. Their socket is still the head, so removing the head still removes them.
+- **The same audit, over every rig, found:** the Mech's back storage overlapping its back thruster (spacing 2.3 px, now 3.6); the Titan's core and storage floating 3 px over the hull, which is 1.5 blocks at scale 8 (now on the surface); the Titan's two sensors overlapping and hanging up inside the hull (now apart, under it).
+- **Test:** `BodyRigMountsTest` reads the rig and model files for all four whole-model rigs: every mount touches the model, neighbours leave room for their modules, left and right mirror, and the Mech's shoulder pieces clear its head. All four failures show on the old rigs.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

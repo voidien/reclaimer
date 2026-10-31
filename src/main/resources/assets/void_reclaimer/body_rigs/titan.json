@@ -38,33 +38,9 @@
     ]
   },
   "mounts": {
-    "mount_core_1": {
-      "bone": "saucer",
-      "offset": [
-        0,
-        8,
-        -14
-      ],
-      "yaw": 0
-    },
-    "mount_storage_1": {
-      "bone": "saucer",
-      "offset": [
-        -14,
-        8,
-        6
-      ],
-      "yaw": 0
-    },
-    "mount_storage_2": {
-      "bone": "saucer",
-      "offset": [
-        14,
-        8,
-        6
-      ],
-      "yaw": 0
-    },
+    "mount_core_1": {"bone": "saucer", "offset": [0, 5, -14], "yaw": 0},
+    "mount_storage_1": {"bone": "saucer", "offset": [-14, 3, 6], "yaw": 0},
+    "mount_storage_2": {"bone": "saucer", "offset": [14, 3, 6], "yaw": 0},
     "bridge__mount_sensor_1": {
       "bone": "bridge",
       "offset": [
@@ -74,24 +50,8 @@
       ],
       "yaw": 0
     },
-    "sensor__mount_sensor_1": {
-      "bone": "sensor",
-      "offset": [
-        -1.2,
-        -0.8,
-        0
-      ],
-      "yaw": 0
-    },
-    "sensor__mount_sensor_2": {
-      "bone": "sensor",
-      "offset": [
-        1.2,
-        -0.8,
-        0
-      ],
-      "yaw": 0
-    },
+    "sensor__mount_sensor_1": {"bone": "sensor", "offset": [-2, -5.5, 0], "yaw": 0},
+    "sensor__mount_sensor_2": {"bone": "sensor", "offset": [2, -5.5, 0], "yaw": 0},
     "bay_door__mount_storage_1": {
       "bone": "bay_door",
       "offset": [
