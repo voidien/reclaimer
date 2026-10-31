@@ -21,11 +21,27 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class ClientPilotController {
     private static PilotInput last = PilotInput.NONE;
+    private static volatile com.voidreclaimer.ship.HelmBlockEntity.Readout readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
 
     private ClientPilotController() {}
 
     public static boolean isPiloting(LocalPlayer player) {
         return player.getVehicle() instanceof HelmSeat;
+    }
+
+    /** The seat the player sits in, or null. */
+    public static HelmSeat seat(LocalPlayer player) {
+        return player.getVehicle() instanceof HelmSeat seat ? seat : null;
+    }
+
+    /** What the Helm last told the pilot about the ship (empty when not in a chair). */
+    public static com.voidreclaimer.ship.HelmBlockEntity.Readout readout() {
+        return readout;
+    }
+
+    /** Installed as {@link com.voidreclaimer.network.HelmReadoutPayload#clientHandler}. */
+    public static void onReadout(com.voidreclaimer.network.HelmReadoutPayload payload) {
+        readout = payload.readout();
     }
 
     @SubscribeEvent
@@ -35,6 +51,7 @@ public final class ClientPilotController {
         }
         if (!isPiloting(player)) {
             send(player, PilotInput.NONE);
+            readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
             return;
         }
         Input input = event.getInput();

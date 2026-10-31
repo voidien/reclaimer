@@ -92,6 +92,10 @@ neoForge {
             // Its own directory: Gradle runs tasks in parallel and the two GameTest worlds must not collide.
             gameDirectory = file('run-aero')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id + '_aero'
+            // ./gradlew runGameTestAeronautics -PgametestFilter=theHoldsStop (same filter as runGameTestServer)
+            if (project.hasProperty('gametestFilter')) {
+                systemProperty 'void_reclaimer.gametestFilter', project.property('gametestFilter')
+            }
         }
 
         data {

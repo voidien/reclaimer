@@ -110,6 +110,9 @@ Read-only: a computer cannot take the stick.
 | `getTranslation()` | how well the ship can push each way, 0 to 1: `{ forward, back, right, left, up, down }` |
 | `getRotation()` | how well it can turn each way: `{ rollRight, rollLeft, noseUp, noseDown, yawLeft, yawRight }` |
 | `getSupplies()` | `{ fuel, fuelCapacity, energy, energyCapacity }` across the ship's thrusters |
+| `getVelocity()` | the ship's speed along the Helm's axes, blocks per second: `{ surge, sway, heave, speed }` |
+| `getSpin()` | its turning rate, degrees per second, as the pilot reads it: `{ rollRight, noseUp, yawRight }` |
+| `getAttitude()` | degrees: `{ pitch, roll, heading }` (nose above the horizon, roll to the right, compass bearing of the nose) |
 
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor

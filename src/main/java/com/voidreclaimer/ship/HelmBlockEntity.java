@@ -1,6 +1,10 @@
 package com.voidreclaimer.ship;
 
 import com.voidreclaimer.flight.FlightSettings;
+import com.voidreclaimer.network.HelmReadoutPayload;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.neoforge.network.PacketDistributor;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlockEntities;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
@@ -45,11 +49,62 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** What the Helm found last tick, for the HUD and the peripheral. */
     private volatile Readout readout = Readout.EMPTY;
+    /**
+     * The seat this Helm spawned (server only, not saved). Kept here because an entity added to a chunk that is not yet
+     * entity-ticking is invisible to entity lookups until the chunk is, which would lose the pilot for those ticks;
+     * {@link HelmSeats} keeps such a seat moving.
+     */
+    @Nullable
+    private HelmSeat seat;
 
     /** What the Helm saw last tick: whether it is on a ship, how many thrusters, and what the ship can do. */
+    /**
+     * What the Helm sees of its ship, for the HUD and the peripheral. {@code move} and {@code turn} are the six-way
+     * coverage of the thrusters (see {@link ThrustAllocator#translationCoverage}); {@code velocity} is the ship's speed
+     * along the Helm's forward, right and up axes in blocks per second; {@code spin} is its turning rate as the pilot
+     * reads it, roll right, nose up and yaw right, in degrees per second.
+     */
     public record Readout(boolean onShip, int thrusters, double[] move, double[] turn, double fuel, double fuelCapacity,
-                          int energy, int energyCapacity) {
-        public static final Readout EMPTY = new Readout(false, 0, new double[6], new double[6], 0, 0, 0, 0);
+                          int energy, int energyCapacity, double[] velocity, double[] spin, Attitude attitude) {
+        public static final Readout EMPTY = new Readout(false, 0, new double[6], new double[6], 0, 0, 0, 0, new double[3], new double[3], Attitude.LEVEL);
+        public static final StreamCodec<ByteBuf, Readout> STREAM_CODEC = StreamCodec.of(Readout::write, Readout::read);
+
+        public double speed() {
+            return Math.sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1] + velocity[2] * velocity[2]);
+        }
+
+        private static void write(ByteBuf buf, Readout r) {
+            buf.writeBoolean(r.onShip);
+            buf.writeInt(r.thrusters);
+            floats(buf, r.move);
+            floats(buf, r.turn);
+            buf.writeFloat((float) r.fuel);
+            buf.writeFloat((float) r.fuelCapacity);
+            buf.writeInt(r.energy);
+            buf.writeInt(r.energyCapacity);
+            floats(buf, r.velocity);
+            floats(buf, r.spin);
+            Attitude.STREAM_CODEC.encode(buf, r.attitude);
+        }
+
+        private static Readout read(ByteBuf buf) {
+            return new Readout(buf.readBoolean(), buf.readInt(), floats(buf, 6), floats(buf, 6), buf.readFloat(), buf.readFloat(),
+                    buf.readInt(), buf.readInt(), floats(buf, 3), floats(buf, 3), Attitude.STREAM_CODEC.decode(buf));
+        }
+
+        private static void floats(ByteBuf buf, double[] values) {
+            for (double v : values) {
+                buf.writeFloat((float) v);
+            }
+        }
+
+        private static double[] floats(ByteBuf buf, int count) {
+            double[] out = new double[count];
+            for (int i = 0; i < count; i++) {
+                out[i] = buf.readFloat();
+            }
+            return out;
+        }
     }
 
     public HelmBlockEntity(BlockPos pos, BlockState state) {
@@ -65,15 +120,18 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (!(level instanceof ServerLevel server) || pilot() != null) {
             return false;
         }
-        // On a ship the Helm's block position is in the ship's plot; the seat floats where the Helm is in the world.
-        ServerSubLevel ship = Ships.shipAt(server, worldPosition);
-        Vec3 centre = Vec3.atBottomCenterOf(worldPosition);
-        Vec3 where = ship == null ? centre : ship.logicalPose().transformPosition(centre);
+        // On a ship the Helm's block position is in the ship's plot; the seat floats where the Helm is in the world and
+        // follows it from there (see HelmSeat.tick).
+        Vec3 where = HelmSeat.worldSpot(server, worldPosition);
+        if (where == null) {
+            return false;
+        }
         HelmSeat seat = HelmSeat.at(server, worldPosition, where);
         if (!server.addFreshEntity(seat) || !player.startRiding(seat, true)) {
             seat.discard();
             return false;
         }
+        this.seat = seat;
         triggerAnim(CONTROLLER, SIT_ANIMATION);
         return true;
     }
@@ -84,6 +142,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (level == null) {
             return null;
         }
+        if (seat != null && (seat.isRemoved() || !seat.helmPos().equals(worldPosition))) {
+            seat = null;
+        }
+        if (seat != null) {
+            return seat.getFirstPassenger() instanceof Player player ? player : null;
+        }
+        // A seat restored from a save (or spawned before a reload) is only found by looking: it was saved with the Helm's position.
         for (HelmSeat seat : level.getEntitiesOfClass(HelmSeat.class, new AABB(worldPosition).inflate(1.0))) {
             if (seat.helmPos().equals(worldPosition) && seat.getFirstPassenger() instanceof Player player) {
                 return player;
@@ -120,7 +185,8 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         Player pilot = helm.pilot();
         ServerSubLevel ship = Ships.shipAt(server, pos);
         if (pilot == null || ship == null) {
-            helm.readout = ship == null ? Readout.EMPTY : helm.look(server, ship, List.of());
+            helm.readout = ship == null ? Readout.EMPTY : helm.look(server, ship, List.of(), new Vector3d(), new Vector3d());
+            helm.tell(pilot);
             return;
         }
         List<ThrusterLike> thrusters = Ships.thrustersOf(server, ship);
@@ -132,30 +198,41 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         }
         ThrustAllocator.Frame frame = helm.frame(ship);
         double[] throttles = ThrustAllocator.throttles(model, frame, input);
+        // The ship's velocity and spin are in the world; the frame is the ship's own, so they are turned into it first.
+        Vector3d velocity = new Vector3d();
+        Vector3d spin = new Vector3d();
+        RigidBodyHandle body = RigidBodyHandle.of(ship);
+        if (body != null && body.isValid()) {
+            Quaterniond toShip = new Quaterniond(Ships.orientation(ship)).conjugate();
+            toShip.transform(body.getLinearVelocity(velocity));
+            toShip.transform(body.getAngularVelocity(spin));
+        }
         // The holds: with the dampener on, brake to a stop; with the RCS lock on, stop spinning. Each only on the axes
-        // the pilot is not using, so a key always wins. The ship's velocity and spin are in the world; the frame is the
-        // ship's own, so they are turned into it first.
+        // the pilot is not using, so a key always wins.
         FlightSettings settings = pilot instanceof ServerPlayer p ? p.getData(ModAttachments.FLIGHT_SETTINGS) : FlightSettings.DEFAULT;
         if (settings.dampener() || settings.rcsLock()) {
-            RigidBodyHandle body = RigidBodyHandle.of(ship);
-            if (body != null && body.isValid()) {
-                Quaterniond toShip = new Quaterniond(Ships.orientation(ship)).conjugate();
-                Vector3d velocity = toShip.transform(body.getLinearVelocity(new Vector3d()));
-                Vector3d spin = toShip.transform(body.getAngularVelocity(new Vector3d()));
-                Vector3d[] hold = ThrustAllocator.holdRequest(frame, input, velocity, spin, settings.dampener(), settings.rcsLock(), HOLD_DEADBAND, HOLD_RAMP);
-                double[] holding = ThrustAllocator.throttles(model, frame, hold[0], hold[1]);
-                for (int i = 0; i < throttles.length; i++) {
-                    throttles[i] = Math.max(throttles[i], holding[i]);
-                }
+            Vector3d[] hold = ThrustAllocator.holdRequest(frame, input, velocity, spin, settings.dampener(), settings.rcsLock(), HOLD_DEADBAND, HOLD_RAMP);
+            double[] holding = ThrustAllocator.throttles(model, frame, hold[0], hold[1]);
+            for (int i = 0; i < throttles.length; i++) {
+                throttles[i] = Math.max(throttles[i], holding[i]);
             }
         }
         for (int i = 0; i < thrusters.size(); i++) {
             thrusters.get(i).setCommandedThrottle(throttles[i]);
         }
-        helm.readout = helm.look(server, ship, thrusters);
+        helm.readout = helm.look(server, ship, thrusters, velocity, spin);
+        helm.tell(pilot);
     }
 
-    private Readout look(ServerLevel server, ServerSubLevel ship, List<ThrusterLike> thrusters) {
+    /** Sends the readout to the pilot for the HUD. */
+    private void tell(@Nullable Player pilot) {
+        if (pilot instanceof ServerPlayer player) {
+            PacketDistributor.sendToPlayer(player, new HelmReadoutPayload(readout));
+        }
+    }
+
+    /** {@code velocityShipFrame} and {@code spinShipFrame} are the ship's motion turned into its own frame (zero if unknown). */
+    private Readout look(ServerLevel server, ServerSubLevel ship, List<ThrusterLike> thrusters, Vector3d velocityShipFrame, Vector3d spinShipFrame) {
         List<ThrustAllocator.Thruster> model = new ArrayList<>();
         double fuel = 0, fuelCapacity = 0;
         int energy = 0, energyCapacity = 0;
@@ -171,8 +248,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
             }
         }
         ThrustAllocator.Frame frame = frame(ship);
+        double[] velocity = {velocityShipFrame.dot(frame.forward()), velocityShipFrame.dot(frame.right()), velocityShipFrame.dot(frame.up())};
+        // Spin follows the right-hand rule about each axis; the pilot's names are the other way round (see ThrustAllocator).
+        double[] spin = {-Math.toDegrees(spinShipFrame.dot(frame.forward())), -Math.toDegrees(spinShipFrame.dot(frame.right())),
+                -Math.toDegrees(spinShipFrame.dot(frame.up()))};
         return new Readout(true, thrusters.size(), ThrustAllocator.translationCoverage(model, frame),
-                ThrustAllocator.rotationCoverage(model, frame), fuel, fuelCapacity, energy, energyCapacity);
+                ThrustAllocator.rotationCoverage(model, frame), fuel, fuelCapacity, energy, energyCapacity, velocity, spin,
+                Attitude.of(Ships.orientation(ship), frame.forward(), frame.right(), frame.up()));
     }
 
     @Override

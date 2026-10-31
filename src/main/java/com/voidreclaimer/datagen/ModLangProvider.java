@@ -101,6 +101,15 @@ public final class ModLangProvider extends LanguageProvider {
         add("key.void_reclaimer.pitch_down", "Ship: Nose Down");
         add("key.void_reclaimer.yaw_left", "Ship: Yaw Left");
         add("key.void_reclaimer.yaw_right", "Ship: Yaw Right");
+        add("hud.void_reclaimer.pilot.no_ship", "NOT ON A SHIP");
+        add("hud.void_reclaimer.pilot.no_thrusters", "NO THRUSTERS");
+        add("hud.void_reclaimer.pilot.rcs_on", "RCS lock ON");
+        add("hud.void_reclaimer.pilot.rcs_off", "RCS lock OFF");
+        add("hud.void_reclaimer.pilot.fuel", "FUEL %s/%s mB");
+        add("hud.void_reclaimer.pilot.energy", "ENERGY %s/%s FE");
+        add("hud.void_reclaimer.pilot.thrusters", "THR %s");
+        add("hud.void_reclaimer.pilot.heading", "HDG %s");
+        add("hud.void_reclaimer.pilot.tilt", "PIT %s ROL %s");
         add(ModItems.TERRAFORMING_SPIRE.get(), "Terraforming Spire");
         add("message.void_reclaimer.spire.started", "Genesis Pulse started.");
         add("message.void_reclaimer.spire.busy", "A Genesis Pulse is already sweeping out from this Spire.");

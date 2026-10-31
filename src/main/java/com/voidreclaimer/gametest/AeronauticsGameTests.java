@@ -332,7 +332,17 @@ public final class AeronauticsGameTests {
         player = current != null ? current : player;
         helper.assertTrue(helm.seat(player), "the pilot could not sit at " + helmPos + " (player at " + player.position() + ")");
         // A cross-dimension teleport can hand the server a fresh ServerPlayer object for the same player: compare by id.
-        helper.assertTrue(helm.pilot() != null && helm.pilot().getUUID().equals(player.getUUID()), "the Helm does not see its pilot: " + helm.pilot());
+        if (helm.pilot() == null || !helm.pilot().getUUID().equals(player.getUUID())) {
+            var seats = space.getEntities(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), e -> true).stream()
+                    .map(e -> e.position() + "->" + ((com.voidreclaimer.ship.HelmSeat) e).helmPos() + " carrying " + e.getPassengers()).toList();
+            var vehicle = player.getVehicle();
+            helper.fail("the Helm does not see its pilot: " + helm.pilot() + "; entityTicking " + space.isPositionEntityTicking(BlockPos.containing(where))
+                    + ", chunk " + space.getChunkSource().hasChunk(BlockPos.containing(where).getX() >> 4, BlockPos.containing(where).getZ() >> 4)
+                    + ", byUuid " + (vehicle == null ? "none" : space.getEntity(vehicle.getUUID())) + ", removed " + (vehicle != null && vehicle.isRemoved())
+                    + "; helm at " + helmPos + " in world at " + where + ", ship " + ship
+                    + " plot " + ship.getPlot().getChunkMin() + ".." + ship.getPlot().getChunkMax() + ", player at " + player.position()
+                    + " riding " + player.getVehicle() + ", seats " + seats);
+        }
         player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_INPUT, keys);
         return player;
     }
@@ -366,6 +376,123 @@ public final class AeronauticsGameTests {
                 });
             });
         }));
+    }
+
+    /**
+     * The Helm's readout, which the pilot HUD shows, follows the ship: moving ahead reads as forward speed, heading north
+     * with the nose lifted by the low engine. This also proves the seat rides along: the Helm only reads its ship while
+     * it sees its pilot, and the ship has moved on by the time the readout is taken.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void theHelmReadoutFollowsTheShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(91_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.of(
+                    true, false, false, false, false, false, false, false, false, false, false, false));
+            helper.runAfterDelay(SETTLE_TICKS + SAMPLE_TICKS, () -> {
+                com.voidreclaimer.ship.HelmBlockEntity helm = helmOf(space, pos);
+                com.voidreclaimer.ship.HelmBlockEntity.Readout readout = helm == null ? null : helm.readout();
+                String seen = helm == null ? "no Helm" : "pilot " + helm.pilot() + ", ship " + com.voidreclaimer.ship.Ships.shipAt(space, helm.getBlockPos())
+                        + ", thrusters " + com.voidreclaimer.ship.Ships.thrustersOf(space, shipNamed(space, pos)).size() + ", helm at " + helm.getBlockPos()
+                        + ", player at " + player.position() + " riding " + player.getVehicle() + " in " + player.level().dimension().location()
+                        + ", seats " + space.getEntities(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), e -> true).stream()
+                                .map(e -> e.position() + "->" + ((com.voidreclaimer.ship.HelmSeat) e).helmPos() + " carrying " + e.getPassengers()).toList();
+                List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
+                removeShip(server, space, pos);
+                TestPlayers.remove(player);
+                if (readout == null) {
+                    helper.fail("lost the Helm; setup: " + log);
+                    return;
+                }
+                double surge = readout.velocity()[0];
+                double heading = readout.attitude().heading();
+                if (!readout.onShip() || readout.thrusters() == 0) {
+                    helper.fail("the Helm does not see its ship: " + seen + "; " + readout);
+                } else if (surge < 0.3 || Math.abs(readout.speed() - linearSpeed(info)) > 0.2 * readout.speed() + 0.05) {
+                    helper.fail("the readout's speed does not follow the ship: surge " + surge + ", speed " + readout.speed() + "; " + info);
+                } else if (Math.min(heading, 360 - heading) > 15 || Math.abs(readout.attitude().roll()) > 15 || readout.attitude().pitch() < 5) {
+                    // The stern engine sits below the centre of mass (the Helm is on top), so the push lifts the nose:
+                    // the attitude must show that pitch, and no roll or turn.
+                    helper.fail("the readout's attitude is off for a ship pushed north by a low stern engine: " + readout.attitude());
+                } else {
+                    helper.succeed();
+                }
+            });
+        }));
+    }
+
+    /**
+     * When the ship is removed under a seated pilot, the pilot is left standing in the world where the ship was, not
+     * carried off to the Helm's plot position (which once dragged a player twenty million blocks away and dropped the
+     * connection).
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void removingTheShipUnseatsThePilotInTheWorld(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+            helper.runAfterDelay(5, () -> {
+                removeShip(server, space, pos);
+                // A real player ticks and so keeps the chunks around them entity-ticking, which is what lets the seat
+                // tick and notice; a test player only ticks when told to.
+                tickPlayer(helper, server, player.getUUID(), UNSEAT_TICKS, () -> {
+                    ServerPlayer now = server.getPlayerList().getPlayer(player.getUUID());
+                    Vec3 at = now == null ? null : now.position();
+                    boolean riding = now != null && now.getVehicle() != null;
+                    String why = "";
+                    if (riding && now.getVehicle() instanceof com.voidreclaimer.ship.HelmSeat seat) {
+                        BlockPos helmPos = seat.helmPos();
+                        why = "; seat removed " + seat.isRemoved() + " at " + seat.position() + ", helm " + helmPos + " entity " + space.getBlockEntity(helmPos)
+                                + ", shipAt(server) " + com.voidreclaimer.ship.Ships.shipAt(space, helmPos) + ", shipAt(level) " + com.voidreclaimer.ship.Ships.shipAt((net.minecraft.world.level.Level) space, helmPos)
+                                + ", inPlots " + com.voidreclaimer.ship.Ships.inPlots(space, helmPos) + ", worldSpot " + com.voidreclaimer.ship.HelmSeat.worldSpot(space, helmPos)
+                                + ", seat chunk entityTicking " + space.isPositionEntityTicking(seat.blockPosition()) + ", helm chunk loaded " + space.hasChunk(helmPos.getX() >> 4, helmPos.getZ() >> 4)
+                                + ", helm chunk entityTicking " + space.isPositionEntityTicking(helmPos);
+                    }
+                    TestPlayers.remove(player);
+                    if (now == null || riding || at.distanceTo(Vec3.atCenterOf(pos)) > 16) {
+                        helper.fail("the pilot was not left in the world: at " + at + ", riding " + riding + why + "; setup: " + log);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        }));
+    }
+
+    /** Ticks per the player's turn to be left alone after the ship is gone: the chunk has to become entity-ticking first. */
+    private static final int UNSEAT_TICKS = 40;
+
+    /** Runs the player's own tick once per game tick for {@code ticks} ticks, then {@code then}. */
+    private static void tickPlayer(GameTestHelper helper, MinecraftServer server, java.util.UUID player, int ticks, Runnable then) {
+        ServerPlayer now = server.getPlayerList().getPlayer(player);
+        if (now != null) {
+            now.doTick();
+        }
+        if (ticks <= 0) {
+            then.run();
+        } else {
+            helper.runAfterDelay(1, () -> tickPlayer(helper, server, player, ticks - 1, then));
+        }
+    }
+
+    /** The Helm on the test ship at {@code pos}, or null. */
+    private static com.voidreclaimer.ship.HelmBlockEntity helmOf(ServerLevel space, BlockPos pos) {
+        var ship = shipNamed(space, pos);
+        if (ship == null) {
+            return null;
+        }
+        for (BlockPos p : com.voidreclaimer.ship.Ships.blocksOf(space, ship)) {
+            if (space.getBlockEntity(p) instanceof com.voidreclaimer.ship.HelmBlockEntity helm) {
+                return helm;
+            }
+        }
+        return null;
     }
 
     /** The arrow keys open the bow jet: the ship starts turning. No key, no turn and no move. */

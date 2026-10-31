@@ -344,9 +344,12 @@ public final class CCPeripheralGameTests {
             ServerLevel level = TestPlayers.deepSpace(helper);
             HelmPeripheral lua = new HelmPeripheral();
             HelmBlockEntity helm = place(level, pos, ModBlocks.HELM.get(), HelmBlockEntity.class);
-            requireMethods(helper, Lookup.of(level, pos), "Helm", "isOnShip", "getPilot", "getThrusterCount", "getTranslation", "getRotation", "getSupplies");
+            requireMethods(helper, Lookup.of(level, pos), "Helm", "isOnShip", "getPilot", "getThrusterCount", "getTranslation", "getRotation", "getSupplies",
+                    "getVelocity", "getSpin", "getAttitude");
             helper.assertTrue(!lua.isOnShip(helm) && lua.getPilot(helm) == null && lua.getThrusterCount(helm) == 0, "a Helm in the world reads as a ship");
             helper.assertTrue(lua.getTranslation(helm).size() == 6 && lua.getRotation(helm).size() == 6, "six axes each way");
+            helper.assertTrue(lua.getVelocity(helm).get("speed") == 0.0 && lua.getSpin(helm).size() == 3 && lua.getAttitude(helm).get("heading") == 0.0,
+                    "a Helm in the world is still and level");
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });

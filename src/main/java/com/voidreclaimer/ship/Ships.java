@@ -38,6 +38,25 @@ public final class Ships {
         return ship instanceof ServerSubLevel server && !server.isRemoved() ? server : null;
     }
 
+    /** Whether {@code pos} lies in Sable's plot region at all (a ship's own coordinates), whether or not a ship is there. */
+    public static boolean inPlots(Level level, BlockPos pos) {
+        SubLevelContainer container = SubLevelContainer.getContainer(level);
+        return container != null && container.inBounds(pos);
+    }
+
+    /** The ship the block at {@code pos} is part of on either side, or null in the normal world. */
+    @Nullable
+    public static SubLevel shipAt(Level level, BlockPos pos) {
+        SubLevelContainer container = SubLevelContainer.getContainer(level);
+        if (container == null || !container.inBounds(pos)) {
+            return null;
+        }
+        LevelPlot plot = container.getPlot(new ChunkPos(pos));
+        SubLevel ship = plot == null ? null : plot.getSubLevel();
+        // A removed ship's plot lingers for a while: its blocks are nowhere in the world any more.
+        return ship instanceof ServerSubLevel server && server.isRemoved() ? null : ship;
+    }
+
     /** The ship's blocks' bounds in its own coordinates, from its plot. */
     public static Iterable<BlockPos> blocksOf(ServerLevel level, ServerSubLevel ship) {
         LevelPlot plot = ship.getPlot();
