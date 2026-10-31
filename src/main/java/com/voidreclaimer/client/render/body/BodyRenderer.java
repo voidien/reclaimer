@@ -41,6 +41,12 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     private boolean reRendering;
     /** How far sections are spread for the next draws, 0 to 1; only the assembly view sets it, round its own draw. */
     private static float explode;
+    @Nullable
+    private static BodyView previewView;
+    @Nullable
+    private static String ghostSocket;
+    @Nullable
+    private static BodyData.Mount ghostMount;
     private final Map<String, org.joml.Vector3f> spread = new HashMap<>();
     private static float drawnBodyScale = 1f;
     private static float drawnPartScale = 1f;
@@ -93,6 +99,24 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     @Nullable
     public static Frame frame() {
         return frame;
+    }
+
+    /**
+     * Draws the local player as this body until it is set back to null, with the named section or module as a ghost: the assembly
+     * view's preview of a part that is not installed. Nothing on the player changes.
+     */
+    public static void setPreview(@Nullable BodyView view, @Nullable String socket, @Nullable BodyData.Mount mount) {
+        previewView = view;
+        ghostSocket = socket;
+        ghostMount = mount;
+    }
+
+    static boolean isGhost(String socket) {
+        return previewView != null && ghostMount == null && socket.equals(ghostSocket);
+    }
+
+    static boolean isGhost(BodyData.Mount mount) {
+        return previewView != null && mount.equals(ghostMount);
     }
 
     /** Spreads the body's sections apart for the draws until this is set back to 0. */
@@ -174,7 +198,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
 
     @Override
     public void render(Player player, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        BodyView view = Bodies.view(player);
+        BodyView view = previewView != null && player == Minecraft.getInstance().player ? previewView : Bodies.view(player);
         SectionStats core = Parts.section(view.data().core());
         String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);

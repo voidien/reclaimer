@@ -72,6 +72,12 @@ final class BodyPanel {
     private BodyData.Mount selectedMount;
     private int scroll;
     private final List<Region> regions = new ArrayList<>();
+    /** The part the mouse is on and would fit, or null. */
+    @Nullable
+    private Preview preview;
+
+    /** A part that could go in, for the assembly view to show before it is installed. */
+    record Preview(String socket, @Nullable BodyData.Mount mount, ItemStack stack) {}
 
     private record Region(int x, int y, int w, int h, Runnable action) {
         boolean contains(double mx, double my) {
@@ -116,6 +122,7 @@ final class BodyPanel {
 
     void render(GuiGraphics graphics, LocalPlayer player, int mouseX, int mouseY) {
         regions.clear();
+        preview = null;
         BodyView view = Bodies.view(player);
         if (selectedSocket != null && view.chassis().socket(selectedSocket) == null) {
             selectedSocket = null;
@@ -129,7 +136,9 @@ final class BodyPanel {
         } else {
             renderSocket(graphics, player, view, mouseX, mouseY, hover);
         }
-        if (!hover.stack.isEmpty()) {
+        // The assembly view shows a fitting part on the model, and says so beside it: a tooltip here would cover the ghost.
+        boolean shownOnModel = preview != null && layout.bottom() != Integer.MAX_VALUE;
+        if (!hover.stack.isEmpty() && !shownOnModel) {
             List<Component> lines = new ArrayList<>(net.minecraft.client.gui.screens.Screen.getTooltipFromItem(Minecraft.getInstance(), hover.stack));
             if (hover.line != null) {
                 lines.add(hover.line);
@@ -372,6 +381,9 @@ final class BodyPanel {
             }
             if (over) {
                 hover.stack = stack;
+                if (check == BodyRules.Check.OK) {
+                    preview = new Preview(socketId, mount, stack);
+                }
                 hover.line = check == BodyRules.Check.OK
                         ? Component.translatable("body.void_reclaimer.click_install").withColor(ACCENT)
                         : Component.translatable(BodyRules.messageKey(check)).withColor(WARN);
@@ -579,6 +591,12 @@ final class BodyPanel {
     @Nullable
     BodyData.Mount selectedMount() {
         return selectedMount;
+    }
+
+    /** What was last drawn under the mouse, or null. */
+    @Nullable
+    Preview preview() {
+        return preview;
     }
 
     /** The area filter, or null for every socket. */

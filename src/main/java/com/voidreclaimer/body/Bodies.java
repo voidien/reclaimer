@@ -162,6 +162,21 @@ public final class Bodies {
         return new BodyView(body, chassis(access, body), stats(entity), sizes(access), layouts(access));
     }
 
+    /** The body this one would become with {@code stack} in {@code socket}, for a preview: nothing is changed. */
+    public static BodyView withSection(BodyView view, String socket, ItemStack stack, RegistryAccess access) {
+        return preview(BodyRules.installSection(view, socket, stack.copyWithCount(1)).body(), access);
+    }
+
+    /** The body this one would become with {@code stack} on {@code mount}, for a preview: nothing is changed. */
+    public static BodyView withModule(BodyView view, BodyData.Mount mount, ItemStack stack, RegistryAccess access) {
+        return preview(view.data().withModule(mount, stack.copyWithCount(1)), access);
+    }
+
+    /** A body that is not on anyone. Its stats are not passed through {@code BodyStatsEvent}: there is no entity to pass. */
+    private static BodyView preview(BodyData body, RegistryAccess access) {
+        return new BodyView(body, chassis(access, body), compute(body, access), sizes(access), layouts(access));
+    }
+
     /** The active tool module, or empty. */
     public static ItemStack activeTool(LivingEntity entity) {
         return view(entity).activeTool();
