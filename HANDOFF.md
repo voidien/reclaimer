@@ -105,7 +105,7 @@ Helpers underneath are in `tools/client-test/` (`client.sh`, `xt.py`). With a re
 4. **Screen coordinates** (1280 x 720, GUI scale 3): the Replicator (key R) panel spans (160, 61) to (1120, 661); tabs at y 137: Tools 250, Modules 400, Parts 553, Blocks 706, Logs 860, Body 1013; recipe rows start at y about 205, 66 px apart; Replicate at (311, 613). Scroll with `xt scroll -N` while hovering the list.
 5. **JEI:** open the inventory (E), hover an item with `xt hover X Y`, then press R for its recipes.
 6. **Screenshots:** `shot file.png`, then view the PNG. **Stopping:** `kill $(clientpid)`. There is no sound in the headless client.
-- **Seeing a body:** the art's textures are near-black, so stand in a lit room first (`/fill ~-15 ~-15 ~-15 ~15 ~15 ~15 minecraft:sea_lantern hollow`), then `/void_reclaimer body preset @s mech` (or `drone`, `ship`) and F5 for third person. Wait about 45 s after "joined the game" before typing commands. Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
+- **Seeing a body:** `/void_reclaimer scene arena`, then `/void_reclaimer body preset @s mech full` (or `drone`, `ship`, `shuttle`, `titan`) and `quick.sh photo NAME`. Wait about 45 s after "joined the game" before typing commands. Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").

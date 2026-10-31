@@ -922,6 +922,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **The same audit, over every rig, found:** the Mech's back storage overlapping its back thruster (spacing 2.3 px, now 3.6); the Titan's core and storage floating 3 px over the hull, which is 1.5 blocks at scale 8 (now on the surface); the Titan's two sensors overlapping and hanging up inside the hull (now apart, under it).
 - **Test:** `BodyRigMountsTest` reads the rig and model files for all four whole-model rigs: every mount touches the model, neighbours leave room for their modules, left and right mirror, and the Mech's shoulder pieces clear its head. All four failures show on the old rigs.
 
+## Fix: composed body parts were painted black: done
+- Found with the arena: the Ship stayed almost pure black on a lit floor, though its art is no darker than the Mech's. Every part is drawn twice, the art and then an accent mask, and the masks are opaque black with white accents. Drawn as a normal translucent layer, the mask painted the whole part black at full brightness. It is now drawn additively (`RenderType.eyes`), so black adds nothing and only the accents glow. This is what the old note "the art's textures are near-black" was describing, since 5b-1.
+- **Affects:** every section on the Ship, and every module on any body. The Ship shows its copper and casing for the first time. Client rendering, so no GameTest; seen in arena sheets.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
