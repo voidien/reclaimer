@@ -69,11 +69,24 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 `tools/client-test/xt.py` has `chord ctrl+f` (modifiers plus a key), `type "text" 0.3` (a gap between keys, for boxes that refilter on every key) and `mdrag DX DY [steps [shot.png]]` (hold the middle mouse button and move; the optional PNG is taken while the button is held, which is how the orbit camera was checked).
 
 ### JEI recipe screenshots
-`python3 tools/client-test/jei_shots.py [--out build/jei-shots] [--only item,item]` screenshots JEI's recipe view for every item our machine recipes make and writes `index.html` beside the PNGs. It needs the headless client at **1920x1080 on a 1920x1080 Xvfb** (at 1280 wide JEI shrinks its list): temporarily add `programArguments.addAll '--quickPlaySingleplayer', 'New World', '--width', '1920', '--height', '1080'` to the `client` run in `build.gradle` (never commit it), start `Xvfb :99 -screen 0 1920x1080x24`, run `DISPLAY=:99 ./gradlew runClient`, wait for "joined the game", then run the script. JEI drops keys typed too fast, the `r` key typed into a focused search box instead of showing recipes (click the result), and a recipe with several pages shows only its first.
+`python3 tools/client-test/jei_shots.py [--out build/jei-shots] [--only item,item]` screenshots JEI's recipe view for every item our machine recipes make and writes `index.html` beside the PNGs. It needs the headless client at **1920x1080 on a 1920x1080 Xvfb** (at 1280 wide JEI shrinks its list): start `Xvfb :99 -screen 0 1920x1080x24`, run `DISPLAY=:99 ./gradlew runClient -PquickPlay='New World' -PclientSize=1920x1080`, wait for "joined the game", then run the script. JEI drops keys typed too fast, the `r` key typed into a focused search box instead of showing recipes (click the result), and a recipe with several pages shows only its first.
 
 ### In-game client checks (headless)
-Helpers are in `tools/client-test/` (`client.sh`, `xt.py`). With a real display, `./gradlew runClient` opens the game with the four performance mods and the playtest checklist (`docs/PLAYTEST.md`) can be played directly.
-1. **Launch:** temporarily add `programArguments.addAll '--quickPlaySingleplayer', 'vrtest'` to the `client` run in `build.gradle`. **Never commit this**: back up `build.gradle` and restore it afterwards. Then `source tools/client-test/client.sh; xstart`, `(DISPLAY=:99 nohup ./gradlew runClient > /tmp/client.log 2>&1 &)`, and wait for `joined the game` in the log (about 2 minutes).
+**Use `tools/client-test/quick.sh`: start the client once and swap code into it.** Measured: 40 to 50 s from nothing to a settled world, 3 s from a saved edit to seeing it in the running game.
+```
+tools/client-test/quick.sh start        # Xvfb, client, world vrtest; returns when the world is on screen
+tools/client-test/quick.sh swap         # compile and replace the changed classes in the running game
+tools/client-test/quick.sh shot NAME    # build/client-shots/NAME.png
+tools/client-test/quick.sh cmd "/gamemode survival"
+tools/client-test/quick.sh gclick 160 12   # GUI coordinates (window 1280x720, GUI scale 3); also ghover, gdrag, key, scroll
+tools/client-test/quick.sh stop
+```
+- `swap` changes what methods do. A new, removed or renamed method or field, or a mixin change, needs `stop` and `start`: it says so. Classes the game has not loaded yet need nothing. Assets and lang need a restart.
+- So while tuning, keep helper methods and fields added in the first version, and iterate on method bodies.
+- The Gradle properties behind it replace editing `build.gradle`: `-PquickPlay=<world>`, `-PclientSize=<w>x<h>`, `-PhotSwap` (debug port 5005). Do not edit `build.gradle` for a client run any more.
+
+Helpers underneath are in `tools/client-test/` (`client.sh`, `xt.py`). With a real display, `./gradlew runClient` opens the game with the four performance mods and the playtest checklist (`docs/PLAYTEST.md`) can be played directly.
+1. **Launch:** see above.
 2. **First load:** without the `vrtest` world, quick play fails; run `tools/client-test/bootstrap_world.sh` once to create it through the menus (creative, commands on). An "Experimental Settings" screen may show: click "I know what I'm doing" at (878, 464).
 3. **Set up the player** with `run "/command"`: `/void_reclaimer dust set @s void_reclaimer:metallic 200`, `/void_reclaimer milestone grant @s void_reclaimer:expansion`, `/void_reclaimer body reset @s`, `/gamemode survival`.
 4. **Screen coordinates** (1280 x 720, GUI scale 3): the Replicator (key R) panel spans (160, 61) to (1120, 661); tabs at y 137: Tools 250, Modules 400, Parts 553, Blocks 706, Logs 860, Body 1013; recipe rows start at y about 205, 66 px apart; Replicate at (311, 613). Scroll with `xt scroll -N` while hovering the list.

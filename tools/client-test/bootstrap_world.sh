@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Creates the headless client's test world "vrtest" (creative, commands on) by clicking through the menus, once.
-# Run it after `xstart` and a client launched with `--quickPlaySingleplayer vrtest` (see HANDOFF.md "In-game client
-# checks") has reached the "Failed to Quick Play" screen because the world does not exist yet. Coordinates are for
-# the 1280x720 Xvfb screen with the game's 853x480 window centred in it.
+# Run it after `xstart` and a client launched with `-PquickPlay=vrtest` (see HANDOFF.md "In-game client checks") has
+# reached the "Failed to Quick Play" screen because the world does not exist yet. Coordinates are for the 1280x720 Xvfb
+# screen with the game's 853x480 window centred in it, so launch without `-PclientSize` for this one run.
 #
 #   source tools/client-test/client.sh; xstart
-#   (DISPLAY=:99 nohup ./gradlew runClient > /tmp/client.log 2>&1 &)   # with the quickPlay argument in build.gradle
+#   (DISPLAY=:99 nohup ./gradlew runClient -PquickPlay=vrtest > /tmp/client.log 2>&1 &)
 #   ... wait for the "Failed to Quick Play" screen (about 2 minutes) ...
 #   tools/client-test/bootstrap_world.sh
 #
