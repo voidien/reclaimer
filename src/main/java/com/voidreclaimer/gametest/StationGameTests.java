@@ -224,6 +224,30 @@ public final class StationGameTests {
     }
 
     /** A Station Core with a stone arm reaching three blocks south. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theStationSceneAssemblesOnceEvenBuiltTwice(GameTestHelper helper) {
+        var scene = com.voidreclaimer.debug.TestScenes.Scene.STATION;
+        BlockPos pos = com.voidreclaimer.debug.TestScenes.origin(scene);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            // The world persists between local runs, so count against the first build, not against zero.
+            com.voidreclaimer.debug.TestScenes.build(space, scene, null);
+            long first = testStations(space);
+            helper.assertTrue(first >= 1, "no station was built");
+            com.voidreclaimer.debug.TestScenes.build(space, scene, null);
+            helper.assertTrue(testStations(space) == first, "building again made another station: " + testStations(space));
+            helper.assertTrue(coreOf(space, "Test Station") != null, "the core is not aboard");
+            helper.succeed();
+        });
+    }
+
+    private static long testStations(ServerLevel space) {
+        return dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().stream()
+                .filter(ship -> !ship.isRemoved() && "Test Station".equals(ship.getName())).count();
+    }
+
     private static void hull(MinecraftServer server, ServerLevel space, BlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:station_core[facing=north]");

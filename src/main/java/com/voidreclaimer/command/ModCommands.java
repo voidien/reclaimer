@@ -58,6 +58,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer sky era get|set <ruined|healing|restored>}: the ruined Earth sky era</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
+ *   <li>{@code /void_reclaimer scene <name>}: builds a ready-made test setup in deep space and moves you to it ({@link com.voidreclaimer.debug.TestScenes})</li>
  *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
  * </ul>
  */
@@ -74,6 +75,24 @@ public final class ModCommands {
         return 1;
     }
 
+    /** Builds a test scene in deep space and puts the player where it can be seen. */
+    private static int scene(CommandSourceStack source, String name) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var scene = java.util.Arrays.stream(com.voidreclaimer.debug.TestScenes.Scene.values()).filter(s -> s.id().equals(name)).findFirst();
+        if (scene.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.scene.unknown", name));
+            return 0;
+        }
+        ServerPlayer player = source.getPlayerOrException();
+        net.minecraft.server.level.ServerLevel space = source.getServer().getLevel(com.voidreclaimer.space.ModDimensions.DEEP_SPACE);
+        if (space == null) {
+            return 0;
+        }
+        var view = com.voidreclaimer.debug.TestScenes.build(space, scene.get(), player.getUUID());
+        player.teleportTo(space, view.at().x, view.at().y, view.at().z, view.yaw(), view.pitch());
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.scene.built", name), true);
+        return 1;
+    }
+
     @SubscribeEvent
     static void onRegisterCommands(RegisterCommandsEvent event) {
         register(event.getDispatcher());
@@ -82,6 +101,11 @@ public final class ModCommands {
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal(VoidReclaimer.MOD_ID)
                 .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("scene")
+                        .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                        java.util.Arrays.stream(com.voidreclaimer.debug.TestScenes.Scene.values()).map(com.voidreclaimer.debug.TestScenes.Scene::id), builder))
+                                .executes(ctx -> scene(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "name")))))
                 .then(Commands.literal("energy")
                         .then(Commands.literal("get")
                                 .then(Commands.argument("player", EntityArgument.player())

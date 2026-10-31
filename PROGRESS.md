@@ -902,6 +902,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - F6 on any screen outlines its buttons and click regions, marks overlaps in red and shows the mouse's GUI position; `debug/gui.txt` holds the same list as text (`tools/client-test/quick.sh gui` prints it). Tests: `GuiLayoutTest`, including the real overlap of the assembly view's button and the Inventory button. Seen on the Replicator and the Body tab.
 - **Found while using it:** on an overloaded body the red warning ran into the Casing chip; the chips now move down a line. It is text over a button, which the overlap check cannot see.
 
+## Test scenes: done
+- `/void_reclaimer scene arena|launch|drones|station` builds a ready setup in deep space, in seconds, through the real assembly code, and moves you to a view of it. `launch` is a complete complex on a creative motor with 16 payloads; `drones` a ferry and a miner at work; `station` an assembled station with a Helm; `arena` a pale lit floor and two walls with a line every 16 blocks. Each can be built again over itself. Tests: `TestScenesGameTests` (3), `StationGameTests` (1). Seen in the client.
+- This answers the owner's question about an easier test dimension: a copy of deep space would be a second thing to keep in step, and the arena gives the light, contrast and room inside the real one.
+- **Seen with the arena:** the Ship's section art renders almost pure black even on a lit floor, unlike the Mech, Shuttle and Titan. Not investigated yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
