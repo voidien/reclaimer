@@ -534,6 +534,59 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /** A pilot who logs back in comes back on a seat the Helm did not spawn, restored from the save. It has to stay, too. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aHelmKnowsItsPilotOnASeatRestoredFromASave(GameTestHelper helper) {
+        restoredSeat(helper, new BlockPos(97_000, 200, 3_000), true);
+    }
+
+    /**
+     * When a pilot logs back in, the seat's chunk has only just loaded and entity lookups may not see the seat for a while. Here
+     * no lookup ever can: the restored seat is not added to the level.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aHelmKnowsItsPilotBeforeEntityLookupsSeeTheSeat(GameTestHelper helper) {
+        restoredSeat(helper, new BlockPos(98_000, 200, 3_000), false);
+    }
+
+    private static void restoredSeat(GameTestHelper helper, BlockPos pos, boolean addToLevel) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+            var seat = (com.voidreclaimer.ship.HelmSeat) player.getVehicle();
+            var helm = (com.voidreclaimer.ship.HelmBlockEntity) space.getBlockEntity(seat.helmPos());
+            // What a logout and a login do: the seat is saved with the player and comes back as a new entity.
+            net.minecraft.nbt.CompoundTag saved = new net.minecraft.nbt.CompoundTag();
+            seat.saveAsPassenger(saved);
+            player.stopRiding();
+            seat.discard();
+            var restored = net.minecraft.world.entity.EntityType.loadEntityRecursive(saved, space,
+                    entity -> !addToLevel || space.addWithUUID(entity) ? entity : null);
+            boolean riding = restored != null && player.startRiding(restored, true);
+            var atOnce = helm.pilot();
+            helper.runAfterDelay(10, () -> {
+                var later = helm.pilot();
+                boolean stayed = restored != null && !restored.isRemoved();
+                TestPlayers.remove(player);
+                if (restored != null) {
+                    restored.discard();
+                }
+                removeShip(server, space, pos);
+                if (!riding) {
+                    helper.fail("the restored seat could not be ridden, so this checks nothing: " + restored);
+                } else if (atOnce != player || later != player) {
+                    helper.fail("the Helm lost its pilot: at once " + atOnce + ", later " + later);
+                } else if (!stayed) {
+                    helper.fail("the restored seat was removed");
+                } else {
+                    helper.succeed();
+                }
+            });
+        }));
+    }
+
     /** The fuel of the thruster at {@code pos} as the level sees it, or -1 when the level sees no thruster there. */
     private static int fuelAt(ServerLevel space, BlockPos pos) {
         return space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity thruster ? thruster.tank().getFluidAmount() : -1;

@@ -20,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -148,13 +147,10 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (seat != null) {
             return seat.getFirstPassenger() instanceof Player player ? player : null;
         }
-        // A seat restored from a save (or spawned before a reload) is only found by looking: it was saved with the Helm's position.
-        for (HelmSeat seat : level.getEntitiesOfClass(HelmSeat.class, new AABB(worldPosition).inflate(1.0))) {
-            if (seat.helmPos().equals(worldPosition) && seat.getFirstPassenger() instanceof Player player) {
-                return player;
-            }
-        }
-        return null;
+        // A seat restored from a save was not spawned here, and an entity lookup may not see it yet: when its pilot logs back
+        // in, its chunk has only just loaded. HelmSeats knows every live seat either way.
+        seat = HelmSeats.of(level, worldPosition);
+        return seat != null && seat.getFirstPassenger() instanceof Player player ? player : null;
     }
 
     /** The ship's axes in its own coordinates: forward is the chair's facing, up is up, right follows (pure, see {@link #axes}). */

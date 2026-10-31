@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Set;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -27,6 +30,17 @@ public final class HelmSeats {
         if (!seat.level().isClientSide()) {
             SEATS.add(seat);
         }
+    }
+
+    /** The live seat of the Helm at {@code helm}, seen by entity lookups or not, or null. Server thread only. */
+    @Nullable
+    static HelmSeat of(Level level, BlockPos helm) {
+        for (HelmSeat seat : SEATS) {
+            if (!seat.isRemoved() && seat.level() == level && seat.helmPos().equals(helm)) {
+                return seat;
+            }
+        }
+        return null;
     }
 
     @SubscribeEvent

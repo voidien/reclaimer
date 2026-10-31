@@ -976,6 +976,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Limit:** the code cannot tell an unloaded ship from one that is gone, so a core on a ship that was deleted while its owner was offline stays listed and takes one of the three slots.
 - Test: `aBackupCoreStaysListedWhileItsShipIsUnloaded` (Aeronautics suite) really unloads the ship, then brings it back and respawns at the core. Mutation-checked: without the fix it reads "the core was forgotten while its ship was unloaded".
 
+## Fix: a Helm could lose its pilot after a relog: done
+- **The bug:** a pilot who logs back in comes back on a seat restored from the save, which the Helm did not spawn, so it had to find it with an entity lookup. Those cannot see an entity while its chunk's entities are not ready, and that is just when a relog happens. Until the chunk caught up the Helm had no pilot: no keys, no holds, no HUD.
+- **The fix:** `HelmSeats`, which already knew every live seat for its own reasons, answers instead (`HelmSeats.of`), whether lookups can see the seat or not.
+- **Correction to the plan:** it said the lookup failed because it searched at the Helm's position in the plot. It does not: Sable's `entity_aabb_lookup` mixin carries a box from the plot to where the ship is in the world. The first test passed on the old code for that reason, then failed in 2 runs of 16, and a probe showed the seat's chunk had `entityTicking false`, `entitiesLoaded false`.
+- Tests: `aHelmKnowsItsPilotOnASeatRestoredFromASave` (the seat through its NBT and into the level) and `aHelmKnowsItsPilotBeforeEntityLookupsSeeTheSeat` (the same seat kept out of the level, which is what makes the failure happen every time). Mutation-checked: on the old code the second fails 3 runs of 3; breaking the seat's saved Helm position or ship id fails the first.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
