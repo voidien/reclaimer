@@ -987,6 +987,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - `/void_reclaimer link spawn <drone|mech|ship|shuttle|titan> [full]` puts a shell ahead of the player. It is invisible until the next PR (a `NoopRenderer`, so spawning one cannot crash a client), and it cannot be linked to yet. Nothing in survival reaches any of this. Until the destroyed path exists, a shell that dies loses what it holds; only this debug command can make one.
 - Tests: `LinkGameTests` (save and load, size per body, a new body on a live host, what is saved, staying in its dimension, the debug shell, the command), `HostRoleTest`. Mutation-checked: no scale after load, no resize on a new body, a saved mirror, unsaved contents and a shell that can use portals each fail a test.
 
+## Fix: thrust kept charging after a dimension change: done
+- **The bug:** a dimension change leaves the client with no attachments, so its copy of the held keys starts empty, and it only reports a change. Keys let go during the load were never reported, so the server went on charging energy and wear for them until the next key press.
+- **The fix:** the server's copy starts empty too. Keys still held differ from the client's empty copy, so they are sent again. `PilotInput` does not have this flaw: the client keeps its last value in a static field.
+- Test: `aDimensionChangeForgetsTheKeysHeldBeforeIt`. Mutation-checked: without the fix it reads "the server still thinks keys are held".
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

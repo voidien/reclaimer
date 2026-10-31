@@ -13,6 +13,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
@@ -69,6 +70,16 @@ public final class ServerFlightHandler {
         if (event.getEntity() instanceof ServerPlayer player) {
             player.getData(ModAttachments.FLIGHT_TRACKER).clear();
         }
+    }
+
+    /**
+     * A dimension change leaves the client with no attachments, so its copy of the keys starts empty, and it only reports a
+     * change. Keys let go during the load would never be reported, and the server would go on charging for them. Keys still
+     * held differ from the client's empty copy, so they are sent again.
+     */
+    @SubscribeEvent
+    static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        event.getEntity().setData(ModAttachments.FLIGHT_INPUT, FlightInput.NONE);
     }
 
     private static void chargeEnergy(ServerPlayer player, double speed) {
