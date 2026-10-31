@@ -31,6 +31,11 @@ public final class ClientReplicatorController {
         if (mc.player == null) {
             return;
         }
+        while (ModKeyMappings.ASSEMBLY.consumeClick()) {
+            if (mc.screen == null) {
+                mc.setScreen(new com.voidreclaimer.client.screen.AssemblyScreen());
+            }
+        }
         while (ModKeyMappings.REPLICATOR.consumeClick()) {
             if (mc.screen == null) {
                 mc.setScreen(new ReplicatorScreen());

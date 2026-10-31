@@ -933,6 +933,8 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 
 ## Fix: a Helm seat could follow a new ship into its old plot: done
 - Two Helm GameTests failed on a slow machine: a pilot could not sit, and a pilot was carried off. Sable gives a removed ship's plot to the next ship, so an identical ship has its Helm at the same plot position, and a seat knowing only that position followed the new ship, taking its pilot along. This could happen in play. A seat now remembers its ship's id (saved with it) and leaves when the ship at that position is a different one. Test: `AeronauticsGameTests.aSeatDoesNotFollowANewShipIntoItsOldPlot`, which fails without the fix.
+## Assembly view, part 1: the screen, the camera and markers: done
+- A full-window view from the Body tab's 3D view button or an optional key: the model on a blueprint grid that reads its size in blocks, the socket tree on the left and the details on the right. Drag turns it, scroll zooms it. Sockets show as markers and a selected socket adds its mounts; a socket with no point of its own shows its mounts straight away, which is how the Drone works; a marker on the far side hides until you turn the model. Clicking one selects it, the tree follows and the view eases to it. The Exploded button spreads sections along their joints, with the markers following, and the body holds still while spread. Tests: `AssemblyCameraTest`, `AssemblyMarkersTest`, `BoneProbeTest`. Client screen, so no GameTest. Seen on the Mech and Ship.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

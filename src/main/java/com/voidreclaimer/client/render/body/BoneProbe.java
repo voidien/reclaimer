@@ -1,7 +1,9 @@
 package com.voidreclaimer.client.render.body;
 
+import com.voidreclaimer.body.BodyData;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.joml.Vector3f;
 
 /**
@@ -17,8 +19,10 @@ public final class BoneProbe {
      *
      * @param name   the socket id, or the rig's mount name such as {@code head__mount_sensor_1}
      * @param filled whether something is installed there
+     * @param socket the socket this point belongs to
+     * @param mount  the mount, for a {@link Kind#MOUNT} point
      */
-    public record Point(String name, Kind kind, boolean filled, Vector3f at) {}
+    public record Point(String name, Kind kind, boolean filled, Vector3f at, String socket, @Nullable BodyData.Mount mount) {}
 
     private static boolean capturing;
     private static boolean recording;
@@ -53,8 +57,8 @@ public final class BoneProbe {
         return recording;
     }
 
-    static void add(String name, Kind kind, boolean filled, Vector3f at) {
-        building.add(new Point(name, kind, filled, at));
+    static void add(String name, Kind kind, boolean filled, Vector3f at, String socket, @Nullable BodyData.Mount mount) {
+        building.add(new Point(name, kind, filled, at, socket, mount));
     }
 
     /** The points of the last frame the body was drawn in. */

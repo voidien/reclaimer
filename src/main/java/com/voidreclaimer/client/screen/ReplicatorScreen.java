@@ -77,6 +77,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
     private int top;
     private Button replicateButton;
     private Button collectButton;
+    private Button assemblyButton;
 
     @Override
     public List<com.voidreclaimer.debug.GuiLayout.Rect> debugRegions() {
@@ -128,6 +129,8 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         }
         start = Start.RECIPES;
         bodyPanel = new BodyPanel(font, left + 6, top + 38, WIDTH - 12);
+        assemblyButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.assembly"),
+                b -> minecraft.setScreen(new AssemblyScreen())).bounds(left + WIDTH - 112, top + 2, 50, 14).build());
         replicateButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.replicate"), b -> replicate())
                 .bounds(left + 6, top + HEIGHT - 24, 90, 18).build());
         collectButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.collect"),
@@ -216,6 +219,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         boolean recipeTab = tab < categoryTabs;
         replicateButton.visible = recipeTab;
         collectButton.visible = tab != bodyTab;
+        assemblyButton.visible = tab == bodyTab;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
                 && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST));
         collectButton.active = !data.buffer().isEmpty();

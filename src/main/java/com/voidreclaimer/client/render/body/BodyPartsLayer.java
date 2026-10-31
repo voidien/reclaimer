@@ -108,7 +108,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             if (BoneProbe.recording() && mountBone.isPresent()) {
                 GeoBone inner = mountBone.get();
                 addPoint(poseStack, BodyLook.rigMountBone(frame.view().data().coreSocket(), mount), BoneProbe.Kind.MOUNT, !module.isEmpty(),
-                        inner.getPivotX() / 16f, inner.getPivotY() / 16f, inner.getPivotZ() / 16f);
+                        inner.getPivotX() / 16f, inner.getPivotY() / 16f, inner.getPivotZ() / 16f, mount.socket(), mount);
             }
             if (module.isEmpty() || mountBone.isEmpty()) {
                 continue;
@@ -129,17 +129,17 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         float z = bone.getPivotZ() / 16f;
         if (frame.spec() == null) {
             if (view.chassis().socket(name) != null) {
-                addPoint(poseStack, name, BoneProbe.Kind.SOCKET, !view.data().section(name).isEmpty(), x, y, z);
+                addPoint(poseStack, name, BoneProbe.Kind.SOCKET, !view.data().section(name).isEmpty(), x, y, z, name, null);
             }
             BodyData.Mount mount = frame.rigMountBones().get(name);
             if (mount != null) {
-                addPoint(poseStack, name, BoneProbe.Kind.MOUNT, !view.data().module(mount).isEmpty(), x, y, z);
+                addPoint(poseStack, name, BoneProbe.Kind.MOUNT, !view.data().module(mount).isEmpty(), x, y, z, mount.socket(), mount);
             }
             return;
         }
         frame.spec().sockets().forEach((socket, bones) -> {
             if (!bones.isEmpty() && bones.get(0).equals(name)) {
-                addPoint(poseStack, socket, BoneProbe.Kind.SOCKET, !view.data().section(socket).isEmpty(), x, y, z);
+                addPoint(poseStack, socket, BoneProbe.Kind.SOCKET, !view.data().section(socket).isEmpty(), x, y, z, socket, null);
             }
         });
         for (BodyData.Mount mount : view.mounts()) {
@@ -147,13 +147,14 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             BodyRigSpec.Mount place = frame.spec().mounts().get(mountName);
             if (place != null && place.bone().equals(name)) {
                 addPoint(poseStack, mountName, BoneProbe.Kind.MOUNT, !view.data().module(mount).isEmpty(),
-                        x - place.x() / 16f, y + place.y() / 16f, z + place.z() / 16f);
+                        x - place.x() / 16f, y + place.y() / 16f, z + place.z() / 16f, mount.socket(), mount);
             }
         }
     }
 
-    private static void addPoint(PoseStack poseStack, String name, BoneProbe.Kind kind, boolean filled, float x, float y, float z) {
-        BoneProbe.add(name, kind, filled, poseStack.last().pose().transformPosition(x, y, z, new org.joml.Vector3f()));
+    private static void addPoint(PoseStack poseStack, String name, BoneProbe.Kind kind, boolean filled, float x, float y, float z,
+                                 String socket, @javax.annotation.Nullable BodyData.Mount mount) {
+        BoneProbe.add(name, kind, filled, poseStack.last().pose().transformPosition(x, y, z, new org.joml.Vector3f()), socket, mount);
     }
 
     private static void moveToPivot(PoseStack poseStack, GeoBone bone) {
