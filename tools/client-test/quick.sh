@@ -7,6 +7,7 @@
 #   tools/client-test/quick.sh cmd "/command"  run a chat command
 #   tools/client-test/quick.sh photo NAME [d]  four views (see PhotoScript) joined into build/client-shots/NAME.png, facts printed
 #   tools/client-test/quick.sh compare A B     how two shots differ: changed pixels, where, and a picture marking them (build/client-shots/compare.png)
+#   tools/client-test/quick.sh gui             with a screen open: print its buttons, click regions and overlaps (F6 outlines them on screen)
 #   tools/client-test/quick.sh gclick X Y      left click at GUI coordinates (the window is 1280x720 at GUI scale 3)
 #   tools/client-test/quick.sh ghover X Y      move the mouse to GUI coordinates
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
@@ -125,6 +126,12 @@ compare)
     echo "$pixels pixels differ, of a $size picture, inside $area"
     echo "$ROOT/$SHOTS/compare.png"
     ;;
+gui)
+    # F6 twice leaves the outlines as they were and writes the list for the screen open now, whichever way round they started.
+    report=run/debug/gui.txt
+    $XT key F6; sleep 0.15; $XT key F6; sleep 0.3
+    cat "$report"
+    ;;
 gclick) $XT click $(($2 * SCALE)) $(($3 * SCALE)) ;;
 ghover) $XT hover $(($2 * SCALE)) $(($3 * SCALE)) ;;
 gdrag) $XT drag $(($2 * SCALE)) $(($3 * SCALE)) $(($4 * SCALE)) $(($5 * SCALE)) ;;
@@ -135,7 +142,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,18p' "$0" | sed 's/^# \?//'
+    sed -n '2,19p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac

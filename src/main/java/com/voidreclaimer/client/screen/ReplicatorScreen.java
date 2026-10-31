@@ -43,7 +43,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Drawn entirely with {@link GuiGraphics} fills and text (no textures). Doesn't pause the game, so jobs keep
  * running while it is open.
  */
-public final class ReplicatorScreen extends Screen {
+public final class ReplicatorScreen extends Screen implements com.voidreclaimer.client.debug.GuiDebug.Regions {
     private static final int WIDTH = 320;
     /** At most 240 so the panel fits a 720p window at GUI scale 3 (the owner's usual test size). */
     private static final int HEIGHT = 236;
@@ -77,6 +77,11 @@ public final class ReplicatorScreen extends Screen {
     private int top;
     private Button replicateButton;
     private Button collectButton;
+
+    @Override
+    public List<com.voidreclaimer.debug.GuiLayout.Rect> debugRegions() {
+        return tab == bodyTab ? bodyPanel.debugRegions() : List.of();
+    }
 
     /** Which tab the screen opens on: the first recipe tab, the Logs tab or the Body tab. */
     public enum Start { RECIPES, LOGS, BODY }

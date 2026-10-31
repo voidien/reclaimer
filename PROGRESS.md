@@ -898,6 +898,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Photo mode: attachment labels: done
 - L in photo mode (`/vrphoto labels true`) names every socket and mount on the body, read from the real render matrices (`client/render/body/BoneProbe`), and the shot's text file lists them in blocks from the feet along the body's own axes. Sheets now start from the way the body really faces (`BodyRenderer.facing`): an upright Mech's body lags its view. Tests: `BoneProbeTest`. Seen on the fully fitted Mech.
 - The first read gave the Mech's mount positions for the attachment review the owner asked for; that review comes after the debug tools.
+## GUI layout debug: done
+- F6 on any screen outlines its buttons and click regions, marks overlaps in red and shows the mouse's GUI position; `debug/gui.txt` holds the same list as text (`tools/client-test/quick.sh gui` prints it). Tests: `GuiLayoutTest`, including the real overlap of the assembly view's button and the Inventory button. Seen on the Replicator and the Body tab.
+- **Found while using it:** on an overloaded body the red warning ran into the Casing chip; the chips now move down a line. It is text over a button, which the overlap check cannot see.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
