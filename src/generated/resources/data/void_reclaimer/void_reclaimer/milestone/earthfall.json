@@ -1,0 +1,7 @@
+{
+  "criterion": {
+    "type": "void_reclaimer:dimension_visited",
+    "dimension": "void_reclaimer:ruined_earth"
+  },
+  "order": 60
+}

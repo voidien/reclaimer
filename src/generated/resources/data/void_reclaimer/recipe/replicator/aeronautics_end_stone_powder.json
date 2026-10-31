@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:silicate": 20.0
+  },
+  "milestone": "void_reclaimer:earthfall",
+  "result": {
+    "count": 4,
+    "id": "aeronautics:end_stone_powder"
+  },
+  "ticks": 200
+}

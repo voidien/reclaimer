@@ -143,7 +143,7 @@ public final class Replicator {
     public static void checkMilestones(ServerPlayer player) {
         ReplicatorData data = trackItems(player, data(player));
         MilestoneContext context = new MilestoneContext(player.getData(ModAttachments.DUST), player.getData(ModAttachments.DUST_COLLECTED), data.blocksPlaced(), DustData.capacity(player),
-                DysonSphereData.of(player.serverLevel()).tier(), java.util.Set.copyOf(data.itemsMade()));
+                DysonSphereData.of(player.serverLevel()).tier(), java.util.Set.copyOf(data.itemsMade()), java.util.Set.copyOf(data.dimensionsVisited()));
         ReplicatorData updated = data;
         List<ResourceKey<Milestone>> reached = new ArrayList<>();
         for (Milestones.Entry entry : Milestones.all(player.registryAccess())) {
@@ -192,6 +192,32 @@ public final class Replicator {
         }
         net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
         return wanted.contains(id) ? data.withItemMade(id) : data;
+    }
+
+    /**
+     * Records the dimension the player stands in, for milestones about setting foot somewhere. Only records: the
+     * periodic check on the player tick grants the milestone, after the login grace period like every other one.
+     */
+    public static void noteDimension(ServerPlayer player) {
+        ReplicatorData data = data(player);
+        ReplicatorData updated = data.withDimensionVisited(player.level().dimension().location());
+        if (updated != data) {
+            store(player, updated);
+        }
+    }
+
+    @SubscribeEvent
+    static void onChangedDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            noteDimension(player);
+        }
+    }
+
+    @SubscribeEvent
+    static void onLoggedIn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            noteDimension(player);
+        }
     }
 
     /** Counts a block the player placed, for block-placing milestones. Stops once every such milestone is satisfied. */

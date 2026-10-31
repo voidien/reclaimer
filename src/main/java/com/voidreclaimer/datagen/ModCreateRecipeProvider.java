@@ -49,6 +49,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
         carbon();
         silicon();
         metallic();
+        air();
         solarSail();
         frameAndMachinery();
         quantumReceiver();
@@ -255,6 +256,28 @@ public final class ModCreateRecipeProvider implements DataProvider {
         results.forEach(out::add);
         recipe.add("results", out);
         return recipe;
+    }
+
+    /**
+     * A few Create routes to Aeronautics parts from our nebula materials (the owner: "not too many"); the Replicator
+     * makes everything, these are the cheaper machine routes. Each sits under the toggle of the chain it uses.
+     */
+    private void air() {
+        // Carbon Composite Plate -> Mechanical Press -> Andesite Propeller
+        save("air/andesite_propeller", CARBON, processing("create:pressing", 0, null,
+                List.of(item("carbon_composite_plate")), List.of(resultOf("aeronautics:andesite_propeller"))));
+        // Micro-Alloy Sheet -> Mechanical Press -> Steam Vent
+        save("air/steam_vent", METALLIC, processing("create:pressing", 0, null,
+                List.of(item("micro_alloy_sheet")), List.of(resultOf("aeronautics:steam_vent"))));
+        // Pure Silicon Dust + Fine Carbon Powder -> Heated Basin -> Levitite Blend (a fluid; Aeronautics crystallises it)
+        save("air/levitite_blend", SILICON, processing("create:mixing", 0, "heated",
+                List.of(item("pure_silicon_dust"), item("fine_carbon_powder")), List.of(fluidResult("aeronautics:levitite_blend", BUCKET_QUARTER))));
+    }
+
+    private static JsonObject resultOf(String id) {
+        JsonObject result = new JsonObject();
+        result.addProperty("id", id);
+        return result;
     }
 
     private static JsonObject item(String name) {

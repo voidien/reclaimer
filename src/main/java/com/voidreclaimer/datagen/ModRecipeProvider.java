@@ -30,6 +30,7 @@ public final class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(RecipeOutput output) {
+        aeronautics(output);
         replicator(output, "dust_sensor", ModItems.DUST_SENSOR.get(), 1, DustCost.of(10, 15, 0, 5), 20,
                 ReplicatorCategories.MODULES, Milestones.AWAKENING);
         replicator(output, "cloud_collector", ModItems.CLOUD_COLLECTOR.get(), 1, DustCost.of(30, 25, 15, 20), 60,
@@ -190,6 +191,41 @@ public final class ModRecipeProvider extends RecipeProvider {
     private static void rawItems(RecipeOutput output, String name, ItemLike result, DustCost cost, ResourceKey<ReplicatorCategory> category) {
         ReplicatorRecipe recipe = new ReplicatorRecipe(new ItemStack(result, 4), cost, 10 * 20, category, Milestones.FIRST_DUST);
         output.accept(VoidReclaimer.id("replicator/" + name), recipe, null, new ConfigCondition("replicatorRawItems"));
+    }
+
+    /** The sixteen dye colours, as Aeronautics names its envelopes. */
+    private static final List<String> COLOURS = List.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+            "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black");
+
+    /**
+     * Every Create Aeronautics block, unlocked by first setting foot on ruined Earth (the air-flight parts are of no use in
+     * space). Costs are placeholders: lifting parts lean on ice and metal, propellers on carbon, levitite on silicon.
+     */
+    private static void aeronautics(RecipeOutput output) {
+        aero(output, "wooden_propeller", 1, DustCost.of(0, 20, 0, 10), 20);
+        aero(output, "andesite_propeller", 1, DustCost.of(0, 30, 0, 20), 30);
+        aero(output, "smart_propeller", 1, DustCost.of(10, 40, 20, 30), 45);
+        aero(output, "propeller_bearing", 1, DustCost.of(10, 20, 10, 50), 45);
+        aero(output, "gyroscopic_propeller_bearing", 1, DustCost.of(20, 30, 40, 80), 90);
+        aero(output, "steam_vent", 1, DustCost.of(40, 10, 0, 30), 40);
+        aero(output, "adjustable_burner", 1, DustCost.of(20, 30, 10, 40), 45);
+        // Levitite Blend is a fluid (its Create mixing route is in ModCreateRecipeProvider); the crystal and its refinement are blocks.
+        aero(output, "levitite", 1, DustCost.of(20, 10, 60, 20), 60);
+        aero(output, "pearlescent_levitite", 1, DustCost.of(30, 20, 90, 30), 90);
+        aero(output, "mounted_potato_cannon", 1, DustCost.of(10, 20, 20, 40), 60);
+        aero(output, "aviators_goggles", 1, DustCost.of(5, 10, 5, 20), 20);
+        aero(output, "end_stone_powder", 4, DustCost.of(0, 20, 0, 0), 10);
+        for (String colour : COLOURS) {
+            aero(output, colour + "_envelope", 4, DustCost.of(20, 10, 0, 10), 20);
+            aero(output, colour + "_envelope_encased_shaft", 1, DustCost.of(10, 5, 0, 15), 15);
+        }
+    }
+
+    private static void aero(RecipeOutput output, String id, int count, DustCost cost, int seconds) {
+        net.minecraft.resources.ResourceLocation key = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("aeronautics", id);
+        net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(key)
+                .orElseThrow(() -> new IllegalStateException("Create Aeronautics item missing in datagen: " + key));
+        replicator(output, "aeronautics_" + id, item, count, cost, seconds, ReplicatorCategories.BLOCKS, Milestones.EARTHFALL);
     }
 
     private static void replicator(RecipeOutput output, String name, ItemLike result, int count, DustCost cost, int seconds,
