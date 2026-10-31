@@ -71,6 +71,7 @@ public final class ReplicatorGameTests {
     public static void awakeningUnlocksStarterDesigns(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 40_000.5, 80, 0.5);
         try {
+            TestPlayers.notYetAwake(player);
             helper.assertTrue(Replicator.queue(player, SCAFFOLD) == ReplicatorLogic.QueueResult.LOCKED, "scaffold unlocked before awakening");
             Replicator.checkMilestones(player);
             helper.assertTrue(Replicator.data(player).isUnlocked(Milestones.AWAKENING), "awakening not granted");
