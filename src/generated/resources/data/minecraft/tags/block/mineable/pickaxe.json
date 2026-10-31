@@ -14,6 +14,8 @@
     "void_reclaimer:kinetic_drive_base",
     "void_reclaimer:payload_chamber",
     "void_reclaimer:magnetic_barrel_nozzle",
-    "void_reclaimer:quantum_receiver"
+    "void_reclaimer:quantum_receiver",
+    "void_reclaimer:launch_controller",
+    "void_reclaimer:launch_pad"
   ]
 }

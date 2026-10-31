@@ -29,6 +29,7 @@ public final class MachineSetup {
             BlockStressValues.IMPACTS.register(ModBlocks.CLOUD_SIPHON.get(), () -> Config.SIPHON_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.CHEMICAL_THRUSTER.get(), () -> Config.THRUSTER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.KINETIC_DRIVE_BASE.get(), () -> Config.MASS_DRIVER_STRESS.get());
+            BlockStressValues.IMPACTS.register(ModBlocks.LAUNCH_CONTROLLER.get(), () -> Config.MASS_DRIVER_STRESS.get());
             // Per RPM, for tooltips; the Receiver's real output scales with the trusses launched (QuantumReceiverBlockEntity).
             BlockStressValues.CAPACITIES.register(ModBlocks.QUANTUM_RECEIVER.get(), () -> Config.RECEIVER_MAX_STRESS.get() / Config.RECEIVER_RPM.get());
             BlockSpoutingBehaviour.BY_BLOCK.register(AllBlocks.DEPOT.get(), new SpoutCasting());
@@ -51,6 +52,8 @@ public final class MachineSetup {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, com.voidreclaimer.registry.ModBlockEntities.RCS_THRUSTER.get(),
                 (entity, side) -> entity.energy());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.PAYLOAD_CHAMBER.get(),
+                (entity, side) -> entity.items());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.LAUNCH_CONTROLLER.get(),
                 (entity, side) -> entity.items());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.STATION_CORE.get(),
                 (entity, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(entity));

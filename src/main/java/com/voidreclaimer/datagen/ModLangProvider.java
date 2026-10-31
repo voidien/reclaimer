@@ -121,6 +121,13 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.station.not_level", "The station must be level to set it down.");
         add("message.void_reclaimer.station.blocked", "The station cannot be set down here: something is in the way.");
         add("message.void_reclaimer.station.failed", "The station could not be assembled here.");
+        add("message.void_reclaimer.launch.assembled", "Launch complex assembled.");
+        add("message.void_reclaimer.launch.disassembled", "Launch complex set down.");
+        add("message.void_reclaimer.launch.already_assembled", "The launch complex is already assembled.");
+        add("message.void_reclaimer.launch.not_assembled", "The launch complex is not assembled.");
+        add("message.void_reclaimer.launch.ring_incomplete", "The ring is incomplete: 15 x 15 of frame blocks, with the controller in the middle of one side.");
+        add("message.void_reclaimer.launch.blocked", "Something is on the pad.");
+        add("message.void_reclaimer.launch.failed", "The launch complex could not be assembled.");
         add("replicator.void_reclaimer.description.station_core", "The heart of a station. Build it into a hull and sneak-use it: everything connected becomes one floating station, named after the core. Right-click opens the station's chest. The Replicator works faster nearby, and a Backup Core aboard respawns you wherever the station has moved to.");
         add("key.void_reclaimer.toggle_rcs_lock", "Toggle RCS Lock (ship)");
         add("message.void_reclaimer.rcs_lock_on", "RCS lock: ON. The ship holds its heading.");
@@ -155,6 +162,8 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.KINETIC_DRIVE_BASE.get(), "Kinetic Drive Base");
         add(ModItems.PAYLOAD_CHAMBER.get(), "Payload Chamber");
         add(ModItems.MAGNETIC_BARREL_NOZZLE.get(), "Magnetic Barrel Nozzle");
+        add(ModItems.LAUNCH_CONTROLLER.get(), "Launch Controller");
+        add(com.voidreclaimer.registry.ModBlocks.LAUNCH_PAD.get(), "Launch Pad");
         add(ModItems.QUANTUM_RECEIVER.get(), "Sub-Light Quantum Receiver");
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             add(material.item().get(), material.name());
@@ -598,8 +607,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.drone_kit", "A whole starting Drone: hull, sensor dome, claw and four rotor arms, cheaper than buying them one by one.");
         add("replicator.void_reclaimer.description.dust_sensor", "Shows the dust cloud you are in and sends pulses that help you find clouds. Install it in a sensor slot.");
         add("replicator.void_reclaimer.description.electrolyzer", "A Create machine that splits Purified Water into Oxygen and Hydrogen gas when a shaft turns it.");
-        add("replicator.void_reclaimer.description.kinetic_drive_base", "The base of the Mass Driver. A turning shaft winds it up to launch Dyson payloads.");
-        add("replicator.void_reclaimer.description.magnetic_barrel_nozzle", "The top of the Mass Driver stack: the barrel that payloads leave through.");
+        add("replicator.void_reclaimer.description.kinetic_drive_base", "The base of the old three-block Mass Driver. Inert: the Launch Complex launches payloads now.");
+        add("replicator.void_reclaimer.description.launch_controller", "The heart of the Launch Complex. Build a 15 x 15 ring of Scaffold or Portal Frame with this block in the middle of one side, facing the pad, and sneak-use it to assemble. A turning shaft on its back winds it up to launch Dyson payloads.");
+        add("replicator.void_reclaimer.description.magnetic_barrel_nozzle", "The top of the old three-block Mass Driver. Inert: the Launch Complex launches payloads now.");
         add("replicator.void_reclaimer.description.matter_harvester", "A tool module that mines asteroid rock slowly, but lets the blocks drop as items.");
         add("replicator.void_reclaimer.description.mech_core_kit", "The three main Mech pieces, torso, pelvis and head, cheaper as a set.");
         add("replicator.void_reclaimer.description.mech_foot", "A Mech foot. It can carry a thruster module.");
@@ -616,7 +626,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.mechanical_drill", "A tool module that breaks asteroid rock quickly and gives back its dust. You need it to mine asteroids.");
         add("replicator.void_reclaimer.description.metallic_grains", "Turns 8 metallic dust into 4 Metallic Grains, a raw material for the Metallic chain in Create machines.");
         add("replicator.void_reclaimer.description.nanite_swarm", "Builds blocks for you in empty space in front of you, for a little energy each.");
-        add("replicator.void_reclaimer.description.payload_chamber", "The middle of the Mass Driver stack. It holds Dyson payloads until the driver launches them.");
+        add("replicator.void_reclaimer.description.payload_chamber", "The middle of the old three-block Mass Driver. Inert: load payloads into the Launch Controller instead.");
         add("replicator.void_reclaimer.description.raw_ice_shards", "Turns 8 ice dust into 4 Raw Ice Shards, a raw material for the Ice chain in Create machines.");
         add("replicator.void_reclaimer.description.rotor_arm", "A Drone arm that carries a thruster module. Attach it to the hull.");
         add("replicator.void_reclaimer.description.rotor_arm_mk2", "A better Drone rotor arm: lighter, tougher and turns the Drone faster.");

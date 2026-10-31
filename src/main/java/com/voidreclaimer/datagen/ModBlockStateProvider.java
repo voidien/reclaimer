@@ -21,6 +21,12 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         machine(ModBlocks.SPINNER.get(), "spinner");
         machine(ModBlocks.CLOUD_SIPHON.get(), "cloud_siphon");
         machine(ModBlocks.KINETIC_DRIVE_BASE.get(), "kinetic_drive_base");
+        // The launch complex: the controller faces the pad; the pad filler is invisible (a model with no faces).
+        var launchController = models().orientable("launch_controller", modLoc("block/launch_controller_side"),
+                modLoc("block/launch_controller_front"), modLoc("block/launch_controller_top"));
+        horizontalBlock(ModBlocks.LAUNCH_CONTROLLER.get(), launchController);
+        simpleBlockItem(ModBlocks.LAUNCH_CONTROLLER.get(), launchController);
+        simpleBlock(ModBlocks.LAUNCH_PAD.get(), models().getBuilder("launch_pad").texture("particle", modLoc("block/launch_controller_side")));
         machine(ModBlocks.QUANTUM_RECEIVER.get(), "quantum_receiver");
         simpleBlockWithItem(ModBlocks.PAYLOAD_CHAMBER.get(), cubeAll(ModBlocks.PAYLOAD_CHAMBER.get()));
         simpleBlockWithItem(ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), cubeAll(ModBlocks.MAGNETIC_BARREL_NOZZLE.get()));

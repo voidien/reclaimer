@@ -31,6 +31,7 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.SPINNER.get());
         dropSelf(ModBlocks.CLOUD_SIPHON.get());
         dropSelf(ModBlocks.KINETIC_DRIVE_BASE.get());
+        dropSelf(ModBlocks.LAUNCH_CONTROLLER.get());
         dropSelf(ModBlocks.PAYLOAD_CHAMBER.get());
         dropSelf(ModBlocks.MAGNETIC_BARREL_NOZZLE.get());
         dropSelf(ModBlocks.QUANTUM_RECEIVER.get());

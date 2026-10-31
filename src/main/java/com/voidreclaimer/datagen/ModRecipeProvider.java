@@ -77,10 +77,8 @@ public final class ModRecipeProvider extends RecipeProvider {
         machineRecipe(output, "electrolyzer", ModItems.ELECTROLYZER.get(), DustCost.of(30, 20, 10, 10), "electrolyzer");
         machineRecipe(output, "cloud_siphon", ModItems.CLOUD_SIPHON.get(), DustCost.of(35, 25, 20, 25), "cloudSiphon");
         machineRecipe(output, "spinner", ModItems.SPINNER.get(), DustCost.of(25, 15, 0, 15), "spinner");
-        // The Mass Driver's three blocks; placeholder prices (the design doc gives none).
-        machineRecipe(output, "kinetic_drive_base", ModItems.KINETIC_DRIVE_BASE.get(), DustCost.of(40, 30, 10, 30), "massDriver");
-        machineRecipe(output, "payload_chamber", ModItems.PAYLOAD_CHAMBER.get(), DustCost.of(20, 20, 0, 15), "massDriver");
-        machineRecipe(output, "magnetic_barrel_nozzle", ModItems.MAGNETIC_BARREL_NOZZLE.get(), DustCost.of(30, 15, 10, 25), "massDriver");
+        // The Launch Complex's controller; placeholder price. The old three Mass Driver blocks have no recipe any more.
+        machineRecipe(output, "launch_controller", ModItems.LAUNCH_CONTROLLER.get(), DustCost.of(90, 65, 20, 70), "massDriver");
         // Encased Fan freezing: a Water Bucket carried through powder snow becomes Packed Ice (the bucket comes back empty).
         output.accept(VoidReclaimer.id("freezing/water_bucket"), new com.voidreclaimer.machine.FreezingRecipe(
                 net.minecraft.world.item.crafting.Ingredient.of(net.minecraft.world.item.Items.WATER_BUCKET),

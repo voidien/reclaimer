@@ -29,6 +29,9 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.PayloadChamberBlockEntity>> PAYLOAD_CHAMBER = BLOCK_ENTITIES.register("payload_chamber",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.PayloadChamberBlockEntity::new, ModBlocks.PAYLOAD_CHAMBER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.launch.LaunchControllerBlockEntity>> LAUNCH_CONTROLLER = BLOCK_ENTITIES.register("launch_controller",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.launch.LaunchControllerBlockEntity::new, ModBlocks.LAUNCH_CONTROLLER.get()).build(null));
+
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.QuantumReceiverBlockEntity>> QUANTUM_RECEIVER = BLOCK_ENTITIES.register("quantum_receiver",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.QuantumReceiverBlockEntity::new, ModBlocks.QUANTUM_RECEIVER.get()).build(null));
 
