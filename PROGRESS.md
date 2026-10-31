@@ -9,6 +9,9 @@ Debug tools and recommendations noted during unattended stretches (`CLAUDE.md` r
 - **The old Mass Driver blocks (the owner asked for ideas):** a cargo railgun firing crates between stations; a probe launcher that fires Remote Shells or relays to far spots; an asteroid tug that drags rock towards a base; or derelict relics found in space and salvaged for parts.
 - **Plain Mech preset:** it has a tier 1 core with tier 2 hands, which the rules would refuse. It only matters for testing.
 - **Stop `PROGRESS.md` conflicts:** every PR adds its entry in the same place, so almost every merge today conflicted and cost a CI rerun. One line in `.gitattributes`, `PROGRESS.md merge=union`, makes git keep both sides.
+- **A `/void_reclaimer link census <player>` command:** counts the inventory, cursor, body parts, pending items and nearby dropped items, so the "nothing appeared or vanished" check works in a real client too. `ItemCensus` could move out of test code to serve it.
+- **A restart test helper:** a two-run GameTest mode (write in the first run, kill the JVM, check in the second). PR 7 did this by hand, and the link's crash safety needs it.
+- **Warn before signal loss:** a Drone's few unlocked rows make "inventory full" normal, so a forced swap hits the edge cases. A short HUD warning would also give the player time to put down a stack.
 - **A thread dump when CI's datagen hangs:** all three attempts on one run today hit the upstream start-up deadlock and failed the job. Capturing a thread dump of a hung attempt would show exactly which classes deadlock, which is what a workaround needs.
 
 ## Decisions pending (for the owner)
@@ -1005,6 +1008,19 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **What the spike proved:** a held ship stayed loaded and readable for 200 ticks with its chunk released, then unloaded 25 ticks after the ticket went. Over a real server restart a held ship loaded itself, with nothing near it. So the plan's "assume nothing until the spike" is answered: it works.
 - **The trap it found:** Sable looks a ticket's type up by name when it loads its tickets, and a type made only when first used does not exist yet. It then logs `Unknown sub-level loading ticket type` and drops the ticket, and the ship stays unloaded: a seat's ship would have gone missing after every restart. `ShipTickets.init` makes the type when the mod is constructed.
 - Test: `aHeldShipStaysLoadedWithNothingNearIt`. Mutation-checked: without `init` it reads "the ticket type was not made when the mod started". A GameTest cannot restart the server, so the restart was checked by hand with a temporary two-run test, both ways.
+
+## Remote control, part 4: the body snapshot: done
+- `link/BodySnapshot` is all that belongs to a body and not to the mind: the body, energy, tether, items, selected slot, health and effects. `take` reads a player, `of` reads a `BodyHost`, `applyTo` puts it on either, and it saves to NBT. Items and effects stay as the game saves them, so one bad item costs that item and not the rest.
+- **The order matters:** the body sets the health limit, so it goes on before health is set, or a big body is cut down to a small one's.
+- **What the review changed** (independent, as the plan asks for PRs 8 to 10; no duplication found):
+  - A stack on the cursor could be lost: closing a screen with no room drops it, and a Drone's locked rows make that common. At a seat in a chunk a ticket keeps loaded, it would despawn with nobody near. `take` now puts it away itself, in the body's pending items if it has to.
+  - A winch in mid-pull carried over, and would have run with nothing to stop it, so a snapshot's tether is always at rest.
+  - A body that could not be read was silently replaced by a starter body, which may be hours of work gone for good. `save` now fails loudly and `load` returns empty, so the caller keeps the tag.
+  - A body is fitted to its layout when it goes on, because a datapack may have changed it while the body lay in storage.
+  - `take` is named for what it does: it closes the player's screen, so it is not a way to look. `applyTo` refuses an open screen before changing anything.
+- `BodyHost` now also saves its selected slot and its effects, kept as saved: a body nobody is in does not wear them down.
+- Test tools: `gametest/ItemCensus` counts everything a body carries, cursor, sections, modules and pending items included, so a test can say nothing appeared or vanished. `TestPlayers.rejoin` logs a player out and in through the real player file; it is a clean logout, not a crash.
+- Nothing calls any of this yet: the link itself is the next PR. Tests: `LinkGameTests`. Mutation-checked, each failing a test: health before the body, energy or health not restored, a screen not closed, effects not saved, the slot not restored or a bad one used, a host's health before its body, old effects staying on, the tether not moved either way, a running winch, a stack with no room, a body not fitted, a damaged snapshot loading, and no guard on an open screen.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

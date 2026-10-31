@@ -3,20 +3,32 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyData;
+import com.voidreclaimer.body.BodyInventoryMenu;
 import com.voidreclaimer.body.BuiltinBodies;
+import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.link.BodyHost;
+import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
+import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModEntities;
+import com.voidreclaimer.tether.TetherData;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
@@ -163,6 +175,286 @@ public final class LinkGameTests {
             helper.fail("the command did not parse: " + e.getMessage());
         } finally {
             TestPlayers.remove(player);
+        }
+    }
+
+    private static final float DAMAGE = 10f;
+    /** A slot in a row the Drone has locked: a body that shrinks still holds what is there. */
+    private static final int LOCKED_SLOT = 30;
+
+    /**
+     * The player with a body and something of everything a snapshot carries, different for each call so a part that fails to move
+     * shows. The winch is left running: it must not carry over.
+     */
+    private static void kit(ServerPlayer player, BodyData body, Item item, int slot, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, BlockPos anchor) {
+        Bodies.store(player, body);
+        Inventory inventory = player.getInventory();
+        inventory.clearContent();
+        inventory.setItem(slot, new ItemStack(item, 3));
+        inventory.setItem(LOCKED_SLOT, new ItemStack(item, 2));
+        inventory.armor.set(0, new ItemStack(Items.IRON_BOOTS));
+        inventory.offhand.set(0, new ItemStack(item, 1));
+        inventory.selected = slot;
+        player.removeAllEffects();
+        player.addEffect(new MobEffectInstance(effect, 6_000));
+        player.setData(ModAttachments.TETHER, TetherData.NONE.withClip(GlobalPos.of(player.level().dimension(), anchor)).withRecalling(true));
+        float capacity = Bodies.stats(player).energyCapacity();
+        Energy.update(player, new EnergyData(capacity * 0.75f, capacity, false), true);
+        player.setHealth(player.getMaxHealth() - DAMAGE);
+    }
+
+    private static void kitOne(ServerPlayer player, BodyData body) {
+        kit(player, body, Items.DIAMOND, 5, MobEffects.GLOWING, new BlockPos(1, 80, 2));
+    }
+
+    @GameTest(template = "empty")
+    public static void aSnapshotComesBackFromASaveUnchanged(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 72_000.5, 80, 0.5);
+        try {
+            kitOne(player, Bodies.preset(BuiltinBodies.SHIP, true));
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            helper.assertTrue(snapshot.effects().size() == 1 && snapshot.selected() == 5, "the kit is not in the snapshot: " + snapshot.effects());
+            helper.assertTrue(snapshot.tether().anchor().isPresent(), "the tether is not in the snapshot");
+            var loaded = BodySnapshot.load(snapshot.save(player.registryAccess()), player.registryAccess());
+            helper.assertTrue(loaded.isPresent() && loaded.get().equals(snapshot), "the snapshot changed in the save");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** A snapshot that cannot be read is no snapshot: a starter body in its place would throw away the real one for good. */
+    @GameTest(template = "empty")
+    public static void aDamagedSnapshotIsRefusedAndNotReplaced(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 72_250.5, 80, 0.5);
+        try {
+            var registries = player.registryAccess();
+            kitOne(player, Bodies.preset(BuiltinBodies.MECH));
+            CompoundTag whole = BodySnapshot.take(player).save(registries);
+            helper.assertTrue(BodySnapshot.load(whole, registries).isPresent(), "a whole snapshot was refused");
+            helper.assertTrue(BodySnapshot.load(new CompoundTag(), registries).isEmpty(), "an empty tag loaded");
+            for (String part : List.of("body", "items")) {
+                CompoundTag damaged = whole.copy();
+                damaged.remove(part);
+                helper.assertTrue(BodySnapshot.load(damaged, registries).isEmpty(), "loaded with no " + part);
+            }
+            CompoundTag corrupt = whole.copy();
+            corrupt.putString("body", "not a body");
+            helper.assertTrue(BodySnapshot.load(corrupt, registries).isEmpty(), "loaded with a corrupt body");
+            CompoundTag noEnergy = whole.copy();
+            noEnergy.remove("energy");
+            helper.assertTrue(BodySnapshot.load(noEnergy, registries).isPresent(), "energy has a safe default, so it should load");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** The body's limits have to be in place before its health and energy, or a big body is cut down to a small one's. */
+    @GameTest(template = "empty")
+    public static void aBigBodyKeepsItsHealthAndEnergyOnASmallPlayer(GameTestHelper helper) {
+        swapBodies(helper, 72_500.5, BuiltinBodies.SHIP, BuiltinBodies.DRONE);
+    }
+
+    @GameTest(template = "empty")
+    public static void aSmallBodyKeepsItsHealthAndEnergyOnABigPlayer(GameTestHelper helper) {
+        swapBodies(helper, 73_000.5, BuiltinBodies.DRONE, BuiltinBodies.SHIP);
+    }
+
+    /** What a link will do: the two bodies change places, then change back. Nothing changes, and nothing appears or vanishes. */
+    private static void swapBodies(GameTestHelper helper, double x, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> shellBody,
+                                   net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> playerBody) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, x, 80, 0.5);
+        var registries = player.registryAccess();
+        BodyHost shell = null;
+        try {
+            kit(player, Bodies.preset(shellBody, true), Items.EMERALD, 2, MobEffects.LUCK, new BlockPos(3, 80, 4));
+            BodySnapshot inShell = BodySnapshot.take(player);
+            shell = BodyHost.spawn(player.serverLevel(), new Vec3(x, 80, 8.5), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
+            inShell.applyTo(shell);
+            kitOne(player, Bodies.preset(playerBody, true));
+            BodySnapshot home = BodySnapshot.take(player);
+            helper.assertFalse(home.tether().recalling() || inShell.tether().recalling(), "a running winch went into a snapshot");
+            ItemCensus everything = ItemCensus.of(home, registries).plus(ItemCensus.of(inShell, registries));
+
+            inShell.applyTo(player);
+            home.applyTo(shell);
+            helper.assertTrue(BodySnapshot.take(player).equals(inShell), "the player is not the shell's body: " + player.getHealth() + " of " + player.getMaxHealth());
+            helper.assertTrue(BodySnapshot.of(shell).equals(home), "the shell is not the player's body: " + shell.getHealth() + " of " + shell.getMaxHealth());
+            helper.assertTrue(player.getActiveEffects().size() == 1, "the old body's effect stayed on: " + player.getActiveEffects());
+            helper.assertTrue(ItemCensus.of(player).plus(ItemCensus.of(BodySnapshot.of(shell), registries)).equals(everything), "items appeared or vanished");
+
+            BodySnapshot back = BodySnapshot.of(shell);
+            inShell = BodySnapshot.take(player);
+            back.applyTo(player);
+            inShell.applyTo(shell);
+            helper.assertTrue(BodySnapshot.take(player).equals(home), "the player did not get their own body back");
+            helper.assertTrue(player.getInventory().selected == 5, "selected slot " + player.getInventory().selected);
+            helper.succeed();
+        } finally {
+            if (shell != null) {
+                shell.discard();
+            }
+            TestPlayers.remove(player);
+        }
+    }
+
+    @GameTest(template = "empty")
+    public static void aStackOnTheCursorComesAlong(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 73_500.5, 80, 0.5);
+        try {
+            helper.assertTrue(BodyInventoryMenu.open(player), "no body inventory: survival play has this screen open");
+            player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 2));
+            player.containerMenu.setCarried(new ItemStack(Items.EMERALD, 4));
+            ItemCensus before = ItemCensus.of(player);
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            helper.assertTrue(player.containerMenu == player.inventoryMenu, "the screen stayed open");
+            helper.assertTrue(player.containerMenu.getCarried().isEmpty(), "the cursor still holds a stack");
+            helper.assertTrue(ItemCensus.of(snapshot, player.registryAccess()).equals(before), "before " + before);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** With no room, closing a screen drops the stack, and at a seat nobody may come back for it. The body takes it along instead. */
+    @GameTest(template = "empty")
+    public static void aStackWithNoRoomStaysWithTheBody(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 73_750.5, 80, 0.5);
+        try {
+            Inventory inventory = player.getInventory();
+            for (int slot = 0; slot < inventory.items.size(); slot++) {
+                inventory.setItem(slot, new ItemStack(Items.DIRT, 64));
+            }
+            helper.assertTrue(BodyInventoryMenu.open(player), "no body inventory");
+            player.containerMenu.setCarried(new ItemStack(Items.EMERALD, 4));
+            ItemCensus before = ItemCensus.of(player);
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            helper.assertTrue(snapshot.body().pending().size() == 1, "not in the body's pending items: " + snapshot.body().pending());
+            helper.assertTrue(ItemCensus.of(snapshot, player.registryAccess()).equals(before), "before " + before);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** The cursor stack of an open screen would ride into the new body, and the old inventory would be overwritten under it. */
+    @GameTest(template = "empty")
+    public static void aBodyWillNotGoOnOverAnOpenScreen(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 73_900.5, 80, 0.5);
+        try {
+            kitOne(player, Bodies.preset(BuiltinBodies.MECH));
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            player.getInventory().setItem(1, new ItemStack(Items.EMERALD, 4));
+            helper.assertTrue(BodyInventoryMenu.open(player), "no body inventory");
+            boolean refused = false;
+            try {
+                snapshot.applyTo(player);
+            } catch (IllegalStateException expected) {
+                refused = true;
+            }
+            helper.assertTrue(refused, "a body went on over an open screen");
+            helper.assertTrue(player.getInventory().getItem(1).is(Items.EMERALD), "the refused body still changed the inventory");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    @GameTest(template = "empty")
+    public static void aShellKeepsItsEffectsAndSelectedSlotThroughASave(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 74_000.5, 80, 0.5);
+        ServerLevel space = player.serverLevel();
+        BodyHost[] shell = {null};
+        try {
+            kitOne(player, Bodies.preset(BuiltinBodies.MECH));
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            shell[0] = BodyHost.spawn(space, new Vec3(74_000.5, 80, 8.5), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), null);
+            snapshot.applyTo(shell[0]);
+            shell[0] = saveAndLoad(space, shell[0]);
+            helper.assertTrue(BodySnapshot.of(shell[0]).equals(snapshot), "the shell's body changed in the save");
+            helper.succeed();
+        } finally {
+            if (shell[0] != null) {
+                shell[0].discard();
+            }
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** One item that can no longer be read costs that item, not the rest: this is why items stay in the game's own per-slot form. */
+    @GameTest(template = "empty")
+    public static void aBadItemCostsThatItemAndNotTheRest(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 74_250.5, 80, 0.5);
+        try {
+            var registries = player.registryAccess();
+            player.getInventory().setItem(3, new ItemStack(Items.DIAMOND, 3));
+            player.getInventory().setItem(4, new ItemStack(Items.EMERALD, 2));
+            BodySnapshot snapshot = BodySnapshot.take(player);
+            ListTag items = snapshot.items();
+            items.getCompound(0).putString("id", "void_reclaimer:removed_from_the_game");
+            CompoundTag tag = snapshot.save(registries);
+            tag.put("items", items);
+            BodySnapshot.load(tag, registries).orElseThrow().applyTo(player);
+            helper.assertTrue(player.getInventory().getItem(3).isEmpty(), "the unreadable item is there");
+            helper.assertTrue(player.getInventory().getItem(4).is(Items.EMERALD), "the good item went with it");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** A datapack may change a layout while a body lies in storage. What no longer fits comes back, as it does at login. */
+    @GameTest(template = "empty")
+    public static void aBodyFromStorageIsFittedToItsLayout(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 74_350.5, 80, 0.5);
+        try {
+            var registries = player.registryAccess();
+            kitOne(player, Bodies.preset(BuiltinBodies.MECH));
+            BodySnapshot whole = BodySnapshot.take(player);
+            ItemStack orphan = new ItemStack(com.voidreclaimer.registry.ModItems.MECH_TORSO.get());
+            BodySnapshot stale = new BodySnapshot(whole.body().withSection("socket_removed_by_a_datapack", orphan), whole.energy(), whole.tether(),
+                    whole.items(), whole.selected(), whole.health(), whole.effects());
+            ItemCensus before = ItemCensus.of(stale, registries);
+            stale.applyTo(player);
+            helper.assertTrue(Bodies.data(player).section("socket_removed_by_a_datapack").isEmpty(), "the orphan section stayed on");
+            helper.assertTrue(ItemCensus.of(player).equals(before), "the orphan section vanished: " + ItemCensus.of(player));
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    @GameTest(template = "empty")
+    public static void aSnapshotKeepsLowPowerAndABadSlotIsTheFirst(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 74_400.5, 80, 0.5);
+        try {
+            float capacity = Bodies.stats(player).energyCapacity();
+            Energy.update(player, new EnergyData(0f, capacity, true), true);
+            BodySnapshot flat = BodySnapshot.take(player);
+            Energy.update(player, new EnergyData(capacity, capacity, false), true);
+            new BodySnapshot(flat.body(), flat.energy(), flat.tether(), flat.items(), 40, flat.health(), flat.effects()).applyTo(player);
+            helper.assertTrue(player.getData(ModAttachments.ENERGY).lowPower(), "low power did not come along");
+            helper.assertTrue(player.getInventory().selected == 0, "selected slot " + player.getInventory().selected);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** {@link TestPlayers#rejoin} goes through the real player file. A clean logout: it says nothing about a crash. */
+    @GameTest(template = "empty")
+    public static void aRejoinedPlayerIsReadFromTheirSave(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 74_500.5, 80, 0.5);
+        kitOne(player, Bodies.preset(BuiltinBodies.MECH));
+        BodySnapshot before = BodySnapshot.take(player);
+        ServerPlayer back = TestPlayers.rejoin(helper, player);
+        try {
+            helper.assertTrue(back != player, "the same object came back");
+            helper.assertTrue(BodySnapshot.take(back).equals(before), "the body changed in a relog");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(back);
         }
     }
 }
