@@ -838,6 +838,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Also found and fixed: `TestPlayers` joined players over an `EmbeddedChannel`, which keeps every outbound message until something reads it; the channel now drops outbound packets at the head of its pipeline. `NaniteGameTests.inEntityTickingArea` is `inLoadedArea` without the 100-tick cap on waiting for the chunk to tick entities and with the eight neighbouring chunks forced too (a lone forced chunk never reaches entity ticking), for tests that look up entities (a test that started in a chunk that did not tick entities yet could not see the entities it spawned); block tests keep `inLoadedArea`, whose cap keeps a slow chunk from eating a short test's timeout.
 - **Known issue:** the suite's memory grows with the number of tests, about 25 MB per test. A later refactor should let tests of one class share a test area (and clear it) instead of each taking a fresh chunk.
 
+## Helper drones, part 1: the ferry: done
+- **Helper Drone** item and entity (the owner's mining probe model at half size). Sneak-use the item on the inventory to take from, then on the one to bring to, and release it (use on a block or in the air): it flies between them a block above each, carrying up to 16 items of one kind per trip, and waits two seconds when the source is empty or the destination full. Sneak-use the drone with an empty hand to take it back (its links stay on the item; cargo drops). Right-click tells what it is doing. No gravity, flies straight through blocks, no energy cost: placeholder steering and economy.
+- Carrying payloads to the Launch Complex is the same job with the Launch Controller as the destination.
+- **Tests:** `FerryTest`, `HelperSteeringTest` (unit); `HelperDroneGameTests` (a drone moves 20 stones between two chests in two trips; a half-linked drone idles and takes nothing; sneak-use returns the item with its links and drops the cargo; a drone fills a Launch Controller from a chest). Mutation-checked.
+- **Placeholders:** `textures/item/helper_drone.png` (16x16 programmer art); the probe model's `idle`/`thrust` animations stand in for a ferry animation.
+- **Decisions pending (unattended):** flying through blocks and no energy cost; the link flow (source then destination on the item); 16 per trip, 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); one kind of item per trip. Next jobs: mine asteroids (PR 2), collect from dust clouds (PR 3).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

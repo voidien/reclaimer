@@ -77,6 +77,8 @@ public final class ModRecipeProvider extends RecipeProvider {
         machineRecipe(output, "electrolyzer", ModItems.ELECTROLYZER.get(), DustCost.of(30, 20, 10, 10), "electrolyzer");
         machineRecipe(output, "cloud_siphon", ModItems.CLOUD_SIPHON.get(), DustCost.of(35, 25, 20, 25), "cloudSiphon");
         machineRecipe(output, "spinner", ModItems.SPINNER.get(), DustCost.of(25, 15, 0, 15), "spinner");
+        // Helper Drone (ferry); placeholder price.
+        replicator(output, "helper_drone", ModItems.HELPER_DRONE.get(), 1, DustCost.of(60, 40, 10, 40), 90, ReplicatorCategories.TOOLS, Milestones.EXPANSION);
         // The Launch Complex's controller; placeholder price. The old three Mass Driver blocks have no recipe any more.
         machineRecipe(output, "launch_controller", ModItems.LAUNCH_CONTROLLER.get(), DustCost.of(90, 65, 20, 70), "massDriver");
         // Encased Fan freezing: a Water Bucket carried through powder snow becomes Packed Ice (the bucket comes back empty).

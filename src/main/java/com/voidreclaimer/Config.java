@@ -36,6 +36,10 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue CLOUD_DRAG;
     public static final ModConfigSpec.DoubleValue EARTH_WIND_SPEED;
     public static final ModConfigSpec.DoubleValue STATION_RANGE;
+    public static final ModConfigSpec.DoubleValue HELPER_SPEED;
+    public static final ModConfigSpec.IntValue HELPER_CARRY;
+    public static final ModConfigSpec.DoubleValue HELPER_REACH;
+    public static final ModConfigSpec.IntValue HELPER_PAUSE;
     public static final ModConfigSpec.IntValue STATION_REPLICATOR_SPEED;
     public static final ModConfigSpec.IntValue STATION_MAX_BLOCKS;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
@@ -200,6 +204,13 @@ public final class Config {
         CLOUD_SPEED_PENALTY = BUILDER
                 .comment("Top speed reduction at full density (0.6 = 60% slower in the densest core).")
                 .defineInRange("speedPenalty", 0.6, 0.0, 0.95);
+        BUILDER.pop();
+
+        BUILDER.comment("Helper drones.").push("helper");
+        HELPER_SPEED = BUILDER.comment("Flight speed in blocks per tick.").defineInRange("speed", 0.35, 0.05, 2.0);
+        HELPER_CARRY = BUILDER.comment("Items a drone carries per trip.").defineInRange("carry", 16, 1, 64);
+        HELPER_REACH = BUILDER.comment("How close to its hover point a drone must be to load or unload.").defineInRange("reach", 1.5, 0.5, 4.0);
+        HELPER_PAUSE = BUILDER.comment("Ticks a drone waits when there is nothing to take or no room to give.").defineInRange("pause", 40, 1, 1200);
         BUILDER.pop();
 
         BUILDER.comment("Stations.").push("station");

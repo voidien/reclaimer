@@ -21,6 +21,7 @@ public final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.BODY_BLUEPRINT.get());
         basicItem(ModItems.PORTAL_IGNITER.get());
         withExistingParent("test_starship", mcLoc("item/template_spawn_egg"));
+        basicItem(ModItems.HELPER_DRONE.get());
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {
             basicItem(material.item().get());
         }

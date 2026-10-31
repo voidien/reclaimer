@@ -26,5 +26,11 @@ public final class ModEntities {
                     .sized(0.25f, 0.25f).noSummon().clientTrackingRange(8).updateInterval(20)
                     .build(VoidReclaimer.id("helm_seat").toString()));
 
+    /** A helper drone: a small flying worker (the mining probe model at half size). */
+    public static final Supplier<EntityType<com.voidreclaimer.helper.HelperDrone>> HELPER_DRONE = ENTITY_TYPES.register("helper_drone",
+            () -> EntityType.Builder.<com.voidreclaimer.helper.HelperDrone>of(com.voidreclaimer.helper.HelperDrone::new, MobCategory.MISC)
+                    .sized(0.9f, 0.9f).fireImmune().clientTrackingRange(10).updateInterval(2)
+                    .build(VoidReclaimer.id("helper_drone").toString()));
+
     private ModEntities() {}
 }
