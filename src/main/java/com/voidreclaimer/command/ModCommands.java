@@ -91,6 +91,24 @@ public final class ModCommands {
             com.voidreclaimer.body.BuiltinBodies.DRONE, com.voidreclaimer.body.BuiltinBodies.MECH, com.voidreclaimer.body.BuiltinBodies.SHIP,
             com.voidreclaimer.body.BuiltinBodies.SHUTTLE, com.voidreclaimer.body.BuiltinBodies.TITAN);
 
+    private static final java.util.Map<java.util.UUID, com.voidreclaimer.debug.ItemCensus> LAST_CENSUS = new java.util.HashMap<>();
+    private static final double CENSUS_RANGE = 32.0;
+
+    /** Counts everything the player carries and the items lying near them, and says what changed since the last count. The result is the total. */
+    private static int census(CommandSourceStack source, ServerPlayer player) {
+        var carried = com.voidreclaimer.debug.ItemCensus.of(player);
+        var nearby = com.voidreclaimer.debug.ItemCensus.nearby(player, CENSUS_RANGE);
+        var total = carried.plus(nearby);
+        var last = LAST_CENSUS.put(player.getUUID(), total);
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.link.census", carried.total(), nearby.total()), false);
+        if (last != null) {
+            var changes = total.since(last);
+            source.sendSuccess(() -> changes.isEmpty() ? Component.translatable("commands.void_reclaimer.link.census.same")
+                    : Component.translatable("commands.void_reclaimer.link.census.changed", changes.toString()), false);
+        }
+        return total.total();
+    }
+
     /** Debug: nothing in survival makes a shell yet. */
     private static int spawnShell(CommandSourceStack source, String name, boolean full) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var chassis = SHELL_BODIES.stream().filter(key -> key.location().getPath().equals(name)).findFirst();
@@ -133,6 +151,9 @@ public final class ModCommands {
                                 .then(Commands.argument("condition", FloatArgumentType.floatArg(0f, 1f))
                                         .executes(ctx -> wear(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), FloatArgumentType.getFloat(ctx, "condition"))))))
                 .then(Commands.literal("link")
+                        .then(Commands.literal("census")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> census(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
                         .then(Commands.literal("spawn")
                                 .then(Commands.argument("body", com.mojang.brigadier.arguments.StringArgumentType.word())
                                         .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(

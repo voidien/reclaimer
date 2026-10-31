@@ -288,6 +288,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.tab.logs", "Logs");
         add("replicator.void_reclaimer.replicate", "Replicate");
         add("replicator.void_reclaimer.collect", "Collect output");
+        add("commands.void_reclaimer.link.census", "Carried: %s items. Lying nearby: %s items.");
+        add("commands.void_reclaimer.link.census.changed", "Changed since the last count: %s");
+        add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
         add("commands.void_reclaimer.link.unknown", "No body called %s");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");

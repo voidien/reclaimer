@@ -1033,6 +1033,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Some things can only be tested by restarting: ship tickets, and soon the link's crash safety. `tools/restart-test.sh main|aero <name>` runs `<name>BeforeRestart` in one server and `<name>AfterRestart` in the next, on the same world. The first ends normally, so the server saves, or calls `RestartTests.crash()`, which ends the JVM on the spot with nothing saved. `GameTestFilter.registers` keeps these tests out of every other run, even a filter on their class, because they mean nothing out of order.
 - `aCrashKeepsOnlyWhatWasSaved` keeps `crash()` honest: it saves a diamond block, swaps it for gold and crashes, and the next server must find diamond. `aHeldShipLoadsItself` makes the hand-run restart check of the ship tickets permanent. CI runs both.
 - Tests: those two, and `GameTestFilterTest`. Mutation-checked: with no crash the first finds gold; without `ShipTickets.init` the second reads "the ship never came back".
+## Tool: the item census command: done
+- `/void_reclaimer link census <player>` counts everything a body carries (armor, offhand, the cursor, sections, modules, pending items) and the items lying within 32 blocks, and says what changed since that player's last count, so "nothing appeared or vanished" can be checked in a real client too. `ItemCensus` moved from test code to `debug/`. Its command result is the total.
+- Tests: `ItemCensusTest`, `theCensusCountsCursorAndBodyParts`. Dropped items are only seen in a ticking chunk, as with any entity lookup.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
