@@ -1,8 +1,11 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.debug.ChunkReadout;
 import com.voidreclaimer.mixin.ChunkMapAccessor;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ChunkTaskPriorityQueueSorter;
@@ -40,6 +43,21 @@ public final class ChunkTaskGameTests {
         }
         helper.runAfterDelay(TICKS, () -> {
             helper.assertTrue(done.get() == TASKS, done.get() + " of " + TASKS + " chunk tasks ran in " + TICKS + " ticks");
+            helper.succeed();
+        });
+    }
+
+    /** A chunk nothing holds says so, and one forced and ticking says that: the readout has to tell the two apart. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theChunkReadoutTellsATickingChunkFromAnUnloadedOne(GameTestHelper helper) {
+        BlockPos spot = new BlockPos(76_000, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, spot, 1, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            List<String> held = ChunkReadout.of(space, new ChunkPos(spot));
+            List<String> nowhere = ChunkReadout.of(space, new ChunkPos(1_000_000, 1_000_000));
+            helper.assertTrue(held.get(1).startsWith("Level ") && held.get(2).equals("Entities: loaded, ticking"), "a forced chunk: " + held);
+            helper.assertTrue(nowhere.get(1).equals("Not loaded") && nowhere.get(2).equals("Entities: not loaded, not ticking"), "no chunk: " + nowhere);
+            helper.assertTrue(held.get(3).matches("Chunks here: [1-9].*"), "no chunks counted: " + held);
             helper.succeed();
         });
     }
