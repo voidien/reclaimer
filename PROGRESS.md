@@ -939,6 +939,14 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Assembly view, part 2: hover previews: done
 - Hovering a part that fits draws it on the model as a translucent ghost and lists what it would change, green for better and red for worse, without installing it. A whole-model rig's section shows its limb, not tinted, since it has no separate model. `Bodies.withSection`/`withModule` build the body it would become; `body/assembly/StatDelta` (pure) compares two bodies. An addon's `BodyStatsEvent` changes are not in the preview, as there is no entity to pass it. Tests: `StatDeltaTest` (4), `BodyGameTests.aPreviewMatchesWhatInstallingReallyDoes`. Seen on the Mech.
 
+## Assembly view, part 3: helpers: done
+- **Matched pairs:** shift-click fits both sides of a pair; pairs come from the layout (`body/assembly/BodyPairs`), so a datapack chassis has them too. It works on the Body tab as well.
+- **Queue missing parts:** with nothing to fit, the panel lists unlocked Replicator recipes for parts that would, one click to queue.
+- **Wear:** sections tint from white through amber to red, and on whole-model rigs the socket marker does. `/void_reclaimer wear <player> <condition>` sets it to look at.
+- **Blueprints:** a held Blueprint marks in purple the sockets it wants changed; save, apply and queue already come with the panel.
+- **Tests:** `BodyPairsTest` (3), `StatDeltaTest`, `BodyGameTests.aBlueprintKnowsWhichSocketsDifferFromTheBody`. Pairs, queueing and wear seen in the client; the purple marker colour was not seen, its logic is tested.
+- **Noticed:** the plain Mech preset has a tier 1 core with tier 2 hands, which the rules would refuse to install; it only matters for testing.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

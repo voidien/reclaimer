@@ -292,6 +292,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.assembly", "3D view");
         add("assembly.void_reclaimer.title", "Body assembly");
         add("assembly.void_reclaimer.back", "Back");
+        add("body.void_reclaimer.pair_hint", "Shift-click: both sides");
+        add("body.void_reclaimer.can_queue", "Queue in the Replicator:");
+        add("body.void_reclaimer.click_queue", "Click to queue in the Replicator");
         add("assembly.void_reclaimer.stat.mass", "Mass");
         add("assembly.void_reclaimer.stat.budget", "Mass budget");
         add("assembly.void_reclaimer.stat.acceleration", "Acceleration");

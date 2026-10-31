@@ -42,4 +42,21 @@ class StatDeltaTest {
         List<StatDelta.Row> rows = StatDelta.between(stats(1f, 0.03, 20f), stats(1f, 0.03, 12f));
         assertFalse(rows.get(0).better());
     }
+
+    @Test
+    void wearTintsFromWhiteThroughAmberToRed() {
+        assertEquals(0xFFFFFFFF, com.voidreclaimer.body.Wear.tint(1f), "a new section is drawn as it is");
+        int half = com.voidreclaimer.body.Wear.tint(com.voidreclaimer.body.Wear.FULL_EFFECT);
+        assertTrue((half >> 8 & 0xFF) > (half & 0xFF), "amber: more green than blue");
+        int spent = com.voidreclaimer.body.Wear.tint(0f);
+        assertEquals(0xFFFF0000, spent, "spent is pure red");
+    }
+
+    @Test
+    void theTextShowsEvenASmallChange() {
+        assertEquals("10 > 14", StatDelta.text(new StatDelta.Row("a", 10.0, 14.0, true)));
+        assertEquals("5.0 > 5.2", StatDelta.text(new StatDelta.Row("a", 5.0, 5.2, false)));
+        assertEquals("5.00 > 5.05", StatDelta.text(new StatDelta.Row("a", 5.0, 5.05, false)));
+        assertEquals("0.030 > 0.029", StatDelta.text(new StatDelta.Row("a", 0.03, 0.029, false)));
+    }
 }

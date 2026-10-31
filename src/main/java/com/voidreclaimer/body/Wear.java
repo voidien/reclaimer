@@ -50,6 +50,14 @@ public final class Wear {
     }
 
     /** A copy of {@code section} at {@code condition} (1 removes the component). */
+    /** A colour for how worn a section is: white when new, through amber at half, to red when spent. */
+    public static int tint(float condition) {
+        float c = Math.max(0f, Math.min(1f, condition));
+        float green = c >= FULL_EFFECT ? 0.72f + (1f - 0.72f) * (c - FULL_EFFECT) / (1f - FULL_EFFECT) : 0.72f * c / FULL_EFFECT;
+        float blue = c >= FULL_EFFECT ? 0.25f + 0.75f * (c - FULL_EFFECT) / (1f - FULL_EFFECT) : 0.25f * c / FULL_EFFECT;
+        return 0xFF000000 | 0xFF0000 | Math.round(green * 255f) << 8 | Math.round(blue * 255f);
+    }
+
     public static ItemStack withCondition(ItemStack section, float condition) {
         ItemStack copy = section.copy();
         if (condition >= 1f) {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyView;
+import com.voidreclaimer.body.Wear;
 import com.voidreclaimer.body.assembly.AssemblyCamera;
 import com.voidreclaimer.body.assembly.StatDelta;
 import com.voidreclaimer.client.render.body.BodyBounds;
@@ -11,7 +12,6 @@ import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.client.render.body.BoneProbe;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -55,6 +55,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private static final double PICK_RADIUS = 6.0;
     private static final int MARKER_SOCKET = 0xFF7FD4FF;
     private static final int MARKER_MOUNT = 0xFFFFC857;
+    private static final int MARKER_BLUEPRINT = 0xFFC792EA;
     private static final int CHANGES_BACK = 0xD0101418;
     private static final int TEXT = 0xFFDDE6EE;
     private static final int BETTER = 0xFF70E080;
@@ -156,7 +157,9 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         BodyPanel.Preview hovered = panel.preview();
         BodyView preview = hovered == null ? null : previewOf(current, hovered, player);
         BodyRenderer.setPreview(preview, hovered == null ? null : hovered.socket(), hovered == null ? null : hovered.mount());
+        BodyRenderer.setShowWear(true);
         renderBody(graphics, player);
+        BodyRenderer.setShowWear(false);
         BodyRenderer.setPreview(null, null, null);
         renderMarkers(graphics, player, mouseX, mouseY);
         if (preview != null) {
@@ -178,7 +181,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         int valueWidth = 0;
         for (StatDelta.Row row : rows) {
             Component label = Component.translatable("assembly.void_reclaimer.stat." + row.key());
-            String value = number(row.before()) + " > " + number(row.after());
+            String value = StatDelta.text(row);
             labels.add(label);
             values.add(value);
             labelWidth = Math.max(labelWidth, font.width(label));
@@ -196,11 +199,6 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         }
     }
 
-    private static String number(double value) {
-        double abs = Math.abs(value);
-        return String.format(Locale.ROOT, abs >= 100 || value == Math.rint(value) ? "%.0f" : abs >= 1 ? "%.1f" : "%.3f", value);
-    }
-
     /** Where a marker counts as on the far side: just behind the body's middle, so the edges of a thin body stay reachable. */
     private float farLimit(LocalPlayer player) {
         return Z_BASE - FAR_SHARE * BodyBounds.radius(Bodies.view(player)) * player.getScale() * drawnScale;
@@ -213,6 +211,9 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
             var found = chassis.socket(socket);
             return area == null || (found != null && found.area().equals(area));
         }, farLimit(player));
+        var view = Bodies.view(player);
+        var blueprint = BodyPanel.heldBlueprint(player);
+        java.util.Set<String> wanted = blueprint == null ? java.util.Set.of() : blueprint.differsFrom(view.data());
         BoneProbe.Point over = overView(mouseX, mouseY) ? AssemblyMarkers.pick(markers, mouseX, mouseY, PICK_RADIUS).orElse(null) : null;
         graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
         for (BoneProbe.Point point : markers) {
@@ -220,7 +221,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
             int y = Math.round(point.at().y());
             boolean selected = point.mount() == null ? point.socket().equals(panel.selectedSocket()) && panel.selectedMount() == null
                     : point.mount().equals(panel.selectedMount());
-            int colour = point.kind() == BoneProbe.Kind.SOCKET ? MARKER_SOCKET : MARKER_MOUNT;
+            int colour = markerColour(view, point, wanted);
             graphics.renderOutline(x - 3, y - 3, 7, 7, selected || point == over ? 0xFFFFFFFF : colour);
             if (point.filled()) {
                 graphics.fill(x - 1, y - 1, x + 2, y + 2, colour);
@@ -232,6 +233,19 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
                     : BodyPanel.socketName(over.socket()).copy().append(" / ").append(over.mount().kind().displayName());
             graphics.renderTooltip(font, name, mouseX, mouseY);
         }
+    }
+
+    /** Purple where a held Blueprint wants something else; a worn section's own colour; otherwise by kind. */
+    private static int markerColour(BodyView view, BoneProbe.Point point, java.util.Set<String> wanted) {
+        if (point.kind() == BoneProbe.Kind.SOCKET) {
+            if (wanted.contains(point.socket())) {
+                return MARKER_BLUEPRINT;
+            }
+            var section = view.data().section(point.socket());
+            float condition = section.isEmpty() ? 1f : Wear.condition(section);
+            return condition < 1f ? Wear.tint(condition) : MARKER_SOCKET;
+        }
+        return MARKER_MOUNT;
     }
 
     /** Selects a marker's socket or mount and eases the view to it. */

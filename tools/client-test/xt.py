@@ -1,5 +1,5 @@
 # Drives the headless test client on Xvfb display :99 through XTest (see HANDOFF.md).
-# Usage: xt.py click X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | mdrag DX DY [steps [shot.png]] | drag X Y DX DY [steps] | move DX DY
+# Usage: xt.py click X Y | sclick X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | mdrag DX DY [steps [shot.png]] | drag X Y DX DY [steps] | move DX DY
 import ctypes, sys, time
 X = ctypes.cdll.LoadLibrary('libX11.so.6'); T = ctypes.cdll.LoadLibrary('libXtst.so.6')
 X.XOpenDisplay.restype = ctypes.c_void_p; X.XStringToKeysym.restype = ctypes.c_ulong
@@ -20,6 +20,11 @@ a = sys.argv
 if a[1] == 'click':
     T.XTestFakeMotionEvent(d, 0, int(a[2]), int(a[3]), 0); X.XFlush(d); time.sleep(0.2)
     T.XTestFakeButtonEvent(d, 1, 1, 0); X.XFlush(d); time.sleep(0.1); T.XTestFakeButtonEvent(d, 1, 0, 0); X.XFlush(d)
+elif a[1] == 'sclick':  # sclick X Y: a click with shift held
+    T.XTestFakeMotionEvent(d, 0, int(a[2]), int(a[3]), 0); X.XFlush(d); time.sleep(0.2)
+    key('Shift_L', 1); time.sleep(0.1)
+    T.XTestFakeButtonEvent(d, 1, 1, 0); X.XFlush(d); time.sleep(0.1); T.XTestFakeButtonEvent(d, 1, 0, 0); X.XFlush(d)
+    time.sleep(0.1); key('Shift_L', 0)
 elif a[1] == 'rclick':
     T.XTestFakeButtonEvent(d, 3, 1, 0); X.XFlush(d); time.sleep(0.15); T.XTestFakeButtonEvent(d, 3, 0, 0); X.XFlush(d)
 elif a[1] == 'scroll':
