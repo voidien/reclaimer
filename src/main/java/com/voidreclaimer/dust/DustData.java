@@ -48,9 +48,13 @@ public record DustData(Map<ResourceLocation, Float> amounts) {
         return new DustData(copy);
     }
 
-    /** Adds dust of one kind, never exceeding {@code capacity}. */
+    /**
+     * Adds dust of one kind up to {@code capacity}. A reserve already above it, as taking off a storage module leaves one,
+     * stays as it is: gaining dust never lowers it. A negative amount still takes dust away.
+     */
     public DustData add(ResourceLocation kind, float amount, float capacity) {
-        return with(kind, Math.min(capacity, get(kind) + amount));
+        float held = get(kind);
+        return with(kind, Math.max(Math.min(capacity, held + amount), Math.min(held, held + amount)));
     }
 
     /** How many kinds the reserve holds any of. */
