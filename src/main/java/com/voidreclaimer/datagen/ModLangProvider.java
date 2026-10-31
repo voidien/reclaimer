@@ -286,6 +286,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.tab.logs", "Logs");
         add("replicator.void_reclaimer.replicate", "Replicate");
         add("replicator.void_reclaimer.collect", "Collect output");
+        add("commands.void_reclaimer.scene.built", "Built test scene %s");
+        add("commands.void_reclaimer.scene.unknown", "No test scene called %s");
         add("replicator.void_reclaimer.queue", "Queue %s/%s");
         add("replicator.void_reclaimer.output", "Output");
         add("replicator.void_reclaimer.paused", "PAUSED: low power");

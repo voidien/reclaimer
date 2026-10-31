@@ -171,6 +171,8 @@
   "commands.void_reclaimer.milestone.granted": "Granted %s to %s",
   "commands.void_reclaimer.milestone.revoked": "Revoked %s from %s",
   "commands.void_reclaimer.milestone.unknown": "Unknown milestone: %s",
+  "commands.void_reclaimer.scene.built": "Built test scene %s",
+  "commands.void_reclaimer.scene.unknown": "No test scene called %s",
   "commands.void_reclaimer.sky.era.get": "Ruined Earth sky era: %s",
   "commands.void_reclaimer.sky.era.no_dimension": "The ruined_earth dimension is not loaded",
   "commands.void_reclaimer.sky.era.set": "Ruined Earth sky era set to %s",

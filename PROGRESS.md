@@ -896,6 +896,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: exact dust checks raced another test's Dyson tier change: done
 - `HelperCollectGameTests.aFullCollectorWithItsOwnerFarAwayWaits` failed once on CI: its owner had dust. `Dyson.set` checks every online player's milestones when the tier changes, so a test player who had not reached Awakening got the starter dust at a moment set by whichever test changed the tier. Any test asserting an exact dust amount was exposed. Test players now start past Awakening (`TestPlayers.join`); tests about the first moments call `notYetAwake`. Test: `StarterDustGameTests.aTestPlayersDustIsNotChangedByAnotherTestsMilestoneCheck`. Mutation-checked. The game itself is unaffected: a real player reaches Awakening within seconds of joining.
 
+## Test scenes: done
+- `/void_reclaimer scene arena|launch|drones|station` builds a ready setup in deep space, in seconds, through the real assembly code, and moves you to a view of it. `launch` is a complete complex on a creative motor with 16 payloads; `drones` a ferry and a miner at work; `station` an assembled station with a Helm; `arena` a pale lit floor and two walls with a line every 16 blocks. Each can be built again over itself. Tests: `TestScenesGameTests` (3), `StationGameTests` (1). Seen in the client.
+- This answers the owner's question about an easier test dimension: a copy of deep space would be a second thing to keep in step, and the arena gives the light, contrast and room inside the real one.
+- **Seen with the arena:** the Ship's section art renders almost pure black even on a lit floor, unlike the Mech, Shuttle and Titan. Not investigated yet.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
