@@ -8,6 +8,8 @@
     "LivingEntityTravelMixin",
     "GameTestServerMixin",
     "GameTestStopMixin",
+    "GameTestChunkTasksMixin",
+    "ChunkMapAccessor",
     "GameTestRegistryMixin",
     "InventoryLockMixin",
     "SlotLockMixin",
