@@ -1,6 +1,7 @@
 package com.voidreclaimer.helper;
 
 import com.voidreclaimer.Config;
+import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModDataComponents;
 import com.voidreclaimer.registry.ModEntities;
 import com.voidreclaimer.registry.ModItems;
@@ -8,8 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -25,6 +29,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -37,14 +42,20 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * A helper drone: a small flying worker drawn with the mining probe model. Its first job is the ferry
- * ({@link Ferry}): it carries items from its source inventory to its destination inventory, up to
- * {@code helper.carry} at a time, flying straight at {@code helper.speed} blocks per tick and hovering a block above each
- * end. It has no gravity and flies through blocks (placeholder steering). Sneak-use with an empty hand takes it back as
- * an item with its links; a hit breaks it into that item as well. Right-click reports what it is doing.
+ * A helper drone: a small flying worker drawn with the mining probe model. Its jobs, chosen by its links:
+ * <ul>
+ * <li>the ferry ({@link Ferry}): it carries items from its source inventory to its destination inventory, up to
+ * {@code helper.carry} at a time;</li>
+ * <li>mining ({@link Mining}): it flies to the nearest asteroid block within {@code helper.mineRadius} of its mine
+ * point, digs it for {@code helper.digTicks}, and carries the block to its destination.</li>
+ * </ul>
+ * It flies straight at {@code helper.speed} blocks per tick and hovers a block above what it works on. It has no gravity
+ * and flies through blocks (placeholder steering). Sneak-use with an empty hand takes it back as an item with its links;
+ * a hit breaks it into that item as well. Right-click reports what it is doing.
  */
 public class HelperDrone extends Entity implements GeoEntity {
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> MINE_PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.idle");
     private static final RawAnimation THRUST = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.thrust");
     /** The drone hovers this far above the block it works on. */
@@ -56,6 +67,11 @@ public class HelperDrone extends Entity implements GeoEntity {
     private int wait;
     @Nullable
     private UUID owner;
+    /** Mining: the rock being worked, how long it has been dug, and when to look for a rock again. */
+    @Nullable
+    private BlockPos rock;
+    private int dug;
+    private int scanIn;
 
     public HelperDrone(EntityType<? extends HelperDrone> type, Level level) {
         super(type, level);
@@ -69,7 +85,11 @@ public class HelperDrone extends Entity implements GeoEntity {
         drone.setPos(pos.x, pos.y, pos.z);
         drone.links = links;
         drone.owner = owner;
-        drone.setPhase(Ferry.after(Ferry.Phase.IDLE, Ferry.Action.NONE, links.complete(), false, false));
+        if (links.mining()) {
+            drone.setMinePhase(Mining.after(Mining.Phase.IDLE, Mining.Action.NONE, links.complete(), false, false, false, false));
+        } else {
+            drone.setPhase(Ferry.after(Ferry.Phase.IDLE, Ferry.Action.NONE, links.complete(), false, false));
+        }
         level.addFreshEntity(drone);
         return drone;
     }
@@ -77,6 +97,7 @@ public class HelperDrone extends Entity implements GeoEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(PHASE, (byte) Ferry.Phase.IDLE.ordinal());
+        builder.define(MINE_PHASE, (byte) Mining.Phase.IDLE.ordinal());
     }
 
     public Ferry.Phase phase() {
@@ -85,6 +106,14 @@ public class HelperDrone extends Entity implements GeoEntity {
 
     private void setPhase(Ferry.Phase phase) {
         entityData.set(PHASE, (byte) phase.ordinal());
+    }
+
+    public Mining.Phase minePhase() {
+        return Mining.Phase.values()[entityData.get(MINE_PHASE)];
+    }
+
+    private void setMinePhase(Mining.Phase phase) {
+        entityData.set(MINE_PHASE, (byte) phase.ordinal());
     }
 
     public HelperLinks links() {
@@ -105,8 +134,26 @@ public class HelperDrone extends Entity implements GeoEntity {
         return owner;
     }
 
-    /** Where the drone is heading in its current phase, or empty when it is idle or waiting. */
+    /** The rock a mining drone is heading for or digging, or null. */
+    @Nullable
+    public BlockPos rock() {
+        return rock;
+    }
+
+    /** Whether the drone is flying somewhere (the thrust animation). */
+    public boolean moving() {
+        return links.mining() ? Mining.moving(minePhase()) : Ferry.moving(phase());
+    }
+
+    /** Where the drone is heading in its current phase, or empty when it is idle, waiting or digging. */
     public Optional<Vec3> target() {
+        if (links.mining()) {
+            return switch (minePhase()) {
+                case TO_ROCK -> Optional.ofNullable(rock).map(HelperDrone::above);
+                case TO_DESTINATION -> links.destination().map(HelperDrone::above);
+                default -> Optional.empty();
+            };
+        }
         return switch (phase()) {
             case TO_SOURCE -> links.source().map(HelperDrone::above);
             case TO_DESTINATION -> links.destination().map(HelperDrone::above);
@@ -124,15 +171,28 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (!(level() instanceof ServerLevel server)) {
             return;
         }
-        Ferry.Phase phase = phase();
-        Optional<Vec3> target = target();
-        boolean arrived = false;
-        if (target.isPresent()) {
-            Vec3 next = HelperSteering.step(position(), target.get(), Config.HELPER_SPEED.get());
-            setYRot(HelperSteering.yaw(position(), target.get(), getYRot()));
-            setPos(next.x, next.y, next.z);
-            arrived = HelperSteering.arrived(next, target.get(), Config.HELPER_REACH.get());
+        if (links.mining()) {
+            tickMining(server);
+        } else {
+            tickFerry(server);
         }
+    }
+
+    /** Flies one step towards the current target; returns whether the drone is now within reach of it. */
+    private boolean fly() {
+        Optional<Vec3> target = target();
+        if (target.isEmpty()) {
+            return false;
+        }
+        Vec3 next = HelperSteering.step(position(), target.get(), Config.HELPER_SPEED.get());
+        setYRot(HelperSteering.yaw(position(), target.get(), getYRot()));
+        setPos(next.x, next.y, next.z);
+        return HelperSteering.arrived(next, target.get(), Config.HELPER_REACH.get());
+    }
+
+    private void tickFerry(ServerLevel server) {
+        Ferry.Phase phase = phase();
+        boolean arrived = fly();
         Ferry.Action action = Ferry.actionOn(phase, arrived);
         switch (action) {
             case LOAD -> links.source().ifPresent(pos -> load(server, pos));
@@ -147,6 +207,82 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (next != phase) {
             setPhase(next);
         }
+    }
+
+    private void tickMining(ServerLevel server) {
+        Mining.Phase phase = minePhase();
+        boolean rockFound = rock != null && isRock(server, rock);
+        if (!rockFound && --scanIn <= 0 && links.mine().isPresent()) {
+            rock = findRock(server, links.mine().get());
+            scanIn = Config.HELPER_PAUSE.get();
+            rockFound = rock != null;
+        }
+        boolean arrived = fly();
+        boolean digDone = phase == Mining.Phase.DIGGING && rockFound && ++dug >= Config.HELPER_DIG_TICKS.get();
+        Mining.Action action = Mining.actionOn(phase, arrived, digDone);
+        switch (action) {
+            case DIG -> {
+                if (rock != null && dug % 10 == 0) {
+                    BlockState state = server.getBlockState(rock);
+                    server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), rock.getX() + 0.5, rock.getY() + 1.1, rock.getZ() + 0.5, 6, 0.2, 0.1, 0.2, 0.05);
+                }
+            }
+            case BREAK -> breakRock(server);
+            case UNLOAD -> links.destination().ifPresent(pos -> unload(server, pos));
+            default -> { }
+        }
+        boolean waitOver = phase == Mining.Phase.WAITING && --wait <= 0;
+        Mining.Phase next = Mining.after(phase, action, links.complete(), rockFound, arrived, !carried.isEmpty(), waitOver);
+        if (next == Mining.Phase.WAITING && phase != Mining.Phase.WAITING) {
+            wait = Config.HELPER_PAUSE.get();
+        }
+        if (next == Mining.Phase.TO_ROCK && phase != Mining.Phase.TO_ROCK) {
+            dug = 0;
+        }
+        if (next != phase) {
+            setMinePhase(next);
+        }
+    }
+
+    private static boolean isRock(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).is(ModBlocks.ASTEROID_BLOCKS);
+    }
+
+    /** The asteroid block nearest to {@code centre} within {@code helper.mineRadius}, or null. */
+    @Nullable
+    static BlockPos findRock(ServerLevel level, BlockPos centre) {
+        int radius = Config.HELPER_MINE_RADIUS.get();
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-radius, -radius, -radius), centre.offset(radius, radius, radius))) {
+            if (isRock(level, pos)) {
+                double distance = pos.distSqr(centre);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = pos.immutable();
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Takes the rock as a block item (as the Matter Harvester lets it drop) and clears it. */
+    private void breakRock(ServerLevel server) {
+        if (rock == null || !isRock(server, rock)) {
+            rock = null;
+            return;
+        }
+        ItemStack mined = new ItemStack(server.getBlockState(rock).getBlock().asItem());
+        server.destroyBlock(rock, false);
+        if (carried.isEmpty()) {
+            carried = mined;
+        } else if (ItemStack.isSameItemSameComponents(carried, mined) && carried.getCount() < Config.HELPER_CARRY.get()) {
+            carried.grow(1);
+        } else {
+            level().addFreshEntity(new ItemEntity(level(), rock.getX() + 0.5, rock.getY() + 0.5, rock.getZ() + 0.5, mined));
+        }
+        rock = null;
+        dug = 0;
     }
 
     /** Takes up to {@code helper.carry} items of the first non-empty slot of the inventory at {@code pos}. */
@@ -203,7 +339,7 @@ public class HelperDrone extends Entity implements GeoEntity {
 
     /** One line about the job: the phase, what is carried, and the links. */
     public Component status() {
-        String phase = phase().name().toLowerCase(java.util.Locale.ROOT);
+        String phase = (links.mining() ? minePhase().name() : phase().name()).toLowerCase(java.util.Locale.ROOT);
         Component load = carried.isEmpty() ? Component.translatable("message.void_reclaimer.helper.empty")
                 : Component.translatable("message.void_reclaimer.helper.carrying", carried.getCount(), carried.getHoverName());
         return Component.translatable("message.void_reclaimer.helper.status." + phase, load);
@@ -254,6 +390,10 @@ public class HelperDrone extends Entity implements GeoEntity {
         owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
         int phase = tag.getInt("phase");
         setPhase(phase >= 0 && phase < Ferry.Phase.values().length ? Ferry.Phase.values()[phase] : Ferry.Phase.IDLE);
+        int minePhase = tag.getInt("minePhase");
+        setMinePhase(minePhase >= 0 && minePhase < Mining.Phase.values().length ? Mining.Phase.values()[minePhase] : Mining.Phase.IDLE);
+        rock = tag.contains("rock") ? NbtUtils.readBlockPos(tag, "rock").orElse(null) : null;
+        dug = tag.getInt("dug");
     }
 
     @Override
@@ -267,12 +407,17 @@ public class HelperDrone extends Entity implements GeoEntity {
             tag.putUUID("owner", owner);
         }
         tag.putInt("phase", phase().ordinal());
+        tag.putInt("minePhase", minePhase().ordinal());
+        if (rock != null) {
+            tag.put("rock", NbtUtils.writeBlockPos(rock));
+        }
+        tag.putInt("dug", dug);
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 4,
-                state -> state.setAndContinue(Ferry.moving(phase()) ? THRUST : IDLE)));
+                state -> state.setAndContinue(moving() ? THRUST : IDLE)));
     }
 
     @Override

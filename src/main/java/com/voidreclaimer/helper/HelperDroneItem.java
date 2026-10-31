@@ -1,5 +1,6 @@
 package com.voidreclaimer.helper;
 
+import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModDataComponents;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -20,7 +21,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 
 /**
  * The Helper Drone as an item. Sneak-use on an inventory block sets the drone's source, then its destination (a third
- * sneak-use starts over with a new source). Use on a block or in the air puts the drone down there with those links.
+ * sneak-use on an inventory starts over with a new source); sneak-use on asteroid rock sets a mine point instead of a
+ * source. Use on a block or in the air puts the drone down there with those links.
  */
 public class HelperDroneItem extends Item {
     /** How far ahead a drone is released into empty space. */
@@ -41,7 +43,9 @@ public class HelperDroneItem extends Item {
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
         if (player != null && player.isShiftKeyDown()) {
-            if (level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null) == null) {
+            boolean rock = level.getBlockState(pos).is(ModBlocks.ASTEROID_BLOCKS);
+            boolean container = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null) != null;
+            if (!rock && !container) {
                 if (!level.isClientSide) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.helper.not_a_container"), true);
                 }
@@ -50,12 +54,15 @@ public class HelperDroneItem extends Item {
             if (!level.isClientSide) {
                 HelperLinks links = links(stack);
                 String key;
-                if (links.source().isEmpty() || links.destination().isPresent()) {
-                    links = new HelperLinks(java.util.Optional.of(pos.immutable()), java.util.Optional.empty());
-                    key = "message.void_reclaimer.helper.source_set";
-                } else {
+                if (rock) {
+                    links = new HelperLinks(java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.of(pos.immutable()));
+                    key = "message.void_reclaimer.helper.mine_set";
+                } else if ((links.source().isPresent() || links.mining()) && links.destination().isEmpty()) {
                     links = links.withDestination(pos);
                     key = "message.void_reclaimer.helper.destination_set";
+                } else {
+                    links = new HelperLinks(java.util.Optional.of(pos.immutable()), java.util.Optional.empty());
+                    key = "message.void_reclaimer.helper.source_set";
                 }
                 stack.set(ModDataComponents.HELPER_LINKS.get(), links);
                 player.displayClientMessage(Component.translatable(key, pos.getX(), pos.getY(), pos.getZ()), true);
@@ -90,7 +97,11 @@ public class HelperDroneItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         HelperLinks links = links(stack);
-        tooltip.add(link("tooltip.void_reclaimer.helper.source", links.source().orElse(null)));
+        if (links.mining()) {
+            tooltip.add(link("tooltip.void_reclaimer.helper.mine", links.mine().orElse(null)));
+        } else {
+            tooltip.add(link("tooltip.void_reclaimer.helper.source", links.source().orElse(null)));
+        }
         tooltip.add(link("tooltip.void_reclaimer.helper.destination", links.destination().orElse(null)));
     }
 
