@@ -312,7 +312,7 @@ public final class StationGameTests {
     }
 
     /** Runs {@code then} once the named ship is loaded or not, as asked, looking every 5 ticks. */
-    private static void whenShip(GameTestHelper helper, ServerLevel space, String name, boolean loaded, int looks, Runnable then) {
+    static void whenShip(GameTestHelper helper, ServerLevel space, String name, boolean loaded, int looks, Runnable then) {
         if ((shipNamed(space, name) != null) == loaded) {
             then.run();
         } else if (looks <= 0) {
