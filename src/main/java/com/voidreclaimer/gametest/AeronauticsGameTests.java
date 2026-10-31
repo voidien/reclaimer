@@ -414,6 +414,36 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /**
+     * When the ship is removed under a seated pilot, the pilot is left standing in the world where the ship was, not
+     * carried off to the Helm's plot position (which once dragged a player twenty million blocks away and dropped the
+     * connection).
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void removingTheShipUnseatsThePilotInTheWorld(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+            helper.runAfterDelay(5, () -> {
+                removeShip(server, space, pos);
+                helper.runAfterDelay(5, () -> {
+                    ServerPlayer now = server.getPlayerList().getPlayer(player.getUUID());
+                    Vec3 at = now == null ? null : now.position();
+                    boolean riding = now != null && now.getVehicle() != null;
+                    TestPlayers.remove(player);
+                    if (now == null || riding || at.distanceTo(Vec3.atCenterOf(pos)) > 16) {
+                        helper.fail("the pilot was not left in the world: at " + at + ", riding " + riding + "; setup: " + log);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        }));
+    }
+
     /** The Helm on the test ship at {@code pos}, or null. */
     private static com.voidreclaimer.ship.HelmBlockEntity helmOf(ServerLevel space, BlockPos pos) {
         var ship = shipNamed(space, pos);

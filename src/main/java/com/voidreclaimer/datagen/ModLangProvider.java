@@ -108,7 +108,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.pilot.fuel", "FUEL %s/%s mB");
         add("hud.void_reclaimer.pilot.energy", "ENERGY %s/%s FE");
         add("hud.void_reclaimer.pilot.thrusters", "THR %s");
-        add("hud.void_reclaimer.pilot.attitude", "HDG %s PIT %s ROL %s");
+        add("hud.void_reclaimer.pilot.heading", "HDG %s");
+        add("hud.void_reclaimer.pilot.tilt", "PIT %s ROL %s");
         add(ModItems.TERRAFORMING_SPIRE.get(), "Terraforming Spire");
         add("message.void_reclaimer.spire.started", "Genesis Pulse started.");
         add("message.void_reclaimer.spire.busy", "A Genesis Pulse is already sweeping out from this Spire.");

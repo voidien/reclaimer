@@ -113,9 +113,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (!(level instanceof ServerLevel server) || pilot() != null) {
             return false;
         }
-        // On a ship the Helm's block position is in the ship's plot, and so is the seat: Sable keeps entities tagged
-        // sable:retain_in_sub_level in the plot, where they ride with the ship (as Create's seats do).
-        HelmSeat seat = HelmSeat.at(server, worldPosition, Vec3.atBottomCenterOf(worldPosition));
+        // On a ship the Helm's block position is in the ship's plot; the seat floats where the Helm is in the world and
+        // follows it from there (see HelmSeat.tick).
+        Vec3 where = HelmSeat.worldSpot(server, worldPosition);
+        if (where == null) {
+            return false;
+        }
+        HelmSeat seat = HelmSeat.at(server, worldPosition, where);
         if (!server.addFreshEntity(seat) || !player.startRiding(seat, true)) {
             seat.discard();
             return false;

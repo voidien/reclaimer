@@ -11,27 +11,46 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import javax.annotation.Nullable;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The invisible entity the pilot sits on, at the Helm. It has no gravity and no size to speak of. On a ship it sits in
- * the ship's own plot, like Create's seats: the entity type is tagged {@code sable:retain_in_sub_level}, so Sable keeps
- * it (and its rider) in the plot, riding with the ship, instead of kicking it out into the world where the ship would
- * leave it behind. It remembers its Helm by block position and removes itself when the Helm is gone or the pilot leaves.
+ * The invisible entity the pilot sits on, at the Helm. It has no gravity and no size to speak of. It lives in the
+ * world, where the pilot's camera is, and on a ship it moves itself every tick to where its Helm is in the world (the
+ * Helm's own position is in the ship's plot, far away; an entity kept in the plot would put the pilot's view there). It
+ * remembers its Helm by block position and removes itself when the Helm is gone or the pilot leaves.
  */
 public class HelmSeat extends Entity {
     private static final EntityDataAccessor<BlockPos> HELM = SynchedEntityData.defineId(HelmSeat.class, EntityDataSerializers.BLOCK_POS);
+    /** How far above the Helm's bottom the seat floats. */
+    static final double SEAT_HEIGHT = 0.35;
     public HelmSeat(EntityType<?> type, Level level) {
         super(type, level);
         setNoGravity(true);
         noPhysics = true;
     }
 
-    /** A seat for the Helm at {@code helm}, floating at {@code where} (the Helm's own position, in the ship's plot on a ship). */
+    /**
+     * Where the Helm at {@code helm} (plot coordinates on a ship) is in the world right now: the bottom centre of its
+     * block. Null when the Helm's position is in the plots but no ship is there any more (the ship was removed): such a
+     * Helm is nowhere in the world, and a seat must not go to the raw plot position, which would drag the pilot into the
+     * plot, millions of blocks away.
+     */
+    @Nullable
+    public static Vec3 worldSpot(Level level, BlockPos helm) {
+        Vec3 centre = Vec3.atBottomCenterOf(helm);
+        dev.ryanhcode.sable.sublevel.SubLevel ship = Ships.shipAt(level, helm);
+        if (ship != null) {
+            return ship.logicalPose().transformPosition(centre);
+        }
+        return Ships.inPlots(level, helm) ? null : centre;
+    }
+
+    /** A seat for the Helm at {@code helm}, floating at {@code where} (the Helm's place in the world, see {@link #worldSpot}). */
     public static HelmSeat at(Level level, BlockPos helm, Vec3 where) {
         HelmSeat seat = new HelmSeat(ModEntities.HELM_SEAT.get(), level);
         seat.entityData.set(HELM, helm.immutable());
-        seat.setPos(where.x, where.y + 0.35, where.z);
+        seat.setPos(where.x, where.y + SEAT_HEIGHT, where.z);
         return seat;
     }
 
@@ -43,8 +62,24 @@ public class HelmSeat extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide() && (getPassengers().isEmpty() || !(level().getBlockEntity(helmPos()) instanceof HelmBlockEntity))) {
+        if (level().isClientSide()) {
+            return;
+        }
+        if (getPassengers().isEmpty() || !(level().getBlockEntity(helmPos()) instanceof HelmBlockEntity)) {
             discard();
+            return;
+        }
+        // Ride the ship: Sable carries entities that stand on a ship, but not one with no physics, so the seat keeps
+        // itself at the Helm (and vanilla keeps the pilot on the seat). A Helm whose ship is gone has no place in the
+        // world: the seat goes, and the pilot is left where they are.
+        Vec3 spot = worldSpot(level(), helmPos());
+        if (spot == null) {
+            discard();
+            return;
+        }
+        spot = spot.add(0, SEAT_HEIGHT, 0);
+        if (spot.distanceToSqr(position()) > 1.0e-8) {
+            setPos(spot.x, spot.y, spot.z);
         }
     }
 

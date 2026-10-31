@@ -25,6 +25,8 @@ public final class PilotHudLayer {
     private static final int COLOR_SKY = 0xA02C5A8C;
     private static final int COLOR_GROUND = 0xA06B4A2B;
     private static final int COLOR_LINE = 0xFFE8F4FF;
+    /** Height of a text row. */
+    private static final int ROW = 10;
     /** Half the attitude box, in pixels, and how many pixels a degree of pitch moves the horizon. */
     static final int ATTITUDE_HALF = 22;
     static final double PIXELS_PER_DEGREE = 0.5;
@@ -44,51 +46,55 @@ public final class PilotHudLayer {
         HelmBlockEntity.Readout readout = ClientPilotController.readout();
         FlightSettings settings = player.getData(ModAttachments.FLIGHT_SETTINGS);
         Font font = mc.font;
-        int x = graphics.guiWidth() / 2 + 96;
-        int bottom = graphics.guiHeight() - 10;
-
-        // Speed, or why there is none.
-        if (!readout.onShip()) {
-            graphics.drawString(font, Component.translatable("hud.void_reclaimer.pilot.no_ship"), x, bottom - 40, COLOR_WARNING);
-        } else if (readout.thrusters() == 0) {
-            graphics.drawString(font, Component.translatable("hud.void_reclaimer.pilot.no_thrusters"), x, bottom - 40, COLOR_WARNING);
-        } else {
-            graphics.drawString(font, Component.translatable("hud.void_reclaimer.speed", String.format("%.1f", readout.speed())), x, bottom - 40, COLOR_NORMAL);
+        // A column of short rows against the right edge, so it fits beside the hotbar at any GUI scale.
+        int right = graphics.guiWidth() - 4;
+        int y = graphics.guiHeight() - 10 - ROW;
+        // Thrusters, bottom up: which ways they can turn, which ways they can push, how many.
+        y = axes(graphics, font, right, y, TURN_LABELS, readout.turn());
+        y = axes(graphics, font, right, y, MOVE_LABELS, readout.move());
+        y = row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.pilot.thrusters", readout.thrusters()), COLOR_NORMAL);
+        // Supplies: only the kinds the ship carries.
+        if (readout.energyCapacity() > 0) {
+            y = row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.pilot.energy", compact(readout.energy()), compact(readout.energyCapacity())),
+                    readout.energy() > 0 ? COLOR_NORMAL : COLOR_WARNING);
+        }
+        if (readout.fuelCapacity() > 0) {
+            y = row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.pilot.fuel", compact(readout.fuel()), compact(readout.fuelCapacity())),
+                    readout.fuel() > 0 ? COLOR_NORMAL : COLOR_WARNING);
         }
         // The holds.
-        Component dampener = Component.translatable(settings.dampener() ? "hud.void_reclaimer.dampener_on" : "hud.void_reclaimer.dampener_off");
-        graphics.drawString(font, dampener, x, bottom - 30, settings.dampener() ? COLOR_NORMAL : COLOR_DIM);
-        Component lock = Component.translatable(settings.rcsLock() ? "hud.void_reclaimer.pilot.rcs_on" : "hud.void_reclaimer.pilot.rcs_off");
-        graphics.drawString(font, lock, x + font.width(dampener) + 8, bottom - 30, settings.rcsLock() ? COLOR_NORMAL : COLOR_DIM);
-        // Supplies: only the kinds the ship carries.
-        int sx = x;
-        if (readout.fuelCapacity() > 0) {
-            Component fuel = Component.translatable("hud.void_reclaimer.pilot.fuel", compact(readout.fuel()), compact(readout.fuelCapacity()));
-            graphics.drawString(font, fuel, sx, bottom - 20, readout.fuel() > 0 ? COLOR_NORMAL : COLOR_WARNING);
-            sx += font.width(fuel) + 8;
+        y = row(graphics, font, right, y, Component.translatable(settings.rcsLock() ? "hud.void_reclaimer.pilot.rcs_on" : "hud.void_reclaimer.pilot.rcs_off"),
+                settings.rcsLock() ? COLOR_NORMAL : COLOR_DIM);
+        y = row(graphics, font, right, y, Component.translatable(settings.dampener() ? "hud.void_reclaimer.dampener_on" : "hud.void_reclaimer.dampener_off"),
+                settings.dampener() ? COLOR_NORMAL : COLOR_DIM);
+        // Speed, or why there is none.
+        if (!readout.onShip()) {
+            row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.pilot.no_ship"), COLOR_WARNING);
+        } else if (readout.thrusters() == 0) {
+            row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.pilot.no_thrusters"), COLOR_WARNING);
+        } else {
+            row(graphics, font, right, y, Component.translatable("hud.void_reclaimer.speed", String.format("%.1f", readout.speed())), COLOR_NORMAL);
         }
-        if (readout.energyCapacity() > 0) {
-            Component energy = Component.translatable("hud.void_reclaimer.pilot.energy", compact(readout.energy()), compact(readout.energyCapacity()));
-            graphics.drawString(font, energy, sx, bottom - 20, readout.energy() > 0 ? COLOR_NORMAL : COLOR_WARNING);
-        }
-        // Thrusters: how many, and which ways they can push and turn.
-        Component count = Component.translatable("hud.void_reclaimer.pilot.thrusters", readout.thrusters());
-        graphics.drawString(font, count, x, bottom - 10, COLOR_NORMAL);
-        int ax = x + font.width(count) + 8;
-        ax = axes(graphics, font, ax, bottom - 10, MOVE_LABELS, readout.move());
-        axes(graphics, font, ax + 6, bottom - 10, TURN_LABELS, readout.turn());
 
-        attitude(graphics, font, graphics.guiWidth() / 2 - 96 - ATTITUDE_HALF - 6, bottom - ATTITUDE_HALF - 4, readout.attitude(), readout.onShip());
+        attitude(graphics, font, graphics.guiWidth() / 2 - 96 - ATTITUDE_HALF - 6, graphics.guiHeight() - 10 - ATTITUDE_HALF - 4, readout.attitude(), readout.onShip());
     }
 
-    /** Draws the axis labels, lit where the ship has a thruster for them; returns where the row ends. */
-    private static int axes(GuiGraphics graphics, Font font, int x, int y, String[] labels, double[] coverage) {
-        for (int i = 0; i < labels.length; i++) {
+    /** One right-aligned row; returns the y of the row above. */
+    private static int row(GuiGraphics graphics, Font font, int right, int y, Component text, int color) {
+        graphics.drawString(font, text, right - font.width(text), y, color);
+        return y - ROW;
+    }
+
+    /** Draws the axis labels right-aligned, lit where the ship has a thruster for them; returns the y of the row above. */
+    private static int axes(GuiGraphics graphics, Font font, int right, int y, String[] labels, double[] coverage) {
+        int x = right;
+        for (int i = labels.length - 1; i >= 0; i--) {
+            x -= font.width(labels[i]);
             int color = coverage[i] >= COVERED ? COLOR_NORMAL : coverage[i] > 0 ? 0x4FA0B8 : COLOR_DIM;
             graphics.drawString(font, labels[i], x, y, color);
-            x += font.width(labels[i]) + 3;
+            x -= 3;
         }
-        return x;
+        return y - ROW;
     }
 
     /** An artificial horizon in a box centred on ({@code cx}, {@code cy}): the sky and ground roll and slide with the ship. */
@@ -112,11 +118,12 @@ public final class PilotHudLayer {
         graphics.fill(cx + 4, cy, cx + half - 3, cy + 1, COLOR_LINE);
         graphics.fill(cx - 1, cy - 1, cx + 1, cy + 1, COLOR_LINE);
         if (onShip) {
-            Component text = Component.translatable("hud.void_reclaimer.pilot.attitude",
-                    String.format("%03d", (int) Math.round(attitude.heading()) % 360),
-                    String.format("%+d", (int) Math.round(attitude.pitch())),
-                    String.format("%+d", (int) Math.round(attitude.roll())));
-            graphics.drawString(font, text, cx + half + 1 - font.width(text), cy - half - 11, COLOR_NORMAL);
+            // Two short rows above the box, right-aligned to it: the heading, then pitch and roll.
+            Component heading = Component.translatable("hud.void_reclaimer.pilot.heading", String.format("%03d", (int) Math.round(attitude.heading()) % 360));
+            Component tilt = Component.translatable("hud.void_reclaimer.pilot.tilt",
+                    String.format("%+d", (int) Math.round(attitude.pitch())), String.format("%+d", (int) Math.round(attitude.roll())));
+            graphics.drawString(font, heading, cx + half + 1 - font.width(heading), cy - half - 2 - 2 * ROW, COLOR_NORMAL);
+            graphics.drawString(font, tilt, cx + half + 1 - font.width(tilt), cy - half - 2 - ROW, COLOR_NORMAL);
         }
     }
 
