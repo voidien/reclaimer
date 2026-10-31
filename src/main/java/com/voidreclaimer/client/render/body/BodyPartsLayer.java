@@ -47,6 +47,9 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         if (!section.isEmpty() && !name.equals(view.data().coreSocket()) && view.chassis().socket(name) != null) {
             poseStack.pushPose();
             moveToPivot(poseStack, bone);
+            if (view.chassis().socket(name).mirror()) {
+                poseStack.scale(-1f, 1f, 1f);
+            }
             drawPart("section", section, name, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             drawInnerModules(name, section, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             poseStack.popPose();

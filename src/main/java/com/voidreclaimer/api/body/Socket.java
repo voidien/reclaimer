@@ -17,17 +17,29 @@ import net.minecraft.world.phys.Vec3;
  * @param parent   the socket this one hangs off (the joint tree); empty for the root
  * @param pivot    joint position in model pixels, relative to the parent's pivot
  * @param area     group for the Body tab's filters ("arms", "legs", "propulsion", ...)
+ * @param mirror   draw the section flipped left to right, for the far side of a pair built from one lopsided model
  */
 public record Socket(String id, List<ResourceLocation> accepts, boolean required, Optional<String> parent, Vec3 pivot,
-                     String area) {
+                     String area, boolean mirror) {
     public static final Codec<Socket> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("id").forGetter(Socket::id),
             ResourceLocation.CODEC.listOf().fieldOf("accepts").forGetter(Socket::accepts),
             Codec.BOOL.optionalFieldOf("required", false).forGetter(Socket::required),
             Codec.STRING.optionalFieldOf("parent").forGetter(Socket::parent),
             Vec3.CODEC.optionalFieldOf("pivot", Vec3.ZERO).forGetter(Socket::pivot),
-            Codec.STRING.optionalFieldOf("area", "body").forGetter(Socket::area)
+            Codec.STRING.optionalFieldOf("area", "body").forGetter(Socket::area),
+            Codec.BOOL.optionalFieldOf("mirror", false).forGetter(Socket::mirror)
     ).apply(instance, Socket::new));
+
+    /** A socket drawn the normal way round; the constructor addons have used since the first API. */
+    public Socket(String id, List<ResourceLocation> accepts, boolean required, Optional<String> parent, Vec3 pivot, String area) {
+        this(id, accepts, required, parent, pivot, area, false);
+    }
+
+    /** This socket, drawn flipped left to right. */
+    public Socket mirrored() {
+        return new Socket(id, accepts, required, parent, pivot, area, true);
+    }
 
     public boolean accepts(ResourceLocation socketType) {
         return accepts.contains(socketType);

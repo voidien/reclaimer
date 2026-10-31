@@ -890,6 +890,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Checked in the headless client:** Drone, Mech, Ship, Shuttle and Titan in photo sheets, third person and the inventory preview; the debug panel reads 0.40, 1.20, 3.00, 3.00, 8.00 for body and parts alike (it read 9 and 27 before). Client rendering, so no GameTest; the panel's two numbers are the check.
 - **Owner to look at:** the `generic.scale` values did not change, but every body now looks its true size for the first time: Ship 12 blocks long, Shuttle 26, Titan 67. So the open question about shrinking the Ship and Shuttle, and the third-person camera distance (the Ship reads small at 40 blocks; the Titan frames well at 160), are worth judging afresh.
 
+## Fix: the Ship's far side was not mirrored: done
+- Once the Ship drew at its true size, one wing was seen to run through the hull: both wings use one model that reaches one way. Measured over every Ship section: the wing, the hardpoint and the hull segment are lopsided, the rest are centred. `Socket` gains an optional `mirror` (old chassis files and the old constructor are unchanged), set on `wing_starboard`, `hull_2/4/6` and `hardpoint_2/4/6`, and `BodyPartsLayer` flips those sections. Tests in `ChassisCockpitTest`. Seen in the headless client.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
