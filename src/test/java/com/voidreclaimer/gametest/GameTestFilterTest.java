@@ -18,4 +18,26 @@ class GameTestFilterTest {
         assertTrue(GameTestFilter.matches("flight, zerog", "ZeroGMiningGameTests", "handMining"));
         assertFalse(GameTestFilter.matches(" , ", "ZeroGMiningGameTests", "handMining"));
     }
+
+    @Test
+    void aTestThatSpansARestartIsNeverInANormalRun() {
+        assertFalse(GameTestFilter.registers(null, "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"));
+        assertFalse(GameTestFilter.registers("", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedAfterRestart"));
+        assertFalse(GameTestFilter.registers("RestartGameTests", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"), "a filter on its class");
+        assertFalse(GameTestFilter.registers("aCrash", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"), "part of its name");
+    }
+
+    @Test
+    void aTestThatSpansARestartRunsWhenItsPhaseIsNamed() {
+        assertTrue(GameTestFilter.registers("aCrashKeepsOnlyWhatWasSavedBeforeRestart", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"));
+        assertFalse(GameTestFilter.registers("aCrashKeepsOnlyWhatWasSavedBeforeRestart", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedAfterRestart"), "not the other phase");
+    }
+
+    @Test
+    void otherTestsAreFilteredAsBefore() {
+        assertTrue(GameTestFilter.registers(null, "ThrusterGameTests", "thrustPushes"));
+        assertTrue(GameTestFilter.registers("", "ThrusterGameTests", "thrustPushes"));
+        assertTrue(GameTestFilter.registers("thruster", "ThrusterGameTests", "thrustPushes"));
+        assertFalse(GameTestFilter.registers("dust", "ThrusterGameTests", "thrustPushes"));
+    }
 }

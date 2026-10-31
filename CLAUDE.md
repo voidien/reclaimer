@@ -94,6 +94,7 @@ Commands: `./gradlew build` (includes unit tests), `./gradlew runGameTestServer`
   - A test player (`TestPlayers`) does not tick unless told to and loads no chunks, so entities it spawns in chunks that are not entity-ticking neither tick nor show up in entity lookups; design server code so it does not rely on an entity's own tick (see `ship/HelmSeats`).
   - Run a subset with `./gradlew runGameTestServer -PgametestFilter=<terms>` (class or method name contains any comma-separated term; `GameTestRegistryMixin`, test-only). Use it while iterating, and run the whole suite before pushing.
   - Wait a few ticks after force-loading a chunk before placing blocks; scheduled ticks set earlier are dropped.
+  - **Tests that span a restart:** a pair `<name>BeforeRestart` and `<name>AfterRestart`, run with `tools/restart-test.sh main|aero <name>`, on the same world. The first ends normally (the server saves) or calls `RestartTests.crash()` (the JVM ends on the spot, nothing saved). `GameTestFilter` keeps these out of every other run, even a filter on their class. `TestPlayers.rejoin` is a clean logout, not a crash. CI runs `aCrashKeepsOnlyWhatWasSaved`, which keeps `crash()` honest, and `aHeldShipLoadsItself`.
 - Every phase adds unit tests and GameTests for its logic.
 - Verify new tests can fail: break the feature and check that the test catches it.
 - In-game client checks still happen for visuals, input, and HUD.
