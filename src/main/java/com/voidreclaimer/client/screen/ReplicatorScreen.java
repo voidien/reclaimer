@@ -77,6 +77,7 @@ public final class ReplicatorScreen extends Screen {
     private int top;
     private Button replicateButton;
     private Button collectButton;
+    private Button assemblyButton;
 
     /** Which tab the screen opens on: the first recipe tab, the Logs tab or the Body tab. */
     public enum Start { RECIPES, LOGS, BODY }
@@ -123,6 +124,8 @@ public final class ReplicatorScreen extends Screen {
         }
         start = Start.RECIPES;
         bodyPanel = new BodyPanel(font, left + 6, top + 38, WIDTH - 12);
+        assemblyButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.assembly"),
+                b -> minecraft.setScreen(new AssemblyScreen())).bounds(left + WIDTH - 66, top + 3, 60, 13).build());
         replicateButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.replicate"), b -> replicate())
                 .bounds(left + 6, top + HEIGHT - 24, 90, 18).build());
         collectButton = addRenderableWidget(Button.builder(Component.translatable("replicator.void_reclaimer.collect"),
@@ -211,6 +214,7 @@ public final class ReplicatorScreen extends Screen {
         boolean recipeTab = tab < categoryTabs;
         replicateButton.visible = recipeTab;
         collectButton.visible = tab != bodyTab;
+        assemblyButton.visible = tab == bodyTab;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
                 && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST));
         collectButton.active = !data.buffer().isEmpty();

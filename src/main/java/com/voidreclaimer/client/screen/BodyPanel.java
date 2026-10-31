@@ -49,7 +49,7 @@ final class BodyPanel {
     private static final int STEP = 17;
     static final int TREE_WIDTH = 150;
     private static final int TREE_ROW = 11;
-    private static final int TREE_ROWS = 10;
+    static final int TREE_ROWS = 10;
     private static final int TEXT = 0xFFDDE6EE;
     private static final int DIM = 0xFF7A8794;
     private static final int ACCENT = 0xFF7FD4FF;
@@ -59,7 +59,7 @@ final class BodyPanel {
     private final Font font;
     private final int x;
     private final int y;
-    private final int width;
+    private final Layout layout;
     /** Area filter; null shows every socket. */
     @Nullable
     private String area;
@@ -79,19 +79,34 @@ final class BodyPanel {
     /** A tree row: a socket and its depth in the joint tree. */
     private record Row(Socket socket, int depth) {}
 
+    /**
+     * Where the two columns go: the tree of {@code treeWidth} and {@code treeRows} at the panel's x, the details at
+     * {@code rightX}, {@code rightWidth} wide. The assembly view leaves its model between them.
+     */
+    record Layout(int treeWidth, int treeRows, int rightX, int rightWidth) {
+        /** The Body tab: tree, then the details right beside it. */
+        static Layout beside(int x, int width) {
+            return new Layout(TREE_WIDTH, TREE_ROWS, x + TREE_WIDTH + 8, width - TREE_WIDTH - 8);
+        }
+    }
+
     BodyPanel(Font font, int x, int y, int width) {
+        this(font, x, y, Layout.beside(x, width));
+    }
+
+    BodyPanel(Font font, int x, int y, Layout layout) {
         this.font = font;
         this.x = x;
         this.y = y;
-        this.width = width;
+        this.layout = layout;
     }
 
     private int rightX() {
-        return x + TREE_WIDTH + 8;
+        return layout.rightX();
     }
 
     private int rightWidth() {
-        return width - TREE_WIDTH - 8;
+        return layout.rightWidth();
     }
 
     // ---- rendering ----------------------------------------------------------------------------------------
@@ -138,7 +153,7 @@ final class BodyPanel {
         for (String filter : filters) {
             Component label = filter == null ? Component.translatable("body.void_reclaimer.area.all") : areaName(filter);
             int w = font.width(label) + 6;
-            if (fx + w > x + TREE_WIDTH) {
+            if (fx + w > x + layout.treeWidth()) {
                 fx = x;
                 fy += 12;
             }
@@ -152,15 +167,15 @@ final class BodyPanel {
         }
         int top = fy + 14;
         List<Row> rows = rows(view);
-        scroll = Mth.clamp(scroll, 0, Math.max(0, rows.size() - TREE_ROWS));
-        for (int i = scroll; i < Math.min(rows.size(), scroll + TREE_ROWS); i++) {
+        scroll = Mth.clamp(scroll, 0, Math.max(0, rows.size() - layout.treeRows()));
+        for (int i = scroll; i < Math.min(rows.size(), scroll + layout.treeRows()); i++) {
             Row row = rows.get(i);
             int ry = top + (i - scroll) * TREE_ROW;
             String socketId = row.socket().id();
             boolean selected = socketId.equals(selectedSocket);
-            boolean hover = inside(mouseX, mouseY, x, ry, TREE_WIDTH, TREE_ROW);
+            boolean hover = inside(mouseX, mouseY, x, ry, layout.treeWidth(), TREE_ROW);
             if (selected || hover) {
-                graphics.fill(x, ry, x + TREE_WIDTH, ry + TREE_ROW, selected ? 0xFF2E4A5E : 0xFF232D38);
+                graphics.fill(x, ry, x + layout.treeWidth(), ry + TREE_ROW, selected ? 0xFF2E4A5E : 0xFF232D38);
             }
             int indent = x + 2 + 8 * Math.min(row.depth(), 4);
             boolean filled = !view.data().section(socketId).isEmpty();
@@ -169,21 +184,21 @@ final class BodyPanel {
                 graphics.fill(indent + 1, ry + 4, indent + 4, ry + 7, 0xFF141A22);
             }
             Component name = socketName(socketId);
-            graphics.drawString(font, font.plainSubstrByWidth(name.getString(), x + TREE_WIDTH - indent - 10), indent + 8, ry + 2,
+            graphics.drawString(font, font.plainSubstrByWidth(name.getString(), x + layout.treeWidth() - indent - 10), indent + 8, ry + 2,
                     filled ? TEXT : DIM, false);
-            regions.add(new Region(x, ry, TREE_WIDTH, TREE_ROW, () -> {
+            regions.add(new Region(x, ry, layout.treeWidth(), TREE_ROW, () -> {
                 selectedSocket = socketId.equals(selectedSocket) ? null : socketId;
                 selectedMount = null;
             }));
         }
-        if (rows.size() > TREE_ROWS) {
-            graphics.drawString(font, (scroll + 1) + "-" + Math.min(rows.size(), scroll + TREE_ROWS) + "/" + rows.size(),
-                    x + TREE_WIDTH - 40, top + TREE_ROWS * TREE_ROW + 2, DIM, false);
+        if (rows.size() > layout.treeRows()) {
+            graphics.drawString(font, (scroll + 1) + "-" + Math.min(rows.size(), scroll + layout.treeRows()) + "/" + rows.size(),
+                    x + layout.treeWidth() - 40, top + layout.treeRows() * TREE_ROW + 2, DIM, false);
         }
         int missing = view.missing().size();
         graphics.drawString(font, missing == 0 ? Component.translatable("body.void_reclaimer.complete")
                         : Component.translatable("body.void_reclaimer.missing", missing),
-                x + 2, top + TREE_ROWS * TREE_ROW + 2, missing == 0 ? DIM : 0xFFE0B050, false);
+                x + 2, top + layout.treeRows() * TREE_ROW + 2, missing == 0 ? DIM : 0xFFE0B050, false);
     }
 
     /** Sockets in joint-tree order (children under their parent), filtered by area. */
@@ -535,6 +550,11 @@ final class BodyPanel {
     boolean mouseScrolled(LocalPlayer player, double scrollY) {
         scroll -= (int) Math.signum(scrollY);
         return true;
+    }
+
+    /** The tree's row height, for screens that size the tree to fit. */
+    static int treeRowHeight() {
+        return TREE_ROW;
     }
 
     // ---- helpers ------------------------------------------------------------------------------------------
