@@ -39,6 +39,12 @@ repositories {
             includeGroup('net.mezzdev.config')
         }
     }
+    // SPIKE: CurseForge-only addons.
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup('curse.maven') }
+    }
     maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
@@ -57,6 +63,7 @@ neoForge {
     runs {
         client {
             client()
+            programArguments.addAll '--quickPlaySingleplayer', 'vrtest'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -152,6 +159,40 @@ dependencies {
     // The unit-test runtime only sees implementation/testRuntimeOnly, and loading our mod needs its required mods.
     testRuntimeOnly "maven.modrinth:sable:${sable_version}"
     testRuntimeOnly "maven.modrinth:create-aeronautics:${aeronautics_version}"
+
+    // SPIKE (never merged): candidate Create addons, loaded only for the compatibility check. -PspikeMods=a,b,c picks a subset.
+    def spike = [
+        createaddition   : 'maven.modrinth:createaddition:neoforge-1.21.1-1.7.2',
+        newage           : 'maven.modrinth:create-new-age:1.2.0+mc1.21.1',
+        cctweaked        : 'maven.modrinth:cc-tweaked:1ewzHZYg',
+        avionics         : 'maven.modrinth:create-avionics:0.7.0',
+        propulsion       : 'maven.modrinth:create-propulsion-simulated:1.1.5',
+        aeroworks        : 'maven.modrinth:create-aeroworks:1.5.0+mc1.21.1',
+        steamnrails      : 'maven.modrinth:create-steam-n-rails-1.21.1:0.3.0-beta.2+neoforge-mc1.21.1',
+        additionsaerocmp : 'maven.modrinth:create-crafts-additions-and-aeronautics-compat:1.0.0',
+        additionssablecmp: 'maven.modrinth:create-additions-sable-compat:0.1.13',
+        advelectricity   : 'curse.maven:create-advanced-electricity-addon-1743391:9362753',
+        advcomputer      : 'curse.maven:create-advanced-computer-technic-1759784:9362807',
+        tfmg             : 'maven.modrinth:create-tfmg:uDi14nbt',
+        oreexc           : 'maven.modrinth:create-ore-excavation:tivxiPTo',
+        powerloader      : 'maven.modrinth:create-power-loader:3Y4r0ItR',
+        hypertube        : 'maven.modrinth:hypertube:qYjOyvgW',
+        controllers      : 'maven.modrinth:create-tweaked-controllers:csCe2v7f',
+        tradingfloor     : 'maven.modrinth:create-trading-floor:K3nIvcWT',
+        numismatics      : 'maven.modrinth:numismatics:kVi3TESX',
+        connected        : 'maven.modrinth:create-connected:Xe7EqzfQ',
+        copycats         : 'maven.modrinth:copycats:bPYeUWZx',
+        deco             : 'maven.modrinth:create-deco:qrcMVoBD',
+        radars           : 'maven.modrinth:create-radars:q723aMHO',
+        electro          : 'maven.modrinth:create-electro-energetics:ZMfRgLy5',
+        powergrid        : 'maven.modrinth:power-grid:jCkPHjmP',
+        architectury     : 'maven.modrinth:architectury-api:1IiqEQGl',
+    ]
+    def picked = (findProperty('spikeMods') ?: '').toString().split(',').findAll { it }
+    picked.each { name ->
+        localRuntime spike.get(name) ?: { throw new GradleException("unknown spike mod " + name) }()
+        testRuntimeOnly spike.get(name)
+    }
 
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"
