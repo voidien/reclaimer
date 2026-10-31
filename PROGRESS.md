@@ -845,6 +845,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Placeholders:** `textures/item/helper_drone.png` (16x16 programmer art); the probe model's `idle`/`thrust` animations stand in for a ferry animation.
 - **Decisions pending (unattended):** flying through blocks and no energy cost; the link flow (source then destination on the item); 16 per trip, 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); one kind of item per trip. Next jobs: mine asteroids (PR 2), collect from dust clouds (PR 3).
 
+## Helper drones, part 2: mining: done
+- Sneak-use the Helper Drone item on asteroid rock to set a **mine point** (instead of a source), then on the inventory to bring the rock to, and release it: the drone flies to the nearest asteroid block within 8 blocks of the point, digs it for two seconds (block particles), takes it as its item (as the Matter Harvester lets rock drop; no dust refund), brings it to the destination and goes back for the next; with no rock in reach it waits and looks again every two seconds. Config `helper.mineRadius` (8) and `helper.digTicks` (40).
+- **Tests:** `MiningTest` (unit, the phases); `HelperMiningGameTests` (a drone clears three silicate rocks into its chest and leaves a stone alone, then waits; a miner with no rock in reach waits where it is). Mutation-checked.
+- **Decisions pending (unattended):** the rock comes out as the block item, not dust; the 8-block search radius and 40-tick dig; no energy cost. Next: collecting from dust clouds (PR 3).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
