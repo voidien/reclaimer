@@ -34,6 +34,7 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue DUST_TRICKLE;
     public static final ModConfigSpec.DoubleValue DUST_SCOOP;
     public static final ModConfigSpec.DoubleValue CLOUD_DRAG;
+    public static final ModConfigSpec.DoubleValue EARTH_WIND_SPEED;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
     public static final ModConfigSpec.DoubleValue PULSE_ENERGY_COST;
     public static final ModConfigSpec.IntValue PULSE_COOLDOWN_SECONDS;
@@ -196,6 +197,12 @@ public final class Config {
         CLOUD_SPEED_PENALTY = BUILDER
                 .comment("Top speed reduction at full density (0.6 = 60% slower in the densest core).")
                 .defineInRange("speedPenalty", 0.6, 0.0, 0.95);
+        BUILDER.pop();
+
+        BUILDER.comment("Ruined Earth.").push("earth");
+        EARTH_WIND_SPEED = BUILDER
+                .comment("Top speed of the wind over ruined Earth, in blocks per second; it drifts ships and the flying body (the dampener holds). 0 switches it off.")
+                .defineInRange("windSpeed", 1.5, 0.0, 20.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust Sensor.").push("sensor");

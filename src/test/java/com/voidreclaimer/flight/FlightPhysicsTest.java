@@ -217,4 +217,42 @@ class FlightPhysicsTest {
         FlightStats heavy = new FlightStats(1.5, 0.075, 0.04, 0.5);
         assertTrue(FlightPhysics.hoverShare(heavy, WEIGHT, true, true) > FlightPhysics.hoverShare(STRONG, WEIGHT, true, true));
     }
+
+    @Test
+    void windCarriesAnUnpoweredBodyUpToWindSpeed() {
+        Vec3 wind = new Vec3(0.05, 0, -0.02);
+        Vec3 v = Vec3.ZERO;
+        for (int i = 0; i < 400; i++) {
+            v = FlightPhysics.step(v, Vec3.ZERO, false, false, STARTER, FlightPhysics.CloudDrag.NONE, 0.0, wind);
+        }
+        assertEquals(wind.x, v.x, 1.0E-3);
+        assertEquals(wind.z, v.z, 1.0E-3);
+        assertEquals(0.0, v.y, EPS, "the wind is horizontal");
+    }
+
+    @Test
+    void theDampenerHoldsAgainstTheWind() {
+        // The strongest push is WIND_COUPLING times the wind speed, far below the starter brake of 0.04 per tick.
+        Vec3 wind = new Vec3(0.075, 0, 0);
+        Vec3 v = Vec3.ZERO;
+        for (int i = 0; i < 200; i++) {
+            v = FlightPhysics.step(v, Vec3.ZERO, true, true, STARTER, FlightPhysics.CloudDrag.NONE, 0.0, wind);
+        }
+        assertTrue(v.length() < 0.01, "the body drifted at " + v);
+    }
+
+    @Test
+    void noWindIsTheSameStepAsBefore() {
+        Vec3 v = new Vec3(0.1, 0.02, -0.1);
+        assertEquals(FlightPhysics.step(v, FORWARD, true, true, STARTER, FlightPhysics.CloudDrag.NONE, 0.0),
+                FlightPhysics.step(v, FORWARD, true, true, STARTER, FlightPhysics.CloudDrag.NONE, 0.0, Vec3.ZERO));
+    }
+
+    @Test
+    void theDriftIsAFractionOfTheDifferenceToTheAir() {
+        Vec3 drift = FlightPhysics.windDrift(new Vec3(0.1, 0.3, 0.0), new Vec3(0.0, 0.0, 0.2));
+        assertEquals(-0.1 * FlightPhysics.WIND_COUPLING, drift.x, EPS);
+        assertEquals(0.0, drift.y, EPS);
+        assertEquals(0.2 * FlightPhysics.WIND_COUPLING, drift.z, EPS);
+    }
 }
