@@ -503,7 +503,7 @@ class RdGenerateTest(unittest.TestCase):
         script = ("const {buildCommands} = require(%s); process.stdout.write(JSON.stringify(buildCommands(%s)))"
                   % (json.dumps(os.path.join(REAL_REPO, 'tools', 'art', 'picker.js')), json.dumps(picks)))
         out = json.loads(subprocess.run(['node', '-e', script], capture_output=True, text=True, check=True).stdout)
-        self.assertEqual(out, ['python3 tools/art/rd_generate.py --promote a_icon=1 --promote b_icon=3 --promote core_mk2_model',
+        self.assertEqual(out, ['python3 tools/art/rd_generate.py --promote a_icon=1 --promote b_icon=3 --promote core_mk2_module',
                                'python3 tools/art/rd_generate.py --again --asset ice --asset rock'])
         empty = subprocess.run(['node', '-e', script.replace(json.dumps(picks), '{}')], capture_output=True, text=True)
         self.assertEqual(json.loads(empty.stdout), [], 'no picks, no commands')
