@@ -170,7 +170,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
                 : Bodies.withSection(view, part.socket(), part.stack(), player.registryAccess());
     }
 
-    /** The stats a hovered part would change, in the view's top right: green is better, red worse. */
+    /** The stats a hovered part would change, in the view's bottom right: green is better, red worse. */
     private void renderChanges(GuiGraphics graphics, Component part, List<StatDelta.Row> rows) {
         List<Component> labels = new ArrayList<>();
         List<String> values = new ArrayList<>();
@@ -186,7 +186,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         }
         int boxWidth = Math.max(labelWidth + valueWidth + 12, font.width(part) + 6);
         int x = viewRight - boxWidth - 3;
-        int y = viewTop + 3;
+        int y = viewBottom - (rows.size() + 1) * 10 - 7;
         graphics.fill(x, y, viewRight - 3, y + (rows.size() + 1) * 10 + 4, CHANGES_BACK);
         graphics.drawString(font, part, x + 3, y + 3, ACCENT, false);
         for (int i = 0; i < rows.size(); i++) {

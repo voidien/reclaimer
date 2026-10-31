@@ -936,6 +936,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Assembly view, part 1: the screen, the camera and markers: done
 - A full-window view from the Body tab's 3D view button or an optional key: the model on a blueprint grid that reads its size in blocks, the socket tree on the left and the details on the right. Drag turns it, scroll zooms it. Sockets show as markers and a selected socket adds its mounts; a socket with no point of its own shows its mounts straight away, which is how the Drone works; a marker on the far side hides until you turn the model. Clicking one selects it, the tree follows and the view eases to it. The Exploded button spreads sections along their joints, with the markers following, and the body holds still while spread. Tests: `AssemblyCameraTest`, `AssemblyMarkersTest`, `BoneProbeTest`. Client screen, so no GameTest. Seen on the Mech and Ship.
 
+## Assembly view, part 2: hover previews: done
+- Hovering a part that fits draws it on the model as a translucent ghost and lists what it would change, green for better and red for worse, without installing it. A whole-model rig's section shows its limb, not tinted, since it has no separate model. `Bodies.withSection`/`withModule` build the body it would become; `body/assembly/StatDelta` (pure) compares two bodies. An addon's `BodyStatsEvent` changes are not in the preview, as there is no entity to pass it. Tests: `StatDeltaTest` (4), `BodyGameTests.aPreviewMatchesWhatInstallingReallyDoes`. Seen on the Mech.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
