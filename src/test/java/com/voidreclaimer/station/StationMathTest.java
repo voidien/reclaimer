@@ -55,4 +55,13 @@ class StationMathTest {
         assertEquals(Rotation.CLOCKWISE_180, StationMath.blockRotation(2));
         assertEquals(Rotation.CLOCKWISE_90, StationMath.blockRotation(3));
     }
+
+    @Test
+    void theYawResidualIsTheDistanceToTheNearestQuarterTurn() {
+        assertEquals(0, StationMath.yawResidualDegrees(new Quaterniond()), 1e-6);
+        assertEquals(5, StationMath.yawResidualDegrees(yaw(85)), 1e-6);
+        assertEquals(3, StationMath.yawResidualDegrees(yaw(-3)), 1e-6);
+        assertEquals(44, StationMath.yawResidualDegrees(yaw(44)), 1e-6);
+        assertEquals(10, StationMath.yawResidualDegrees(yaw(190)), 1e-6);
+    }
 }

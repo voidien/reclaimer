@@ -27,6 +27,17 @@ public final class StationMath {
         return Math.floorMod(turns, 4);
     }
 
+    /**
+     * How far, in degrees (0 to 45), {@code orientation}'s yaw is from the nearest quarter turn: a docking visitor must
+     * be within tolerance of one for its blocks to join the station's grid.
+     */
+    public static double yawResidualDegrees(Quaterniondc orientation) {
+        Vector3d forward = orientation.transform(new Vector3d(0, 0, 1));
+        double yaw = Math.toDegrees(Math.atan2(forward.x, forward.z));
+        double nearest = Math.round(yaw / 90.0) * 90.0;
+        return Math.abs(yaw - nearest);
+    }
+
     /** Whether the ship's up is within {@code toleranceDegrees} of straight up. */
     public static boolean isLevel(Quaterniondc orientation, double toleranceDegrees) {
         Vector3d up = orientation.transform(new Vector3d(0, 1, 0));

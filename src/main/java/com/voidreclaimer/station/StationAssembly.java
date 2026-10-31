@@ -107,7 +107,7 @@ public final class StationAssembly {
     }
 
     /** Every non-air block of the ship, in its plot's coordinates. */
-    static List<BlockPos> blocksOf(ServerLevel level, ServerSubLevel ship) {
+    public static List<BlockPos> blocksOf(ServerLevel level, ServerSubLevel ship) {
         List<BlockPos> out = new ArrayList<>();
         for (PlotChunkHolder holder : ship.getPlot().getLoadedChunks()) {
             LevelChunk chunk = holder.getChunk();

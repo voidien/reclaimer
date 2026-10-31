@@ -2,6 +2,7 @@
   "values": [
     "void_reclaimer:helm",
     "void_reclaimer:station_core",
+    "void_reclaimer:docking_clamp",
     "void_reclaimer:rcs_thruster",
     "void_reclaimer:ion_thruster",
     "void_reclaimer:chemical_thruster",

@@ -132,6 +132,97 @@ public final class StationGameTests {
         });
     }
 
+    /**
+     * A ship whose end sits in the cell in front of a powered Docking Clamp is docked (its blocks join the station,
+     * the visiting ship is gone); cutting the power releases it as its own ship again, by its own name.
+     */
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void aPoweredClampDocksATouchingShipAndReleasesItWhenUnpowered(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(103_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            // The visitor first: a bar of stone three blocks long, two cells clear of the clamp's face; it gets its
+            // name while it is the only ship here.
+            command(server, space, pos, "fill " + x + " " + y + " " + (z + 5) + " " + x + " " + y + " " + (z + 7) + " minecraft:stone");
+            command(server, space, pos, "sable assemble connected " + x + " " + y + " " + (z + 5));
+            helper.runAfterDelay(2, () -> {
+                AeronauticsGameTests.nameShip(server, space, pos.south(6));
+                // The station: core, one stone, the clamp facing south at the end.
+                command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:station_core[facing=north]");
+                command(server, space, pos, "setblock " + x + " " + y + " " + (z + 1) + " minecraft:stone");
+                command(server, space, pos, "setblock " + x + " " + y + " " + (z + 2) + " void_reclaimer:docking_clamp[facing=south]");
+                StationCoreBlockEntity core = (StationCoreBlockEntity) space.getBlockEntity(pos);
+                core.setStationName("Dock");
+                helper.assertTrue(StationAssembly.assemble(core) == StationAssembly.Result.ASSEMBLED, "station assembly failed");
+                helper.runAfterDelay(5, () -> {
+                    var visitor = shipNamed(space, "vr_test_" + pos.getX());
+                    helper.assertTrue(visitor != null, "no visitor ship");
+                    // Slide the visitor north so its first block sits in the clamp's front cell (z + 3), just short of touching.
+                    var body = dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(visitor);
+                    Vector3d at = new Vector3d(visitor.logicalPose().position()).add(0, 0, -1.9);
+                    body.teleport(at, new Quaterniond(visitor.logicalPose().orientation()));
+                    helper.runAfterDelay(5, () -> {
+                        var clamp = clampOf(space, "Dock");
+                        helper.assertTrue(clamp != null, "no clamp aboard the station");
+                        BlockPos clampPos = clamp.getBlockPos();
+                        space.setBlock(clampPos.east(), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+                        helper.runAfterDelay(15, () -> {
+                            var afterDock = clampOf(space, "Dock");
+                            boolean docked = afterDock != null && afterDock.isDocked();
+                            boolean visitorGone = shipNamed(space, "vr_test_" + pos.getX()) == null;
+                            boolean joined = afterDock != null && space.getBlockState(afterDock.front()).is(Blocks.STONE);
+                            helper.assertTrue(docked, "the clamp did not dock: " + (afterDock == null ? "no clamp" : afterDock.status()));
+                            helper.assertTrue(visitorGone, "the visiting ship still exists on its own");
+                            helper.assertTrue(joined, "the visitor's block did not join the station in front of the clamp");
+                            helper.assertTrue(("vr_test_" + pos.getX()).equals(afterDock.dockedName()), "docked name " + afterDock.dockedName());
+                            space.setBlock(afterDock.getBlockPos().east(), Blocks.AIR.defaultBlockState(), 3);
+                            helper.runAfterDelay(15, () -> {
+                                var afterRelease = clampOf(space, "Dock");
+                                var released = shipNamed(space, "vr_test_" + pos.getX());
+                                boolean freed = afterRelease != null && !afterRelease.isDocked() && space.getBlockState(afterRelease.front()).isAir();
+                                int stones = released == null ? 0 : (int) StationAssembly.blocksOf(space, released).stream()
+                                        .filter(p -> space.getBlockState(p).is(Blocks.STONE)).count();
+                                remove(server, space, pos, "Dock");
+                                remove(server, space, pos, "vr_test_" + pos.getX());
+                                helper.assertTrue(freed, "the clamp did not let go: " + (afterRelease == null ? "no clamp" : afterRelease.status()));
+                                helper.assertTrue(released != null && stones == 3, "the released ship is not the three-stone bar: " + stones);
+                                helper.succeed();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    /** The Docking Clamp aboard the station named {@code name}, or null. */
+    static com.voidreclaimer.station.DockingClampBlockEntity clampOf(ServerLevel space, String name) {
+        for (var ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (ship.isRemoved() || !name.equals(ship.getName())) {
+                continue;
+            }
+            for (BlockPos p : com.voidreclaimer.ship.Ships.blocksOf(space, ship)) {
+                if (space.getBlockEntity(p) instanceof com.voidreclaimer.station.DockingClampBlockEntity clamp) {
+                    return clamp;
+                }
+            }
+        }
+        return null;
+    }
+
+    static dev.ryanhcode.sable.sublevel.ServerSubLevel shipNamed(ServerLevel space, String name) {
+        for (var ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (!ship.isRemoved() && name.equals(ship.getName())) {
+                return ship;
+            }
+        }
+        return null;
+    }
+
     /** A Station Core with a stone arm reaching three blocks south. */
     private static void hull(MinecraftServer server, ServerLevel space, BlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();

@@ -338,6 +338,22 @@ public final class CCPeripheralGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theDockingClampIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_800, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            var lua = new com.voidreclaimer.compat.cc.DockingClampPeripheral();
+            var clamp = place(level, pos, ModBlocks.DOCKING_CLAMP.get(), com.voidreclaimer.station.DockingClampBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Docking Clamp", "isDocked", "getDockedName", "getStatus", "dock", "release");
+            helper.assertTrue(!lua.isDocked(clamp) && "".equals(lua.getDockedName(clamp)) && "idle".equals(lua.getStatus(clamp)), "a fresh clamp reads wrongly");
+            helper.assertTrue("not_on_ship".equals(lua.dock(clamp)), "docking in the world: " + lua.getStatus(clamp));
+            helper.assertTrue("empty".equals(lua.release(clamp)), "releasing nothing: " + lua.getStatus(clamp));
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void theStationCoreIsAPeripheral(GameTestHelper helper) {
         BlockPos pos = new BlockPos(60_700, 80, 0);
         NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {

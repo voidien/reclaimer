@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "void_reclaimer:block/docking_clamp",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "void_reclaimer:block/docking_clamp",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "void_reclaimer:block/docking_clamp",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "void_reclaimer:block/docking_clamp",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "void_reclaimer:block/docking_clamp"
+    },
+    "facing=west": {
+      "model": "void_reclaimer:block/docking_clamp",
+      "x": 90,
+      "y": 270
+    }
+  }
+}
