@@ -668,6 +668,41 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /**
+     * The Create Propulsion spike: its thrusters scale their push by Sable's air pressure (full at none, a fifth at sea
+     * level), and deep space has none, so a powered Creative Thruster pushes a ship through vacuum with no bridge of ours.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void aCreatePropulsionThrusterPushesItsShipInVacuum(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(93_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int chunks = 1; chunks <= 8; chunks++) {
+            space.setChunkForced((pos.getX() >> 4) - chunks, pos.getZ() >> 4, true);
+            space.setChunkForced((pos.getX() >> 4) + chunks, pos.getZ() >> 4, true);
+        }
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            List<String> log = new ArrayList<>();
+            cross(server, space, pos, true, log);
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " createpropulsion:creative_thruster[facing=east]"));
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
+                watch(helper, server, space, pos, log, (first, second) -> {
+                    double along = Math.abs(first.x - second.x);
+                    if (along < PUSHED) {
+                        helper.fail("Propulsion's thruster moved the ship " + String.format("%.2f", along) + " blocks along its axis, from "
+                                + first + " to " + second + "; setup: " + log);
+                    } else {
+                        helper.succeed();
+                    }
+                });
+            });
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aThrusterWithoutFuelDoesNotPush(GameTestHelper helper) {
         stays(helper, new BlockPos(81_000, 200, 3_000), false, true);
