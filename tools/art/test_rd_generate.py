@@ -423,46 +423,46 @@ class RdGenerateTest(unittest.TestCase):
         self.assertEqual(self.real_inference(), [], 'nothing to start from, nothing sent')
 
     def generated_model(self):
-        rd.main(['--asset', 'core_mk2_model', '--model-style', 'blocky_lite', '--yes'])
+        rd.main(['--asset', 'core_mk2_module', '--model-style', 'blocky_lite', '--yes'])
         return Fake.state['charged']
 
     def test_revise_needs_a_model_and_a_prompt(self):
         with self.assertRaises(SystemExit):
-            rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'fins', '--yes'])  # no model yet
+            rd.main(['--model-revise', 'core_mk2_module', '--prompt', 'fins', '--yes'])  # no model yet
         self.generated_model()
         with self.assertRaises(SystemExit):
-            rd.main(['--model-revise', 'core_mk2_model', '--yes'])  # no prompt
+            rd.main(['--model-revise', 'core_mk2_module', '--yes'])  # no prompt
         self.assertFalse(any(c[1].endswith('/revise') for c in Fake.state['calls'] if c[0] == 'POST'))
 
     def test_revise_asks_makes_a_new_version_and_never_pays_twice(self):
         before = self.generated_model()
         with mock.patch('builtins.input', return_value='n'):
-            rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins'])
+            rd.main(['--model-revise', 'core_mk2_module', '--prompt', 'add cooling fins'])
         self.assertEqual(Fake.state['charged'], before, 'a no sends nothing')
-        rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
+        rd.main(['--model-revise', 'core_mk2_module', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
         call = next(c for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/revise'))
         self.assertEqual(call[2], {'prompt': 'add cooling fins', 'version': 1})
         self.assertTrue(call[3], 'a revision carries an Idempotency-Key')
         state = rd.load_state()
-        models = [j for j in state['assets']['core_mk2_model']['jobs'] if j['kind'] == 'model']
+        models = [j for j in state['assets']['core_mk2_module']['jobs'] if j['kind'] == 'model']
         self.assertEqual(models[-1].get('revision'), 'add cooling fins')
         self.assertEqual(models[-1]['status'], 'done', 'the revision was polled and saved like a model')
-        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'model.bbmodel')))
+        self.assertTrue(os.path.exists(self.staged('core_mk2_module', 'model.bbmodel')))
         self.assertEqual(Fake.state['charged'], before + 1)
-        rd.main(['--model-revise', 'core_mk2_model', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
+        rd.main(['--model-revise', 'core_mk2_module', '--prompt', 'add cooling fins', '--version', '1', '--yes'])
         self.assertEqual(Fake.state['charged'], before + 1, 'the same revision again is not paid again')
 
     def test_export_is_free_and_lands_in_the_export_folder(self):
         before = self.generated_model()
-        rd.main(['--model-export', 'core_mk2_model', '--target', 'minecraft', '--target', 'obj'])
+        rd.main(['--model-export', 'core_mk2_module', '--target', 'minecraft', '--target', 'obj'])
         exports = [c[2]['target'] for c in Fake.state['calls'] if c[0] == 'POST' and c[1].endswith('/export')]
         self.assertIn('minecraft', exports)
         self.assertIn('obj', exports)
-        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'export', 'rd-minecraft.zip')))
-        self.assertTrue(os.path.exists(self.staged('core_mk2_model', 'export', 'rd-obj.zip')))
+        self.assertTrue(os.path.exists(self.staged('core_mk2_module', 'export', 'rd-minecraft.zip')))
+        self.assertTrue(os.path.exists(self.staged('core_mk2_module', 'export', 'rd-obj.zip')))
         self.assertEqual(Fake.state['charged'], before, 'exports are free')
         with self.assertRaises(SystemExit):
-            rd.main(['--model-export', 'core_mk2_model', '--target', 'fbx'])
+            rd.main(['--model-export', 'core_mk2_module', '--target', 'fbx'])
 
     def test_contact_sheet_embeds_renders_by_their_real_type(self):
         folder = self.staged('box_model')
@@ -480,12 +480,12 @@ class RdGenerateTest(unittest.TestCase):
 
     def test_contact_sheet_is_a_picker(self):
         with mock.patch('builtins.input', return_value='y'):
-            rd.main(['--asset', 'quartz_wafer', '--asset', 'core_mk2_model', '--model-style', 'blocky_lite'])
+            rd.main(['--asset', 'quartz_wafer', '--asset', 'core_mk2_module', '--model-style', 'blocky_lite'])
         page = self.read(self.staged('index.html')).decode()
         wafer = page[page.index('data-key="quartz_wafer"'):page.index('</section>', page.index('data-key="quartz_wafer"'))]
         self.assertEqual(re.findall(r'data-pick="(\w+)"', wafer), ['1', '2', '3', '4', 'keep', 'redo'],
                          'one button per variant, then keep and redo')
-        core = page[page.index('data-key="core_mk2_model"'):]
+        core = page[page.index('data-key="core_mk2_module"'):]
         self.assertIn('data-pick="model"', core[:core.index('</section>')], 'a model asset can be promoted whole')
         self.assertIn('function buildCommands', page, 'the picker script is inlined')
         self.assertNotIn('<script src', page)
@@ -498,7 +498,7 @@ class RdGenerateTest(unittest.TestCase):
     @unittest.skipUnless(shutil.which('node'), 'needs Node to run the page script')
     def test_picker_builds_the_commands(self):
         import subprocess
-        picks = {'b_icon': {'pick': '3'}, 'a_icon': {'pick': '1', 'note': 'nice'}, 'core_mk2_model': {'pick': 'model'},
+        picks = {'b_icon': {'pick': '3'}, 'a_icon': {'pick': '1', 'note': 'nice'}, 'core_mk2_module': {'pick': 'model'},
                  'ice': {'pick': 'redo'}, 'rock': {'pick': 'redo'}, 'kept': {'pick': 'keep'}, 'empty': {'pick': ''}}
         script = ("const {buildCommands} = require(%s); process.stdout.write(JSON.stringify(buildCommands(%s)))"
                   % (json.dumps(os.path.join(REAL_REPO, 'tools', 'art', 'picker.js')), json.dumps(picks)))
@@ -566,7 +566,7 @@ class RdGenerateTest(unittest.TestCase):
     def test_model_style_blocky_or_lite(self):
         # Without --model-style a model batch prices both styles and asks; picking Lite is the go-ahead.
         with mock.patch('builtins.input', return_value='l') as ask:
-            rd.main(['--asset', 'core_mk2_model'])
+            rd.main(['--asset', 'core_mk2_module'])
         self.assertEqual(ask.call_count, 1, 'one question: the style choice')
         self.assertIn('blocky [l]ite', ask.call_args[0][0])
         gen = [c for c in Fake.state['calls'] if c[1] == '/v2/lowpoly/generate']
@@ -576,14 +576,14 @@ class RdGenerateTest(unittest.TestCase):
         # Declining sends nothing; --yes without a style refuses rather than guessing.
         charged = Fake.state['charged']
         with mock.patch('builtins.input', return_value='n') as decline:
-            rd.main(['--asset', 'core_mk2_model', '--again'])  # --again: it was generated above, so plan it afresh
+            rd.main(['--asset', 'core_mk2_module', '--again'])  # --again: it was generated above, so plan it afresh
         self.assertEqual(decline.call_count, 1, 'the style question was asked')
         with self.assertRaises(SystemExit):
-            rd.main(['--asset', 'core_mk2_model', '--again', '--yes'])
+            rd.main(['--asset', 'core_mk2_module', '--again', '--yes'])
         self.assertEqual(Fake.state['charged'], charged)
         # Blocky and Blocky Lite are the only choices (Detailed builds cylinders and spheres).
         with self.assertRaises(SystemExit), mock.patch('sys.stderr'):
-            rd.main(['--asset', 'core_mk2_model', '--model-style', 'detailed'])
+            rd.main(['--asset', 'core_mk2_module', '--model-style', 'detailed'])
 
     def stage_model(self, key, text):
         os.makedirs(self.staged(key), exist_ok=True)
@@ -596,8 +596,8 @@ class RdGenerateTest(unittest.TestCase):
 
     def test_promote_new_module_model(self):
         import bbgeo
-        self.stage_model('core_mk2_model', bbmodel())
-        rd.main(['--promote', 'core_mk2_model'])
+        self.stage_model('core_mk2_module', bbmodel())
+        rd.main(['--promote', 'core_mk2_module'])
         geo = self.geo('module/core_mk2.geo.json')
         bones = {b['name']: b for b in geo['bones']}
         self.assertEqual(list(bones)[:2], ['core_mk2', 'core_mk2_mount'], 'module skeleton')
@@ -836,9 +836,9 @@ class RdGenerateTest(unittest.TestCase):
             two = text if 'mesh' in text else json.dumps(dict(json.loads(text), elements=[
                 dict(e, faces={k: dict(v, texture=i % 2) for i, (k, v) in enumerate(e['faces'].items())})
                 for e in json.loads(text)['elements']]))
-            self.stage_model('core_mk2_model', two)
+            self.stage_model('core_mk2_module', two)
             with self.assertRaises(SystemExit), mock.patch('sys.stdout'):
-                rd.main(['--promote', 'core_mk2_model'])
+                rd.main(['--promote', 'core_mk2_module'])
         self.assertFalse(os.path.exists(os.path.join(self.tmp, 'src/main/resources/assets/void_reclaimer/geo/module/core_mk2.geo.json')))
         with self.assertRaises(SystemExit):
             rd.main(['--promote', 'space_thruster'])  # its block does not exist yet
@@ -860,7 +860,7 @@ class RdGenerateTest(unittest.TestCase):
             tail = style['categories'][cat]['prompt_template'].replace('{prompt}', '')
             self.assertTrue(b['prompt'].endswith(tail), b['prompt'])
         with mock.patch('builtins.input', return_value='l'):
-            rd.main(['--asset', 'core_mk2_model'])
+            rd.main(['--asset', 'core_mk2_module'])
         gen = self.posted('/v2/lowpoly/generate')[0]
         self.assertTrue(gen['input_palette'].startswith('data:image/png;base64,'))
         self.assertEqual(rd.png_read(base64.b64decode(gen['input_palette'].split(',', 1)[1]))[0],

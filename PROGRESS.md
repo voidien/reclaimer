@@ -926,6 +926,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Found with the arena: the Ship stayed almost pure black on a lit floor, though its art is no darker than the Mech's. Every part is drawn twice, the art and then an accent mask, and the masks are opaque black with white accents. Drawn as a normal translucent layer, the mask painted the whole part black at full brightness. It is now drawn additively (`RenderType.eyes`), so black adds nothing and only the accents glow. This is what the old note "the art's textures are near-black" was describing, since 5b-1.
 - **Affects:** every section on the Ship, and every module on any body. The Ship shows its copper and casing for the first time. Client rendering, so no GameTest; seen in arena sheets.
 
+## Asset list: the module names: done
+- The drift the owner was asked about is settled: `asset_list.py` was run in full and the new names stand, such as `core_mk2_module`, matching the folder the models live in. The art tool's tests and examples use them. `python3 tools/art/test_rd_generate.py` passes.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

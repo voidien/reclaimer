@@ -277,8 +277,8 @@ Rows come from `docs/art/assets.csv`: an asset has to be listed there to be rest
 ## Revising and exporting low-poly models (`--model-revise`, `--model-export`)
 For an asset whose RD model has been generated (`--method 3d`), `rd_model.py` works on that model again:
 
-    python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "add two cyan cooling fins"
-    python3 tools/art/rd_generate.py --model-export core_mk2_model --target minecraft --target obj
+    python3 tools/art/rd_generate.py --model-revise core_mk2_module --prompt "add two cyan cooling fins"
+    python3 tools/art/rd_generate.py --model-export core_mk2_module --target minecraft --target obj
 
 - **Revise** saves a new version of the model from an instruction (`--version N` revises an older one). It runs like a
   model job: polled, then its render, turntable, `.bbmodel` and atlas are saved and `--promote <asset>` works as usual.
