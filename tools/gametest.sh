@@ -22,7 +22,8 @@ log=build/gametest-$suite.log
 mkdir -p build
 
 # The JVM and nothing else: a pattern like `grep gameTest` also matches the shell running this script.
-killjvm() { ps -eo pid,args | awk '$2 ~ /\/bin\/java$/ && /moddev\/gameTest/ {print $1}' | xargs -r kill; }
+# Only this checkout's: another worktree may be running its own suite at the same time.
+killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/gameTest" '$2 ~ /\/bin\/java$/ && index($0, root) {print $1}' | xargs -r kill; }
 
 killjvm
 : > "$log"
