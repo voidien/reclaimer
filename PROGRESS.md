@@ -1,5 +1,19 @@
 # Progress
 
+## Decisions pending (for the owner)
+Choices taken alone during unattended stretches, each the safest reversible default. The section named after each item has the details; the owner can overrule any of them.
+- **Hover flight:** controlled landings take no fall damage; a body with no thrust walks on Earth; the Mech engages its thrusters with Space and disengages on landing; `flight.hoverWeightFactor` 0.12 ("Hover flight on Earth" parts 2 and 3, "Hover tuning").
+- **Electricity bridge:** the Cloud Siphon's 40 FE per tick and 4000 FE buffer; only the Siphon takes FE; whether the body's energy should charge from FE ("Electricity bridge").
+- **RCS block:** runs on Forge Energy; a full cube for now ("7b ships, part 3").
+- **Helm:** does nothing without a ship; the seat sits 0.35 blocks up the chair; vanilla sneak-to-dismount; Shift is heave-down only while another axis is held ("Helm, part 1").
+- **Earth flight:** the wind's top speed (1.5 blocks/s), swing period (a minute), cell size (96) and coupling (0.02); whether ruined Earth's air pressure should be about 1 at ground level instead of 0.6 ("Earth flight, part 1"); the dust costs and times of the Aeronautics recipes and which parts have Create routes ("Earth flight, part 2").
+- **Stations:** the station block limit (50,000), range (8) and Replicator speed (2); the Station Core recipe (80/60/40/100 dust, 2 minutes, Starship milestone) ("Stations, part 1").
+- **Docking Clamp:** the 10-degree alignment tolerance and the 5-tick look; the recipe (40/30/10/60 dust) ("Stations, part 2").
+- **Ships through the portal:** the 2-block clearance beyond the gate, the 5-second cooldown, half a block of fit slack ("Stations, part 3").
+- **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
+- **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
+- **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
+
 ## Setup (workflow step 1): done
 - `CLAUDE.md` with plan, rules, toolchain versions, package layout, and settled decisions.
 - ModDevGradle build (`build.gradle`, `settings.gradle`, `gradle.properties`, Gradle 9.2.1 wrapper).
@@ -869,22 +883,25 @@ Original plan, with where each stands (the revised plan for what is left is in `
 - [x] 6. Asteroids
 - [x] 7. Machines (part 1 materials and Create chains, part 2 custom machines)
 - [x] Art: RD art pass 1 (48 icons and textures, first RD module model), art tooling and picker, Test Starship placeholder entity
-- [ ] 5b. Body rendering (GeckoLib, first person) & assembly UI
-- [ ] 7b. Create Aeronautics ships (Space Thruster, Helm)
+- [x] 5b-1. Body rendering, third person; first person in big ships (cockpit camera); the 3D body preview in the inventory. Open: first-person pieces for the Drone and Mech (art).
+- [x] 7b. Ships: Chemical, Ion and RCS thrusters, TFMG fuels, the Helm (seat, holds, HUD and camera), Earth flight (wind, Earthfall, Aeronautics parts), stations (Station Core, Docking Clamp, ships through the portal), the launch complex, the helper drones. Open: the owner's airship kit (interview first).
 - [x] 8. Zero-G Frame, payloads and machinery recipes
-- [ ] 9-14 (revised): Mass Driver, Starship, Ruined Earth, Spire, Monolith and villagers, Restoration
+- [x] 9-10 (revised): Mass Driver (now the launch complex), Starship milestone
+- [x] 11-12 (revised): Ruined Earth (dimension, three-era sky, Atmospheric Portal), the Terraforming Spire's Genesis Pulse
+- [ ] 13-14 (revised): the Data Monolith and villagers, Restoration
+- [ ] Holo-displays (parked; plan in `docs/HOLO_DISPLAYS_PLAN.md`)
 
 ## Known issues
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.
 - Sounds were not heard during testing (the headless test client has no audio device). The sound events, `sounds.json`, and the triggering logic are in place, but volume and pitch need a listen on a real machine.
 - Dust Sensor markers use the FOV setting, not the dynamic FOV (sprint or speed effects), so markers can be slightly off-position while the FOV is changing.
 - A cross-dimension `/tp` that the lock cancels still prints vanilla's "Teleported ..." chat line. The player does not move, and the lock message shows on the action bar.
-- The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly. It will be revisited when Phase 5 replaces the player model.
+- The flight HUD sits right of the hotbar and overlaps the first-person hand area slightly (the Drone and Mech still show the vanilla hand in first person).
+- The GameTest suite's memory grows about 25 MB per test because every test keeps its forced chunk for the run (see "Test infrastructure: the GameTest server's memory"). The JVM has 6 GB; a later refactor should let the tests of one class share a cleared area.
 - Pointed dripstone (and modded falling blocks that don't extend `FallingBlock`) still detach. Their falling entity floats in zero-G and drops as an item after vanilla's 30-second timeout.
 - Gravity is set when an entity joins a level. When gravity generators arrive, this has to become position-based.
 - Without the starter nebula (the default), a world can spawn far from any Silicate cloud. You can't make Scaffold without silicate, so the start may mean a long flight. Revisit after play-testing.
 - Sneak + scroll for the Nanite range also thrusts down while Shift is held (Shift is the "down" thruster key). With the dampener on the drift is small.
-- Every player is now a 0.4-scale drone, so the vanilla player model looks tiny until 5b replaces it.
 - With an active Nanite module, a plain right-click on a block uses the block; sneak + right-click builds against it.
 - Thruster trails are only drawn for the local player.
 - The death screen list shows core charges as of the moment of death; sunlight charges gained while the screen is open appear only after respawn.
