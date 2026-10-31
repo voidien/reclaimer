@@ -709,7 +709,7 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Found on the way:** `docs/art/assets.csv` is out of date. It lists `ashen_slag` as missing (its placeholder exists) and does not list the portal frame, portal pane, Portal Igniter or Spire textures at all, so they cannot be restyled until `asset_list.py` knows them. Fixed in a follow-up PR.
 ## Asset list: the Act III placeholders: done
 - `tools/art/asset_list.py` now lists the Act III slice placeholders as ordinary rows, so they show as placeholders and can be generated or restyled: Ashen Slag, the Atmospheric Portal Frame and pane and the Terraforming Spire (Blocks), and the Portal Igniter (Tools & modules). The future rows that remain are the animated portal pane and the Spire multiblock. Only those rows were added to `docs/art/assets.csv` and `ASSETS.md`; the rest of both files is unchanged.
-- **Decision pending (found, not changed):** a full run of `asset_list.py` no longer matches the committed list. Since the module models arrived, it lists them as `core_mk2 (module)` and so on under Body models (keys like `core_mk2_module` instead of `core_mk2_model`) and their skins under Body skins, and drops the "Missing module models" group. Regenerating would rename keys the art workflow already uses (staged work in `art/rd/`, promote commands) and breaks four `test_rd_generate.py` tests that use `core_mk2_model`. Until the owner decides, add rows by hand as here, or update the tests and the staged keys together in one PR.
+- **Settled 2026-10-31:** a full run of `asset_list.py` renamed module model keys; the owner chose the new names, see "Asset list: the module names".
 
 ## RD tools, part 4: revising and exporting low-poly models: done
 - `tools/art/rd_model.py`, through `rd_generate.py --model-revise ASSET --prompt "..." [--version N]` (a new version of the asset's RD model; paid, priced from RD's table, asks, idempotent; polled and saved like any model job, so `--promote` works) and `--model-export ASSET --target minecraft|blockbench|obj|atlas|turntable|axis_views|blender|web` (free, into `art/rd/<asset>/export/`). Generate, animate and the Blockbench export already existed. See `tools/art/README.md`.
@@ -925,6 +925,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: composed body parts were painted black: done
 - Found with the arena: the Ship stayed almost pure black on a lit floor, though its art is no darker than the Mech's. Every part is drawn twice, the art and then an accent mask, and the masks are opaque black with white accents. Drawn as a normal translucent layer, the mask painted the whole part black at full brightness. It is now drawn additively (`RenderType.eyes`), so black adds nothing and only the accents glow. This is what the old note "the art's textures are near-black" was describing, since 5b-1.
 - **Affects:** every section on the Ship, and every module on any body. The Ship shows its copper and casing for the first time. Client rendering, so no GameTest; seen in arena sheets.
+
+## Asset list: the module names: done
+- The drift the owner was asked about is settled: `asset_list.py` was run in full and the new names stand, such as `core_mk2_module`, matching the folder the models live in. The art tool's tests and examples use them. `python3 tools/art/test_rd_generate.py` passes.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
