@@ -10,6 +10,9 @@ import com.voidreclaimer.compat.cc.SpirePeripheral;
 import com.voidreclaimer.compat.cc.ThrusterPeripheral;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.dyson.DysonSphereData;
+import com.voidreclaimer.launch.LaunchComplex;
+import com.voidreclaimer.launch.LaunchControllerBlockEntity;
+import com.voidreclaimer.launch.LaunchPad;
 import com.voidreclaimer.machine.CloudSiphonBlockEntity;
 import com.voidreclaimer.machine.ElectrolyzerBlockEntity;
 import com.voidreclaimer.machine.MassDriver;
@@ -181,6 +184,44 @@ public final class CCPeripheralGameTests {
             for (BlockPos pos : List.of(base, MassDriver.chamberPos(base), MassDriver.nozzlePos(base), receiverPos)) {
                 level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
+            helper.succeed();
+        });
+    }
+
+    /** The controller at chunk-local x 8 facing south keeps its 15 x 15 pad in one force-loaded chunk. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theLaunchComplexIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_904, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            DysonPeripheral lua = new DysonPeripheral();
+            net.minecraft.core.Direction facing = net.minecraft.core.Direction.SOUTH;
+            for (int across = -LaunchPad.HALF; across <= LaunchPad.HALF; across++) {
+                for (int forward = 0; forward < LaunchPad.SIZE; forward++) {
+                    level.setBlock(LaunchPad.cell(pos, facing, across, forward), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+            level.setBlock(pos, ModBlocks.LAUNCH_CONTROLLER.get().defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING, facing), 3);
+            LaunchControllerBlockEntity controller = (LaunchControllerBlockEntity) level.getBlockEntity(pos);
+            requireMethods(helper, Lookup.of(level, pos), "Launch Controller",
+                    "isAssembled", "assemble", "disassemble", "getProgress", "getLaunches", "getSpeed", "hasPayload", "getItems", "getSphere");
+            helper.assertTrue("ring_incomplete".equals(lua.assemble(controller)), "assemble() without a ring: " + lua.assemble(controller));
+            for (BlockPos cell : LaunchPad.ring(pos, facing)) {
+                level.setBlock(cell, ModBlocks.SCAFFOLD.get().defaultBlockState(), 3);
+            }
+            helper.assertTrue("assembled".equals(lua.assemble(controller)) && lua.isAssembled(controller), "assemble() with a ring");
+            helper.assertFalse(lua.hasPayload(controller), "an empty controller has a payload");
+            controller.inventory().setStackInSlot(1, new ItemStack(ModMaterials.DYSON_SWARM_SATELLITE_PAYLOAD.get(), 3));
+            helper.assertTrue(lua.hasPayload(controller), "a loaded controller reads as empty");
+            helper.assertTrue(lua.getItems(controller).size() == 1, "getItems " + lua.getItems(controller));
+            helper.assertTrue(lua.getLaunches(controller) == 0 && lua.getProgress(controller) == 0.0, "fresh counters");
+            Map<String, Object> sphere = lua.getSphere(controller);
+            helper.assertTrue(Long.valueOf(DysonSphereData.of(level).trusses()).equals(sphere.get("trusses")), "getSphere " + sphere);
+            helper.assertTrue("disassembled".equals(lua.disassemble(controller)) && !lua.isAssembled(controller), "disassemble()");
+            helper.assertTrue("not_assembled".equals(lua.disassemble(controller)), "disassemble() twice");
+            controller.inventory().setStackInSlot(1, ItemStack.EMPTY);
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             helper.succeed();
         });
     }
