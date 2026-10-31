@@ -24,12 +24,15 @@ public final class BuiltinBodies {
     public static final ResourceKey<SizeClass> DRONE_SIZE = sizeKey("drone");
     public static final ResourceKey<SizeClass> MECH_SIZE = sizeKey("mech");
     public static final ResourceKey<SizeClass> SHIP_SIZE = sizeKey("ship");
+    public static final ResourceKey<SizeClass> SHUTTLE_SIZE = sizeKey("shuttle");
     public static final ResourceKey<SizeClass> TITAN_SIZE = sizeKey("titan");
 
     public static final Map<ResourceKey<SizeClass>, SizeClass> SIZE_CLASSES = Map.of(
             DRONE_SIZE, new SizeClass(0.4, 0),
             MECH_SIZE, new SizeClass(1.2, 1),
             SHIP_SIZE, new SizeClass(3.0, 2),
+            // The same rank as the Ship, so parts and unlocks treat it alike. The model is 8.5 blocks long at scale 1: about 17 at 2.
+            SHUTTLE_SIZE, new SizeClass(2.0, 2),
             // The Titan model is 8.4 blocks long at scale 1: at 8 it is about 67 blocks.
             TITAN_SIZE, new SizeClass(8.0, 3));
 
@@ -169,7 +172,7 @@ public final class BuiltinBodies {
         shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
         shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
         shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
-        map.put(SHUTTLE, new Chassis(SHIP_SIZE, "body", List.copyOf(shuttle), new Chassis.Cockpit(2.0f, 0.0f, 0f)));
+        map.put(SHUTTLE, new Chassis(SHUTTLE_SIZE, "body", List.copyOf(shuttle), new Chassis.Cockpit(2.0f, 0.0f, 0f)));
 
         // The Titan: the saucer is the core. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> titan = new ArrayList<>();

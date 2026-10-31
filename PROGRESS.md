@@ -926,6 +926,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Found with the arena: the Ship stayed almost pure black on a lit floor, though its art is no darker than the Mech's. Every part is drawn twice, the art and then an accent mask, and the masks are opaque black with white accents. Drawn as a normal translucent layer, the mask painted the whole part black at full brightness. It is now drawn additively (`RenderType.eyes`), so black adds nothing and only the accents glow. This is what the old note "the art's textures are near-black" was describing, since 5b-1.
 - **Affects:** every section on the Ship, and every module on any body. The Ship shows its copper and casing for the first time. Client rendering, so no GameTest; seen in arena sheets.
 
+## Shuttle size and a camera that fits: done
+- The owner chose scale 2.0 for the Shuttle now that bodies draw at their true size, so it gets its own size class at the Ship's rank: parts and unlocks treat the two alike. It is about 17 blocks long. The third-person camera for big bodies now stands 3 model radii back, measured from the real model (`BodyBounds`, cached per model), so each fills about the same share of the screen: Ship about 20 blocks away, Shuttle about 30, Titan about 115. Drone and Mech keep vanilla's distance. Tests: `BodyLookTest`, `BodyPresetGameTests`. Seen in the client.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

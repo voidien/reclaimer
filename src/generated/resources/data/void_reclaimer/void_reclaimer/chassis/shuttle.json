@@ -3,7 +3,7 @@
     "forward": 2.0
   },
   "core_socket": "body",
-  "size_class": "void_reclaimer:ship",
+  "size_class": "void_reclaimer:shuttle",
   "sockets": [
     {
       "accepts": [

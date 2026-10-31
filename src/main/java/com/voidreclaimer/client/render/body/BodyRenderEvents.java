@@ -16,7 +16,9 @@ public final class BodyRenderEvents {
     public static final class Game {
         @SubscribeEvent
         static void onCameraDistance(CalculateDetachedCameraDistanceEvent event) {
-            event.setDistance(cameraDistance(event.getDistance(), event.getEntityScalingFactor()) * com.voidreclaimer.client.camera.OrbitCamera.zoom());
+            net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
+            float radius = player == null ? 0f : BodyBounds.radius(com.voidreclaimer.body.Bodies.view(player));
+            event.setDistance(cameraDistance(event.getDistance(), event.getEntityScalingFactor(), radius) * com.voidreclaimer.client.camera.OrbitCamera.zoom());
         }
 
         @SubscribeEvent
@@ -27,14 +29,17 @@ public final class BodyRenderEvents {
         }
     }
 
+    /** How many of the model's radii the third-person camera stands from a big body: it fills about the same share of the screen on all of them. */
+    public static final float CAMERA_FIT = 3f;
+
     /**
-     * Bodies much bigger than a player (the Ship is 12 blocks long, the Titan over 60) need the third-person camera further back
-     * to see them whole. The event's distance is the unscaled 4 blocks and vanilla multiplies the result by the body's scale
-     * afterwards, so this only adds a factor of up to 5 for the big ones: the Ship ends up about 40 blocks away, the Titan
-     * about 160 (a larger factor put the camera 1000 blocks away). Bodies up to the Mech's size keep vanilla's distance.
+     * Bodies much bigger than a player need the third-person camera further back to see them whole, by how big their model really is.
+     * The event's distance is the unscaled 4 blocks and vanilla multiplies the result by the body's scale afterwards, so this works in
+     * the model's own size: {@code radius} is {@link BodyBounds#radius}. The Ship ends up about 20 blocks away, the Shuttle about 30
+     * and the Titan about 115. Bodies up to the Mech's size keep vanilla's distance.
      */
-    public static float cameraDistance(float distance, float scale) {
-        return scale <= 1.5f ? distance : distance * Math.min(5f, scale * 1.1f);
+    public static float cameraDistance(float distance, float scale, float radius) {
+        return scale <= 1.5f || radius <= 0f ? distance : CAMERA_FIT * radius;
     }
 
     @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
