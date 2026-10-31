@@ -23,11 +23,11 @@ import net.minecraft.world.item.ItemStack;
  * Immutable; every change produces a new instance.
  */
 public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, List<ResourceKey<Milestone>> unlocked, int blocksPlaced,
-                             List<ResourceLocation> itemsMade) {
+                             List<ResourceLocation> itemsMade, List<ResourceLocation> dimensionsVisited) {
     public static final int MAX_JOBS = 5;
     public static final int BUFFER_SLOTS = 9;
 
-    public static final ReplicatorData EMPTY = new ReplicatorData(List.of(), List.of(), List.of(), 0, List.of());
+    public static final ReplicatorData EMPTY = new ReplicatorData(List.of(), List.of(), List.of(), 0, List.of(), List.of());
 
     public static final Codec<ReplicatorData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             // Lenient: a field that no longer parses (e.g. an item from a removed mod) resets instead of failing the load.
@@ -35,7 +35,8 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
             ItemStack.CODEC.listOf().lenientOptionalFieldOf("buffer", List.of()).forGetter(ReplicatorData::buffer),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).listOf().lenientOptionalFieldOf("unlocked", List.of()).forGetter(ReplicatorData::unlocked),
             Codec.INT.lenientOptionalFieldOf("blocks_placed", 0).forGetter(ReplicatorData::blocksPlaced),
-            ModCodecs.ID.listOf().lenientOptionalFieldOf("items_made", List.of()).forGetter(ReplicatorData::itemsMade)
+            ModCodecs.ID.listOf().lenientOptionalFieldOf("items_made", List.of()).forGetter(ReplicatorData::itemsMade),
+            ModCodecs.ID.listOf().lenientOptionalFieldOf("dimensions_visited", List.of()).forGetter(ReplicatorData::dimensionsVisited)
     ).apply(instance, ReplicatorData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorData> STREAM_CODEC = StreamCodec.composite(
@@ -44,6 +45,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
             ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE).apply(ByteBufCodecs.list()), ReplicatorData::unlocked,
             ByteBufCodecs.VAR_INT, ReplicatorData::blocksPlaced,
             ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::itemsMade,
+            ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorData::dimensionsVisited,
             ReplicatorData::new);
 
     /**
@@ -57,6 +59,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         buffer = List.copyOf(buffer);
         unlocked = List.copyOf(unlocked);
         itemsMade = List.copyOf(itemsMade);
+        dimensionsVisited = List.copyOf(dimensionsVisited);
     }
 
     public boolean isUnlocked(ResourceKey<Milestone> milestone) {
@@ -73,11 +76,11 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
     }
 
     public ReplicatorData withJobs(List<ReplicatorJob> newJobs) {
-        return new ReplicatorData(newJobs, buffer, unlocked, blocksPlaced, itemsMade);
+        return new ReplicatorData(newJobs, buffer, unlocked, blocksPlaced, itemsMade, dimensionsVisited);
     }
 
     public ReplicatorData withBuffer(List<ItemStack> newBuffer) {
-        return new ReplicatorData(jobs, newBuffer, unlocked, blocksPlaced, itemsMade);
+        return new ReplicatorData(jobs, newBuffer, unlocked, blocksPlaced, itemsMade, dimensionsVisited);
     }
 
     public ReplicatorData withUnlocked(ResourceKey<Milestone> milestone) {
@@ -86,7 +89,7 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         }
         List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.add(milestone);
-        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade);
+        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade, dimensionsVisited);
     }
 
     public ReplicatorData withoutUnlocked(ResourceKey<Milestone> milestone) {
@@ -95,21 +98,30 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
         }
         List<ResourceKey<Milestone>> list = new ArrayList<>(unlocked);
         list.remove(milestone);
-        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade);
+        return new ReplicatorData(jobs, buffer, list, blocksPlaced, itemsMade, dimensionsVisited);
     }
 
     public ReplicatorData withBlocksPlaced(int count) {
-        return new ReplicatorData(jobs, buffer, unlocked, count, itemsMade);
+        return new ReplicatorData(jobs, buffer, unlocked, count, itemsMade, dimensionsVisited);
     }
 
     /** Remembers that the player has had the item {@code id}; a no-op when already recorded. */
+    public ReplicatorData withDimensionVisited(ResourceLocation id) {
+        if (dimensionsVisited.contains(id)) {
+            return this;
+        }
+        List<ResourceLocation> list = new ArrayList<>(dimensionsVisited);
+        list.add(id);
+        return new ReplicatorData(jobs, buffer, unlocked, blocksPlaced, itemsMade, list);
+    }
+
     public ReplicatorData withItemMade(ResourceLocation id) {
         if (itemsMade.contains(id)) {
             return this;
         }
         List<ResourceLocation> list = new ArrayList<>(itemsMade);
         list.add(id);
-        return new ReplicatorData(jobs, buffer, unlocked, blocksPlaced, list);
+        return new ReplicatorData(jobs, buffer, unlocked, blocksPlaced, list, dimensionsVisited);
     }
 
     /** Milestones present in {@code current} but not in {@code previous}, in unlock order. */

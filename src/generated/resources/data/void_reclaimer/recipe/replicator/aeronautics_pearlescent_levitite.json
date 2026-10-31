@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 30.0,
+    "void_reclaimer:ice": 90.0,
+    "void_reclaimer:metallic": 30.0,
+    "void_reclaimer:silicate": 20.0
+  },
+  "milestone": "void_reclaimer:earthfall",
+  "result": {
+    "count": 1,
+    "id": "aeronautics:pearlescent_levitite"
+  },
+  "ticks": 1800
+}

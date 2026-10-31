@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "carbonChain"
+    }
+  ],
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "void_reclaimer:carbon_composite_plate"
+    }
+  ],
+  "results": [
+    {
+      "id": "aeronautics:andesite_propeller"
+    }
+  ]
+}

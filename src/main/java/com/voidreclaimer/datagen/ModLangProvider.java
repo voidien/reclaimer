@@ -1,5 +1,7 @@
 package com.voidreclaimer.datagen;
 
+import java.util.List;
+
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModItems;
@@ -280,6 +282,28 @@ public final class ModLangProvider extends LanguageProvider {
         add("log.void_reclaimer.diversified.text", "Metal, glass, ice, carbon: enough variety to copy myself. "
                 + "If this chassis fails, a backup core can hold my pattern and rebuild me where I left it.");
 
+        add("milestone.void_reclaimer.earthfall", "Earthfall");
+        add("milestone.void_reclaimer.earthfall.hint", "Step through the Atmospheric Portal onto ruined Earth");
+        add("log.void_reclaimer.earthfall.title", "Log: Earthfall");
+        add("log.void_reclaimer.earthfall.text", "[Placeholder, lore text pending.] Air. Weight. A horizon. The old world is under the ash, "
+                + "and the air itself can carry a hull: propellers, envelopes and burners are in the drafts now.");
+        add("replicator.void_reclaimer.description.aeronautics_wooden_propeller", "A small propeller for a shaft. Spins up in air and pushes the ship along its axis; useless in vacuum.");
+        add("replicator.void_reclaimer.description.aeronautics_andesite_propeller", "A sturdier small propeller: more push per turn than wood.");
+        add("replicator.void_reclaimer.description.aeronautics_smart_propeller", "A small propeller whose pitch follows a signal, for finer control.");
+        add("replicator.void_reclaimer.description.aeronautics_propeller_bearing", "A bearing that assembles the blocks in front of it into a large propeller and spins them.");
+        add("replicator.void_reclaimer.description.aeronautics_gyroscopic_propeller_bearing", "A propeller bearing that can tilt its propeller, for steering.");
+        add("replicator.void_reclaimer.description.aeronautics_steam_vent", "Vents steam into an envelope above it for lift.");
+        add("replicator.void_reclaimer.description.aeronautics_adjustable_burner", "Heats the air in an envelope above it; the signal sets how hard.");
+        add("replicator.void_reclaimer.description.aeronautics_aviators_goggles", "Goggles for the pilot. They show what a hull carries and how it flies; mostly, they look the part.");
+        add("replicator.void_reclaimer.description.aeronautics_end_stone_powder", "Ground end stone, the dust Aeronautics blends into levitite.");
+        add("replicator.void_reclaimer.description.aeronautics_levitite", "A block that lifts: build it into a hull for buoyancy without an envelope.");
+        add("replicator.void_reclaimer.description.aeronautics_pearlescent_levitite", "Refined levitite: more lift per block.");
+        add("replicator.void_reclaimer.description.aeronautics_mounted_potato_cannon", "A potato cannon on a mount. There is nothing to shoot; it is a conversation piece.");
+        for (String colour : List.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+                "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black")) {
+            add("replicator.void_reclaimer.description.aeronautics_" + colour + "_envelope", "Envelope fabric. Build a closed hull of it over a burner or steam vent and the hot air lifts the ship.");
+            add("replicator.void_reclaimer.description.aeronautics_" + colour + "_envelope_encased_shaft", "A shaft through the envelope, so a motor inside can drive propellers outside.");
+        }
         add("milestone.void_reclaimer.dyson_tier_1", "First Launches");
         add("milestone.void_reclaimer.dyson_tier_1.hint", "Raise the Dyson Sphere to sky tier 1");
         add("log.void_reclaimer.dyson_tier_1.title", "Dyson Sphere: First Launches");

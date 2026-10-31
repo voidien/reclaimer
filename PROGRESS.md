@@ -794,6 +794,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Found on the way:** Sable has no disassembly or merge API; Aeronautics' nested "Simulated" jar has both (yaw-only), now compiled against (see `CLAUDE.md`). `BaseContainerBlockEntity`'s custom name is private, so the station keeps its own name field and copies the item's custom name in `applyImplicitComponents`.
 - **Decisions pending (unattended):** the station block limit (50,000), range (8) and Replicator speed (2) are config defaults; the Station Core recipe (80/60/40/100 dust, 2 minutes, Starship milestone) is a placeholder.
 - **Placeholder art:** `textures/block/station_core_top/side/bottom.png`, `docking_clamp_face/side/back.png` (16x16 programmer art).
+## Earth flight, part 2: Earthfall and the Aeronautics parts: done
+- **Earthfall** milestone: first setting foot on ruined Earth (new criterion `dimension_visited`; the player's visited dimensions are recorded on every dimension change and login in `ReplicatorData`). Log entry text is a placeholder.
+- **Replicator:** every Create Aeronautics block and item has a recipe (`aeronautics_<id>`, Blocks tab; 44 of them, Levitite Blend being a fluid) unlocked by Earthfall, with a short description each; dust costs are placeholders (propellers on carbon, lift parts on ice and metal, levitite on silicon).
+- **Create routes, three:** Andesite Propeller (press a Carbon Composite Plate), Steam Vent (press a Micro-Alloy Sheet), Levitite Blend (heated mixing of Pure Silicon Dust and Fine Carbon Powder), each under its chain's config toggle.
+- **Tests:** `EarthMilestoneGameTests`: stepping onto ruined Earth reaches Earthfall and it stays reached after leaving; the propeller recipe is LOCKED before and QUEUED after. Mutation-checked.
+- **Decisions pending (unattended):** the dust costs and times of the Aeronautics recipes; which parts deserve Create routes (three chosen).
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
