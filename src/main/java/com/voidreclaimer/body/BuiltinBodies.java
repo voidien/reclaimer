@@ -130,16 +130,19 @@ public final class BuiltinBodies {
         ship.add(socket("bow", "keel", 0, 0, -24, "hull", BOW));
         ship.add(socket("bridge", "keel", 0, 6, -12, "control", BRIDGE));
         for (int i = 1; i <= 6; i++) {
-            ship.add(socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT));
+            Socket hull = socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT);
+            // The hull segment, wing and hardpoint models are lopsided: the far side of each pair is drawn flipped.
+            ship.add(i % 2 == 0 ? hull.mirrored() : hull);
         }
         ship.add(socket("wing_port", "keel", 14, 0, 4, "control", WING));
-        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING));
+        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING).mirrored());
         for (int i = 1; i <= 4; i++) {
             ship.add(socket("nacelle_" + i, "keel", i <= 2 ? 8 : -8, i % 2 == 0 ? -3 : 3, 20, "propulsion", ENGINE_NACELLE));
         }
         for (int i = 1; i <= 6; i++) {
             // Hardpoints also take a Mech hand.
-            ship.add(socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND));
+            Socket hardpoint = socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND);
+            ship.add(i % 2 == 0 ? hardpoint.mirrored() : hardpoint);
         }
         for (int i = 1; i <= 4; i++) {
             ship.add(socket("cargo_" + i, "keel", i % 2 == 0 ? -4 : 4, -4, -4 + 6 * ((i - 1) / 2), "cargo", CARGO_BAY));

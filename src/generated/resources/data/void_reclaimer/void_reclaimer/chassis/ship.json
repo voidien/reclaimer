@@ -60,6 +60,7 @@
       ],
       "area": "hull",
       "id": "hull_2",
+      "mirror": true,
       "pivot": [
         -6.0,
         0.0,
@@ -86,6 +87,7 @@
       ],
       "area": "hull",
       "id": "hull_4",
+      "mirror": true,
       "pivot": [
         -6.0,
         0.0,
@@ -112,6 +114,7 @@
       ],
       "area": "hull",
       "id": "hull_6",
+      "mirror": true,
       "pivot": [
         -6.0,
         0.0,
@@ -138,6 +141,7 @@
       ],
       "area": "control",
       "id": "wing_starboard",
+      "mirror": true,
       "pivot": [
         -14.0,
         0.0,
@@ -218,6 +222,7 @@
       ],
       "area": "weapons",
       "id": "hardpoint_2",
+      "mirror": true,
       "pivot": [
         -3.0,
         -2.0,
@@ -246,6 +251,7 @@
       ],
       "area": "weapons",
       "id": "hardpoint_4",
+      "mirror": true,
       "pivot": [
         -3.0,
         -2.0,
@@ -274,6 +280,7 @@
       ],
       "area": "weapons",
       "id": "hardpoint_6",
+      "mirror": true,
       "pivot": [
         -3.0,
         -2.0,
