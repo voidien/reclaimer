@@ -44,3 +44,7 @@ run-aero/
 # Retro Diffusion staging (tools/art/rd_generate.py): review here, --promote picks into the mod
 art/rd/
 __pycache__/
+
+# JVM crash reports
+hs_err_pid*.log
+replay_pid*.log

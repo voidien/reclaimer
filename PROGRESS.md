@@ -910,6 +910,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Photo mode: time controls: done
 - In photo mode P freezes the world, period steps one tick, comma runs it at quarter speed, and `/vrphoto time freeze|step|slow|normal` does the same by command (`debug/DebugTime`, the server's tick manager). A shot's facts show the state. Leaving photo mode restores normal time, only if photo mode changed it. Tests: `DebugTimeGameTests`, mutation-checked. Seen in the client: `/tick query` reads normal after leaving.
 
+## Photo mode: ship overlay: done
+- O in photo mode (`/vrphoto overlay true`) draws every ship within 256 blocks: its box, centre of mass, velocity, and an arrow per thruster (grey for what it could push, orange for what it pushes now), and adds a line per ship to a shot's text file. Read from Sable on the integrated server. `ThrusterLike` gains `force()`. Tests: `DebugShapesTest` (4), `StationGameTests.theShipOverlayReadsAShipsBoxAndMassFromSable`. Seen in the client.
+- **Found with it:** `Ships.blocksOf` lists only block entities despite its name; its comment now says so.
+
+## Photo mode: logistics overlay: done
+- The same overlay (O) also draws each helper drone's route, heading, job, phase and cargo, and the rotation of Create machines in the chunks around the camera, red when overstressed; stopped and overstressed machines go in a shot's text file. Tests: `DebugReadoutGameTests`. Seen on the drone and launch scenes.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

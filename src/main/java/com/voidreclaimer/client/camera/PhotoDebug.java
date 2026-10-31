@@ -5,7 +5,10 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.client.hud.ScreenProjection;
 import com.voidreclaimer.client.render.body.BoneProbe;
 import com.voidreclaimer.debug.DebugReadout;
+import com.voidreclaimer.debug.DebugShapes;
+import com.voidreclaimer.debug.ShipOverlay;
 import com.voidreclaimer.debug.DebugTime;
+import com.voidreclaimer.debug.LogisticsOverlay;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -49,10 +52,13 @@ public final class PhotoDebug {
     private static final int HEADING = 0xFF7FD4FF;
     /** A long data line in the panel; the text file always has all of it. */
     private static final int PANEL_LINE_CHARS = 120;
+    private static final double OVERLAY_RANGE = 256.0;
     private static final float LABEL_SCALE = 0.5f;
 
     private static boolean on;
     private static boolean labels;
+    private static boolean overlay;
+    private static volatile DebugShapes shapes = new DebugShapes();
     private static boolean timeChanged;
     private static boolean chunkBorders;
     private static boolean hitBoxes;
@@ -74,6 +80,17 @@ public final class PhotoDebug {
     public static void setLabels(boolean value) {
         labels = value;
         BoneProbe.capture(value);
+    }
+
+    public static boolean overlay() {
+        return overlay;
+    }
+
+    /** Lines and labels in the world (O in photo mode): {@link ShipOverlay} and {@link LogisticsOverlay}. */
+    public static void setOverlay(boolean value) {
+        overlay = value;
+        shapes = new DebugShapes();
+        age = 0;
     }
 
     /** What photo mode's time keys ask for. */
@@ -156,6 +173,12 @@ public final class PhotoDebug {
             ServerPlayer player = server.getPlayerList().getPlayer(id);
             target = DebugReadout.target(level, from, look);
             List<String> lines = new ArrayList<>(DebugReadout.lines(level, from, look, player));
+            if (overlay) {
+                DebugShapes built = new DebugShapes();
+                ShipOverlay.add(level, from, OVERLAY_RANGE, built, lines);
+                LogisticsOverlay.add(level, from, OVERLAY_RANGE, built, lines);
+                shapes = built;
+            }
             String time = DebugTime.describe(server);
             if (!time.isEmpty()) {
                 lines.add(0, time);
@@ -167,7 +190,7 @@ public final class PhotoDebug {
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (!on || !PhotoMode.active() || age++ % REFRESH_TICKS != 0) {
+        if (!(on || overlay) || !PhotoMode.active() || age++ % REFRESH_TICKS != 0) {
             return;
         }
         read(mc, PhotoMode.position(), look()).thenAccept(lines -> facts = lines);
@@ -176,7 +199,13 @@ public final class PhotoDebug {
     /** The outline on what the camera looks at. */
     @SubscribeEvent
     static void onRenderLevel(RenderLevelStageEvent event) {
-        if (!on || !PhotoMode.active() || event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
+        if (!PhotoMode.active() || event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
+            return;
+        }
+        if (overlay) {
+            renderShapes(event);
+        }
+        if (!on) {
             return;
         }
         DebugReadout.Target now = target;
@@ -192,6 +221,40 @@ public final class PhotoDebug {
         LevelRenderer.renderLineBox(pose, buffers.getBuffer(RenderType.lines()), box.inflate(0.01), 1f, 0.85f, 0.2f, 1f);
         buffers.endBatch(RenderType.lines());
         pose.popPose();
+    }
+
+    private static void renderShapes(RenderLevelStageEvent event) {
+        Camera camera = event.getCamera();
+        PoseStack pose = event.getPoseStack();
+        pose.pushPose();
+        pose.translate(-camera.getPosition().x, -camera.getPosition().y, -camera.getPosition().z);
+        var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
+        var buffer = buffers.getBuffer(RenderType.lines());
+        PoseStack.Pose last = pose.last();
+        for (DebugShapes.Line line : shapes.lines()) {
+            Vec3 way = line.to().subtract(line.from()).normalize();
+            buffer.addVertex(last, (float) line.from().x, (float) line.from().y, (float) line.from().z).setColor(line.colour())
+                    .setNormal(last, (float) way.x, (float) way.y, (float) way.z);
+            buffer.addVertex(last, (float) line.to().x, (float) line.to().y, (float) line.to().z).setColor(line.colour())
+                    .setNormal(last, (float) way.x, (float) way.y, (float) way.z);
+        }
+        buffers.endBatch(RenderType.lines());
+        pose.popPose();
+    }
+
+    /** The overlay's labels, over the picture. */
+    public static void renderShapeTexts(GuiGraphics graphics, Minecraft mc, int width, int height) {
+        Camera camera = mc.gameRenderer.getMainCamera();
+        for (DebugShapes.Text text : shapes.texts()) {
+            var screen = ScreenProjection.project(camera, text.at().subtract(camera.getPosition()), PhotoMode.state().fov(), width, height, 0, 0);
+            if (screen.onScreen()) {
+                graphics.pose().pushPose();
+                graphics.pose().translate(screen.x(), screen.y(), 0);
+                graphics.pose().scale(LABEL_SCALE, LABEL_SCALE, 1f);
+                graphics.drawString(mc.font, text.text(), 0, 0, text.colour(), true);
+                graphics.pose().popPose();
+            }
+        }
     }
 
     /** The camera's own line, from the client. */

@@ -13,6 +13,9 @@ public interface ThrusterLike {
     /** Force at full throttle, with what it has right now (fuel, power, spin). */
     double maxForce();
 
+    /** The force it pushes with right now (0 when not firing). */
+    double force();
+
     /**
      * A throttle set by a Helm this tick, 0 to 1, which beats redstone until the next tick. Set every tick while a pilot
      * sits; a thruster that is not told anything falls back to redstone.
