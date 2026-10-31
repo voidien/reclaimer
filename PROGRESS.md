@@ -823,6 +823,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Placeholders:** `textures/block/launch_controller_front/side/top.png` (16x16 programmer art); the pad has no visible model yet (PR 2 draws `geo/entity/mass_driver.geo.json` over it).
 - **Decisions pending (unattended):** the ring block set; the controller on the pad's edge (so the shaft reaches it) rather than at its centre; one-layer pad with no collision for the gun tower; self-healing pad; the controller's price (90/65/20/70); the old blocks kept registered but inert rather than removed.
 
+## Launch complex, part 2: the renderer: done
+- The assembled complex is drawn from its controller with the owner's `entity/mass_driver` model (15 x 14 x 15 blocks: pad, gun tower, two dishes, two cranes), centred on the pad in front of the controller and turned with it. Code animation (`LaunchAnimation`, pure): the gun tower leans back as the wind-up builds and kicks forward on a launch, the dishes turn, the cranes sway. The wind-up and the last launch are synced every 10 ticks; the client eases between updates.
+- **Tests:** `LaunchAnimationTest` (the lean follows the wind-up and is clamped, the kick fades over 20 ticks, dishes keep within a turn and turn opposite ways, the cranes sway half a period apart); `LaunchComplexGameTests.aLaunchIsSyncedForTheRenderer` (the client packet carries the wind-up and the launch time). Mutation-checked.
+- **Placeholders:** `animations/entity/mass_driver.animation.json` is an empty idle (the owner's animations replace the code posing in `LaunchComplexModel.setCustomAnimations`); the model's orientation relative to the controller (the gun tower towards the far side) is a guess.
+- **In-game check (not done, no client here):** assemble a complex and look at it from 100+ blocks and from inside the pad; load payloads and watch the gun lean and kick; check the sky streak starts above the tower.
+- **Decisions pending (unattended):** the lean and kick angles, the 192-block view distance, no collision for the tower.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

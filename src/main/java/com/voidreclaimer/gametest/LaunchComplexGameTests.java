@@ -308,6 +308,28 @@ public final class LaunchComplexGameTests {
         });
     }
 
+    /** The renderer poses the model from the synced wind-up and launch time. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aLaunchIsSyncedForTheRenderer(GameTestHelper helper) {
+        inArea(helper, 89_352, (level, pos) -> {
+            resetDyson(level);
+            LaunchControllerBlockEntity controller = build(helper, level, pos);
+            helper.assertTrue(controller.lastLaunch() < 0, "a new controller remembers a launch");
+            items(level, pos).insertItem(0, new ItemStack(ModMaterials.DYSON_SHELL_TRUSS_MODULE.get(), 1), false);
+            int fast = Config.MASS_DRIVER_FAST_TICKS.get();
+            spin(controller, Config.MASS_DRIVER_FAST_RPM.get(), fast / 2);
+            net.minecraft.nbt.CompoundTag packet = controller.getUpdateTag(level.registryAccess());
+            helper.assertTrue(packet.getFloat("progress") > 0.2f && packet.getFloat("progress") < 0.8f, "the client packet lacks the wind-up: " + packet);
+            helper.assertTrue(!packet.contains("inventory"), "the client packet carries the inventory");
+            spin(controller, Config.MASS_DRIVER_FAST_RPM.get(), fast / 2 + SLACK);
+            helper.assertTrue(controller.lastLaunch() == level.getGameTime(), "launch time " + controller.lastLaunch() + " vs " + level.getGameTime());
+            helper.assertTrue(controller.getUpdateTag(level.registryAccess()).getLong("lastLaunch") == level.getGameTime(), "the client packet lacks the launch time");
+            resetDyson(level);
+            LaunchComplex.disassemble(controller);
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void payloadTagsDecideWhatLaunches(GameTestHelper helper) {
         // The GameTest datapack adds an amethyst shard to #void_reclaimer:dyson/satellite_payloads: no code names it.
