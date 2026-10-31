@@ -850,6 +850,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Tests:** `MiningTest` (unit, the phases); `HelperMiningGameTests` (a drone clears three silicate rocks into its chest and leaves a stone alone, then waits; a miner with no rock in reach waits where it is). Mutation-checked.
 - **Decisions pending (unattended):** the rock comes out as the block item, not dust; the 8-block search radius and 40-tick dig; no energy cost. Next: collecting from dust clouds (PR 3).
 
+## Helper drones, part 3: collecting dust: done
+- Sneak-use the Helper Drone item in the air to set a **collect point** where you stand, then release it: it hovers there gathering the cloud's dust (as a still body would, `helper.collectRate` times) into a tank of `helper.tank` (50), and when full flies to you, if you are online and within `helper.ownerRange` (96) blocks, and hands over what fits your dust storage. Out of reach or full, it waits two seconds and tries again. Right-click shows the phase and the dust held.
+- **Tests:** `CollectingTest` (unit, the phases); `HelperCollectGameTests` (with a tiny tank and a fast rate set for the test: a collector at a cloud's centre fills up and hands the dust to its owner three blocks away; a full collector whose owner is 500 blocks away waits and the owner gets nothing). Mutation-checked.
+- **Decisions pending (unattended):** the owner as the only destination (no dust-holding block exists yet); the 50-dust tank, rate 1, 96-block owner range; a point outside any cloud gathers nothing forever; no energy cost.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

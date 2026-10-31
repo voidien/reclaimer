@@ -22,7 +22,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 /**
  * The Helper Drone as an item. Sneak-use on an inventory block sets the drone's source, then its destination (a third
  * sneak-use on an inventory starts over with a new source); sneak-use on asteroid rock sets a mine point instead of a
- * source. Use on a block or in the air puts the drone down there with those links.
+ * source; sneak-use in the air sets a collect point where the player stands (the drone brings cloud dust to its owner).
+ * Use on a block or in the air puts the drone down there with those links.
  */
 public class HelperDroneItem extends Item {
     /** How far ahead a drone is released into empty space. */
@@ -79,7 +80,12 @@ public class HelperDroneItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown()) {
-            return InteractionResultHolder.pass(stack);
+            if (!level.isClientSide) {
+                BlockPos here = player.blockPosition();
+                stack.set(ModDataComponents.HELPER_LINKS.get(), links(stack).withCollect(here));
+                player.displayClientMessage(Component.translatable("message.void_reclaimer.helper.collect_set", here.getX(), here.getY(), here.getZ()), true);
+            }
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
         if (level instanceof ServerLevel server) {
             release(server, player.getEyePosition().add(player.getLookAngle().scale(AHEAD)), stack, player);
@@ -97,6 +103,10 @@ public class HelperDroneItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         HelperLinks links = links(stack);
+        if (links.collecting()) {
+            tooltip.add(link("tooltip.void_reclaimer.helper.collect", links.collect().orElse(null)));
+            return;
+        }
         if (links.mining()) {
             tooltip.add(link("tooltip.void_reclaimer.helper.mine", links.mine().orElse(null)));
         } else {
