@@ -1,5 +1,8 @@
 # Progress
 
+## Ideas for the owner
+Debug tools and recommendations noted during unattended stretches (`CLAUDE.md` rule 10), raised when the stretch ends. Remove an entry once the owner has answered it.
+
 ## Decisions pending (for the owner)
 Choices taken alone during unattended stretches, each the safest reversible default. The section named after each item has the details; the owner can overrule any of them.
 - **Hover flight:** controlled landings take no fall damage; a body with no thrust walks on Earth; the Mech engages its thrusters with Space and disengages on landing; `flight.hoverWeightFactor` 0.12 ("Hover flight on Earth" parts 2 and 3, "Hover tuning").
