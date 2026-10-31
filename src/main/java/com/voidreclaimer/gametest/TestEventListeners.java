@@ -103,4 +103,18 @@ public final class TestEventListeners {
             event.getOutputs().add(new ItemStack(Items.DIAMOND));
         }
     }
+
+    /**
+     * Test players load the chunks around them like any player: at the default view distance of 10 that is 441 chunks
+     * each, and a deep-space chunk (254 sections) is about 1 MB, so a run with 150 test players spent its heap and its
+     * time loading chunks no test looks at, and chunks next to a player were slow to reach entity ticking. A test needs
+     * a few chunks around its player: 3 keeps a 7 x 7.
+     */
+    @SubscribeEvent
+    static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        if (event.getServer() instanceof net.minecraft.gametest.framework.GameTestServer) {
+            event.getServer().getPlayerList().setViewDistance(3);
+            event.getServer().getPlayerList().setSimulationDistance(3);
+        }
+    }
 }
