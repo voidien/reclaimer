@@ -65,6 +65,26 @@ public final class DustGameTests {
         }
     }
 
+    /** Taking off a storage module leaves a reserve above capacity: a cloud must not cut it down to the new capacity. */
+    @GameTest(template = "empty")
+    public static void gatheringLeavesAReserveAboveCapacityAlone(GameTestHelper helper) {
+        DustField field = field(helper);
+        DustCloud cloud = findCloud(field);
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, cloud.center().x, cloud.center().y, cloud.center().z);
+        try {
+            float over = DustData.capacity(player) + 100f;
+            player.setData(ModAttachments.DUST, DustData.EMPTY.with(cloud.kind(), over));
+            moveAndTick(player, TICKS);
+            float held = player.getData(ModAttachments.DUST).get(cloud.kind());
+            helper.assertTrue(held == over, "the reserve went from " + over + " to " + held);
+            float recorded = player.getData(ModAttachments.DUST_COLLECTED).get(cloud.kind());
+            helper.assertTrue(recorded == 0f, "nothing was gathered, but the record says " + recorded);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
     @GameTest(template = "empty")
     public static void flyingCollectsMoreThanDrifting(GameTestHelper helper) {
         DustField field = field(helper);

@@ -152,6 +152,15 @@ class DustFieldTest {
     }
 
     @Test
+    void gainingDustNeverLowersAReserveAboveCapacity() {
+        DustData over = DustData.EMPTY.with(DustKinds.ICE, 300f);
+        assertEquals(300f, over.add(DustKinds.ICE, 5f, 200f).get(DustKinds.ICE), "a storage module came off: keep what is held");
+        assertEquals(295f, over.add(DustKinds.ICE, -5f, 200f).get(DustKinds.ICE), "taking dust away still works");
+        assertEquals(190f, DustData.EMPTY.with(DustKinds.ICE, 195f).add(DustKinds.ICE, -5f, 200f).get(DustKinds.ICE));
+        assertEquals(200f, DustData.EMPTY.with(DustKinds.ICE, 200f).add(DustKinds.ICE, 5f, 200f).get(DustKinds.ICE), "exactly full stays full");
+    }
+
+    @Test
     void builtinKindsKeepThePhase3CloudRanges() {
         // Cumulative weights 0.30 / 0.65 / 0.85 / 1.0 in metallic, silicate, ice, carbon order: existing worlds keep their clouds.
         List<DustKinds.Entry> kinds = DustKinds.builtinEntries();

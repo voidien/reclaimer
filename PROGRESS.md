@@ -946,6 +946,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - Tests: `aShipTakingAPlotFreedThisTickKeepsItsFuel` and `aShipKeepsItsContentsWhenItsPlotWasLookedAtFirst`, each in a batch of its own. Mutation-checked: without the hook on a new chunk the second fails, without the hook on removal the first fails.
 - **Not proven:** that this is what made `aChemicalThrusterPushesItsShip`, `anOffCentreRcsThrusterTurnsItsShip` and `anIonThrusterPushesItsShip` fail now and then with a ship that never moved. It fits (no push, the block entity's data missing, every thruster kind), and a full suite run shows ships assembled and removed within a few ticks of each other and `HelmSeat.follow` looking at a plot's centre right after its ship is removed, but no failing run was caught with this in its log. See Known issues.
 
+## Fix: gathering dust could cut a reserve down: done
+- **The bug:** taking off a storage module leaves a reserve above the new capacity, which is fine until the next dust arrives: `DustData.add` capped the total, so a tick in a cloud, a drilled block or a refund cut the reserve straight down to capacity. A helper drone made it worse: its delivery counted the cut as dust moved backwards, so the lost dust went into its tank and the ledger recorded a negative gain.
+- **The fix:** gaining dust never lowers a reserve. A negative amount (an addon's `DustGainEvent` can send one) still takes dust away.
+- Tests: `gainingDustNeverLowersAReserveAboveCapacity` (unit), `gatheringLeavesAReserveAboveCapacityAlone` (GameTest). Mutation-checked: without the fix the unit test fails and the GameTest reads 300 falling to 200.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
