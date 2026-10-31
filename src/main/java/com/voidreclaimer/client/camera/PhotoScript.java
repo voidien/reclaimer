@@ -37,6 +37,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <li>{@code orbit yaw pitch distance}: circle the focus</li>
  * <li>{@code debug true|false}: the debug layer</li>
  * <li>{@code labels true|false}: the body's socket and mount names, and their positions in the text file</li>
+ * <li>{@code overlay true|false}: lines and labels in the world for ships, drones and machines, and the same facts in the text file</li>
  * <li>{@code time freeze|step|slow|normal}: freeze or step the world, quarter speed, normal; leaving photo mode restores it</li>
  * <li>{@code shot name}: {@code screenshots/name.png} and {@code .txt}</li>
  * <li>{@code sheet name [distance]}: four views of the focus ({@link PhotoSheet}), {@code name_front} and so on; distance 0 or none
@@ -89,6 +90,11 @@ public final class PhotoScript {
                 .then(Commands.literal("labels").then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
                     boolean on = BoolArgumentType.getBool(c, "on");
                     later(mc -> PhotoDebug.setLabels(on));
+                    return 1;
+                })))
+                .then(Commands.literal("overlay").then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
+                    boolean on = BoolArgumentType.getBool(c, "on");
+                    later(mc -> PhotoDebug.setOverlay(on));
                     return 1;
                 })))
                 .then(Commands.literal("time")

@@ -93,4 +93,45 @@ public final class DebugReadoutGameTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void theLogisticsOverlayShowsADronesJobRouteAndHeading(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(93_300, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 12, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            clear(space, origin, 10);
+            BlockPos from = origin.offset(2, 0, 0);
+            BlockPos to = origin.offset(8, 0, 0);
+            space.setBlockAndUpdate(from, Blocks.CHEST.defaultBlockState());
+            space.setBlockAndUpdate(to, Blocks.CHEST.defaultBlockState());
+            var drone = com.voidreclaimer.helper.HelperDrone.spawn(space, Vec3.atCenterOf(origin.above(3)),
+                    new com.voidreclaimer.helper.HelperLinks(java.util.Optional.of(from), java.util.Optional.of(to)), null);
+            helper.runAfterDelay(3, () -> {
+                var shapes = new com.voidreclaimer.debug.DebugShapes();
+                var facts = new java.util.ArrayList<String>();
+                com.voidreclaimer.debug.LogisticsOverlay.add(space, Vec3.atCenterOf(origin), 32.0, shapes, facts);
+                helper.assertTrue(facts.stream().anyMatch(fact -> fact.startsWith("Drone ferrying, ")), "the job: " + facts);
+                helper.assertTrue(shapes.lines().stream().anyMatch(line -> line.colour() == com.voidreclaimer.debug.LogisticsOverlay.ROUTE
+                        && line.from().equals(Vec3.atCenterOf(from)) && line.to().equals(Vec3.atCenterOf(to))), "the route between its chests");
+                helper.assertTrue(shapes.lines().stream().anyMatch(line -> line.colour() == com.voidreclaimer.debug.LogisticsOverlay.HEADING), "where it is heading");
+                drone.discard();
+                helper.succeed();
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theLogisticsOverlayListsAStoppedMachine(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(93_400, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 4, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            space.setBlockAndUpdate(origin, com.simibubi.create.AllBlocks.SHAFT.get().defaultBlockState());
+            var shapes = new com.voidreclaimer.debug.DebugShapes();
+            var facts = new java.util.ArrayList<String>();
+            com.voidreclaimer.debug.LogisticsOverlay.add(space, Vec3.atCenterOf(origin), 32.0, shapes, facts);
+            helper.assertTrue(facts.contains("Machine at " + origin.toShortString() + ": 0 rpm"), "the stopped shaft: " + facts);
+            helper.assertTrue(shapes.texts().stream().anyMatch(text -> text.colour() == com.voidreclaimer.debug.LogisticsOverlay.STOPPED), "no label");
+            helper.succeed();
+        });
+    }
 }

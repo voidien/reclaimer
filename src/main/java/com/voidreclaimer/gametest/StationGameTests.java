@@ -243,6 +243,28 @@ public final class StationGameTests {
         });
     }
 
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theShipOverlayReadsAShipsBoxAndMassFromSable(GameTestHelper helper) {
+        var scene = com.voidreclaimer.debug.TestScenes.Scene.STATION;
+        BlockPos pos = com.voidreclaimer.debug.TestScenes.origin(scene);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            com.voidreclaimer.debug.TestScenes.build(space, scene, null);
+            var shapes = new com.voidreclaimer.debug.DebugShapes();
+            var facts = new java.util.ArrayList<String>();
+            com.voidreclaimer.debug.ShipOverlay.add(space, net.minecraft.world.phys.Vec3.atCenterOf(pos), 64.0, shapes, facts);
+            helper.assertTrue(facts.stream().anyMatch(fact -> fact.startsWith("Ship Test Station: 47 blocks") && !fact.contains("mass 0,")),
+                    "no ship, the wrong size (a 9 x 5 hull, the core and a Helm), or no mass: " + facts);
+            helper.assertTrue(shapes.lines().size() >= 12 + 3, "a box and a centre of mass: " + shapes.lines().size());
+            var box = shapes.lines().stream().filter(line -> line.colour() == com.voidreclaimer.debug.ShipOverlay.BOX).toList();
+            helper.assertTrue(box.stream().allMatch(line -> line.from().distanceTo(net.minecraft.world.phys.Vec3.atCenterOf(pos)) < 32.0),
+                    "the box is not where the ship is in the world: " + box.get(0));
+            helper.succeed();
+        });
+    }
+
     private static long testStations(ServerLevel space) {
         return dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().stream()
                 .filter(ship -> !ship.isRemoved() && "Test Station".equals(ship.getName())).count();

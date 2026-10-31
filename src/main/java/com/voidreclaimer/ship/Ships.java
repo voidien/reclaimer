@@ -57,7 +57,7 @@ public final class Ships {
         return ship instanceof ServerSubLevel server && server.isRemoved() ? null : ship;
     }
 
-    /** The ship's blocks' bounds in its own coordinates, from its plot. */
+    /** Where the ship's block entities are, in its own coordinates: not its plain blocks, see {@code StationAssembly.blocksOf}. */
     public static Iterable<BlockPos> blocksOf(ServerLevel level, ServerSubLevel ship) {
         LevelPlot plot = ship.getPlot();
         ChunkPos min = plot.getChunkMin();

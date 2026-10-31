@@ -43,6 +43,11 @@ wait_world() {
     until grep -q "joined the game" "$LOG" 2>/dev/null; do
         if [ -z "$(pid)" ] && [ $SECONDS -gt 60 ]; then echo "the client did not start, see $LOG" >&2; return 1; fi
         if grep -q "BUILD FAILED" "$LOG" 2>/dev/null; then tail -20 "$LOG" >&2; return 1; fi
+        if grep -aq "Crash report saved to" "$LOG" 2>/dev/null; then
+            grep -aE "Exception message|Failure message|Caused by 0" "run/crash-reports/$(ls -t run/crash-reports | head -1)" | head -4 >&2
+            echo "the client crashed while starting, see run/crash-reports; run start again if this is the start-up race in HANDOFF.md" >&2
+            return 1
+        fi
         [ $SECONDS -lt $deadline ] || { echo "no 'joined the game' after 150 s; a first run needs tools/client-test/bootstrap_world.sh" >&2; return 1; }
         sleep 0.5
     done

@@ -41,6 +41,8 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 - **Open PRs with `tools/pr.sh "title" "body"`** (pushes the branch, targets `main`). Some foreground commands exceed 10 minutes: run long Gradle tasks with `timeout` or in the background.
 - Xvfb is installed for the headless client (`tools/client-test/`, see "In-game client checks"). Call `xt.py` with an absolute path. A fresh client run shows a Narrator screen, "Failed to Quick Play" and the experimental-settings screen: create a world through the GUI with commands allowed.
 - Modrinth maven resolves version *numbers* across loaders (CC: Tweaked's number gave the Fabric jar): pin multi-loader mods by Modrinth version id and check the jar has `META-INF/neoforge.mods.toml`.
+- **Start-up race:** a client start can die with `IllegalStateException: Found unused register callbacks` from Registrate (`AbstractRegistrate.onRegister`), then a crash about `neoforge:swim_speed` while NeoForge rolls back. It is upstream and intermittent, not our code: run it again. `quick.sh start` reports it.
+- **JVM crash:** a client start can also die with `guarantee(def != nullptr) failed` in `PhaseChaitin::post_allocate_copy_removal`, a bug in the JVM's C2 compiler. It is not our code either: run it again.
 - `runData` can hang on the upstream Aeronautics start-up deadlock: `timeout 300 ./gradlew runData`, then `./gradlew --stop` and run it again (CI retries it the same way).
 
 ## Create Aeronautics spike (branch `claude/aeronautics-spike`, never merge)
