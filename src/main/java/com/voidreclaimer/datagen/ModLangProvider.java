@@ -166,6 +166,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.LAUNCH_CONTROLLER.get(), "Launch Controller");
         add(ModItems.HELPER_DRONE.get(), "Helper Drone");
         add(com.voidreclaimer.registry.ModEntities.HELPER_DRONE.get(), "Helper Drone");
+        add(com.voidreclaimer.registry.ModEntities.BODY_HOST.get(), "Remote Shell");
         add("replicator.void_reclaimer.description.helper_drone", "A small flying worker. Sneak-use it on the inventory to take from (or on asteroid rock to mine near), then on the inventory to bring to, and release it: it ferries items 16 at a time, or digs the rock block by block and brings it. Sneak-use it in the air to set a collect point: released, it gathers the cloud's dust there and brings it to you. Sneak-use the drone with an empty hand to take it back.");
         add("tooltip.void_reclaimer.helper.source", "From: %s");
         add("tooltip.void_reclaimer.helper.destination", "To: %s");
@@ -287,6 +288,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.tab.logs", "Logs");
         add("replicator.void_reclaimer.replicate", "Replicate");
         add("replicator.void_reclaimer.collect", "Collect output");
+        add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
+        add("commands.void_reclaimer.link.unknown", "No body called %s");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");
         add("commands.void_reclaimer.scene.unknown", "No test scene called %s");
         add("replicator.void_reclaimer.assembly", "3D view");

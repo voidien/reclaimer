@@ -32,5 +32,11 @@ public final class ModEntities {
                     .sized(0.9f, 0.9f).fireImmune().clientTrackingRange(10).updateInterval(2)
                     .build(VoidReclaimer.id("helper_drone").toString()));
 
+    /** A body with nobody in it (see {@code link.BodyHost}): the hit box is a player's, scaled by the body like a player's. */
+    public static final Supplier<EntityType<com.voidreclaimer.link.BodyHost>> BODY_HOST = ENTITY_TYPES.register("body_host",
+            () -> EntityType.Builder.<com.voidreclaimer.link.BodyHost>of(com.voidreclaimer.link.BodyHost::new, MobCategory.MISC)
+                    .sized(0.6f, 1.8f).noSummon().fireImmune().clientTrackingRange(10).updateInterval(2)
+                    .build(VoidReclaimer.id("body_host").toString()));
+
     private ModEntities() {}
 }

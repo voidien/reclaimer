@@ -982,6 +982,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Correction to the plan:** it said the lookup failed because it searched at the Helm's position in the plot. It does not: Sable's `entity_aabb_lookup` mixin carries a box from the plot to where the ship is in the world. The first test passed on the old code for that reason, then failed in 2 runs of 16, and a probe showed the seat's chunk had `entityTicking false`, `entitiesLoaded false`.
 - Tests: `aHelmKnowsItsPilotOnASeatRestoredFromASave` (the seat through its NBT and into the level) and `aHelmKnowsItsPilotBeforeEntityLookupsSeeTheSeat` (the same seat kept out of the level, which is what makes the failure happen every time). Mutation-checked: on the old code the second fails 3 runs of 3; breaking the seat's saved Helm position or ship id fails the first.
 
+## Remote control, part 1: the body host: done
+- `link/BodyHost`, a `LivingEntity` holding a body nobody is in, with roles shell, wreck and mirror (`HostRole`). The body is the same `BODY` attachment a player has, so `Bodies` reads it unchanged; the hit box is a player's, scaled by the body. A host floats and never leaves its dimension. It keeps its contents as the list `Inventory.save` writes, so one bad item cannot lose the rest, and a link epoch for later. A mirror is never saved. An unknown saved role reads as a shell.
+- `/void_reclaimer link spawn <drone|mech|ship|shuttle|titan> [full]` puts a shell ahead of the player. It is invisible until the next PR (a `NoopRenderer`, so spawning one cannot crash a client), and it cannot be linked to yet. Nothing in survival reaches any of this. Until the destroyed path exists, a shell that dies loses what it holds; only this debug command can make one.
+- Tests: `LinkGameTests` (save and load, size per body, a new body on a live host, what is saved, staying in its dimension, the debug shell, the command), `HostRoleTest`. Mutation-checked: no scale after load, no resize on a new body, a saved mirror, unsaved contents and a shell that can use portals each fail a test.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
