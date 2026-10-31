@@ -41,9 +41,22 @@ final class TestPlayers {
 
     /** Joins a player through the normal login path (game test worlds default to creative). */
     static ServerPlayer join(GameTestHelper helper) {
+        return join(helper, new GameProfile(UUID.randomUUID(), "vr_test_" + COUNTER.incrementAndGet()));
+    }
+
+    /**
+     * Logs {@code player} out and back in through the real save: the same account, a new {@code ServerPlayer} read from its
+     * player file. The old object must not be used after this.
+     */
+    static ServerPlayer rejoin(GameTestHelper helper, ServerPlayer player) {
+        GameProfile profile = player.getGameProfile();
+        remove(player);
+        return join(helper, profile);
+    }
+
+    private static ServerPlayer join(GameTestHelper helper, GameProfile profile) {
         MinecraftServer server = helper.getLevel().getServer();
-        CommonListenerCookie cookie = CommonListenerCookie.createInitial(
-                new GameProfile(UUID.randomUUID(), "vr_test_" + COUNTER.incrementAndGet()), false);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(profile, false);
         ServerPlayer player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         EmbeddedChannel channel = new EmbeddedChannel(connection);

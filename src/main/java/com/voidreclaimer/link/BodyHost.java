@@ -40,6 +40,9 @@ public class BodyHost extends LivingEntity {
     private UUID owner;
     /** The contents, as {@code Inventory.save} writes them: kept as saved, so that one bad item cannot lose the rest. */
     private ListTag items = new ListTag();
+    private int selected;
+    /** Effects as the game saves them, kept as they were: a body nobody is in does not wear them down. */
+    private ListTag effects = new ListTag();
 
     public BodyHost(EntityType<? extends BodyHost> type, Level level) {
         super(type, level);
@@ -119,6 +122,22 @@ public class BodyHost extends LivingEntity {
         this.items = items.copy();
     }
 
+    public int selected() {
+        return selected;
+    }
+
+    public void setSelected(int selected) {
+        this.selected = selected;
+    }
+
+    public ListTag effects() {
+        return effects.copy();
+    }
+
+    public void setEffects(ListTag effects) {
+        this.effects = effects.copy();
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -134,6 +153,8 @@ public class BodyHost extends LivingEntity {
             tag.putUUID("owner", owner);
         }
         tag.put("items", items.copy());
+        tag.putInt("selected", selected);
+        tag.put("held_effects", effects.copy());
     }
 
     @Override
@@ -143,6 +164,8 @@ public class BodyHost extends LivingEntity {
         epoch = tag.getLong("epoch");
         owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
         items = tag.getList("items", Tag.TAG_COMPOUND).copy();
+        selected = tag.getInt("selected");
+        effects = tag.getList("held_effects", Tag.TAG_COMPOUND).copy();
     }
 
     @Override
