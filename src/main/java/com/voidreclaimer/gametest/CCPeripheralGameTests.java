@@ -338,6 +338,24 @@ public final class CCPeripheralGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theStationCoreIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_700, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            var lua = new com.voidreclaimer.compat.cc.StationPeripheral();
+            var core = place(level, pos, ModBlocks.STATION_CORE.get(), com.voidreclaimer.station.StationCoreBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Station Core", "getName", "setName", "isAssembled", "assemble", "disassemble", "getPosition", "getFilledSlots");
+            lua.setName(core, "Relay Nine");
+            helper.assertTrue("Relay Nine".equals(lua.getName(core)) && !lua.isAssembled(core) && lua.getFilledSlots(core) == 0, "a fresh core reads wrongly");
+            helper.assertTrue(lua.getPosition(core).get("x") == pos.getX() + 0.5, "position " + lua.getPosition(core));
+            helper.assertTrue("nothing".equals(lua.assemble(core)), "assembling a lone core: " + lua.assemble(core));
+            helper.assertTrue("not_assembled".equals(lua.disassemble(core)), "disassembling a core in the world: " + lua.disassemble(core));
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void theHelmIsAPeripheral(GameTestHelper helper) {
         BlockPos pos = new BlockPos(60_600, 80, 0);
         NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {

@@ -118,7 +118,7 @@ public final class Replicator {
             return;
         }
         ReplicatorJob job = data.current();
-        ReplicatorLogic.Tick tick = ReplicatorLogic.tick(data, Energy.canPowerSystems(player));
+        ReplicatorLogic.Tick tick = ReplicatorLogic.tick(data, Energy.canPowerSystems(player), com.voidreclaimer.station.Stations.replicatorSteps(player));
         if (tick.worked()) {
             Energy.consume(player, (float) (Config.REPLICATOR_ENERGY.get() / 20.0));
         }

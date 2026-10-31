@@ -56,6 +56,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.CHEMICAL_THRUSTER.get());
                 output.accept(ModItems.ION_THRUSTER.get());
                 output.accept(ModItems.HELM.get());
+                output.accept(ModItems.STATION_CORE.get());
                 output.accept(ModItems.ASTEROID_CARBON.get());
                 output.accept(ModItems.ASTEROID_METALLIC.get());
                 for (var material : ModMaterials.ALL) {

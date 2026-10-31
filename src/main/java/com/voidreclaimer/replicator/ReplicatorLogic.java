@@ -78,6 +78,11 @@ public final class ReplicatorLogic {
      * of the queue (no work, no energy) until there is room.
      */
     public static Tick tick(ReplicatorData data, boolean powered) {
+        return tick(data, powered, 1);
+    }
+
+    /** As {@link #tick(ReplicatorData, boolean)}, making {@code steps} ticks of progress at once (a station's bonus). */
+    public static Tick tick(ReplicatorData data, boolean powered, int steps) {
         ReplicatorJob job = data.current();
         if (job == null || !powered) {
             return new Tick(data, List.of(), false);
@@ -91,7 +96,7 @@ public final class ReplicatorLogic {
             return new Tick(data.withJobs(jobs), job.results(), false);
         }
         List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
-        ReplicatorJob advanced = job.advanced();
+        ReplicatorJob advanced = job.advanced(Math.max(1, steps));
         jobs.set(0, advanced);
         ReplicatorData updated = data.withJobs(jobs);
         if (advanced.isDone() && hasRoom(updated, advanced)) {

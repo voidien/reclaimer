@@ -102,6 +102,17 @@ class ReplicatorLogicTest {
     }
 
     @Test
+    void aStationsBonusMakesSeveralTicksOfProgressAtOnce() {
+        ReplicatorData data = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE).data();
+        ReplicatorLogic.Tick boosted = ReplicatorLogic.tick(data, true, 2);
+        assertTrue(boosted.worked());
+        assertEquals(2, boosted.data().jobs().get(0).progress(), "two ticks of progress in one");
+        ReplicatorLogic.Tick done = ReplicatorLogic.tick(boosted.data(), true, 5);
+        assertEquals(1, done.finished().size(), "progress past the end finishes the job, nothing more");
+        assertEquals(0, ReplicatorLogic.tick(data, false, 5).data().jobs().get(0).progress(), "no power, no bonus");
+    }
+
+    @Test
     void jobsRunOnlyWhenPoweredAndFinishInOrder() {
         ReplicatorData data = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE).data();
         ReplicatorLogic.Tick unpowered = ReplicatorLogic.tick(data, false);

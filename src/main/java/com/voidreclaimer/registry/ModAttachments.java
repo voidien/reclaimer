@@ -94,6 +94,12 @@ public final class ModAttachments {
                     .sync(DysonSphereData.STREAM_CODEC)
                     .build());
 
+    /** Any level: its stations (names and world positions), refreshed by {@code Stations}; synced to every client in it. Not saved: rebuilt on load. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.station.StationList>> STATIONS = ATTACHMENT_TYPES.register("stations",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.station.StationList.EMPTY)
+                    .sync(com.voidreclaimer.station.StationList.STREAM_CODEC)
+                    .build());
+
     /** Ruined Earth level only: which of the three skies is shown. Saved with the level and synced to every client in it. */
     public static final Supplier<AttachmentType<com.voidreclaimer.earth.SkyEra>> EARTH_SKY_ERA = ATTACHMENT_TYPES.register("earth_sky_era",
             () -> AttachmentType.builder(() -> com.voidreclaimer.earth.SkyEra.RUINED)

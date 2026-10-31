@@ -58,6 +58,10 @@ public record ReplicatorJob(ResourceLocation recipe, List<ItemStack> results, Du
     }
 
     ReplicatorJob advanced() {
-        return new ReplicatorJob(recipe, results, paid, Math.min(total, progress + 1), total);
+        return advanced(1);
+    }
+
+    ReplicatorJob advanced(int steps) {
+        return new ReplicatorJob(recipe, results, paid, Math.min(total, progress + steps), total);
     }
 }

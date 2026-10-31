@@ -52,5 +52,7 @@ public final class MachineSetup {
                 (entity, side) -> entity.energy());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.PAYLOAD_CHAMBER.get(),
                 (entity, side) -> entity.items());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.STATION_CORE.get(),
+                (entity, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(entity));
     }
 }

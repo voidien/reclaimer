@@ -182,7 +182,13 @@ public final class BackupCores {
             return null;
         }
         core.setCharges(core.charges() - 1);
-        return new DimensionTransition(level, Vec3.atBottomCenterOf(spot), Vec3.ZERO, player.getYRot(), 0f, DimensionTransition.DO_NOTHING);
+        // A core built into a station is addressed in the ship's own coordinates: respawn where the ship has carried it.
+        Vec3 where = Vec3.atBottomCenterOf(spot);
+        dev.ryanhcode.sable.sublevel.ServerSubLevel ship = com.voidreclaimer.ship.Ships.shipAt(level, core.getBlockPos());
+        if (ship != null) {
+            where = ship.logicalPose().transformPosition(where);
+        }
+        return new DimensionTransition(level, where, Vec3.ZERO, player.getYRot(), 0f, DimensionTransition.DO_NOTHING);
     }
 
     @SubscribeEvent

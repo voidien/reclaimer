@@ -182,6 +182,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> CHEMICAL_THRUSTER = ITEMS.registerSimpleBlockItem(ModBlocks.CHEMICAL_THRUSTER);
     public static final DeferredItem<BlockItem> ION_THRUSTER = ITEMS.registerSimpleBlockItem(ModBlocks.ION_THRUSTER);
     public static final DeferredItem<BlockItem> HELM = ITEMS.registerSimpleBlockItem(ModBlocks.HELM);
+    public static final DeferredItem<BlockItem> STATION_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.STATION_CORE);
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));
