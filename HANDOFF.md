@@ -65,6 +65,9 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 - **Long jobs:** to skip a long Replicator job, rewrite the job's progress with `Replicator.store` (see `ReplicatorGameTests.kitsDeliverEveryPartAndKeepSalvagePrices`).
 - Timeouts are at most 900 ticks; a test that needs more splits its work.
 
+### Photo mode as a diagnostic
+F8 (photo mode), then G: exact facts about whatever the camera looks at, read from the server. Enter saves `run/screenshots/photo_<time>.png` and a `.txt` beside it with the full facts: read the text file instead of guessing from pixels.
+
 ### Test client helper commands
 `tools/client-test/xt.py` has `chord ctrl+f` (modifiers plus a key), `type "text" 0.3` (a gap between keys, for boxes that refilter on every key) and `mdrag DX DY [steps [shot.png]]` (hold the middle mouse button and move; the optional PNG is taken while the button is held, which is how the orbit camera was checked).
 

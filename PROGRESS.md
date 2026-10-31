@@ -870,6 +870,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Tests:** `CollectingTest` (unit, the phases); `HelperCollectGameTests` (with a tiny tank and a fast rate set for the test: a collector at a cloud's centre fills up and hands the dust to its owner three blocks away; a full collector whose owner is 500 blocks away waits and the owner gets nothing). Mutation-checked.
 - **Decisions pending (unattended):** the owner as the only destination (no dust-holding block exists yet); the 50-dust tank, rate 1, 96-block owner range; a point outside any cloud gathers nothing forever; no energy cost.
 
+## Photo mode debug layer: done
+- G in photo mode turns on hit boxes and chunk borders, a crosshair, an outline on what the camera looks at, and a panel of facts: the camera, the first block or entity along the view (properties, block entity, Create rotation and stress, inventory, tanks, FE, saved data), the place (dimension, light, dust cloud, sky era), the player's body and reserves. Facts come from `debug/DebugReadout` on the integrated server's thread, so they are the real state. Every photo-mode screenshot also saves them in full to `screenshots/<name>.txt`. Leaving photo mode restores the player's hit-box and chunk-border settings.
+- **Tests:** `DebugReadoutGameTests` (3: the first block along the view with its contents and not the one behind it; an entity in front of a block; empty space). Mutation-checked (entities ignored; inventory not counted). Seen in the headless client.
+- **Not covered:** a ship's blocks live in Sable's plot, so the look ray reads the world and not a ship; the ship overlay comes later.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
