@@ -36,6 +36,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <li>{@code focus crosshair|body|<x y z>}: what {@code orbit} and {@code sheet} look at; starts as the body</li>
  * <li>{@code orbit yaw pitch distance}: circle the focus</li>
  * <li>{@code debug true|false}: the debug layer</li>
+ * <li>{@code labels true|false}: the body's socket and mount names, and their positions in the text file</li>
  * <li>{@code shot name}: {@code screenshots/name.png} and {@code .txt}</li>
  * <li>{@code sheet name [distance]}: four views of the focus ({@link PhotoSheet}), {@code name_front} and so on; distance 0 or none
  * fits the body</li>
@@ -82,6 +83,11 @@ public final class PhotoScript {
                 .then(Commands.literal("debug").then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
                     boolean on = BoolArgumentType.getBool(c, "on");
                     later(mc -> PhotoDebug.set(mc, on));
+                    return 1;
+                })))
+                .then(Commands.literal("labels").then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
+                    boolean on = BoolArgumentType.getBool(c, "on");
+                    later(mc -> PhotoDebug.setLabels(on));
                     return 1;
                 })))
                 .then(Commands.literal("shot").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
@@ -169,7 +175,7 @@ public final class PhotoScript {
         later(mc -> {
             LocalPlayer player = mc.player;
             double away = distance > 0.0 ? distance : Math.max(MIN_DISTANCE, BodyBounds.radius(Bodies.view(player)) * player.getScale() * FIT);
-            float front = PhotoSheet.frontYaw(player.getYRot());
+            float front = PhotoSheet.frontYaw(com.voidreclaimer.client.render.body.BodyRenderer.facing(player));
             for (PhotoSheet.View view : PhotoSheet.VIEWS) {
                 queue(new Shot(focusPoint(player), front + view.yaw(), view.pitch(), away, name + "_" + view.suffix()));
             }
