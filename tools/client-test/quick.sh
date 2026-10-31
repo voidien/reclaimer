@@ -30,7 +30,8 @@ XT="python3 -I $ROOT/tools/client-test/xt.py"
 SCALE=3
 PORT=5005
 
-pid() { ps -eo pid,args | grep "java -Dfml.modFolders" | grep -v grep | awk '{print $1}'; }
+# Only this checkout's game: another worktree may be running its own at the same time.
+pid() { ps -eo pid,args | grep "java -Dfml.modFolders" | grep -F "$ROOT/build/" | grep -E "clientRunVmArgs" | grep -v grep | awk '{print $1}'; }
 
 # Hashes of the compiled classes: a recompile that changes nothing must not count as a change.
 hashes() { find build/classes/java/main -name '*.class' -exec md5sum {} + | LC_ALL=C sort; }
