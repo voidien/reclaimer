@@ -86,6 +86,7 @@ tools/client-test/quick.sh swap         # compile and replace the changed classe
 tools/client-test/quick.sh shot NAME    # build/client-shots/NAME.png
 tools/client-test/quick.sh cmd "/gamemode survival"
 tools/client-test/quick.sh photo NAME   # four views joined into build/client-shots/NAME.png, with the facts
+tools/client-test/quick.sh compare A B  # what changed between two shots: pixels, where, and a marked picture
 tools/client-test/quick.sh gclick 160 12   # GUI coordinates (window 1280x720, GUI scale 3); also ghover, gdrag, key, scroll
 tools/client-test/quick.sh stop
 ```
