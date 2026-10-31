@@ -18,8 +18,8 @@ Examples:
   python3 tools/art/rd_generate.py --balance
   python3 tools/art/rd_generate.py --fix asteroid_silicate --tool palette     # fix existing art (rd_edit.py)
   python3 tools/art/rd_generate.py --asset ashen_slag --restyle --strength 0.5   # restyle a placeholder in place
-  python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "add cooling fins"   # see rd_model.py
-  python3 tools/art/rd_generate.py --model-export core_mk2_model --target minecraft
+  python3 tools/art/rd_generate.py --model-revise core_mk2_module --prompt "add cooling fins"   # see rd_model.py
+  python3 tools/art/rd_generate.py --model-export core_mk2_module --target minecraft
 
 See docs/art/ASSETS.md for the workflow and tools/art/README.md for the options.
 """

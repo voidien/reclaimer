@@ -1,8 +1,8 @@
 """Retro Diffusion low-poly models for rd_generate.py, beyond generate and animate: revise a model and export it.
 
-    python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "add two cyan cooling fins"
-    python3 tools/art/rd_generate.py --model-revise core_mk2_model --prompt "..." --version 1 --dry-run
-    python3 tools/art/rd_generate.py --model-export core_mk2_model --target minecraft --target obj
+    python3 tools/art/rd_generate.py --model-revise core_mk2_module --prompt "add two cyan cooling fins"
+    python3 tools/art/rd_generate.py --model-revise core_mk2_module --prompt "..." --version 1 --dry-run
+    python3 tools/art/rd_generate.py --model-export core_mk2_module --target minecraft --target obj
 
 Both work on a model RD already holds for the asset: the asset_id of its newest finished model job in the state file.
 A revision is a new version of that model; it runs as a model job, so the usual polling saves its render, turntable,
