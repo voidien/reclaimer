@@ -1,0 +1,14 @@
+{
+  "values": [
+    "void_reclaimer:scaffold",
+    "void_reclaimer:portal_frame",
+    {
+      "id": "create:industrial_iron_block",
+      "required": false
+    },
+    {
+      "id": "create:andesite_casing",
+      "required": false
+    }
+  ]
+}

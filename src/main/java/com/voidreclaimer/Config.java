@@ -301,7 +301,7 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("Dyson launch and power: the Kinetic Mass Driver and the Sub-Light Quantum Receiver. Placeholder numbers.").push("dysonMachines");
-        toggle("massDriver", "The Kinetic Mass Driver launches payloads into the Dyson Sphere, and the Replicator can make its blocks.");
+        toggle("massDriver", "The Launch Complex launches payloads into the Dyson Sphere, and the Replicator can make its controller.");
         toggle("quantumReceiver", "The Sub-Light Quantum Receiver turns launched trusses into stress, and its Sequenced Assembly recipe exists.");
         MASS_DRIVER_STRESS = BUILDER.comment("Stress the Kinetic Drive Base needs, in SU per RPM.").defineInRange("massDriverStress", 32.0, 0.0, 4096.0);
         MASS_DRIVER_MIN_RPM = BUILDER.comment("Slowest rotation at which the Mass Driver launches.").defineInRange("massDriverMinRpm", 64, 1, 256);

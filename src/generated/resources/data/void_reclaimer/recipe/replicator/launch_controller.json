@@ -8,14 +8,15 @@
   "type": "void_reclaimer:replicator",
   "category": "void_reclaimer:blocks",
   "cost": {
-    "void_reclaimer:carbon": 15.0,
-    "void_reclaimer:metallic": 20.0,
-    "void_reclaimer:silicate": 20.0
+    "void_reclaimer:carbon": 70.0,
+    "void_reclaimer:ice": 20.0,
+    "void_reclaimer:metallic": 90.0,
+    "void_reclaimer:silicate": 65.0
   },
   "milestone": "void_reclaimer:diversified",
   "result": {
     "count": 1,
-    "id": "void_reclaimer:payload_chamber"
+    "id": "void_reclaimer:launch_controller"
   },
   "ticks": 1200
 }

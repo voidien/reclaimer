@@ -45,9 +45,9 @@ public final class TestEventListeners {
     static final Map<UUID, List<ResourceKey<Milestone>>> REACHED = new ConcurrentHashMap<>();
 
     /** Mass Drivers whose base stands at this X turn every launch into five trusses instead of the payload's own count. */
-    public static final int FIVE_TRUSS_DRIVER_X = 87_100;
+    public static final int FIVE_TRUSS_DRIVER_X = 89_256;
     /** Mass Drivers whose base stands at this X launch nothing (the event is cancelled). */
-    public static final int CANCELLED_DRIVER_X = 87_120;
+    public static final int CANCELLED_DRIVER_X = 89_288;
 
     private TestEventListeners() {}
 

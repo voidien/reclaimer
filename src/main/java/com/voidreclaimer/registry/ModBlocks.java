@@ -117,6 +117,16 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> MAGNETIC_BARREL_NOZZLE =
             BLOCKS.registerSimpleBlock("magnetic_barrel_nozzle",
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER));
+    /** Blocks that may form the launch complex's ring. */
+    public static final TagKey<Block> LAUNCH_FRAME = BlockTags.create(VoidReclaimer.id("launch_frame"));
+    /** The launch complex: the controller in the middle of the pad's near edge, and the invisible blocks that fill the pad while it is assembled. */
+    public static final DeferredBlock<com.voidreclaimer.launch.LaunchControllerBlock> LAUNCH_CONTROLLER =
+            BLOCKS.registerBlock("launch_controller", com.voidreclaimer.launch.LaunchControllerBlock::new,
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(3.0f, 6.0f).sound(SoundType.COPPER).noOcclusion());
+    public static final DeferredBlock<com.voidreclaimer.launch.LaunchPadBlock> LAUNCH_PAD =
+            BLOCKS.registerBlock("launch_pad", com.voidreclaimer.launch.LaunchPadBlock::new,
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(2.0f, 6.0f).sound(SoundType.METAL).noOcclusion().noLootTable()
+                            .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
     /** The Sub-Light Quantum Receiver: a rotation source fed by the Dyson Sphere. */
     public static final DeferredBlock<com.voidreclaimer.machine.MachineBlock<com.voidreclaimer.machine.QuantumReceiverBlockEntity>> QUANTUM_RECEIVER =
             BLOCKS.registerBlock("quantum_receiver", properties -> new com.voidreclaimer.machine.MachineBlock<>(properties,
