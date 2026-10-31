@@ -171,9 +171,14 @@ public final class LaunchComplexGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void breakingTheControllerSetsThePadDown(GameTestHelper helper) {
-        inArea(helper, 89_096, (level, pos) -> {
+        // Looks for the dropped payload items: the chunk must tick entities first.
+        BlockPos at = new BlockPos(89_096, Y, 0);
+        NaniteGameTests.inEntityTickingArea(helper, at, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            clear(level, at);
+            BlockPos pos = at;
             LaunchControllerBlockEntity controller = build(helper, level, pos);
             controller.inventory().setStackInSlot(0, new ItemStack(ModMaterials.DYSON_SHELL_TRUSS_MODULE.get(), 3));
             level.destroyBlock(pos, true);
@@ -303,6 +308,28 @@ public final class LaunchComplexGameTests {
             helper.assertTrue(DysonSphereData.of(level.getServer()).trusses() == 0, "a cancelled launch still counted");
             helper.assertTrue(controller.inventory().getStackInSlot(0).isEmpty(), "payload kept");
             helper.assertTrue(controller.launches() == 1, "a cancelled launch is still a launch: " + controller.launches());
+            LaunchComplex.disassemble(controller);
+            helper.succeed();
+        });
+    }
+
+    /** The renderer poses the model from the synced wind-up and launch time. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aLaunchIsSyncedForTheRenderer(GameTestHelper helper) {
+        inArea(helper, 89_352, (level, pos) -> {
+            resetDyson(level);
+            LaunchControllerBlockEntity controller = build(helper, level, pos);
+            helper.assertTrue(controller.lastLaunch() < 0, "a new controller remembers a launch");
+            items(level, pos).insertItem(0, new ItemStack(ModMaterials.DYSON_SHELL_TRUSS_MODULE.get(), 1), false);
+            int fast = Config.MASS_DRIVER_FAST_TICKS.get();
+            spin(controller, Config.MASS_DRIVER_FAST_RPM.get(), fast / 2);
+            net.minecraft.nbt.CompoundTag packet = controller.getUpdateTag(level.registryAccess());
+            helper.assertTrue(packet.getFloat("progress") > 0.2f && packet.getFloat("progress") < 0.8f, "the client packet lacks the wind-up: " + packet);
+            helper.assertTrue(!packet.contains("inventory"), "the client packet carries the inventory");
+            spin(controller, Config.MASS_DRIVER_FAST_RPM.get(), fast / 2 + SLACK);
+            helper.assertTrue(controller.lastLaunch() == level.getGameTime(), "launch time " + controller.lastLaunch() + " vs " + level.getGameTime());
+            helper.assertTrue(controller.getUpdateTag(level.registryAccess()).getLong("lastLaunch") == level.getGameTime(), "the client packet lacks the launch time");
+            resetDyson(level);
             LaunchComplex.disassemble(controller);
             helper.succeed();
         });

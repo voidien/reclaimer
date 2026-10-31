@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.Mth;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -25,18 +26,28 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * The Launch Controller's block entity: the launch complex's payload store and its firing logic. Spun by a shaft while
  * assembled and loaded, it winds up ({@link MassDriverMath#launchTicks}) and fires one payload from the pad's gun into
  * the Dyson Sphere. Below the minimum speed, unassembled, or with the {@code massDriver} toggle off it does nothing.
- * Belts, funnels, arms and hoppers insert payloads from any side; nothing takes them out.
+ * Belts, funnels, arms and hoppers insert payloads from any side; nothing takes them out. The whole complex is drawn
+ * from this block entity (GeckoLib, {@code geo/entity/mass_driver.geo.json}); the wind-up and the last launch are synced
+ * every {@value #SYNC_TICKS} ticks for its code animation.
  */
-public class LaunchControllerBlockEntity extends KineticBlockEntity {
+public class LaunchControllerBlockEntity extends KineticBlockEntity implements GeoBlockEntity {
     public static final int SLOTS = 2;
     public static final int SLOT_LIMIT = 16;
     /** How often an assembled complex checks its ring and pad. */
     static final int CHECK_TICKS = 20;
+    /** How often the wind-up is synced to the client while it builds. */
+    static final int SYNC_TICKS = 10;
 
     private final ItemStackHandler inventory = new ItemStackHandler(SLOTS) {
         @Override
@@ -59,6 +70,13 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
     private float progress;
     private int launches;
     private int checkIn;
+    private int syncIn;
+    /** Game time of the last launch, -1 before any; synced for the renderer's recoil. */
+    private long lastLaunch = -1L;
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    /** Client only: the wind-up as drawn, eased towards the synced value so the gun moves smoothly between updates. */
+    private float shownProgress;
+    private float shownAt;
 
     public LaunchControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -86,6 +104,20 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
     /** Payloads this complex has fired. */
     public int launches() {
         return launches;
+    }
+
+    /** Game time of the last launch, or -1 before any. */
+    public long lastLaunch() {
+        return lastLaunch;
+    }
+
+    /** Client only: the wind-up to draw, eased towards the last synced {@link #progress()}; a launch (progress back to 0) snaps. */
+    public float shownProgress(float partialTick) {
+        float now = (level == null ? 0L : level.getGameTime()) + partialTick;
+        float dt = Mth.clamp(now - shownAt, 0f, 20f);
+        shownAt = now;
+        shownProgress = progress < shownProgress ? progress : Mth.lerp(Math.min(1f, dt * 0.15f), shownProgress, progress);
+        return shownProgress;
     }
 
     /** What automation sees: payloads go in, nothing comes out. */
@@ -141,6 +173,10 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
             return;
         }
         progress += perTick;
+        if (++syncIn >= SYNC_TICKS) {
+            syncIn = 0;
+            sendData();
+        }
         if (progress >= 1f) {
             progress = 0f;
             fire(server, slot);
@@ -157,7 +193,9 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
         MassDriverLaunchEvent event = new MassDriverLaunchEvent(server, worldPosition, payload.copy(), satellite ? 1 : 0, truss ? 1 : 0);
         NeoForge.EVENT_BUS.post(event);
         launches++;
+        lastLaunch = server.getGameTime();
         setChanged();
+        sendData();
         Vec3 muzzle = LaunchPad.muzzle(worldPosition, facing());
         server.playSound(null, muzzle.x, muzzle.y, muzzle.z, ModSounds.MASS_DRIVER_LAUNCH.get(), SoundSource.BLOCKS, 2f, 1f);
         server.sendParticles(ParticleTypes.CLOUD, muzzle.x, muzzle.y + 0.5, muzzle.z, 32, 0.4, 0.2, 0.4, 0.1);
@@ -179,6 +217,7 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
         tag.putBoolean("assembled", assembled);
         tag.putFloat("progress", progress);
         tag.putInt("launches", launches);
+        tag.putLong("lastLaunch", lastLaunch);
         if (!clientPacket) {
             tag.put("inventory", inventory.serializeNBT(registries));
         }
@@ -190,9 +229,20 @@ public class LaunchControllerBlockEntity extends KineticBlockEntity {
         assembled = tag.getBoolean("assembled");
         progress = tag.getFloat("progress");
         launches = tag.getInt("launches");
+        lastLaunch = tag.contains("lastLaunch") ? tag.getLong("lastLaunch") : -1L;
         if (!clientPacket) {
             inventory.deserializeNBT(registries, tag.getCompound("inventory"));
         }
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "launch_complex", 0, state -> PlayState.STOP));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 
     private final class Handler implements IItemHandler {

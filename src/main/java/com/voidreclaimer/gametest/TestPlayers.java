@@ -46,7 +46,17 @@ final class TestPlayers {
                 new GameProfile(UUID.randomUUID(), "vr_test_" + COUNTER.incrementAndGet()), false);
         ServerPlayer player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
+        EmbeddedChannel channel = new EmbeddedChannel(connection);
+        // An EmbeddedChannel keeps every outbound message until something reads it, so each packet the server sends a
+        // test player (every chunk, every sync) would stay in memory for the whole run; CI ran out of heap that way.
+        // Nothing reads them: drop them at the head of the pipeline.
+        channel.pipeline().addFirst("drop_outbound", new io.netty.channel.ChannelOutboundHandlerAdapter() {
+            @Override
+            public void write(io.netty.channel.ChannelHandlerContext context, Object message, io.netty.channel.ChannelPromise promise) {
+                io.netty.util.ReferenceCountUtil.release(message);
+                promise.setSuccess();
+            }
+        });
         // The fake connection skips NeoForge's channel negotiation; declare every registered play payload, ours and
         // other mods' (Create sends its own on login). Internal NeoForge API, used only by tests.
         ChannelAttributes.getOrCreateAdHocChannels(connection).addAll(playPayloadIds());

@@ -31,8 +31,28 @@ public final class NaniteGameTests {
         ServerLevel space = TestPlayers.deepSpace(helper);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         // Scheduled ticks set before this are dropped, so wait a few ticks; then wait for the chunk to really tick, which on a
-        // slow machine (CI) or a fresh world takes longer than a fixed delay. A chunk that never ticks gives up after 100 ticks.
+        // slow machine (CI) or a fresh world takes longer than a fixed delay. A chunk that never ticks gives up after 100 ticks:
+        // block tests do not need entity ticking. Tests that look up entities use inEntityTickingArea.
         helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, 0, () -> {
+            BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
+                    .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
+            body.run();
+        }));
+    }
+
+    /**
+     * Like {@link #inLoadedArea}, but never starts before the chunk ticks entities, however long that takes (the test's own
+     * timeout ends the wait): entities in a chunk that does not tick them neither move nor appear in lookups.
+     */
+    static void inEntityTickingArea(GameTestHelper helper, BlockPos pos, int radius, Runnable body) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        // A lone forced chunk never reaches entity ticking here; with its eight neighbours forced too it does.
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                space.setChunkForced((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz, true);
+            }
+        }
+        helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, -100_000, () -> {
             BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
                     .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
             body.run();
