@@ -173,6 +173,12 @@ dependencies {
         builtBy 'extractCreateLibs'
         include '*.jar'
     }
+    // Unit tests of pure ship maths use Sable's companion types (Pose3d, BoundingBox3i).
+    testCompileOnly "maven.modrinth:sable:${sable_version}"
+    testCompileOnly fileTree(layout.buildDirectory.dir('create-libs')) {
+        builtBy 'extractCreateLibs'
+        include '*.jar'
+    }
 
     // Create Aeronautics (required) and its physics engine Sable. Runtime only: our code doesn't compile against them yet.
     localRuntime "maven.modrinth:sable:${sable_version}"

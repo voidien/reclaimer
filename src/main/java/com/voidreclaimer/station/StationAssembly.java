@@ -111,11 +111,12 @@ public final class StationAssembly {
         List<BlockPos> out = new ArrayList<>();
         for (PlotChunkHolder holder : ship.getPlot().getLoadedChunks()) {
             LevelChunk chunk = holder.getChunk();
-            if (chunk == null) {
+            // The holder's box is chunk-local in x and z (as Simulated reads it); y is absolute. A plot chunk the
+            // ship spans without placing a block in it has no box.
+            var box = holder.getBoundingBox();
+            if (chunk == null || box == null) {
                 continue;
             }
-            // The holder's box is chunk-local in x and z (as Simulated reads it); y is absolute.
-            var box = holder.getBoundingBox();
             int originX = holder.getPos().getMinBlockX(), originZ = holder.getPos().getMinBlockZ();
             for (int x = box.minX(); x <= box.maxX(); x++) {
                 for (int y = box.minY(); y <= box.maxY(); y++) {
