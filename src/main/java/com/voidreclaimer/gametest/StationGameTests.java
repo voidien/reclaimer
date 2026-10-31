@@ -199,6 +199,67 @@ public final class StationGameTests {
         });
     }
 
+    /**
+     * A clamp asks every ship what sits in its front cell, in that ship's own coordinates. From far away those coordinates run
+     * on into another ship's plot, and the block found there is not the far ship's: the far ship must not count as a visitor.
+     */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aClampIgnoresAFarShipWhoseCoordinatesLandInAnotherShip(GameTestHelper helper) {
+        BlockPos farPos = new BlockPos(104_000, 200, 3_000);
+        BlockPos otherPos = new BlockPos(104_300, 200, 3_000);
+        String farName = "vr_test_" + farPos.getX();
+        String otherName = "vr_test_" + otherPos.getX();
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(farPos.getX() >> 4, farPos.getZ() >> 4, true);
+        space.setChunkForced(otherPos.getX() >> 4, otherPos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            for (BlockPos pos : List.of(farPos, otherPos)) {
+                clearArea(server, space, pos);
+                command(server, space, pos, "fill " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + pos.getX() + " " + pos.getY() + " " + (pos.getZ() + 2) + " minecraft:stone");
+                command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            }
+            helper.runAfterDelay(2, () -> {
+                AeronauticsGameTests.nameShip(server, space, farPos.south());
+                AeronauticsGameTests.nameShip(server, space, otherPos.south());
+                var far = shipNamed(space, farName);
+                var other = shipNamed(space, otherName);
+                helper.assertTrue(far != null && other != null, "the two ships were not built");
+                BlockPos inOther = StationAssembly.blocksOf(space, other).get(0);
+                BlockPos front = BlockPos.containing(far.logicalPose().transformPosition(net.minecraft.world.phys.Vec3.atCenterOf(inOther)));
+                BlockPos corePos = front.north(3);
+                space.setChunkForced(front.getX() >> 4, front.getZ() >> 4, true);
+                space.setChunkForced(corePos.getX() >> 4, corePos.getZ() >> 4, true);
+                helper.runAfterDelay(5, () -> {
+                    int x = corePos.getX(), y = corePos.getY(), z = corePos.getZ();
+                    command(server, space, corePos, "setblock " + x + " " + y + " " + z + " void_reclaimer:station_core[facing=north]");
+                    command(server, space, corePos, "setblock " + x + " " + y + " " + (z + 1) + " minecraft:stone");
+                    command(server, space, corePos, "setblock " + x + " " + y + " " + (z + 2) + " void_reclaimer:docking_clamp[facing=south]");
+                    StationCoreBlockEntity core = (StationCoreBlockEntity) space.getBlockEntity(corePos);
+                    core.setStationName("FarDock");
+                    helper.assertTrue(StationAssembly.assemble(core) == StationAssembly.Result.ASSEMBLED, "station assembly failed");
+                    helper.runAfterDelay(5, () -> {
+                        var clamp = clampOf(space, "FarDock");
+                        helper.assertTrue(clamp != null, "no clamp aboard the station");
+                        var station = com.voidreclaimer.ship.Ships.shipAt(space, clamp.getBlockPos());
+                        var point = station.logicalPose().transformPosition(net.minecraft.world.phys.Vec3.atCenterOf(clamp.front()));
+                        BlockPos seen = BlockPos.containing(far.logicalPose().transformPositionInverse(point));
+                        boolean landsOnOther = com.voidreclaimer.ship.Ships.shipAt(space, seen) == other && space.getBlockState(seen).is(Blocks.STONE);
+                        var status = clamp.dock();
+                        boolean stayed = shipNamed(space, farName) != null;
+                        remove(server, space, farPos, "FarDock");
+                        remove(server, space, farPos, farName);
+                        remove(server, space, otherPos, otherName);
+                        helper.assertTrue(landsOnOther, "the far ship's coordinates do not land on the other ship, so this checks nothing: " + seen);
+                        helper.assertTrue(stayed, "the clamp pulled in a ship from far away");
+                        helper.assertTrue(status == com.voidreclaimer.station.DockingClampBlockEntity.Status.NO_VISITOR, "status " + status);
+                        helper.succeed();
+                    });
+                });
+            });
+        });
+    }
+
     /** The Docking Clamp aboard the station named {@code name}, or null. */
     static com.voidreclaimer.station.DockingClampBlockEntity clampOf(ServerLevel space, String name) {
         for (var ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {

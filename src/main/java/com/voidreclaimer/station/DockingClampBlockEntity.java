@@ -108,7 +108,8 @@ public class DockingClampBlockEntity extends BlockEntity {
             }
             Vec3 local = ship.logicalPose().transformPositionInverse(point);
             BlockPos candidate = BlockPos.containing(local);
-            if (!server.getBlockState(candidate).isAir()) {
+            // From far away a ship's coordinates run on past its plot, and a block found there is another ship's.
+            if (Ships.shipAt(server, candidate) == ship && !server.getBlockState(candidate).isAir()) {
                 visitor = ship;
                 touching = candidate;
                 break;
