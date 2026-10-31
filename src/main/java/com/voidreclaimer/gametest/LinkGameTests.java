@@ -5,6 +5,7 @@ import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyInventoryMenu;
 import com.voidreclaimer.body.BuiltinBodies;
+import com.voidreclaimer.debug.ItemCensus;
 import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.link.BodyHost;
@@ -455,6 +456,27 @@ public final class LinkGameTests {
             helper.succeed();
         } finally {
             TestPlayers.remove(back);
+        }
+    }
+
+    /** The command's result is the total, so a test can read it: the cursor and the body's own parts count. */
+    @GameTest(template = "empty")
+    public static void theCensusCountsCursorAndBodyParts(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 75_500.5, 80, 0.5);
+        try {
+            var source = player.createCommandSourceStack().withPermission(4).withSuppressedOutput();
+            var dispatcher = helper.getLevel().getServer().getCommands().getDispatcher();
+            int parts = ItemCensus.of(player).total();
+            player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 3));
+            player.containerMenu.setCarried(new ItemStack(Items.EMERALD, 4));
+            int counted = dispatcher.execute("void_reclaimer link census " + player.getScoreboardName(), source);
+            helper.assertTrue(counted == parts + 7, "counted " + counted + ", with " + parts + " body parts and 7 items");
+            helper.assertTrue(ItemCensus.of(player).since(new ItemCensus(java.util.Map.of())).size() >= 2, "no kinds counted");
+            helper.succeed();
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            helper.fail("the command did not parse: " + e.getMessage());
+        } finally {
+            TestPlayers.remove(player);
         }
     }
 }
