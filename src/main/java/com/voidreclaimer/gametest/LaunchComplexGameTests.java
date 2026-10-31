@@ -171,9 +171,14 @@ public final class LaunchComplexGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void breakingTheControllerSetsThePadDown(GameTestHelper helper) {
-        inArea(helper, 89_096, (level, pos) -> {
+        // Looks for the dropped payload items: the chunk must tick entities first.
+        BlockPos at = new BlockPos(89_096, Y, 0);
+        NaniteGameTests.inEntityTickingArea(helper, at, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            clear(level, at);
+            BlockPos pos = at;
             LaunchControllerBlockEntity controller = build(helper, level, pos);
             controller.inventory().setStackInSlot(0, new ItemStack(ModMaterials.DYSON_SHELL_TRUSS_MODULE.get(), 3));
             level.destroyBlock(pos, true);

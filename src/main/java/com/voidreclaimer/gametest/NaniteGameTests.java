@@ -46,7 +46,12 @@ public final class NaniteGameTests {
      */
     static void inEntityTickingArea(GameTestHelper helper, BlockPos pos, int radius, Runnable body) {
         ServerLevel space = TestPlayers.deepSpace(helper);
-        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        // A lone forced chunk never reaches entity ticking here; with its eight neighbours forced too it does.
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                space.setChunkForced((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz, true);
+            }
+        }
         helper.runAfterDelay(5, () -> waitTicking(helper, space, pos, -100_000, () -> {
             BlockPos.betweenClosed(pos.offset(-radius, -radius, -radius), pos.offset(radius, radius, radius))
                     .forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
