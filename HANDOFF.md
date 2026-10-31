@@ -15,7 +15,7 @@ Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTes
 - Everything under "Decisions pending (for the owner)" at the top of `PROGRESS.md`: the unattended defaults of hover flight, the Cloud Siphon's power numbers, the RCS block, the Helm, Earth's wind, the stations, the docking clamp, the portal crossing, the launch complex, the renderer and the helper drones.
 - The asset list drift: a full `asset_list.py` run renames module model keys (`core_mk2_model` -> `core_mk2_module`) and breaks four RD tests (`PROGRESS.md` "Asset list").
 - Hazards across the whole game (the owner wants to discuss; fall damage on Earth is vanilla for now).
-- Ship and Shuttle scale (3.0; maybe about 2.0). Do not change it until the owner decides.
+- Ship and Shuttle scale (3.0; maybe about 2.0). Do not change it until the owner decides. The first look at them was through a render bug that drew them at 9 (`PROGRESS.md` "Fix: bodies drawn at scale squared"), so the question deserves a fresh look.
 - The owner has no time to playtest: do not wait for feedback, but list what to look at.
 
 **Not seen in a real client yet (list these when the owner asks what to try):** the three-era sky's colours, hover flight beyond the HUD text and the Mech walking, the Helm HUD and the camera riding a ship, stations and docking, ships through the portal, the launch complex renderer (its orientation relative to the controller and the lean and kick), the helper drones' flight, the CC peripherals from a real computer, the cockpit offsets. No RD tool has run against the real service: that needs the owner's key in `$RD_API_KEY`; never ask for it, store it or print it.
@@ -98,7 +98,6 @@ Helpers underneath are in `tools/client-test/` (`client.sh`, `xt.py`). With a re
 5. **JEI:** open the inventory (E), hover an item with `xt hover X Y`, then press R for its recipes.
 6. **Screenshots:** `shot file.png`, then view the PNG. **Stopping:** `kill $(clientpid)`. There is no sound in the headless client.
 - **Seeing a body:** the art's textures are near-black, so stand in a lit room first (`/fill ~-15 ~-15 ~-15 ~15 ~15 ~15 minecraft:sea_lantern hollow`), then `/void_reclaimer body preset @s mech` (or `drone`, `ship`) and F5 for third person. Wait about 45 s after "joined the game" before typing commands. Zoom screenshots with ImageMagick `convert shot.png -crop WxH+X+Y -filter point -resize 300% out.png`.
-- **Known oddity:** the Ship preset at 0 m/s once showed large dark-blue slabs around the camera in Xvfb (not the Dyson lattice, not the specks; they radiate from the centre like a sky element). It could not be reproduced later; look at `client/render/DeepSpaceEffects` and `DysonSky` if it returns.
 
 ### Placeholder art
 - **Test Starship** (`void_reclaimer:test_starship`): a placeholder entity for checking RD models and animations in game. To replace its model, see `PROGRESS.md` ("Test Starship").

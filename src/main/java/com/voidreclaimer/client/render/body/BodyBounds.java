@@ -19,7 +19,7 @@ public final class BodyBounds {
 
     private BodyBounds() {}
 
-    /** The radius in blocks at scale 1 of the rig this body uses. */
+    /** Half the diagonal of the box round the rig this body uses, in blocks at scale 1: how far it reaches from its middle. */
     public static float radius(BodyView view) {
         SectionStats core = Parts.section(view.data().core());
         String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
@@ -28,19 +28,30 @@ public final class BodyBounds {
         if (model == null) {
             return DEFAULT_RADIUS;
         }
-        float radius = 0f;
+        float[] box = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         for (GeoBone bone : model.topLevelBones()) {
-            radius = Math.max(radius, reach(bone, spec == null));
+            reach(bone, spec == null, box);
         }
-        return radius > 0f ? radius : DEFAULT_RADIUS;
+        float x = box[3] - box[0];
+        float y = box[4] - box[1];
+        float z = box[5] - box[2];
+        return x < 0f ? DEFAULT_RADIUS : (float) Math.sqrt(x * x + y * y + z * z) / 2f;
     }
 
-    private static float reach(GeoBone bone, boolean composed) {
-        float radius = 0f;
+    private static void grow(float[] box, float x, float y, float z) {
+        box[0] = Math.min(box[0], x);
+        box[1] = Math.min(box[1], y);
+        box[2] = Math.min(box[2], z);
+        box[3] = Math.max(box[3], x);
+        box[4] = Math.max(box[4], y);
+        box[5] = Math.max(box[5], z);
+    }
+
+    private static void reach(GeoBone bone, boolean composed, float[] box) {
         for (GeoCube cube : bone.getCubes()) {
             for (GeoQuad quad : cube.quads()) {
                 for (GeoVertex vertex : quad.vertices()) {
-                    radius = Math.max(radius, vertex.position().length());
+                    grow(box, vertex.position().x, vertex.position().y, vertex.position().z);
                 }
             }
         }
@@ -48,11 +59,11 @@ public final class BodyBounds {
             float x = bone.getPivotX() / 16f;
             float y = bone.getPivotY() / 16f;
             float z = bone.getPivotZ() / 16f;
-            radius = Math.max(radius, (float) Math.sqrt(x * x + y * y + z * z) + SECTION_ROOM);
+            grow(box, x - SECTION_ROOM, y - SECTION_ROOM, z - SECTION_ROOM);
+            grow(box, x + SECTION_ROOM, y + SECTION_ROOM, z + SECTION_ROOM);
         }
         for (GeoBone child : bone.getChildBones()) {
-            radius = Math.max(radius, reach(child, composed));
+            reach(child, composed, box);
         }
-        return radius;
     }
 }

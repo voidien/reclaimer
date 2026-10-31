@@ -880,6 +880,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Tests:** `PhotoStateTest` (the orbit stands at its distance looking at the focus; place and field of view limits; the sheet's four views). Seen in the headless client on the Drone, Mech and Ship. It is client-only input, so there is no GameTest.
 - **Found with it on the first day:** bodies were drawn at scale squared and their parts at scale cubed, see the fix below.
 
+## Fix: bodies drawn at scale squared, parts at scale cubed: done
+- **Found with the photo sheet (2026-10-31):** the render matrix read 9 for a scale 3 body and 27 for its parts. GeckoLib's `GeoReplacedEntityRenderer.actuallyRender` applies the entity's scale on every pass, on top of our `withScale`, and on every re-render too, along with the body's turn. So since 5b-1 the Drone drew at 0.16, the Mech at 1.44, the Ship and Shuttle at 9 and the Titan at 64, with parts at the cube and spinning about their mounts as the body turned.
+- **This explains:** the dark-blue slabs and black mass round the Ship (its sections, at 27, around the camera), and very likely the owner's playtest note that Ship, Shuttle and Titan were too large in F5. The third-person camera factor and the Ship and Shuttle scale question both came from looking at the bug.
+- **Fix:** no `withScale`; during a re-render `applyRotations` undoes the scale and skips the turn. The lean pivot is now in model units. The inventory preview and photo sheets fit by `BodyBounds` (half the diagonal of the rig's box) instead of a guess from the hit box.
+- **Checked in the headless client:** Drone, Mech, Ship, Shuttle and Titan in photo sheets, third person and the inventory preview; the debug panel reads 0.40, 1.20, 3.00, 3.00, 8.00 for body and parts alike (it read 9 and 27 before). Client rendering, so no GameTest; the panel's two numbers are the check.
+- **Owner to look at:** the `generic.scale` values did not change, but every body now looks its true size for the first time: Ship 12 blocks long, Shuttle 26, Titan 67. So the open question about shrinking the Ship and Shuttle, and the third-person camera distance (the Ship reads small at 40 blocks; the Titan frames well at 160), are worth judging afresh.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
