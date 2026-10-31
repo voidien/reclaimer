@@ -61,7 +61,17 @@ final class TestPlayers {
         // other mods' (Create sends its own on login). Internal NeoForge API, used only by tests.
         ChannelAttributes.getOrCreateAdHocChannels(connection).addAll(playPayloadIds());
         server.getPlayerList().placeNewPlayer(connection, player, cookie);
+        // Awakening grants the starter dust. A Dyson tier change checks every online player's milestones, so a player who had
+        // not reached it would get dust at a moment set by whichever test changes the tier: that made exact dust checks flaky.
+        com.voidreclaimer.replicator.Replicator.store(player,
+                com.voidreclaimer.replicator.Replicator.data(player).withUnlocked(com.voidreclaimer.replicator.Milestones.AWAKENING));
         return player;
+    }
+
+    /** For a test about the first moments of a game: the player has not reached Awakening yet. Tests start past it, see {@link #join}. */
+    static void notYetAwake(ServerPlayer player) {
+        com.voidreclaimer.replicator.Replicator.store(player,
+                com.voidreclaimer.replicator.Replicator.data(player).withoutUnlocked(com.voidreclaimer.replicator.Milestones.AWAKENING));
     }
 
     @SuppressWarnings("unchecked")

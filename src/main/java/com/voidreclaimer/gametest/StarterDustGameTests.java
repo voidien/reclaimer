@@ -22,6 +22,7 @@ public final class StarterDustGameTests {
     public static void aNewBodyStartsWithTheConfiguredDustExactlyOnce(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 97_000.5, 80, 0.5);
         try {
+            TestPlayers.notYetAwake(player);
             player.setData(ModAttachments.DUST, DustData.EMPTY);
             Replicator.checkMilestones(player); // reaches Awakening
             DustData dust = player.getData(ModAttachments.DUST);
@@ -49,12 +50,27 @@ public final class StarterDustGameTests {
             helper.assertTrue(Config.STARTER_METALLIC.get() >= 25.0 && Config.STARTER_SILICATE.get() >= 30.0
                     && Config.STARTER_CARBON.get() >= 5.0, "the defaults no longer pay for the first four Awakening recipes");
             Config.STARTER_DUST_ENABLED.set(false);
+            TestPlayers.notYetAwake(player);
             player.setData(ModAttachments.DUST, DustData.EMPTY);
             Replicator.checkMilestones(player);
             helper.assertTrue(player.getData(ModAttachments.DUST).total() == 0f, "dust granted while switched off");
             helper.succeed();
         } finally {
             Config.STARTER_DUST_ENABLED.set(was);
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** What an unrelated test's Dyson tier change does to every online player: it must not give anyone dust. */
+    @GameTest(template = "empty")
+    public static void aTestPlayersDustIsNotChangedByAnotherTestsMilestoneCheck(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 98_500.5, 80, 0.5);
+        try {
+            player.setData(ModAttachments.DUST, DustData.EMPTY);
+            Replicator.checkMilestones(player);
+            helper.assertTrue(player.getData(ModAttachments.DUST).total() == 0f, "a milestone check gave a test player dust");
+            helper.succeed();
+        } finally {
             TestPlayers.remove(player);
         }
     }
