@@ -55,6 +55,7 @@ public final class PhotoMode {
             return;
         }
         active = false;
+        PhotoDebug.set(mc, false);
         mc.options.hideGui = hudWasHidden;
     }
 

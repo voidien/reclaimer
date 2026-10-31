@@ -3,7 +3,6 @@ package com.voidreclaimer.client.camera;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.voidreclaimer.client.input.ModKeyMappings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -12,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Takes the input for photo mode while the camera is free. It is a screen only so the mouse and keys reach it instead of the body;
  * the game keeps running behind it. Drag with the left mouse button to look, WASD to move (Ctrl for fast), Space and Shift for up
- * and down, scroll for the field of view, Q and E to roll (R resets), Enter or F2 for a screenshot, Escape or the photo-mode key to leave.
+ * and down, scroll for the field of view, Q and E to roll (R resets), G for the debug layer ({@link PhotoDebug}), Enter or F2 for a screenshot, Escape or the photo-mode key to leave.
  */
 public final class PhotoModeScreen extends Screen {
     private static final double SPEED = 0.35;
@@ -79,9 +78,13 @@ public final class PhotoModeScreen extends Screen {
             PhotoMode.state().resetRoll();
             return true;
         }
+        if (keyCode == GLFW.GLFW_KEY_G) {
+            PhotoDebug.toggle(minecraft);
+            return true;
+        }
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_F2) {
-            // The HUD is already hidden; this screen draws nothing, so the frame is clean.
-            Screenshot.grab(minecraft.gameDirectory, minecraft.getMainRenderTarget(), message -> minecraft.execute(() -> minecraft.gui.getChat().addMessage(message)));
+            // The HUD is already hidden and this screen draws nothing without the debug layer, so the frame is clean.
+            PhotoDebug.capture(minecraft, "photo_" + net.minecraft.Util.getFilenameFormattedDateTime());
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -89,7 +92,10 @@ public final class PhotoModeScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Nothing is drawn: the picture is the point. The controls are in the key binding's description.
+        // Nothing else is drawn: the picture is the point. The controls are in the key binding's description.
+        if (PhotoDebug.on()) {
+            PhotoDebug.render(graphics, minecraft, width, height);
+        }
     }
 
     @Override
