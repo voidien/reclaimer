@@ -743,8 +743,33 @@ public final class AeronauticsGameTests {
         return "@e[name=vr_test_" + pos.getX() + ",limit=1]";
     }
 
+    /** How far from its test position a freshly assembled ship may sit and still be that test's ship. */
+    private static final double OWN_SHIP_RANGE = 32.0;
+
+    /**
+     * Names the ship assembled at {@code pos} after the test's position, so every later command finds it by name. The
+     * ship is found through Sable's API, not a selector: on a slow machine {@code sable name set @n} once named another
+     * test's ship, three thousand blocks away, and that test's pilot sat down on it.
+     */
     static void nameShip(MinecraftServer server, ServerLevel space, BlockPos pos) {
-        command(server, space, pos, "sable name set @n vr_test_" + pos.getX());
+        dev.ryanhcode.sable.sublevel.ServerSubLevel nearest = null;
+        double best = OWN_SHIP_RANGE * OWN_SHIP_RANGE;
+        Vec3 centre = Vec3.atCenterOf(pos);
+        for (dev.ryanhcode.sable.sublevel.ServerSubLevel ship : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (ship.isRemoved()) {
+                continue;
+            }
+            var at = ship.logicalPose().position();
+            double distance = centre.distanceToSqr(at.x(), at.y(), at.z());
+            if (distance < best) {
+                best = distance;
+                nearest = ship;
+            }
+        }
+        if (nearest == null) {
+            throw new IllegalStateException("no ship within " + OWN_SHIP_RANGE + " blocks of " + pos + " to name");
+        }
+        nearest.setName("vr_test_" + pos.getX());
     }
 
     static Vec3 shipPosition(MinecraftServer server, ServerLevel space, BlockPos pos) {
