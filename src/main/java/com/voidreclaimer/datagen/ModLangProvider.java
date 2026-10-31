@@ -165,10 +165,16 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.LAUNCH_CONTROLLER.get(), "Launch Controller");
         add(ModItems.HELPER_DRONE.get(), "Helper Drone");
         add(com.voidreclaimer.registry.ModEntities.HELPER_DRONE.get(), "Helper Drone");
-        add("replicator.void_reclaimer.description.helper_drone", "A small flying worker. Sneak-use it on the inventory to take from (or on asteroid rock to mine near), then on the inventory to bring to, and release it: it ferries items 16 at a time, or digs the rock block by block and brings it. Sneak-use the drone with an empty hand to take it back.");
+        add("replicator.void_reclaimer.description.helper_drone", "A small flying worker. Sneak-use it on the inventory to take from (or on asteroid rock to mine near), then on the inventory to bring to, and release it: it ferries items 16 at a time, or digs the rock block by block and brings it. Sneak-use it in the air to set a collect point: released, it gathers the cloud's dust there and brings it to you. Sneak-use the drone with an empty hand to take it back.");
         add("tooltip.void_reclaimer.helper.source", "From: %s");
         add("tooltip.void_reclaimer.helper.destination", "To: %s");
         add("tooltip.void_reclaimer.helper.mine", "Mine near: %s");
+        add("tooltip.void_reclaimer.helper.collect", "Collect dust at: %s (brought to you)");
+        add("message.void_reclaimer.helper.collect_set", "Collect point set here: %s %s %s. Release the drone; it brings the cloud's dust to you.");
+        add("message.void_reclaimer.helper.dust", "%s dust");
+        add("message.void_reclaimer.helper.status.to_point", "Flying to its collect point. Holding %s.");
+        add("message.void_reclaimer.helper.status.gathering", "Gathering dust. Holding %s.");
+        add("message.void_reclaimer.helper.status.to_owner", "Bringing dust to its owner. Holding %s.");
         add("message.void_reclaimer.helper.mine_set", "Mine point set: %s %s %s. Sneak-use the inventory to bring the rock to.");
         add("message.void_reclaimer.helper.status.to_rock", "Flying to asteroid rock. Carrying %s.");
         add("message.void_reclaimer.helper.status.digging", "Digging. Carrying %s.");
