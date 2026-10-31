@@ -97,6 +97,8 @@ public final class PhotoScript {
                     Minecraft mc = Minecraft.getInstance();
                     mc.tell(() -> {
                         if (PhotoMode.active()) {
+                            // Ends photo mode first: chat opened inside it would bring the control screen back when it closes.
+                            PhotoMode.exit(mc);
                             mc.setScreen(null);
                         }
                     });
