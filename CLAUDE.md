@@ -481,6 +481,9 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 - **Old Mass Driver blocks:** stay inert for now; ideas for a new use go to the owner.
 - **Asset names:** the new `_module` names win.
 
+**Assembly view (built from "Round two")**
+- `client/screen/AssemblyScreen`, opened by the 3D view button on the Body tab or the unbound `key.void_reclaimer.assembly`. Uses `BodyPanel` with a `Layout` (the tree left, details right, the model between). `body/assembly/AssemblyCamera` (pure) holds yaw, pitch, zoom, the eased focus and the grid step. Markers come from `BoneProbe` in the GUI pass, where a point's z is depth: `AssemblyMarkers` (pure) picks what shows and what a click hits. Clicking a marker selects it in `BodyPanel` and eases the view to it; clicking empty space clears both.
+
 **Required addons (decided 2026-10-30 by the owner, after the compatibility spike)**
 - **Required:** Create Crafts & Additions, Create: Advanced Electricity / Technology Addon, Create: Advanced Computer Technic (the "electronics stack"; the last two need Crafts & Additions), Create Propulsion: Simulated (ship thrusters), Create: The Factory Must Grow (oil, fuels, steel). Same rules as Create and Aeronautics: `localRuntime` + `testRuntimeOnly`, versions and ranges in `gradle.properties`, `required` in `neoforge.mods.toml`; switch one to `implementation` only when our code needs its API.
 - **Optional with soft compat:** everything else from the spike (New Age, CC: Tweaked, Create: Avionics, Aeroworks, Steam 'n' Rails, Electro Energetics, Ore Excavation, Power Loader, Hypertubes, Tweaked Controllers, Trading Floor, Numismatics, Connected, Copycats+, Deco). We support them through standard hooks (Forge Energy, tags, events), never by compiling against them.

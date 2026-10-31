@@ -571,6 +571,35 @@ final class BodyPanel {
         return true;
     }
 
+    @Nullable
+    String selectedSocket() {
+        return selectedSocket;
+    }
+
+    @Nullable
+    BodyData.Mount selectedMount() {
+        return selectedMount;
+    }
+
+    /** The area filter, or null for every socket. */
+    @Nullable
+    String area() {
+        return area;
+    }
+
+    /** Selects a socket, as clicking its row does, and clears a filter that would hide it. */
+    void select(String socket, @Nullable BodyData.Mount mount) {
+        selectedSocket = socket;
+        selectedMount = mount;
+        area = null;
+    }
+
+    /** Back to the body's stats. */
+    void clearSelection() {
+        selectedSocket = null;
+        selectedMount = null;
+    }
+
     /** The tree's row height, for screens that size the tree to fit. */
     static int treeRowHeight() {
         return TREE_ROW;

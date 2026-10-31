@@ -47,6 +47,10 @@ public final class VoidReclaimerJeiPlugin implements IModPlugin {
         registration.addGuiScreenHandler(ReplicatorScreen.class, new IScreenHandler<ReplicatorScreen>() {
             @Override
             public IGuiProperties apply(ReplicatorScreen screen) {
+                // JEI can ask before the screen has been sized, when it is about to open.
+                if (screen.width == 0) {
+                    return null;
+                }
                 return new IGuiProperties() {
                     @Override
                     public Class<? extends Screen> screenClass() {

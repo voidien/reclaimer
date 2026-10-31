@@ -5,6 +5,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.assembly.AssemblyCamera;
 import com.voidreclaimer.client.render.body.BodyBounds;
+import com.voidreclaimer.client.render.body.BoneProbe;
+import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -41,6 +43,13 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     /** How much of the view the body fills at zoom 1. */
     private static final float FIT = 0.42f;
     private static final float START_YAW = 35f;
+    /** {@code renderEntityInInventory} draws the body this far up the GUI's depth. */
+    private static final float Z_BASE = 50f;
+    /** How far behind the body's middle a marker still shows, as a share of its radius. */
+    private static final float FAR_SHARE = 0.15f;
+    private static final double PICK_RADIUS = 6.0;
+    private static final int MARKER_SOCKET = 0xFF7FD4FF;
+    private static final int MARKER_MOUNT = 0xFFFFC857;
     private static final float START_PITCH = -18f;
 
     private final AssemblyCamera camera = new AssemblyCamera(START_YAW, START_PITCH);
@@ -50,6 +59,13 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private int viewTop;
     private int viewBottom;
     private boolean dragging;
+    /** The mouse travelled since the press: a drag, not a click on a marker. */
+    private boolean moved;
+    private List<BoneProbe.Point> markers = List.of();
+    /** How the body was drawn this frame, to turn a point on it back into the body's own space. */
+    private float drawnScale = 1f;
+    private final Quaternionf drawnPose = new Quaternionf();
+    private final Vector3f drawnShift = new Vector3f();
     private long lastFrame;
 
     public AssemblyScreen() {
@@ -67,6 +83,12 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         panel = new BodyPanel(font, GUTTER, TOP, new BodyPanel.Layout(TREE_WIDTH, rows, rightX, DETAILS_WIDTH, height - GUTTER));
         addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.back"), b -> onClose())
                 .bounds(width - GUTTER - 50, 3, 50, 14).build());
+        BoneProbe.capture(true);
+    }
+
+    @Override
+    public void removed() {
+        BoneProbe.capture(false);
     }
 
     @Override
@@ -119,7 +141,52 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         lastFrame = now;
         graphics.drawString(font, title, GUTTER, 6, ACCENT, false);
         renderBody(graphics, player);
+        renderMarkers(graphics, player, mouseX, mouseY);
         panel.render(graphics, player, mouseX, mouseY);
+    }
+
+    /** Where a marker counts as on the far side: just behind the body's middle, so the edges of a thin body stay reachable. */
+    private float farLimit(LocalPlayer player) {
+        return Z_BASE - FAR_SHARE * BodyBounds.radius(Bodies.view(player)) * player.getScale() * drawnScale;
+    }
+
+    private void renderMarkers(GuiGraphics graphics, LocalPlayer player, int mouseX, int mouseY) {
+        String area = panel.area();
+        var chassis = Bodies.view(player).chassis();
+        markers = AssemblyMarkers.visible(BoneProbe.latest(), panel.selectedSocket(), socket -> {
+            var found = chassis.socket(socket);
+            return area == null || (found != null && found.area().equals(area));
+        }, farLimit(player));
+        BoneProbe.Point over = overView(mouseX, mouseY) ? AssemblyMarkers.pick(markers, mouseX, mouseY, PICK_RADIUS).orElse(null) : null;
+        graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
+        for (BoneProbe.Point point : markers) {
+            int x = Math.round(point.at().x());
+            int y = Math.round(point.at().y());
+            boolean selected = point.mount() == null ? point.socket().equals(panel.selectedSocket()) && panel.selectedMount() == null
+                    : point.mount().equals(panel.selectedMount());
+            int colour = point.kind() == BoneProbe.Kind.SOCKET ? MARKER_SOCKET : MARKER_MOUNT;
+            graphics.renderOutline(x - 3, y - 3, 7, 7, selected || point == over ? 0xFFFFFFFF : colour);
+            if (point.filled()) {
+                graphics.fill(x - 1, y - 1, x + 2, y + 2, colour);
+            }
+        }
+        graphics.disableScissor();
+        if (over != null) {
+            Component name = over.mount() == null ? BodyPanel.socketName(over.socket())
+                    : BodyPanel.socketName(over.socket()).copy().append(" / ").append(over.mount().kind().displayName());
+            graphics.renderTooltip(font, name, mouseX, mouseY);
+        }
+    }
+
+    /** Selects a marker's socket or mount and eases the view to it. */
+    private void choose(LocalPlayer player, BoneProbe.Point point) {
+        panel.select(point.socket(), point.mount());
+        // Undo the draw: scale, the shift to the view's centre, then the turn, leaving the point in the body's own space.
+        Vector3f local = new Vector3f((point.at().x() - (viewLeft + viewRight) / 2f) / drawnScale,
+                (point.at().y() - (viewTop + viewBottom) / 2f) / drawnScale, -(point.at().z() - Z_BASE) / drawnScale)
+                .sub(drawnShift);
+        drawnPose.transformInverse(local);
+        camera.focusOn(local.x(), local.y() - player.getBbHeight() / 2f, local.z());
     }
 
     /** Pixels per block at the current zoom, so the body fills the view at zoom 1 whatever its size. */
@@ -153,8 +220,11 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         // The point of the body at the view's centre: the middle of its hitbox, plus the focus.
         Vector3f centre = new Vector3f(camera.focusX(), player.getBbHeight() / 2f + camera.focusY(), camera.focusZ());
         Vector3f translate = pose.transform(centre, new Vector3f()).negate();
+        drawnScale = pixelsPerBlock(player);
+        drawnPose.set(pose);
+        drawnShift.set(translate);
         graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
-        InventoryScreen.renderEntityInInventory(graphics, (viewLeft + viewRight) / 2f, (viewTop + viewBottom) / 2f, pixelsPerBlock(player),
+        InventoryScreen.renderEntityInInventory(graphics, (viewLeft + viewRight) / 2f, (viewTop + viewBottom) / 2f, drawnScale,
                 translate, pose, turn, player);
         graphics.disableScissor();
         // A big body reaches far towards the viewer: nothing drawn later may end up behind it.
@@ -183,6 +253,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         }
         if (button == 0 && overView(mouseX, mouseY)) {
             dragging = true;
+            moved = false;
             return true;
         }
         LocalPlayer player = minecraft.player;
@@ -191,6 +262,16 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        LocalPlayer player = minecraft.player;
+        if (dragging && !moved && player != null) {
+            var picked = AssemblyMarkers.pick(markers, mouseX, mouseY, PICK_RADIUS);
+            if (picked.isPresent()) {
+                choose(player, picked.get());
+            } else {
+                panel.clearSelection();
+                camera.focusCentre();
+            }
+        }
         dragging = false;
         return super.mouseReleased(mouseX, mouseY, button);
     }
@@ -199,6 +280,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (dragging) {
             camera.drag(dragX, dragY);
+            moved |= Math.abs(dragX) + Math.abs(dragY) > 0.5;
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
