@@ -41,6 +41,9 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         getVariantBuilder(ModBlocks.HELM.get()).forAllStates(state -> net.neoforged.neoforge.client.model.generators.ConfiguredModel.builder()
                 .modelFile(models().getBuilder("helm").texture("particle", modLoc("block/helm_particle"))).build());
         itemModels().basicItem(ModItems.HELM.get());
+        var stationCore = models().cubeBottomTop("station_core", modLoc("block/station_core_side"), modLoc("block/station_core_bottom"), modLoc("block/station_core_top"));
+        horizontalBlock(ModBlocks.STATION_CORE.get(), stationCore);
+        simpleBlockItem(ModBlocks.STATION_CORE.get(), stationCore);
         portal();
         simpleBlockWithItem(ModBlocks.ASHEN_SLAG.get(), cubeAll(ModBlocks.ASHEN_SLAG.get()));
         simpleBlockWithItem(ModBlocks.ASTEROID_SILICATE.get(),cubeAll(ModBlocks.ASTEROID_SILICATE.get()));

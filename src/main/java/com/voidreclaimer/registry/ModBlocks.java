@@ -64,6 +64,11 @@ public final class ModBlocks {
             com.voidreclaimer.ship.HelmBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GREEN).strength(2.5f, 6.0f).sound(SoundType.COPPER).noOcclusion());
 
+    /** The heart of a station: assembles its hull into a Sable ship, names it, holds a shared chest. */
+    public static final DeferredBlock<com.voidreclaimer.station.StationCoreBlock> STATION_CORE = BLOCKS.registerBlock("station_core",
+            com.voidreclaimer.station.StationCoreBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 8.0f).sound(SoundType.COPPER).lightLevel(state -> 6));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

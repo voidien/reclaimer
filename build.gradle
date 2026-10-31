@@ -167,6 +167,8 @@ dependencies {
     // nested the same way as Create's, so extractCreateLibs unpacks them too.
     compileOnly "maven.modrinth:sable:${sable_version}"
     createJar "maven.modrinth:sable:${sable_version}"
+    // Aeronautics' nested jars too: "Simulated" holds the only disassembly and ship-to-ship block moves (the Station Core).
+    createJar "maven.modrinth:create-aeronautics:${aeronautics_version}"
     compileOnly fileTree(layout.buildDirectory.dir('create-libs')) {
         builtBy 'extractCreateLibs'
         include '*.jar'

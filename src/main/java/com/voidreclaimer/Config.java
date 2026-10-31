@@ -35,6 +35,9 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue DUST_SCOOP;
     public static final ModConfigSpec.DoubleValue CLOUD_DRAG;
     public static final ModConfigSpec.DoubleValue EARTH_WIND_SPEED;
+    public static final ModConfigSpec.DoubleValue STATION_RANGE;
+    public static final ModConfigSpec.IntValue STATION_REPLICATOR_SPEED;
+    public static final ModConfigSpec.IntValue STATION_MAX_BLOCKS;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
     public static final ModConfigSpec.DoubleValue PULSE_ENERGY_COST;
     public static final ModConfigSpec.IntValue PULSE_COOLDOWN_SECONDS;
@@ -197,6 +200,15 @@ public final class Config {
         CLOUD_SPEED_PENALTY = BUILDER
                 .comment("Top speed reduction at full density (0.6 = 60% slower in the densest core).")
                 .defineInRange("speedPenalty", 0.6, 0.0, 0.95);
+        BUILDER.pop();
+
+        BUILDER.comment("Stations.").push("station");
+        STATION_RANGE = BUILDER.comment("Within this many blocks of a Station Core the body counts as being at the station.")
+                .defineInRange("range", 8.0, 1.0, 64.0);
+        STATION_REPLICATOR_SPEED = BUILDER.comment("Replicator progress per tick while at a station (1 = no bonus).")
+                .defineInRange("replicatorSpeed", 2, 1, 10);
+        STATION_MAX_BLOCKS = BUILDER.comment("Most blocks a Station Core will assemble into one station.")
+                .defineInRange("maxBlocks", 50_000, 2, 1_000_000);
         BUILDER.pop();
 
         BUILDER.comment("Ruined Earth.").push("earth");

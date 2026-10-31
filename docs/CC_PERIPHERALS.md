@@ -114,6 +114,19 @@ Read-only: a computer cannot take the stick.
 | `getSpin()` | its turning rate, degrees per second, as the pilot reads it: `{ rollRight, noseUp, yawRight }` |
 | `getAttitude()` | degrees: `{ pitch, roll, heading }` (nose above the horizon, roll to the right, compass bearing of the nose) |
 
+## Station Core (`StationPeripheral`)
+What a player can do at the core by hand.
+
+| Function | Returns |
+|---|---|
+| `getName()` | the station's name |
+| `setName(name)` | renames the station (empty restores the default; 32 characters at most) |
+| `isAssembled()` | whether the core is built into an assembled station (a Sable ship) |
+| `assemble()` | assembles the connected blocks into a station: `assembled`, `already_assembled`, `nothing`, `too_big` or `failed` |
+| `disassemble()` | sets the station down as blocks: `disassembled`, `not_assembled`, `not_level`, `blocked`, `nothing` or `failed` |
+| `getPosition()` | `{ x, y, z }` where the core is in the world right now |
+| `getFilledSlots()` | how many of the station chest's 27 slots hold something |
+
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
 pocket computer), as their own step.
