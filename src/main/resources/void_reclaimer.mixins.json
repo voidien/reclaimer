@@ -10,7 +10,9 @@
     "GameTestStopMixin",
     "GameTestRegistryMixin",
     "InventoryLockMixin",
-    "SlotLockMixin"
+    "SlotLockMixin",
+    "ServerChunkCacheInvoker",
+    "LevelPlotMixin"
   ],
   "client": [
     "CameraPhotoMixin"

@@ -102,6 +102,7 @@ public final class AeronauticsGameTests {
                 Vec3 first = shipPosition(server, space, pos);
                 helper.runAfterDelay(SAMPLE_TICKS, () -> {
                     Vec3 second = shipPosition(server, space, pos);
+                    log.add("at the end: " + thrusterState(server, space, pos));
                     removeShip(server, space, pos);
                     if (first == null || second == null) {
                         helper.fail("lost the ship of " + pos + ": " + first + ", " + second + "; setup: " + log);
@@ -133,20 +134,10 @@ public final class AeronauticsGameTests {
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         helper.runAfterDelay(5, () -> {
-            clearArea(server, space, pos);
             int x = pos.getX(), y = pos.getY(), z = pos.getZ();
             List<String> log = new ArrayList<>();
-            cross(server, space, pos, powered, log);
-            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + z + " create:creative_motor[facing=east]"));
-            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:chemical_thruster[facing=east]"));
+            thrusterHull(server, space, pos, fuelled, powered, log);
             placed[0] = space.getBlockEntity(pos);
-            if (fuelled) {
-                var thruster = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(pos);
-                int filled = thruster.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(
-                        com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 4000),
-                        net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                log.add("filled " + filled);
-            }
             helper.runAfterDelay(10, () -> {
                 if (space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity before) {
                     log.add("before assembly: fuel " + before.tank().getFluidAmount() + " same entity " + (before == placed[0]));
@@ -158,6 +149,22 @@ public final class AeronauticsGameTests {
                 then.accept(log);
             });
         });
+    }
+
+    /** The blocks of the {@link #thrusterShip} ship, not yet assembled. */
+    private static void thrusterHull(MinecraftServer server, ServerLevel space, BlockPos pos, boolean fuelled, boolean powered, List<String> log) {
+        clearArea(server, space, pos);
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        cross(server, space, pos, powered, log);
+        log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + z + " create:creative_motor[facing=east]"));
+        log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + z + " void_reclaimer:chemical_thruster[facing=east]"));
+        if (fuelled) {
+            var thruster = (com.voidreclaimer.ship.ChemicalThrusterBlockEntity) space.getBlockEntity(pos);
+            int filled = thruster.tank().fill(new net.neoforged.neoforge.fluids.FluidStack(
+                    com.voidreclaimer.registry.ModFluids.NEBULITE_PROPELLANT.source().get(), 4000),
+                    net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+            log.add("filled " + filled);
+        }
     }
 
     /** A cross of blocks around a thruster, redstone on top if it is powered: the force goes close to the centre of mass. */
@@ -187,8 +194,15 @@ public final class AeronauticsGameTests {
                 var thruster = (com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(pos);
                 log.add("charged " + thruster.energy().receiveEnergy(8000, false));
             }
+            Object placed = space.getBlockEntity(pos);
             helper.runAfterDelay(10, () -> {
+                if (space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ElectricThrusterBlockEntity before) {
+                    log.add("before assembly: energy " + before.storedEnergy() + " same entity " + (before == placed));
+                } else {
+                    log.add("before assembly: no thruster at " + pos);
+                }
                 log.addAll(command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ()));
+                log.add("just after assembly: " + thrusterState(server, space, pos));
                 then.accept(log);
             });
         });
@@ -520,6 +534,106 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /** The fuel of the thruster at {@code pos} as the level sees it, or -1 when the level sees no thruster there. */
+    private static int fuelAt(ServerLevel space, BlockPos pos) {
+        return space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity thruster ? thruster.tank().getFluidAmount() : -1;
+    }
+
+    /**
+     * Minecraft's chunk lookup remembers the last chunks it found, and Sable changes a plot's chunks without telling it. A ship
+     * built in the tick another ship left that plot had its block entities' data loaded into the old ship's chunk, so it set off
+     * with empty thrusters. In a batch of its own, so that the second ship is the next to want a plot.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "plot_freed_this_tick")
+    public static void aShipTakingAPlotFreedThisTickKeepsItsFuel(GameTestHelper helper) {
+        BlockPos first = new BlockPos(95_000, 200, 3_000);
+        BlockPos second = new BlockPos(95_000, 200, 3_300);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(first.getX() >> 4, first.getZ() >> 4, true);
+        space.setChunkForced(second.getX() >> 4, second.getZ() >> 4, true);
+        List<String> log = new ArrayList<>();
+        helper.runAfterDelay(5, () -> {
+            thrusterHull(server, space, first, false, true, log);
+            thrusterHull(server, space, second, true, true, log);
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, first, "sable assemble connected " + first.getX() + " " + first.getY() + " " + first.getZ()));
+                helper.runAfterDelay(5, () -> {
+                    nameShip(server, space, first);
+                    BlockPos spot = com.voidreclaimer.ship.Ships.thrustersOf(space, shipNamed(space, first)).get(0).getBlockPos();
+                    removeShip(server, space, first);
+                    // The removed ship's blocks are gone at once, not at the next tick.
+                    boolean gone = space.getBlockState(spot).isAir();
+                    log.addAll(command(server, space, second, "sable assemble connected " + second.getX() + " " + second.getY() + " " + second.getZ()));
+                    boolean samePlot = fuelAt(space, spot) >= 0;
+                    helper.runAfterDelay(20, () -> {
+                        int fuel = fuelAt(space, spot);
+                        nameShip(server, space, second);
+                        removeShip(server, space, second);
+                        if (!samePlot) {
+                            helper.fail("the second ship did not take the first one's plot, so this checks nothing; setup: " + log);
+                        } else if (!gone) {
+                            helper.fail("the level still saw the removed ship's block at " + spot + "; setup: " + log);
+                        } else if (fuel <= 0) {
+                            helper.fail("the ship lost its fuel: " + fuel + " mB; setup: " + log);
+                        } else {
+                            helper.succeed();
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    /**
+     * A look at a plot chunk that does not exist yet finds Sable's shared empty chunk, and Minecraft's chunk lookup remembers
+     * that. Docking clamps and Create Propulsion's thruster raycasts look at such places as they tick. Assembling a ship there
+     * then lost every block entity's data: the level could not see the new block entity, so nothing was loaded into it, and the
+     * old one had been emptied already. In a batch of its own: the first ship only shows which plot is next.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "plot_looked_at_first")
+    public static void aShipKeepsItsContentsWhenItsPlotWasLookedAtFirst(GameTestHelper helper) {
+        BlockPos first = new BlockPos(96_000, 200, 3_000);
+        BlockPos second = new BlockPos(96_000, 200, 3_300);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(first.getX() >> 4, first.getZ() >> 4, true);
+        space.setChunkForced(second.getX() >> 4, second.getZ() >> 4, true);
+        List<String> log = new ArrayList<>();
+        helper.runAfterDelay(5, () -> {
+            thrusterHull(server, space, first, true, true, log);
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, first, "sable assemble connected " + first.getX() + " " + first.getY() + " " + first.getZ()));
+                helper.runAfterDelay(5, () -> {
+                    nameShip(server, space, first);
+                    BlockPos spot = com.voidreclaimer.ship.Ships.thrustersOf(space, shipNamed(space, first)).get(0).getBlockPos();
+                    removeShip(server, space, first);
+                    thrusterHull(server, space, second, true, true, log);
+                    BlockPos barrel = second.north(2);
+                    log.addAll(command(server, space, second, "setblock " + barrel.getX() + " " + barrel.getY() + " " + barrel.getZ() + " minecraft:barrel"));
+                    ((net.minecraft.world.level.block.entity.BarrelBlockEntity) space.getBlockEntity(barrel)).setItem(0,
+                            new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND, 7));
+                    helper.runAfterDelay(20, () -> {
+                        space.getChunkAt(spot);
+                        log.addAll(command(server, space, second, "sable assemble connected " + second.getX() + " " + second.getY() + " " + second.getZ()));
+                        helper.runAfterDelay(20, () -> {
+                            int fuel = fuelAt(space, spot);
+                            int diamonds = space.getBlockEntity(spot.north(2)) instanceof net.minecraft.world.level.block.entity.BarrelBlockEntity kept
+                                    ? kept.getItem(0).getCount() : -1;
+                            nameShip(server, space, second);
+                            removeShip(server, space, second);
+                            if (fuel <= 0 || diamonds != 7) {
+                                helper.fail("the ship lost its contents: fuel " + fuel + ", diamonds " + diamonds + "; setup: " + log);
+                            } else {
+                                helper.succeed();
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    }
+
     /** Ticks per the player's turn to be left alone after the ship is gone: the chunk has to become entity-ticking first. */
     private static final int UNSEAT_TICKS = 40;
 
@@ -712,10 +826,7 @@ public final class AeronauticsGameTests {
         for (int chunks = 1; chunks <= 8; chunks++) {
             space.setChunkForced((pos.getX() >> 4) - chunks, pos.getZ() >> 4, true);
         }
-        thrusterShip(helper, pos, true, true, log -> {
-            Runnable snapshot = () -> log.add(thrusterState(server, space, pos));
-            helper.runAfterDelay(SETTLE_TICKS + SAMPLE_TICKS - 5, snapshot);
-            watch(helper, server, space, pos, log, (first, second) -> {
+        thrusterShip(helper, pos, true, true, log -> watch(helper, server, space, pos, log, (first, second) -> {
             // Watched early and from rest: the ship is never perfectly balanced, so it soon starts to turn with its thrust.
             double west = first.x - second.x;
             if (west < PUSHED) {
@@ -723,8 +834,7 @@ public final class AeronauticsGameTests {
             } else {
                 helper.succeed();
             }
-            });
-        });
+        }));
     }
 
     /** What a Chemical Thruster aboard the named test ship has right now: an exact zero push means one of these is missing. */
@@ -739,6 +849,9 @@ public final class AeronauticsGameTests {
                         state.append(" speed ").append(chemical.getSpeed()).append(" network ").append(chemical.hasNetwork())
                                 .append(" source ").append(chemical.hasSource()).append(" throttle ").append(chemical.throttle())
                                 .append(" fuel ").append(chemical.tank().getFluidAmount()).append(" force ").append(chemical.force());
+                    } else if (thruster instanceof com.voidreclaimer.ship.ElectricThrusterBlockEntity electric) {
+                        state.append(" throttle ").append(electric.throttle()).append(" energy ").append(electric.storedEnergy())
+                                .append(" force ").append(electric.force());
                     }
                 }
             }
