@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.assembly.AssemblyCamera;
 import com.voidreclaimer.client.render.body.BodyBounds;
+import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.client.render.body.BoneProbe;
 import java.util.List;
 import net.minecraft.Util;
@@ -83,6 +84,8 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         panel = new BodyPanel(font, GUTTER, TOP, new BodyPanel.Layout(TREE_WIDTH, rows, rightX, DETAILS_WIDTH, height - GUTTER));
         addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.back"), b -> onClose())
                 .bounds(width - GUTTER - 50, 3, 50, 14).build());
+        addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.explode"), b -> camera.toggleExploded())
+                .bounds(viewLeft + 3, viewTop + 3, 52, 13).build());
         BoneProbe.capture(true);
     }
 
@@ -224,8 +227,10 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         drawnPose.set(pose);
         drawnShift.set(translate);
         graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
+        BodyRenderer.setExplode(camera.explode());
         InventoryScreen.renderEntityInInventory(graphics, (viewLeft + viewRight) / 2f, (viewTop + viewBottom) / 2f, drawnScale,
                 translate, pose, turn, player);
+        BodyRenderer.setExplode(0f);
         graphics.disableScissor();
         // A big body reaches far towards the viewer: nothing drawn later may end up behind it.
         graphics.flush();

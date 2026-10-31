@@ -59,4 +59,27 @@ class AssemblyCameraTest {
         assertEquals(16, AssemblyCamera.gridStep(1, 12), "a Titan fills the view: wide lines");
         assertTrue(AssemblyCamera.gridStep(1.0E-4, 12) <= 1024, "never loops forever on a tiny scale");
     }
+
+    @Test
+    void explodingEasesOutAndBackAndSettlesExactly() {
+        AssemblyCamera camera = new AssemblyCamera(0f, 0f);
+        assertEquals(0f, camera.explode());
+        camera.toggleExploded();
+        assertTrue(camera.exploded());
+        camera.advance(0.1f);
+        assertTrue(camera.explode() > 0f && camera.explode() < 1f, "on its way: " + camera.explode());
+        camera.advance(5f);
+        assertEquals(1f, camera.explode(), "settled exactly, so the body can hold still");
+        camera.toggleExploded();
+        camera.advance(5f);
+        assertEquals(0f, camera.explode());
+    }
+
+    @Test
+    void aSectionSpreadsAlongTheLineFromItsAnchor() {
+        float[] offset = AssemblyCamera.spread(new float[] {10f, 4f, 0f}, new float[] {2f, 4f, 0f}, 0.5f);
+        assertEquals(4f, offset[0], 1e-5, "half way along");
+        assertEquals(0f, offset[1], 1e-5, "level with its anchor, so it does not rise");
+        assertEquals(0f, offset[2], 1e-5);
+    }
 }

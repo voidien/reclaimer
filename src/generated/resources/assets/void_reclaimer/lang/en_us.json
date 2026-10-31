@@ -1,5 +1,6 @@
 {
   "assembly.void_reclaimer.back": "Back",
+  "assembly.void_reclaimer.explode": "Exploded",
   "assembly.void_reclaimer.grid": "Grid: %s blocks",
   "assembly.void_reclaimer.grid_one": "Grid: 1 block",
   "assembly.void_reclaimer.title": "Body assembly",

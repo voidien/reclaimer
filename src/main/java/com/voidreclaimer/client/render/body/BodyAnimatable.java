@@ -68,7 +68,7 @@ public final class BodyAnimatable implements GeoReplacedEntity {
     private PlayState playLayer(int index, AnimationState<BodyAnimatable> state) {
         Entity entity = state.getData(DataTickets.ENTITY);
         BodyRenderer.Frame frame = BodyRenderer.frame();
-        if (!(entity instanceof Player player) || frame == null || frame.spec() == null) {
+        if (!(entity instanceof Player player) || frame == null || frame.spec() == null || BodyRenderer.exploding()) {
             return PlayState.STOP;
         }
         BodyLook.Pose pose = pose(player);
@@ -88,7 +88,7 @@ public final class BodyAnimatable implements GeoReplacedEntity {
             return PlayState.STOP;
         }
         BodyRenderer.Frame frame = BodyRenderer.frame();
-        if (frame == null) {
+        if (frame == null || BodyRenderer.exploding()) {
             return PlayState.STOP;
         }
         BodyLook.Pose pose = pose(player);

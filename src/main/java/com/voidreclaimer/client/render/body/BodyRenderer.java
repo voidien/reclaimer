@@ -32,11 +32,16 @@ import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
  * ({@link BodyPartsLayer}). Called from {@link BodyRenderEvents}, which cancels the vanilla player model.
  */
 public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAnimatable> {
+    /** A fully spread section stands this share of the way further from its anchor. */
+    private static final float EXPLODE_SPREAD = 0.9f;
     private static BodyRenderer instance;
     @Nullable
     private static Frame frame;
     /** Whether a part is being drawn into the body ({@link BodyPartsLayer}) and not the body itself. */
     private boolean reRendering;
+    /** How far sections are spread for the next draws, 0 to 1; only the assembly view sets it, round its own draw. */
+    private static float explode;
+    private final Map<String, org.joml.Vector3f> spread = new HashMap<>();
     private static float drawnBodyScale = 1f;
     private static float drawnPartScale = 1f;
 
@@ -90,6 +95,68 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         return frame;
     }
 
+    /** Spreads the body's sections apart for the draws until this is set back to 0. */
+    public static void setExplode(float amount) {
+        explode = amount;
+    }
+
+    /** Whether the body is spread: it then holds still. */
+    static boolean exploding() {
+        return explode > 0f;
+    }
+
+    /**
+     * Finds each socket's bone and how far it moves. A bone sits inside its parent's, so it moves only by the step from the nearest
+     * socket bone above it; top-level ones move from the middle of all the sockets.
+     */
+    private void measureSpread(BakedGeoModel model, BodyView view, @Nullable BodyRigSpec spec) {
+        spread.clear();
+        Map<String, GeoBone> bones = new HashMap<>();
+        if (spec != null) {
+            spec.sockets().values().stream().filter(list -> !list.isEmpty()).map(list -> list.get(0))
+                    .forEach(name -> model.getBone(name).ifPresent(bone -> bones.put(name, bone)));
+        } else {
+            view.chassis().sockets().stream().filter(socket -> !socket.id().equals(view.chassis().coreSocket()))
+                    .forEach(socket -> model.getBone(BodyLook.socketBone(socket.id())).ifPresent(bone -> bones.put(bone.getName(), bone)));
+        }
+        if (bones.isEmpty()) {
+            return;
+        }
+        float[] middle = new float[3];
+        for (GeoBone bone : bones.values()) {
+            middle[0] += bone.getPivotX() / bones.size();
+            middle[1] += bone.getPivotY() / bones.size();
+            middle[2] += bone.getPivotZ() / bones.size();
+        }
+        for (GeoBone bone : bones.values()) {
+            float[] anchor = middle;
+            for (GeoBone up = bone.getParent(); up != null; up = up.getParent()) {
+                if (bones.containsKey(up.getName())) {
+                    anchor = new float[] {up.getPivotX(), up.getPivotY(), up.getPivotZ()};
+                    break;
+                }
+            }
+            float[] step = com.voidreclaimer.body.assembly.AssemblyCamera.spread(
+                    new float[] {bone.getPivotX(), bone.getPivotY(), bone.getPivotZ()}, anchor, EXPLODE_SPREAD);
+            spread.put(bone.getName(), new org.joml.Vector3f(step[0] / 16f, step[1] / 16f, step[2] / 16f));
+        }
+    }
+
+    @Override
+    public void renderRecursively(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, net.minecraft.client.renderer.RenderType renderType,
+                                  MultiBufferSource bufferSource, com.mojang.blaze3d.vertex.VertexConsumer buffer, boolean isReRender, float partialTick,
+                                  int packedLight, int packedOverlay, int colour) {
+        org.joml.Vector3f step = !isReRender && explode > 0f ? spread.get(bone.getName()) : null;
+        if (step == null) {
+            super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+            return;
+        }
+        poseStack.pushPose();
+        poseStack.translate(step.x * explode, step.y * explode, step.z * explode);
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        poseStack.popPose();
+    }
+
     /** The scale the last body was really drawn at, from its render matrix: photo mode's debug layer shows it beside the body's own scale. */
     public static float drawnBodyScale() {
         return drawnBodyScale;
@@ -138,6 +205,9 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         ResourceLocation texture = spec != null ? spec.texture()
                 : BodyTextures.INSTANCE.painted(rig, player.registryAccess(), cosmetics.casing(view.data().coreSocket()));
         frame = new Frame(view, rig, texture, rigMountBones, inRig, spec, specMounts);
+        if (explode > 0f) {
+            measureSpread(rigModel, view, spec);
+        }
         try {
             if (spec != null) {
                 hideEmptySockets(rigModel, view, spec);

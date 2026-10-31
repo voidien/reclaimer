@@ -15,12 +15,16 @@ public final class AssemblyCamera {
     public static final float ZOOM_STEP = 1.15f;
     /** How quickly the view reaches its focus: the share of the way left that is covered per second. */
     public static final float EASE_PER_SECOND = 0.995f;
+    /** Close enough to count as there, so the body can hold still once it has spread. */
+    private static final float SETTLED = 0.002f;
 
     private static final int MAX_GRID_STEP = 1024;
 
     private float yaw;
     private float pitch;
     private float zoom = 1f;
+    private float explode;
+    private boolean exploded;
     private final float[] focus = new float[3];
     private final float[] target = new float[3];
 
@@ -71,6 +75,33 @@ public final class AssemblyCamera {
         for (int i = 0; i < 3; i++) {
             focus[i] = target[i] + (focus[i] - target[i]) * left;
         }
+        float wanted = exploded ? 1f : 0f;
+        explode = wanted + (explode - wanted) * left;
+        if (Math.abs(explode - wanted) < SETTLED) {
+            explode = wanted;
+        }
+    }
+
+    /** Spreads the body's sections apart, or brings them back. */
+    public void toggleExploded() {
+        exploded = !exploded;
+    }
+
+    public boolean exploded() {
+        return exploded;
+    }
+
+    /** How far apart the sections are now: 0 together, 1 fully spread. */
+    public float explode() {
+        return explode;
+    }
+
+    /**
+     * How far a section moves from where it sits, in the model's pixels, at full spread: along the line from its anchor (the joint it
+     * hangs from, or the body's middle) to its own pivot, so parts leave the way they attach.
+     */
+    public static float[] spread(float[] pivot, float[] anchor, float amount) {
+        return new float[] {(pivot[0] - anchor[0]) * amount, (pivot[1] - anchor[1]) * amount, (pivot[2] - anchor[2]) * amount};
     }
 
     public float yaw() {
