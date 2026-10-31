@@ -46,7 +46,8 @@ public final class NaniteGameTests {
      */
     static void inEntityTickingArea(GameTestHelper helper, BlockPos pos, int radius, Runnable body) {
         ServerLevel space = TestPlayers.deepSpace(helper);
-        // A lone forced chunk never reaches entity ticking here; with its eight neighbours forced too it does.
+        // A chunk ticks entities once its 5 x 5 is at full status. Forcing the eight neighbours loads them on the spot, so
+        // only the outer ring is left to wait for.
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 space.setChunkForced((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz, true);
