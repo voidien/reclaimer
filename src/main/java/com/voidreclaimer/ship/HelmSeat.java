@@ -14,10 +14,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The invisible entity the pilot sits on, at the Helm. It has no gravity and no size to speak of; Sable keeps riders on a
- * moving ship. It remembers its Helm by block position (on a ship, the Helm's position is in the ship's own plot, far from
- * where the seat floats in the world, so it cannot be derived from the seat's position) and removes itself when the Helm
- * is gone or the pilot leaves.
+ * The invisible entity the pilot sits on, at the Helm. It has no gravity and no size to speak of. On a ship it sits in
+ * the ship's own plot, like Create's seats: the entity type is tagged {@code sable:retain_in_sub_level}, so Sable keeps
+ * it (and its rider) in the plot, riding with the ship, instead of kicking it out into the world where the ship would
+ * leave it behind. It remembers its Helm by block position and removes itself when the Helm is gone or the pilot leaves.
  */
 public class HelmSeat extends Entity {
     private static final EntityDataAccessor<BlockPos> HELM = SynchedEntityData.defineId(HelmSeat.class, EntityDataSerializers.BLOCK_POS);
@@ -27,7 +27,7 @@ public class HelmSeat extends Entity {
         noPhysics = true;
     }
 
-    /** A seat for the Helm at {@code helm}, floating at {@code where} (the Helm's place in the world, which on a ship differs). */
+    /** A seat for the Helm at {@code helm}, floating at {@code where} (the Helm's own position, in the ship's plot on a ship). */
     public static HelmSeat at(Level level, BlockPos helm, Vec3 where) {
         HelmSeat seat = new HelmSeat(ModEntities.HELM_SEAT.get(), level);
         seat.entityData.set(HELM, helm.immutable());

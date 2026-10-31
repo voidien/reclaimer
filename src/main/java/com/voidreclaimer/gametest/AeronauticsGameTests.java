@@ -368,6 +368,66 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /**
+     * The Helm's readout, which the pilot HUD shows, follows the ship: moving ahead reads as forward speed, heading north
+     * with the nose lifted by the low engine. This also proves the seat rides along: the Helm only reads its ship while
+     * it sees its pilot, and the ship has moved on by the time the readout is taken.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void theHelmReadoutFollowsTheShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(91_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.of(
+                    true, false, false, false, false, false, false, false, false, false, false, false));
+            helper.runAfterDelay(SETTLE_TICKS + SAMPLE_TICKS, () -> {
+                com.voidreclaimer.ship.HelmBlockEntity helm = helmOf(space, pos);
+                com.voidreclaimer.ship.HelmBlockEntity.Readout readout = helm == null ? null : helm.readout();
+                String seen = helm == null ? "no Helm" : "pilot " + helm.pilot() + ", ship " + com.voidreclaimer.ship.Ships.shipAt(space, helm.getBlockPos())
+                        + ", thrusters " + com.voidreclaimer.ship.Ships.thrustersOf(space, shipNamed(space, pos)).size() + ", helm at " + helm.getBlockPos()
+                        + ", player at " + player.position() + " riding " + player.getVehicle() + " in " + player.level().dimension().location()
+                        + ", seats " + space.getEntities(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), e -> true).stream()
+                                .map(e -> e.position() + "->" + ((com.voidreclaimer.ship.HelmSeat) e).helmPos() + " carrying " + e.getPassengers()).toList();
+                List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
+                removeShip(server, space, pos);
+                TestPlayers.remove(player);
+                if (readout == null) {
+                    helper.fail("lost the Helm; setup: " + log);
+                    return;
+                }
+                double surge = readout.velocity()[0];
+                double heading = readout.attitude().heading();
+                if (!readout.onShip() || readout.thrusters() == 0) {
+                    helper.fail("the Helm does not see its ship: " + seen + "; " + readout);
+                } else if (surge < 0.3 || Math.abs(readout.speed() - linearSpeed(info)) > 0.2 * readout.speed() + 0.05) {
+                    helper.fail("the readout's speed does not follow the ship: surge " + surge + ", speed " + readout.speed() + "; " + info);
+                } else if (Math.min(heading, 360 - heading) > 15 || Math.abs(readout.attitude().roll()) > 15 || readout.attitude().pitch() < 5) {
+                    // The stern engine sits below the centre of mass (the Helm is on top), so the push lifts the nose:
+                    // the attitude must show that pitch, and no roll or turn.
+                    helper.fail("the readout's attitude is off for a ship pushed north by a low stern engine: " + readout.attitude());
+                } else {
+                    helper.succeed();
+                }
+            });
+        }));
+    }
+
+    /** The Helm on the test ship at {@code pos}, or null. */
+    private static com.voidreclaimer.ship.HelmBlockEntity helmOf(ServerLevel space, BlockPos pos) {
+        var ship = shipNamed(space, pos);
+        if (ship == null) {
+            return null;
+        }
+        for (BlockPos p : com.voidreclaimer.ship.Ships.blocksOf(space, ship)) {
+            if (space.getBlockEntity(p) instanceof com.voidreclaimer.ship.HelmBlockEntity helm) {
+                return helm;
+            }
+        }
+        return null;
+    }
+
     /** The arrow keys open the bow jet: the ship starts turning. No key, no turn and no move. */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aSeatedPilotYawsWithTheArrowKeysAndNothingHappensWithoutKeys(GameTestHelper helper) {

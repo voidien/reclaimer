@@ -61,6 +61,28 @@ public final class HelmPeripheral implements GenericPeripheral {
         return out;
     }
 
+    /** The ship's speed along the Helm's axes, blocks per second: {@code surge} forward, {@code sway} right, {@code heave} up. */
+    @LuaFunction(mainThread = true)
+    public final Map<String, Double> getVelocity(HelmBlockEntity helm) {
+        HelmBlockEntity.Readout r = helm.readout();
+        Map<String, Double> out = named(new String[] {"surge", "sway", "heave"}, r.velocity());
+        out.put("speed", r.speed());
+        return out;
+    }
+
+    /** The ship's turning rate, degrees per second, as the pilot reads it: roll right, nose up, yaw right. */
+    @LuaFunction(mainThread = true)
+    public final Map<String, Double> getSpin(HelmBlockEntity helm) {
+        return named(new String[] {"rollRight", "noseUp", "yawRight"}, helm.readout().spin());
+    }
+
+    /** Which way the ship points, degrees: nose above the horizon, roll to the right, compass heading of the nose. */
+    @LuaFunction(mainThread = true)
+    public final Map<String, Double> getAttitude(HelmBlockEntity helm) {
+        var a = helm.readout().attitude();
+        return named(new String[] {"pitch", "roll", "heading"}, new double[] {a.pitch(), a.roll(), a.heading()});
+    }
+
     private static Map<String, Double> named(String[] names, double[] values) {
         Map<String, Double> out = new LinkedHashMap<>();
         for (int i = 0; i < names.length; i++) {

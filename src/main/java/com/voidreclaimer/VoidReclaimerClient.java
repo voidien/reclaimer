@@ -41,6 +41,7 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterRenderers);
         modBus.addListener(VoidReclaimerClient::onRegisterItemColors);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
+        com.voidreclaimer.network.HelmReadoutPayload.clientHandler = com.voidreclaimer.client.input.ClientPilotController::onReadout;
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
@@ -88,6 +89,7 @@ public final class VoidReclaimerClient {
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, EnergyBarLayer::render);
         event.replaceLayer(VanillaGuiLayers.PLAYER_HEALTH, com.voidreclaimer.client.hud.HealthBarLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("pilot"), com.voidreclaimer.client.hud.PilotHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("module"), ModuleHudLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
