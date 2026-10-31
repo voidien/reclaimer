@@ -151,4 +151,61 @@ class ThrustAllocatorTest {
         assertEquals(1.0, ThrustAllocator.throttles(List.of(bowJet), frame, keys("right"))[0], EPS, "yaw right opens it");
         assertEquals(0.0, ThrustAllocator.throttles(List.of(bowJet), frame, keys("left"))[0], EPS, "yaw left would turn the wrong way");
     }
+
+    @Test
+    void theDampenerAsksForTheOppositeOfTheVelocityWhereNoKeyIsHeld() {
+        // Drifting forward (-Z) and up: ask for back and down. The pilot holds nothing.
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(0, 1, -2), new Vector3d(), true, true, 0.05, 1.0);
+        assertEquals(new Vector3d(0, -1, 1), hold[0], "force against the drift");
+        assertEquals(new Vector3d(0, 0, 0), hold[1], "no spin, no torque");
+    }
+
+    @Test
+    void aHeldKeyOwnsItsAxisSoTheHoldLeavesItAlone() {
+        // Drifting forward while holding W: no braking along forward, but a sideways drift is still countered.
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, keys("W"), new Vector3d(1, 0, -2), new Vector3d(), true, true, 0.05, 1.0);
+        assertEquals(new Vector3d(-1, 0, 0), hold[0]);
+    }
+
+    @Test
+    void theRcsLockCountersSpinAndTheDeadbandIgnoresACrawl() {
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(), new Vector3d(0, 2, 0), true, true, 0.05, 1.0);
+        assertEquals(new Vector3d(0, -1, 0), hold[1], "torque against a yaw spin");
+        // Below the ramp the hold eases off: half the ramp spin asks for half the torque, and the throttle follows.
+        Vector3d[] gentle = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(), new Vector3d(0, 0.5, 0), true, true, 0.05, 1.0);
+        assertEquals(new Vector3d(0, -0.5, 0), gentle[1], "half the ramp, half the torque");
+        List<Thruster> bowJet = List.of(at(0, 0, -2, 1, 0, 0));
+        assertArrayEquals(new double[] {0.5}, ThrustAllocator.throttles(bowJet, FRAME, gentle[0], gentle[1]), EPS);
+        Vector3d[] still = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(0.01, 0, 0), new Vector3d(0, 0.01, 0), true, true, 0.05, 1.0);
+        assertEquals(new Vector3d(), still[0]);
+        assertEquals(new Vector3d(), still[1]);
+    }
+
+    @Test
+    void holdsOffAskForNothing() {
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(0, 0, -2), new Vector3d(0, 1, 0), false, false, 0.05, 1.0);
+        assertEquals(new Vector3d(), hold[0]);
+        assertEquals(new Vector3d(), hold[1]);
+    }
+
+    @Test
+    void aHoldRequestOpensTheThrusterThatBrakes() {
+        // Drifting forward (-Z); the stern thruster pushes forward, the bow thruster pushes back: braking opens the bow one.
+        List<Thruster> ship = List.of(at(0, 0, 2, 0, 0, -1), at(0, 0, -2, 0, 0, 1));
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(0, 0, -2), new Vector3d(), true, false, 0.05, 1.0);
+        assertArrayEquals(new double[] {0, 1}, ThrustAllocator.throttles(ship, FRAME, hold[0], hold[1]), EPS);
+    }
+
+    @Test
+    void aJetThatBrakesTheDriftButFeedsTheSpinStaysShut() {
+        // Drifting right (+X) and spinning +Y. Four side jets: at the bow (-Z) and the stern (+Z), pushing west (-X) and east.
+        // A bow jet pushing west brakes the drift but its torque is +Y, the spin's own way; the stern jet pushing west
+        // brakes the drift and turns -Y: only the stern one opens.
+        List<Thruster> ship = List.of(at(1, 0, -2, -1, 0, 0), at(-1, 0, -2, 1, 0, 0), at(1, 0, 2, -1, 0, 0), at(-1, 0, 2, 1, 0, 0));
+        Vector3d[] hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(2, 0, 0), new Vector3d(0, 1, 0), true, true, 0.05, 1.0);
+        assertArrayEquals(new double[] {0, 0, 1, 0}, ThrustAllocator.throttles(ship, FRAME, hold[0], hold[1]), EPS);
+        // Once the drift is gone, the pure yaw pair opens: bow east and stern west.
+        hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(), new Vector3d(0, 1, 0), true, true, 0.05, 1.0);
+        assertArrayEquals(new double[] {0, 1, 1, 0}, ThrustAllocator.throttles(ship, FRAME, hold[0], hold[1]), EPS);
+    }
 }

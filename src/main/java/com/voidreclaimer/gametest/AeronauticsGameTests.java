@@ -39,6 +39,11 @@ public final class AeronauticsGameTests {
     private static final double STILL = 1.0;
     private static final Pattern ANGULAR = Pattern.compile("Angular Velocity: (\\S+) (\\S+) (\\S+)");
     private static final double TURNING = 0.05;
+    /** A held ship is this slow (blocks per second) and this still (radians per second) after the holds have worked. */
+    private static final double STOPPED = 0.6;
+    /** How long the holds get to stop the shoved ship: 8 s. */
+    private static final int HOLD_TICKS = 160;
+    private static final double STOPPED_SPIN = 0.15;
     private static final int SETTLE_TICKS = 10;
     private static final int SAMPLE_TICKS = 40;
     /** A pushed ship travels at least this far in {@link #SAMPLE_TICKS}. */
@@ -395,6 +400,124 @@ public final class AeronauticsGameTests {
                 });
             });
         }));
+    }
+
+    /**
+     * The holds. A ship built like the Helm ship but with thrusters both ways (a bow thruster pushing back, a jet each side
+     * at the bow) is given a shove and a spin after assembly; with the dampener and the RCS lock on, the seated pilot's
+     * Helm brings it to a stop without any key held. With both off it keeps drifting and spinning.
+     */
+    private static void holdShip(GameTestHelper helper, BlockPos pos, boolean holdsOn, java.util.function.Consumer<List<String>> then) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        for (int chunks = 1; chunks <= 8; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) - chunks, true);
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) + chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            List<String> log = new ArrayList<>();
+            log.addAll(command(server, space, pos, "fill " + x + " " + y + " " + (z - 3) + " " + x + " " + y + " " + (z + 1) + " minecraft:stone"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]"));
+            // A keel block under the Helm balances it, so the centre of mass stays in the thrusters' plane and their
+            // pushes make no roll or pitch, which this ship has no jets to hold.
+            log.addAll(command(server, space, pos, "setblock " + x + " " + (y - 1) + " " + z + " minecraft:stone"));
+            // Stern engine (pushes north) and a bow engine (pushes south), both electric so no motors are needed.
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z + 2) + " void_reclaimer:ion_thruster[facing=south]"));
+            log.addAll(command(server, space, pos, "setblock " + x + " " + y + " " + (z - 4) + " void_reclaimer:ion_thruster[facing=north]"));
+            // Side jets at both ends, pushing east and west: a bow and a stern jet pushing the same way brake sideways
+            // drift, pushing opposite ways they yaw, so each hold can be served without feeding the other.
+            log.addAll(command(server, space, pos, "setblock " + (x + 1) + " " + y + " " + (z - 3) + " void_reclaimer:rcs_thruster[facing=east]"));
+            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + (z - 3) + " void_reclaimer:rcs_thruster[facing=west]"));
+            log.addAll(command(server, space, pos, "setblock " + (x + 1) + " " + y + " " + (z + 1) + " void_reclaimer:rcs_thruster[facing=east]"));
+            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + (z + 1) + " void_reclaimer:rcs_thruster[facing=west]"));
+            // Roll jets: a pair pushing down on one side and up on the other rolls the ship without pushing it, one pair
+            // each way. A tumbling body trades yaw for roll, so the lock needs roll authority to settle the spin.
+            log.addAll(command(server, space, pos, "setblock " + (x + 1) + " " + y + " " + (z - 1) + " void_reclaimer:rcs_thruster[facing=up]"));
+            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + (z - 1) + " void_reclaimer:rcs_thruster[facing=down]"));
+            log.addAll(command(server, space, pos, "setblock " + (x + 1) + " " + y + " " + (z - 2) + " void_reclaimer:rcs_thruster[facing=down]"));
+            log.addAll(command(server, space, pos, "setblock " + (x - 1) + " " + y + " " + (z - 2) + " void_reclaimer:rcs_thruster[facing=up]"));
+            for (BlockPos t : List.of(new BlockPos(x, y, z + 2), new BlockPos(x, y, z - 4), new BlockPos(x + 1, y, z - 3),
+                    new BlockPos(x - 1, y, z - 3), new BlockPos(x + 1, y, z + 1), new BlockPos(x - 1, y, z + 1),
+                    new BlockPos(x + 1, y, z - 1), new BlockPos(x - 1, y, z - 1), new BlockPos(x + 1, y, z - 2), new BlockPos(x - 1, y, z - 2))) {
+                ((com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(t)).energy().receiveEnergy(8000, false);
+            }
+            helper.runAfterDelay(10, () -> {
+                log.addAll(command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z));
+                helper.runAfterDelay(1, () -> {
+                    nameShip(server, space, pos);
+                    ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+                    player.setData(com.voidreclaimer.registry.ModAttachments.FLIGHT_SETTINGS,
+                            com.voidreclaimer.flight.FlightSettings.DEFAULT.withDampener(holdsOn).withRcsLock(holdsOn));
+                    // The shove and the spin, straight into the physics body.
+                    var ship = shipNamed(space, pos);
+                    var body = dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship);
+                    body.addLinearAndAngularVelocity(new org.joml.Vector3d(0, 0, -3), new org.joml.Vector3d(0, 1.0, 0));
+                    log.add("shoved");
+                    helper.runAfterDelay(HOLD_TICKS, () -> {
+                        List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
+                        removeShip(server, space, pos);
+                        TestPlayers.remove(player);
+                        log.addAll(info);
+                        then.accept(log);
+                    });
+                });
+            });
+        });
+    }
+
+    private static dev.ryanhcode.sable.sublevel.ServerSubLevel shipNamed(ServerLevel space, BlockPos pos) {
+        for (var sub : dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels()) {
+            if (("vr_test_" + pos.getX()).equals(sub.getName())) {
+                return sub;
+            }
+        }
+        return null;
+    }
+
+    private static final Pattern LINEAR = Pattern.compile("Linear Velocity: (\\S+) (\\S+) (\\S+)");
+
+    private static double linearSpeed(List<String> info) {
+        for (String line : info) {
+            Matcher m = LINEAR.matcher(line);
+            if (m.find()) {
+                return Math.sqrt(Math.pow(Double.parseDouble(m.group(1)), 2) + Math.pow(Double.parseDouble(m.group(2)), 2)
+                        + Math.pow(Double.parseDouble(m.group(3)), 2));
+            }
+        }
+        return Double.NaN;
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void theHoldsStopAShovedAndSpinningShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(89_000, 200, 3_000);
+        holdShip(helper, pos, true, log -> {
+            double speed = linearSpeed(log), spin = angularSpeed(log);
+            if (Double.isNaN(speed)) {
+                helper.fail("lost the ship: " + log);
+            } else if (speed > STOPPED || spin > STOPPED_SPIN) {
+                helper.fail("the holds did not stop the ship: speed " + speed + ", spin " + spin + "; " + log);
+            } else {
+                helper.succeed();
+            }
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void withTheHoldsOffAShovedShipKeepsGoing(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(90_000, 200, 3_000);
+        holdShip(helper, pos, false, log -> {
+            double speed = linearSpeed(log), spin = angularSpeed(log);
+            if (Double.isNaN(speed)) {
+                helper.fail("lost the ship: " + log);
+            } else if (speed < 1.0 || spin < 0.3) {
+                helper.fail("something slowed the ship with the holds off: speed " + speed + ", spin " + spin + "; " + log);
+            } else {
+                helper.succeed();
+            }
+        });
     }
 
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */

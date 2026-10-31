@@ -71,6 +71,9 @@ public final class ClientFlightController {
         if (mc.options.tutorialStep != TutorialSteps.NONE && ThrusterFlight.isActive(mc.player)) {
             mc.getTutorial().setStep(TutorialSteps.NONE);
         }
+        while (ModKeyMappings.TOGGLE_RCS_LOCK.consumeClick()) {
+            PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.RCS_LOCK));
+        }
         while (ModKeyMappings.TOGGLE_DAMPENER.consumeClick()) {
             PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.DAMPENER));
         }

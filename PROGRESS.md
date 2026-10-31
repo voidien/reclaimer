@@ -749,6 +749,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ### Placeholder assets
 - `textures/item/helm.png` (16x16 programmer-art chair icon) and `textures/block/helm_particle.png`. The chair itself is the owner's model.
 
+## Helm, part 2: the holds (RCS lock and dampener): done
+- Two holds at the Helm, both on by default and each on its own key: the **inertial dampener** (Z, the body's key) brakes the ship to a stop, the **RCS lock** (X, new) stops its spin and holds its heading. Each works only on the axes the pilot is not using, so a held key always wins. `FlightSettings` gains `rcsLock` (saved; old saves load it as on), toggled with the existing `ToggleFlightSettingPayload`.
+- How: each tick the Helm reads the ship's velocity and spin from Sable, turns them into the ship frame, asks `ThrustAllocator` for the opposite (`holdRequest`), and takes the larger of the key throttle and the hold throttle per thruster. A hold is proportional: full throttle at 1 block/s (or 1 rad/s) and easing off below that, stopping inside a 0.05 deadband.
+- **Tests:** `ThrustAllocatorTest` (5 more: the dampener's request, a held key owning its axis, the RCS lock and the deadband, holds off, and that a hold request opens the braking thruster), `FlightInputTest` (the settings round-trip, and an old save without the field loads with the lock on), and two real-ship `AeronauticsGameTests`: a ship shoved to 3 blocks/s and spun at 1 rad/s is stopped by the holds within 8 s, and with the holds off it keeps going. Mutation-checked: a Helm that ignores the holds fails the holds-on test.
+- **Found on the way:** (1) the allocator scored a thruster by the better of "helps the force" and "helps the torque", so with both holds on it opened a bow jet that braked the sideways drift while feeding the spin, and the spin grew to 5 rad/s; it now scores by the signed sum and such a jet stays shut. (2) Full-throttle holds chattered across the deadband at about one tick's worth of thrust (0.2 rad/s on the test ship); they are proportional below 1 block/s or 1 rad/s now. (3) A tumbling body trades yaw for roll, and a ship with only side jets cannot hold roll, so the test ship carries roll pairs as well; a real ship needs jets on every axis it wants held. (4) The test ship is balanced (a keel block under the Helm) so the thrusters' plane holds the centre of mass; an unbalanced ship's engines also pitch it.
+- **Decision pending (unattended):** the hold ramp (1 block/s, 1 rad/s) and deadband (0.05) are constants in `HelmBlockEntity`; the owner may want them in the config or per size class.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

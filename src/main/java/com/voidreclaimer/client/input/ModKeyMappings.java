@@ -38,6 +38,9 @@ public final class ModKeyMappings {
     public static final KeyMapping PHOTO_MODE = new KeyMapping("key.void_reclaimer.photo_mode",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
 
+    public static final KeyMapping TOGGLE_RCS_LOCK = new KeyMapping("key.void_reclaimer.toggle_rcs_lock",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY);
+
     /** The Helm's rotation axes; its translation axes are the movement keys. */
     public static final KeyMapping ROLL_LEFT = new KeyMapping("key.void_reclaimer.roll_left",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Q, CATEGORY);
@@ -64,6 +67,7 @@ public final class ModKeyMappings {
         event.register(MODULE_WHEEL);
         event.register(ORBIT_CAMERA);
         event.register(PHOTO_MODE);
+        event.register(TOGGLE_RCS_LOCK);
         event.register(ROLL_LEFT);
         event.register(ROLL_RIGHT);
         event.register(PITCH_UP);

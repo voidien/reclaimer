@@ -1,7 +1,9 @@
 package com.voidreclaimer.ship;
 
+import com.voidreclaimer.flight.FlightSettings;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlockEntities;
+import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -32,6 +35,10 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  */
 public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
     public static final String CONTROLLER = "helm";
+    /** Below this speed (blocks per second) or spin (radians per second) a hold treats the ship as stopped. */
+    static final double HOLD_DEADBAND = 0.05;
+    /** The speed or spin at which a hold reaches full throttle; below it the hold eases off in proportion. */
+    static final double HOLD_RAMP = 1.0;
     public static final String SIT_ANIMATION = "turn_180";
     private static final RawAnimation SIT = RawAnimation.begin().thenPlay("animation.void_reclaimer.helm." + SIT_ANIMATION);
 
@@ -123,7 +130,25 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
             model.add(new ThrustAllocator.Thruster(new Vector3d(t.getBlockPos().getX() + 0.5, t.getBlockPos().getY() + 0.5, t.getBlockPos().getZ() + 0.5),
                     Ships.unit(t.pushDirection()), t.maxForce()));
         }
-        double[] throttles = ThrustAllocator.throttles(model, helm.frame(ship), input);
+        ThrustAllocator.Frame frame = helm.frame(ship);
+        double[] throttles = ThrustAllocator.throttles(model, frame, input);
+        // The holds: with the dampener on, brake to a stop; with the RCS lock on, stop spinning. Each only on the axes
+        // the pilot is not using, so a key always wins. The ship's velocity and spin are in the world; the frame is the
+        // ship's own, so they are turned into it first.
+        FlightSettings settings = pilot instanceof ServerPlayer p ? p.getData(ModAttachments.FLIGHT_SETTINGS) : FlightSettings.DEFAULT;
+        if (settings.dampener() || settings.rcsLock()) {
+            RigidBodyHandle body = RigidBodyHandle.of(ship);
+            if (body != null && body.isValid()) {
+                Quaterniond toShip = new Quaterniond(Ships.orientation(ship)).conjugate();
+                Vector3d velocity = toShip.transform(body.getLinearVelocity(new Vector3d()));
+                Vector3d spin = toShip.transform(body.getAngularVelocity(new Vector3d()));
+                Vector3d[] hold = ThrustAllocator.holdRequest(frame, input, velocity, spin, settings.dampener(), settings.rcsLock(), HOLD_DEADBAND, HOLD_RAMP);
+                double[] holding = ThrustAllocator.throttles(model, frame, hold[0], hold[1]);
+                for (int i = 0; i < throttles.length; i++) {
+                    throttles[i] = Math.max(throttles[i], holding[i]);
+                }
+            }
+        }
         for (int i = 0; i < thrusters.size(); i++) {
             thrusters.get(i).setCommandedThrottle(throttles[i]);
         }
