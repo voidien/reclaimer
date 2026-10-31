@@ -21,6 +21,8 @@ public final class PhotoMode {
     private static final PhotoState STATE = new PhotoState();
     private static boolean active;
     private static boolean hudWasHidden;
+    /** Chat is open from inside photo mode: the camera stays free and the control screen comes back when it closes. */
+    private static boolean chatting;
 
     private PhotoMode() {}
 
@@ -49,12 +51,23 @@ public final class PhotoMode {
         mc.setScreen(new PhotoModeScreen());
     }
 
+    /** Opens chat without leaving photo mode. */
+    public static void openChat(Minecraft mc) {
+        chatting = true;
+        mc.setScreen(new net.minecraft.client.gui.screens.ChatScreen(""));
+    }
+
+    public static boolean chatting() {
+        return chatting;
+    }
+
     /** Called by the screen when it closes. */
     public static void exit(Minecraft mc) {
         if (!active) {
             return;
         }
         active = false;
+        chatting = false;
         PhotoDebug.set(mc, false);
         mc.options.hideGui = hudWasHidden;
     }
@@ -67,6 +80,10 @@ public final class PhotoMode {
                 exit(mc);
             }
             return;
+        }
+        if (active && chatting && mc.screen == null) {
+            chatting = false;
+            mc.setScreen(new PhotoModeScreen());
         }
         while (ModKeyMappings.PHOTO_MODE.consumeClick()) {
             if (!active && mc.screen == null) {

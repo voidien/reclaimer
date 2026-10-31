@@ -12,8 +12,8 @@ X.XFlush.argtypes = [ctypes.c_void_p]
 d = X.XOpenDisplay(b':99')
 def key(sym, down):
     kc = X.XKeysymToKeycode(d, X.XStringToKeysym(sym.encode())); T.XTestFakeKeyEvent(d, kc, down, 0); X.XFlush(d)
-def tap(sym, hold=0.09):
-    key(sym, 1); time.sleep(hold); key(sym, 0); time.sleep(0.08)
+def tap(sym, hold=0.09, after=0.08):
+    key(sym, 1); time.sleep(hold); key(sym, 0); time.sleep(after)
 SYM = {' ': 'space', '/': 'slash', ':': 'colon', '_': 'underscore', '.': 'period', '-': 'minus', '@': 'at', '~': 'asciitilde', '=': 'equal', ',': 'comma', '[': 'bracketleft', ']': 'bracketright', '"': 'quotedbl', '{': 'braceleft', '}': 'braceright'}
 SHIFT = set(':_@~"{}') | set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 a = sys.argv
@@ -26,12 +26,12 @@ elif a[1] == 'scroll':
     b = 4 if int(a[2]) > 0 else 5
     for _ in range(abs(int(a[2]))):
         T.XTestFakeButtonEvent(d, b, 1, 0); X.XFlush(d); time.sleep(0.05); T.XTestFakeButtonEvent(d, b, 0, 0); X.XFlush(d); time.sleep(0.15)
-elif a[1] == 'type':  # type "text" [seconds_between_keys]: slow it down for boxes that refilter on every key (JEI search)
+elif a[1] == 'type':  # type "text" [seconds_between_keys]: flat out by default, slow it down for boxes that refilter on every key (JEI search)
     gap = float(a[3]) if len(a) > 3 else 0.0
     for ch in a[2]:
         s = SYM.get(ch, ch)
         if ch in SHIFT: key('Shift_L', 1)
-        tap(s)
+        tap(s, 0.015, 0.015) if gap == 0 else tap(s)
         if ch in SHIFT: key('Shift_L', 0)
         time.sleep(gap)
 elif a[1] == 'key':

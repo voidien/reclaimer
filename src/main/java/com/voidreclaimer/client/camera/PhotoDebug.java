@@ -190,6 +190,7 @@ public final class PhotoDebug {
         Screenshot.grab(mc.gameDirectory, name + ".png", mc.getMainRenderTarget(),
                 message -> mc.execute(() -> mc.gui.getChat().addMessage(message)));
         String camera = cameraLine(mc);
+        age = 0;
         read(mc, PhotoMode.position(), look()).thenAccept(lines -> {
             List<String> file = new ArrayList<>();
             file.add(camera);

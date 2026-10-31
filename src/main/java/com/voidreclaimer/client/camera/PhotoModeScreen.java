@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Takes the input for photo mode while the camera is free. It is a screen only so the mouse and keys reach it instead of the body;
  * the game keeps running behind it. Drag with the left mouse button to look, WASD to move (Ctrl for fast), Space and Shift for up
- * and down, scroll for the field of view, Q and E to roll (R resets), G for the debug layer ({@link PhotoDebug}), Enter or F2 for a screenshot, Escape or the photo-mode key to leave.
+ * and down, scroll for the field of view, Q and E to roll (R resets), G for the debug layer ({@link PhotoDebug}), T for chat ({@link PhotoScript}'s commands), Enter or F2 for a screenshot, Escape or the photo-mode key to leave.
  */
 public final class PhotoModeScreen extends Screen {
     private static final double SPEED = 0.35;
@@ -28,7 +28,9 @@ public final class PhotoModeScreen extends Screen {
 
     @Override
     public void removed() {
-        PhotoMode.exit(Minecraft.getInstance());
+        if (!PhotoMode.chatting()) {
+            PhotoMode.exit(Minecraft.getInstance());
+        }
     }
 
     private boolean down(int glfwKey) {
@@ -76,6 +78,11 @@ public final class PhotoModeScreen extends Screen {
         }
         if (keyCode == GLFW.GLFW_KEY_R) {
             PhotoMode.state().resetRoll();
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_T) {
+            // On the next frame: opened now, chat would also receive this key's typed "t".
+            minecraft.tell(() -> PhotoMode.openChat(minecraft));
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_G) {

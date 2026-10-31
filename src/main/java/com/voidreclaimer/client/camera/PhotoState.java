@@ -66,15 +66,37 @@ public final class PhotoState {
         fov = clampFov((float) (fov * Math.pow(0.9, steps)));
     }
 
+    /** Puts the camera at an exact spot with exact angles. */
+    public void place(Vec3 position, float yaw, float pitch) {
+        this.position = position;
+        this.yaw = wrap(yaw);
+        this.pitch = Math.max(-90f, Math.min(90f, pitch));
+    }
+
+    /** Sets the field of view, within its limits. */
+    public void setFov(float value) {
+        fov = clampFov(value);
+    }
+
+    /** Puts the camera {@code distance} blocks from {@code focus}, looking at it with these angles. */
+    public void orbit(Vec3 focus, float yaw, float pitch, double distance) {
+        place(focus.subtract(direction(yaw, pitch).scale(distance)), yaw, pitch);
+    }
+
+    /** The view direction of these angles. Minecraft: yaw 0 looks along +Z, positive yaw turns toward -X, positive pitch looks down. */
+    public static Vec3 direction(float yaw, float pitch) {
+        double yawRad = Math.toRadians(yaw);
+        double pitchRad = Math.toRadians(pitch);
+        return new Vec3(-Math.sin(yawRad) * Math.cos(pitchRad), -Math.sin(pitchRad), Math.cos(yawRad) * Math.cos(pitchRad));
+    }
+
     /**
      * Moves along the view: {@code forward}, {@code right} and {@code up} are in -1..1 (key states) and {@code speed} is blocks per
      * tick. {@code center} is the body; the result stays within {@link #MAX_RANGE} of it.
      */
     public void move(double forward, double right, double up, double speed, Vec3 center) {
         double yawRad = Math.toRadians(yaw);
-        double pitchRad = Math.toRadians(pitch);
-        // Minecraft: yaw 0 looks along +Z, positive yaw turns toward -X.
-        Vec3 look = new Vec3(-Math.sin(yawRad) * Math.cos(pitchRad), -Math.sin(pitchRad), Math.cos(yawRad) * Math.cos(pitchRad));
+        Vec3 look = direction(yaw, pitch);
         Vec3 rightVec = new Vec3(-Math.cos(yawRad), 0, -Math.sin(yawRad));
         Vec3 step = look.scale(forward).add(rightVec.scale(right)).add(0, up, 0);
         Vec3 next = position.add(step.scale(speed));
