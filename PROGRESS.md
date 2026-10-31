@@ -893,6 +893,9 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: the Ship's far side was not mirrored: done
 - Once the Ship drew at its true size, one wing was seen to run through the hull: both wings use one model that reaches one way. Measured over every Ship section: the wing, the hardpoint and the hull segment are lopsided, the rest are centred. `Socket` gains an optional `mirror` (old chassis files and the old constructor are unchanged), set on `wing_starboard`, `hull_2/4/6` and `hardpoint_2/4/6`, and `BodyPartsLayer` flips those sections. Tests in `ChassisCockpitTest`. Seen in the headless client.
 
+## Fix: exact dust checks raced another test's Dyson tier change: done
+- `HelperCollectGameTests.aFullCollectorWithItsOwnerFarAwayWaits` failed once on CI: its owner had dust. `Dyson.set` checks every online player's milestones when the tier changes, so a test player who had not reached Awakening got the starter dust at a moment set by whichever test changed the tier. Any test asserting an exact dust amount was exposed. Test players now start past Awakening (`TestPlayers.join`); tests about the first moments call `notYetAwake`. Test: `StarterDustGameTests.aTestPlayersDustIsNotChangedByAnotherTestsMilestoneCheck`. Mutation-checked. The game itself is unaffected: a real player reaches Awakening within seconds of joining.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

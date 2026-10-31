@@ -151,6 +151,7 @@ public final class ExtensionGameTests {
     public static void milestoneReachedEventFiresOnce(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 62_000.5, 80, 0.5);
         try {
+            TestPlayers.notYetAwake(player);
             Replicator.checkMilestones(player);
             Replicator.checkMilestones(player);
             var reached = TestEventListeners.REACHED.getOrDefault(player.getUUID(), java.util.List.of());
