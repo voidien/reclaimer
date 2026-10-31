@@ -20,6 +20,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AeronauticsGameTests.NAMESPACE)
 @PrefixGameTestTemplate(false)
 public final class ShipTicketGameTests {
+    private static final BlockPos RESTART_SPOT = new BlockPos(107_000, 200, 3_000);
+    private static final UUID RESTART_HOLDER = new UUID(1L, 2L);
     /** Well past the 25 ticks a ship took to unload once it was let go. */
     private static final int HELD_TICKS = 200;
 
@@ -67,6 +69,41 @@ public final class ShipTicketGameTests {
                     });
                 });
             });
+        });
+    }
+
+    /** Sable finds a ticket's type by name when it loads, so this is what breaks if the type is not made at start-up. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aHeldShipLoadsItselfBeforeRestart(GameTestHelper helper) {
+        BlockPos pos = RESTART_SPOT;
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        int chunkX = pos.getX() >> 4, chunkZ = pos.getZ() >> 4;
+        space.setChunkForced(chunkX, chunkZ, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + pos.getX() + " " + pos.getY() + " " + (pos.getZ() + 2) + " minecraft:stone");
+            command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            helper.runAfterDelay(2, () -> {
+                AeronauticsGameTests.nameShip(server, space, pos.south());
+                var ship = StationGameTests.shipNamed(space, "vr_test_" + pos.getX());
+                helper.assertTrue(ship != null, "the ship was not built");
+                helper.assertTrue(ShipTickets.hold(space, ship, RESTART_HOLDER), "the ticket was refused");
+                space.setChunkForced(chunkX, chunkZ, false);
+                helper.runAfterDelay(60, helper::succeed);
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aHeldShipLoadsItselfAfterRestart(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        String name = "vr_test_" + RESTART_SPOT.getX();
+        StationGameTests.whenShip(helper, space, name, true, 40, () -> {
+            ShipTickets.release(space, StationGameTests.shipNamed(space, name), RESTART_HOLDER);
+            StationGameTests.remove(server, space, RESTART_SPOT, name);
+            helper.succeed();
         });
     }
 }

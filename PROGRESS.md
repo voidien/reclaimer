@@ -1029,6 +1029,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **CI:** starts from a fresh world, so it has no restored forced chunks. It runs at the same one-per-tick rate, though, so the mixin applies there too; the suite passes in a fresh world with it.
 - **Not proven:** that this explains every timeout seen. The two original failing runs were not captured with these probes; the Remote Control test's run was reproduced by position and setup, not by rerunning that branch.
 
+## Tool: tests that span a restart: done
+- Some things can only be tested by restarting: ship tickets, and soon the link's crash safety. `tools/restart-test.sh main|aero <name>` runs `<name>BeforeRestart` in one server and `<name>AfterRestart` in the next, on the same world. The first ends normally, so the server saves, or calls `RestartTests.crash()`, which ends the JVM on the spot with nothing saved. `GameTestFilter.registers` keeps these tests out of every other run, even a filter on their class, because they mean nothing out of order.
+- `aCrashKeepsOnlyWhatWasSaved` keeps `crash()` honest: it saves a diamond block, swaps it for gold and crashes, and the next server must find diamond. `aHeldShipLoadsItself` makes the hand-run restart check of the ship tickets permanent. CI runs both.
+- Tests: those two, and `GameTestFilterTest`. Mutation-checked: with no crash the first finds gold; without `ShipTickets.init` the second reads "the ship never came back".
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -93,6 +93,10 @@ jobs:
           done
           exit 1
 
+      - name: A crash costs what was not saved
+        if: needs.changes.outputs.full == 'true'
+        run: tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
+
       - name: Datagen output is up to date
         if: needs.changes.outputs.full == 'true'
         # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
@@ -148,6 +152,9 @@ jobs:
             ./gradlew --stop
           done
           exit 1
+
+      - name: A held ship survives a restart
+        run: tools/restart-test.sh aero aHeldShipLoadsItself
 
       - name: Upload run logs
         if: failure()
