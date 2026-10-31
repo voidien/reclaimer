@@ -76,9 +76,9 @@ public class BodyInventoryScreen extends AbstractContainerScreen<BodyInventoryMe
         graphics.fill(x1, y1, x2, y2, PANEL_LIGHT);
         LocalPlayer player = minecraft.player;
         if (player != null) {
-            // The model is much longer than the hitbox for the big classes; fit by the larger of the two.
-            double size = Math.max(player.getBbHeight(), player.getBbWidth() * (player.getScale() > 1.5 ? 4.0 : 1.0));
-            int scale = (int) Mth.clamp(PREVIEW_HEIGHT * 0.6 / Math.max(0.4, size), 2, 140);
+            // Pixels per block of the model at scale 1: the preview divides by the body's scale, which the renderer multiplies back.
+            float radius = com.voidreclaimer.client.render.body.BodyBounds.radius(com.voidreclaimer.body.Bodies.view(player));
+            int scale = (int) Mth.clamp(PREVIEW_HEIGHT * 0.42 / Math.max(0.2, radius), 2, 140);
             InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, 0.0625f, mouseX, mouseY, player);
             graphics.drawString(font, Component.translatable("menu.void_reclaimer.inventory.dust"), x1, y2 + 6, ACCENT, false);
             DustMeterLayer.drawRows(graphics, minecraft, player, x1, y2 + 18, 1f, true);

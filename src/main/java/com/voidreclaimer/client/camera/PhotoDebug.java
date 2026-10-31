@@ -45,7 +45,7 @@ public final class PhotoDebug {
     private static final int TEXT = 0xFFDDE6EE;
     private static final int HEADING = 0xFF7FD4FF;
     /** A long data line in the panel; the text file always has all of it. */
-    private static final int PANEL_LINE_CHARS = 600;
+    private static final int PANEL_LINE_CHARS = 120;
 
     private static boolean on;
     private static boolean chunkBorders;
@@ -149,8 +149,9 @@ public final class PhotoDebug {
     private static String cameraLine(Minecraft mc) {
         PhotoState state = PhotoMode.state();
         Vec3 at = state.position();
-        return String.format(Locale.ROOT, "Camera %.1f %.1f %.1f, yaw %.1f pitch %.1f roll %.1f, fov %.0f, %d fps",
-                at.x, at.y, at.z, state.yaw(), state.pitch(), state.roll(), state.fov(), mc.getFps());
+        return String.format(Locale.ROOT, "Camera %.1f %.1f %.1f, yaw %.1f pitch %.1f roll %.1f, fov %.0f, %d fps. Body drawn at %.2f, parts %.2f",
+                at.x, at.y, at.z, state.yaw(), state.pitch(), state.roll(), state.fov(), mc.getFps(),
+                com.voidreclaimer.client.render.body.BodyRenderer.drawnBodyScale(), com.voidreclaimer.client.render.body.BodyRenderer.drawnPartScale());
     }
 
     /** The panel and the crosshair; photo mode's screen calls this. */

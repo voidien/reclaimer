@@ -35,6 +35,10 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     private static BodyRenderer instance;
     @Nullable
     private static Frame frame;
+    /** Whether a part is being drawn into the body ({@link BodyPartsLayer}) and not the body itself. */
+    private boolean reRendering;
+    private static float drawnBodyScale = 1f;
+    private static float drawnPartScale = 1f;
 
     /**
      * What is being drawn this frame.
@@ -86,6 +90,16 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         return frame;
     }
 
+    /** The scale the last body was really drawn at, from its render matrix: photo mode's debug layer shows it beside the body's own scale. */
+    public static float drawnBodyScale() {
+        return drawnBodyScale;
+    }
+
+    /** The same for the last part drawn into a body. */
+    public static float drawnPartScale() {
+        return drawnPartScale;
+    }
+
     /** Rig of the body being drawn. */
     public static String currentRig() {
         return frame == null ? BodyLook.DEFAULT_RIG : frame.rig();
@@ -130,7 +144,6 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             } else {
                 hideFilledCaps(rigModel, view);
             }
-            withScale(player.getScale());
             super.render(player, entityYaw, partialTick, poseStack, bufferSource,
                     BodyLight.atLeast(packedLight, com.voidreclaimer.ClientConfig.BODY_MIN_LIGHT.get()));
         } finally {
@@ -176,6 +189,14 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     /** Fly facing where the player looks (nose up and down for drones and ships); the upright Mech only turns. */
     @Override
     protected void applyRotations(BodyAnimatable animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
+        if (reRendering) {
+            // GeoReplacedEntityRenderer applies the entity's scale and turn on every pass, re-renders included, but a part drawn at a
+            // bone is already in the body's space: undo the scale and skip the turn, or parts come out scale cubed and spinning.
+            poseStack.scale(1f / nativeScale, 1f / nativeScale, 1f / nativeScale);
+            drawnPartScale = matrixScale(poseStack);
+            return;
+        }
+        drawnBodyScale = matrixScale(poseStack);
         Player player = getCurrentEntity();
         Frame current = frame;
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
@@ -188,19 +209,23 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         }
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
-            applyLean(poseStack, player, lean, pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot), partialTick);
+            applyLean(poseStack, player, lean, pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot), partialTick, nativeScale);
         }
+    }
+
+    private static float matrixScale(PoseStack poseStack) {
+        return poseStack.last().pose().getScale(new org.joml.Vector3f()).y();
     }
 
     private static final BodyLean.State LEAN = new BodyLean.State();
 
     /** Leans the model into its motion about the middle of the body (the rig's front is local +Z after the turn above). */
-    private static void applyLean(PoseStack poseStack, Player player, BodyRigSpec.Lean lean, float yaw, float partialTick) {
+    private static void applyLean(PoseStack poseStack, Player player, BodyRigSpec.Lean lean, float yaw, float partialTick, float scale) {
         double dx = player.getX() - player.xo;
         double dz = player.getZ() - player.zo;
         LEAN.update(player.getId(), player.tickCount, BodyLook.forward(dx, dz, yaw), BodyLook.lateral(dx, dz, yaw), lean);
         BodyLean.Angles angles = LEAN.at(player.getId(), partialTick);
-        float pivot = player.getBbHeight() * 0.5f;
+        float pivot = player.getBbHeight() * 0.5f / scale;
         poseStack.translate(0.0, pivot, 0.0);
         poseStack.mulPose(Axis.XP.rotationDegrees(angles.pitch()));
         poseStack.mulPose(Axis.ZP.rotationDegrees(angles.roll()));
@@ -220,6 +245,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     public void preRender(PoseStack poseStack, BodyAnimatable animatable, BakedGeoModel model, MultiBufferSource bufferSource,
                           com.mojang.blaze3d.vertex.VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight,
                           int packedOverlay, int colour) {
+        reRendering = isReRender;
         if (!isReRender) {
             poseStack.translate(0.0, originHeight(currentRig(), getCurrentEntity()), 0.0);
         }
