@@ -12,36 +12,53 @@ import net.minecraft.network.codec.StreamCodec;
  * What a helper drone works on: either a source inventory (the ferry) or a mine point near asteroid rock (mining), and
  * the destination inventory it brings things to. Set on the drone's item, carried by the drone.
  */
-public record HelperLinks(Optional<BlockPos> source, Optional<BlockPos> destination, Optional<BlockPos> mine) {
-    public static final HelperLinks EMPTY = new HelperLinks(Optional.empty(), Optional.empty(), Optional.empty());
+public record HelperLinks(Optional<BlockPos> source, Optional<BlockPos> destination, Optional<BlockPos> mine, Optional<BlockPos> collect) {
+    public static final HelperLinks EMPTY = new HelperLinks(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     public static final Codec<HelperLinks> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockPos.CODEC.optionalFieldOf("source").forGetter(HelperLinks::source),
             BlockPos.CODEC.optionalFieldOf("destination").forGetter(HelperLinks::destination),
-            BlockPos.CODEC.optionalFieldOf("mine").forGetter(HelperLinks::mine)
+            BlockPos.CODEC.optionalFieldOf("mine").forGetter(HelperLinks::mine),
+            BlockPos.CODEC.optionalFieldOf("collect").forGetter(HelperLinks::collect)
     ).apply(instance, HelperLinks::new));
     public static final StreamCodec<ByteBuf, HelperLinks> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.optional(BlockPos.STREAM_CODEC), HelperLinks::source,
             ByteBufCodecs.optional(BlockPos.STREAM_CODEC), HelperLinks::destination,
             ByteBufCodecs.optional(BlockPos.STREAM_CODEC), HelperLinks::mine,
+            ByteBufCodecs.optional(BlockPos.STREAM_CODEC), HelperLinks::collect,
             HelperLinks::new);
 
     /** Ferry links only. */
     public HelperLinks(Optional<BlockPos> source, Optional<BlockPos> destination) {
-        this(source, destination, Optional.empty());
+        this(source, destination, Optional.empty(), Optional.empty());
+    }
+
+    /** Ferry or mining links. */
+    public HelperLinks(Optional<BlockPos> source, Optional<BlockPos> destination, Optional<BlockPos> mine) {
+        this(source, destination, mine, Optional.empty());
     }
 
     /** A source makes a ferry: it replaces any mine point. */
     public HelperLinks withSource(BlockPos pos) {
-        return new HelperLinks(Optional.of(pos.immutable()), destination, Optional.empty());
+        return new HelperLinks(Optional.of(pos.immutable()), destination, Optional.empty(), Optional.empty());
     }
 
     public HelperLinks withDestination(BlockPos pos) {
-        return new HelperLinks(source, Optional.of(pos.immutable()), mine);
+        return new HelperLinks(source, Optional.of(pos.immutable()), mine, collect);
     }
 
     /** A mine point makes a miner: it replaces any source. */
     public HelperLinks withMine(BlockPos pos) {
-        return new HelperLinks(Optional.empty(), destination, Optional.of(pos.immutable()));
+        return new HelperLinks(Optional.empty(), destination, Optional.of(pos.immutable()), Optional.empty());
+    }
+
+    /** A collect point makes a dust collector that brings its dust to its owner: it replaces a source or mine point. */
+    public HelperLinks withCollect(BlockPos pos) {
+        return new HelperLinks(Optional.empty(), destination, Optional.empty(), Optional.of(pos.immutable()));
+    }
+
+    /** Whether the drone collects cloud dust for its owner. */
+    public boolean collecting() {
+        return collect.isPresent();
     }
 
     /** Whether the drone mines (a mine point) rather than ferries (a source). */
@@ -49,8 +66,8 @@ public record HelperLinks(Optional<BlockPos> source, Optional<BlockPos> destinat
         return mine.isPresent();
     }
 
-    /** A job and a destination: the drone can work. */
+    /** A job and where it goes (a destination, or the owner for a collector): the drone can work. */
     public boolean complete() {
-        return (source.isPresent() || mine.isPresent()) && destination.isPresent();
+        return collect.isPresent() || ((source.isPresent() || mine.isPresent()) && destination.isPresent());
     }
 }

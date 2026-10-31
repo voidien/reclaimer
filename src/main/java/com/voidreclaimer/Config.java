@@ -42,6 +42,9 @@ public final class Config {
     public static final ModConfigSpec.IntValue HELPER_PAUSE;
     public static final ModConfigSpec.IntValue HELPER_MINE_RADIUS;
     public static final ModConfigSpec.IntValue HELPER_DIG_TICKS;
+    public static final ModConfigSpec.DoubleValue HELPER_TANK;
+    public static final ModConfigSpec.DoubleValue HELPER_COLLECT_RATE;
+    public static final ModConfigSpec.DoubleValue HELPER_OWNER_RANGE;
     public static final ModConfigSpec.IntValue STATION_REPLICATOR_SPEED;
     public static final ModConfigSpec.IntValue STATION_MAX_BLOCKS;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
@@ -215,6 +218,9 @@ public final class Config {
         HELPER_PAUSE = BUILDER.comment("Ticks a drone waits when there is nothing to take or no room to give.").defineInRange("pause", 40, 1, 1200);
         HELPER_MINE_RADIUS = BUILDER.comment("How far from its mine point a mining drone looks for asteroid rock, in blocks.").defineInRange("mineRadius", 8, 1, 32);
         HELPER_DIG_TICKS = BUILDER.comment("Ticks a mining drone digs one asteroid block.").defineInRange("digTicks", 40, 1, 1200);
+        HELPER_TANK = BUILDER.comment("Dust a collecting drone holds before bringing it to its owner.").defineInRange("tank", 50.0, 0.1, 10000.0);
+        HELPER_COLLECT_RATE = BUILDER.comment("A collecting drone gathers this many times what a still body would in the same cloud.").defineInRange("collectRate", 1.0, 0.01, 100.0);
+        HELPER_OWNER_RANGE = BUILDER.comment("How far a collecting drone will fly to its owner, in blocks.").defineInRange("ownerRange", 96.0, 8.0, 512.0);
         BUILDER.pop();
 
         BUILDER.comment("Stations.").push("station");
