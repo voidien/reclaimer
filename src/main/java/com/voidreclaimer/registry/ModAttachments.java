@@ -100,6 +100,12 @@ public final class ModAttachments {
                     .sync(com.voidreclaimer.station.StationList.STREAM_CODEC)
                     .build());
 
+    /** Any level: its Atmospheric Portal panes, kept by the pane block, so ships can be tested against portals. Saved, not synced. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.earth.PortalPanes>> PORTAL_PANES = ATTACHMENT_TYPES.register("portal_panes",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.earth.PortalPanes.NONE)
+                    .serialize(com.voidreclaimer.earth.PortalPanes.CODEC)
+                    .build());
+
     /** Ruined Earth level only: which of the three skies is shown. Saved with the level and synced to every client in it. */
     public static final Supplier<AttachmentType<com.voidreclaimer.earth.SkyEra>> EARTH_SKY_ERA = ATTACHMENT_TYPES.register("earth_sky_era",
             () -> AttachmentType.builder(() -> com.voidreclaimer.earth.SkyEra.RUINED)

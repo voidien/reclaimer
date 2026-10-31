@@ -96,6 +96,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("entity.void_reclaimer.helm_seat", "Helm Seat");
         add(ModItems.STATION_CORE.get(), "Station Core");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
+        add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
+        add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
+        add("message.void_reclaimer.ship_portal.blocked", "The far side of the portal is not clear for the ship.");
+        add("message.void_reclaimer.ship_portal.no_way_back", "The portal leads nowhere for a ship.");
         add("message.void_reclaimer.clamp.docked", "Docked.");
         add("message.void_reclaimer.clamp.released", "Released.");
         add("message.void_reclaimer.clamp.not_on_ship", "The clamp must be built into a ship or station.");

@@ -38,6 +38,10 @@ for _ in $(seq 1 450); do
 done
 sleep 2
 grep -aE "required tests|failed at|error:|What went wrong" "$log" | grep -v "DEBUG\|WARN" | cut -c1-"$width" | head -12
+# CI has no killer: the server must exit by itself after the summary (GameTestStopMixin bounds the stop loop). Give it
+# 40 s and say so when it does not, so a shutdown hang is seen here and not first on CI.
+for _ in $(seq 1 20); do kill -0 $gradle 2>/dev/null || break; sleep 2; done
+if kill -0 $gradle 2>/dev/null; then echo "WARNING: the server did not exit within 40 s of the summary (killed); CI would hang"; fi
 killjvm
 wait $gradle 2>/dev/null
 grep -aq "required tests passed" "$log"

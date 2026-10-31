@@ -43,6 +43,23 @@ public class AtmosphericPortalBlock extends Block implements Portal {
         builder.add(AXIS);
     }
 
+    /** Panes register themselves with the level, so ships can find the portals they might fly through. */
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide() && !oldState.is(this)) {
+            level.setData(com.voidreclaimer.registry.ModAttachments.PORTAL_PANES, level.getData(com.voidreclaimer.registry.ModAttachments.PORTAL_PANES).with(pos));
+        }
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide() && !newState.is(this)) {
+            level.setData(com.voidreclaimer.registry.ModAttachments.PORTAL_PANES, level.getData(com.voidreclaimer.registry.ModAttachments.PORTAL_PANES).without(pos));
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(AXIS) == Direction.Axis.X ? ACROSS_X : ACROSS_Z;
