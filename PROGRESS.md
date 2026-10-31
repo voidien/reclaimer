@@ -801,6 +801,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Tests:** `EarthMilestoneGameTests`: stepping onto ruined Earth reaches Earthfall and it stays reached after leaving; the propeller recipe is LOCKED before and QUEUED after. Mutation-checked.
 - **Decisions pending (unattended):** the dust costs and times of the Aeronautics recipes; which parts deserve Create routes (three chosen).
 
+## Stations, part 2: the Docking Clamp: done
+- **Docking Clamp:** a block facing any way; while powered it docks the ship whose block sits in the cell in front of its face: the visitor's blocks move into the station's plot (one Sable body; the station's thrusters move both), its name and ship data are remembered. Power off (after docking by power), sneak-use, or CC `release()` assembles the remembered blocks back into their own ship, moving as the station moves, named as before. The visitor must be level and square to the station within 10 degrees (blocks move by quarter turns only) and must not overlap the station; the clamp reports why not (`getStatus`).
+- **Tests:** `StationMathTest` (the yaw residual), `StationGameTests.aPoweredClampDocksATouchingShipAndReleasesItWhenUnpowered` in the Aeronautics suite (a three-stone bar slid into the front cell is docked when a redstone block powers the clamp: the visitor ship is gone and its block is part of the station; removing the redstone releases it as a ship named as before with its three stones), the peripheral in `CCPeripheralGameTests`. Mutation-checked (no block move; no re-assembly).
+- **Known limits:** a docked ship's Helm seat is given up (the Helm moves plots and the seat finds no Helm); the visitor's own momentum is lost on docking (the station's velocity is kept, as Simulated's glue does); a docked ship that is broken apart while docked comes back as whatever is left.
+- **Decisions pending (unattended):** the 10-degree alignment tolerance and the 5-tick look; the recipe (40/30/10/60 dust, Starship milestone).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

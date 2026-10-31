@@ -127,6 +127,17 @@ What a player can do at the core by hand.
 | `getPosition()` | `{ x, y, z }` where the core is in the world right now |
 | `getFilledSlots()` | how many of the station chest's 27 slots hold something |
 
+## Docking Clamp (`DockingClampPeripheral`)
+What sneak-use and redstone do.
+
+| Function | Returns |
+|---|---|
+| `isDocked()` | whether a ship is docked |
+| `getDockedName()` | the docked ship's name, or `""` |
+| `getStatus()` | what the clamp last did or found: `idle`, `not_on_ship`, `no_visitor`, `misaligned`, `blocked`, `docked`, `released`, `empty`, `failed` |
+| `dock()` | docks the ship touching the clamp's face; returns the status |
+| `release()` | lets the docked ship go; returns the status |
+
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
 pocket computer), as their own step.

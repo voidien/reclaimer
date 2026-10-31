@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "void_reclaimer:block/docking_clamp_back",
+    "side": "void_reclaimer:block/docking_clamp_side",
+    "top": "void_reclaimer:block/docking_clamp_face"
+  }
+}

@@ -95,6 +95,17 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.HELM.get(), "Helm");
         add("entity.void_reclaimer.helm_seat", "Helm Seat");
         add(ModItems.STATION_CORE.get(), "Station Core");
+        add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
+        add("message.void_reclaimer.clamp.docked", "Docked.");
+        add("message.void_reclaimer.clamp.released", "Released.");
+        add("message.void_reclaimer.clamp.not_on_ship", "The clamp must be built into a ship or station.");
+        add("message.void_reclaimer.clamp.no_visitor", "No ship is touching the clamp.");
+        add("message.void_reclaimer.clamp.misaligned", "The visiting ship must be level and square to the station.");
+        add("message.void_reclaimer.clamp.blocked", "The visiting ship would overlap the station.");
+        add("message.void_reclaimer.clamp.empty", "Nothing is docked.");
+        add("message.void_reclaimer.clamp.failed", "The clamp could not do that.");
+        add("message.void_reclaimer.clamp.idle", "The clamp is idle.");
+        add("replicator.void_reclaimer.description.docking_clamp", "Build it into a station with its face outward. A ship that touches the face, level and square to the station, is docked while the clamp is powered (or on sneak-use): its blocks join the station and move with it. Power off, or sneak-use again, lets it go as its own ship.");
         add("container.void_reclaimer.station", "Station");
         add("hud.void_reclaimer.station_marker", "%s %sm");
         add("message.void_reclaimer.station.assembled", "Station %s assembled.");

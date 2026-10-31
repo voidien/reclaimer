@@ -69,6 +69,11 @@ public final class ModBlocks {
             com.voidreclaimer.station.StationCoreBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 8.0f).sound(SoundType.COPPER).lightLevel(state -> 6));
 
+    /** Holds a visiting ship against a station: docks what touches its face while powered. */
+    public static final DeferredBlock<com.voidreclaimer.station.DockingClampBlock> DOCKING_CLAMP = BLOCKS.registerBlock("docking_clamp",
+            com.voidreclaimer.station.DockingClampBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0f, 8.0f).sound(SoundType.COPPER));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));
