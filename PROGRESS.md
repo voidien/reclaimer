@@ -893,6 +893,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Fix: the Ship's far side was not mirrored: done
 - Once the Ship drew at its true size, one wing was seen to run through the hull: both wings use one model that reaches one way. Measured over every Ship section: the wing, the hardpoint and the hull segment are lopsided, the rest are centred. `Socket` gains an optional `mirror` (old chassis files and the old constructor are unchanged), set on `wing_starboard`, `hull_2/4/6` and `hardpoint_2/4/6`, and `BodyPartsLayer` flips those sections. Tests in `ChassisCockpitTest`. Seen in the headless client.
 
+## GUI layout debug: done
+- F6 on any screen outlines its buttons and click regions, marks overlaps in red and shows the mouse's GUI position; `debug/gui.txt` holds the same list as text (`tools/client-test/quick.sh gui` prints it). Tests: `GuiLayoutTest`, including the real overlap of the assembly view's button and the Inventory button. Seen on the Replicator and the Body tab.
+- **Found while using it:** on an overloaded body the red warning ran into the Casing chip; the chips now move down a line. It is text over a button, which the overlap check cannot see.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

@@ -107,7 +107,7 @@ final class BodyPanel {
         renderTree(graphics, view, mouseX, mouseY);
         if (selectedSocket == null) {
             renderStats(graphics, player, view.stats());
-            renderCosmetics(graphics, player, view.data().cosmetics(), mouseX, mouseY);
+            renderCosmetics(graphics, player, view.data().cosmetics(), view.stats().overloaded(), mouseX, mouseY);
         } else {
             renderSocket(graphics, player, view, mouseX, mouseY, hover);
         }
@@ -472,9 +472,10 @@ final class BodyPanel {
         }
     }
 
-    private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, int mouseX, int mouseY) {
+    private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, boolean overloaded, int mouseX, int mouseY) {
         int cx = rightX() + 2;
-        int cy = y + 94;
+        // Under the stats: the overload warning is one line more.
+        int cy = y + (overloaded ? 106 : 94);
         RegistryAccess access = player.registryAccess();
         ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
         Component casing = Component.translatable("body.void_reclaimer.casing", Cosmetics.name(access, VoidReclaimerRegistries.CASING, cosmetics.casing()));
@@ -521,6 +522,16 @@ final class BodyPanel {
     }
 
     // ---- input --------------------------------------------------------------------------------------------
+
+    /** Where this panel's clicks go right now, for the GUI layout debug. */
+    List<com.voidreclaimer.debug.GuiLayout.Rect> debugRegions() {
+        List<com.voidreclaimer.debug.GuiLayout.Rect> rects = new ArrayList<>();
+        for (int i = 0; i < regions.size(); i++) {
+            Region region = regions.get(i);
+            rects.add(new com.voidreclaimer.debug.GuiLayout.Rect("body " + i, region.x(), region.y(), region.w(), region.h()));
+        }
+        return rects;
+    }
 
     boolean mouseClicked(LocalPlayer player, double mouseX, double mouseY) {
         for (Region region : List.copyOf(regions)) {
