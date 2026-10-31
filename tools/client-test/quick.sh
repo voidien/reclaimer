@@ -8,6 +8,7 @@
 #   tools/client-test/quick.sh photo NAME [d]  four views (see PhotoScript) joined into build/client-shots/NAME.png, facts printed
 #   tools/client-test/quick.sh compare A B     how two shots differ: changed pixels, where, and a picture marking them (build/client-shots/compare.png)
 #   tools/client-test/quick.sh gui             with a screen open: print its buttons, click regions and overlaps (F6 outlines them on screen)
+#   tools/client-test/quick.sh test NAME       run a GameTest in the live client and print its result, to watch it: the method name, any case
 #   tools/client-test/quick.sh gclick X Y      left click at GUI coordinates (the window is 1280x720 at GUI scale 3)
 #   tools/client-test/quick.sh ghover X Y      move the mouse to GUI coordinates
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
@@ -137,6 +138,17 @@ gui)
     $XT key F6; sleep 0.15; $XT key F6; sleep 0.3
     cat "$report"
     ;;
+test)
+    # Slower than tools/gametest.sh and for the odd look only. Tests at far coordinates need the camera there: /vrphoto focus x y z.
+    name=$(tr '[:upper:]' '[:lower:]' <<< "$2")
+    lines=$(wc -l < "$LOG")
+    $XT key t; sleep 0.4; $XT type "/test run $name"; sleep 0.1; $XT key Return
+    for _ in $(seq 1 ${3:-150}); do
+        tail -n +"$lines" "$LOG" | grep -aqE "CHAT\] .*($name|No such test)|$name failed at" && break
+        sleep 0.2
+    done
+    tail -n +"$lines" "$LOG" | grep -aE "CHAT\] .*(test|Test)|failed at" | sed -E 's/^.*(CHAT\] |LogTestReporter\/\]: )//' | head -6 | cut -c1-200
+    ;;
 gclick) $XT click $(($2 * SCALE)) $(($3 * SCALE)) ;;
 ghover) $XT hover $(($2 * SCALE)) $(($3 * SCALE)) ;;
 gdrag) $XT drag $(($2 * SCALE)) $(($3 * SCALE)) $(($4 * SCALE)) $(($5 * SCALE)) ;;
@@ -147,7 +159,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,19p' "$0" | sed 's/^# \?//'
+    sed -n '2,20p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac

@@ -90,6 +90,7 @@ tools/client-test/quick.sh cmd "/gamemode survival"
 tools/client-test/quick.sh photo NAME   # four views joined into build/client-shots/NAME.png, with the facts
 tools/client-test/quick.sh compare A B  # what changed between two shots: pixels, where, and a marked picture
 tools/client-test/quick.sh gui          # with a screen open: its buttons, click regions and overlaps as text; F6 outlines them on screen
+tools/client-test/quick.sh test NAME    # run a GameTest in the live client, to watch it; only when a log is not enough, it is the slow way
 tools/client-test/quick.sh gclick 160 12   # GUI coordinates (window 1280x720, GUI scale 3); also ghover, gdrag, key, scroll
 tools/client-test/quick.sh stop
 ```
