@@ -1,0 +1,2 @@
+# Every PR adds its entry to PROGRESS.md in the same place: keep both sides instead of conflicting.
+PROGRESS.md merge=union
