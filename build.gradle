@@ -69,6 +69,20 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // For in-game checks (tools/client-test/quick.sh): no need to edit this file, which then has to be restored.
+            //   -PquickPlay=vrtest    join that world straight away
+            //   -PclientSize=1280x720 window size
+            //   -PhotSwap             debug port 5005, so changed classes can be pushed into the running game
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
+            }
+            if (project.hasProperty('clientSize')) {
+                def size = project.property('clientSize').toString().split('x')
+                programArguments.addAll '--width', size[0], '--height', size[1]
+            }
+            if (project.hasProperty('hotSwap')) {
+                jvmArgument '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5005'
+            }
         }
 
         server {

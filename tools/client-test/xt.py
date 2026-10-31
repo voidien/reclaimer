@@ -1,5 +1,5 @@
 # Drives the headless test client on Xvfb display :99 through XTest (see HANDOFF.md).
-# Usage: xt.py click X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | mdrag DX DY [steps [shot.png]] | move DX DY
+# Usage: xt.py click X Y | rclick | hover X Y | scroll N | type "text" | key KEYSYM [hold_seconds] | chord ctrl+f | mdrag DX DY [steps [shot.png]] | drag X Y DX DY [steps] | move DX DY
 import ctypes, sys, time
 X = ctypes.cdll.LoadLibrary('libX11.so.6'); T = ctypes.cdll.LoadLibrary('libXtst.so.6')
 X.XOpenDisplay.restype = ctypes.c_void_p; X.XStringToKeysym.restype = ctypes.c_ulong
@@ -51,6 +51,13 @@ elif a[1] == 'mdrag':  # mdrag DX DY [steps]: hold the middle mouse button and m
         import subprocess, os
         subprocess.run(['import', '-window', 'root', a[5]], env=dict(os.environ, DISPLAY=':99'))
     T.XTestFakeButtonEvent(d, 2, 0, 0); X.XFlush(d)
+elif a[1] == 'drag':  # drag X Y DX DY [steps]: press the left button at X, Y and move it by DX, DY in steps
+    steps = int(a[6]) if len(a) > 6 else 12
+    T.XTestFakeMotionEvent(d, 0, int(a[2]), int(a[3]), 0); X.XFlush(d); time.sleep(0.2)
+    T.XTestFakeButtonEvent(d, 1, 1, 0); X.XFlush(d); time.sleep(0.15)
+    for _ in range(steps):
+        T.XTestFakeRelativeMotionEvent(d, int(a[4]) // steps, int(a[5]) // steps, 0); X.XFlush(d); time.sleep(0.04)
+    time.sleep(0.15); T.XTestFakeButtonEvent(d, 1, 0, 0); X.XFlush(d)
 elif a[1] == 'hover':
     T.XTestFakeMotionEvent(d, 0, int(a[2]), int(a[3]), 0); X.XFlush(d)
 elif a[1] == 'move':
