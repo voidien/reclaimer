@@ -181,6 +181,13 @@ public final class ModAttachments {
                     .build());
 
     /** Per-player modular body. Persisted, kept on death, synced to the owner and to players who see them. Defaults to the starter drone. */
+    /** Where the player's mind is: holds the main body while it is in a shell, so it must outlive a death. Server only. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.link.LinkState>> LINK = ATTACHMENT_TYPES.register("link",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.link.LinkState.NONE)
+                    .serialize(com.voidreclaimer.link.LinkState.CODEC)
+                    .copyOnDeath()
+                    .build());
+
     public static final Supplier<AttachmentType<BodyData>> BODY = ATTACHMENT_TYPES.register("body",
             () -> AttachmentType.builder(Bodies::starter)
                     .serialize(BodyData.CODEC)

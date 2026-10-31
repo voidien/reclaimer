@@ -1037,6 +1037,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - `/void_reclaimer link census <player>` counts everything a body carries (armor, offhand, the cursor, sections, modules, pending items) and the items lying within 32 blocks, and says what changed since that player's last count, so "nothing appeared or vanished" can be checked in a real client too. `ItemCensus` moved from test code to `debug/`. Its command result is the total.
 - Tests: `ItemCensusTest`, `theCensusCountsCursorAndBodyParts`. Dropped items are only seen in a ticking chunk, as with any entity lookup.
 
+## Remote control, part 5: the saved link state: done
+- `link/LinkState`, in the player file: the shell the player is in with its epoch, the main body and where it was left, and an outbox for a shell put back in the world. Bodies are held as raw tags: an attachment that fails to read is dropped with a log line, and with it a main body, while a tag always reads and `BodySnapshot.load` then says whether it is whole.
+- Nothing uses it yet. Tests: `LinkStateTest`. Note on `.gitattributes`: `PROGRESS.md merge=union` works for local rebases, but GitHub's merge check ignores it, so a PR can still show a conflict until it is rebased. It saves the hand fixing, not the CI rerun.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn
