@@ -13,11 +13,17 @@ import net.minecraft.resources.ResourceLocation;
  * @param dustCapacity storage per dust kind
  * @param dysonTier    current Dyson Sphere skybox tier (0 to 4), the same for every player
  * @param itemsMade    ids of the items the player has held at some point (only those some milestone asks for are recorded)
+ * @param dimensionsVisited ids of the dimensions the player has set foot in
  */
 public record MilestoneContext(DustData dust, DustData collected, int blocksPlaced, float dustCapacity, int dysonTier,
-                               Set<ResourceLocation> itemsMade) {
+                               Set<ResourceLocation> itemsMade, Set<ResourceLocation> dimensionsVisited) {
     public MilestoneContext {
         itemsMade = Set.copyOf(itemsMade);
+        dimensionsVisited = Set.copyOf(dimensionsVisited);
+    }
+
+    public MilestoneContext(DustData dust, DustData collected, int blocksPlaced, float dustCapacity, int dysonTier, Set<ResourceLocation> itemsMade) {
+        this(dust, collected, blocksPlaced, dustCapacity, dysonTier, itemsMade, Set.of());
     }
 
     /** The shorthands below treat everything held as collected, which is what a test of one criterion wants. */

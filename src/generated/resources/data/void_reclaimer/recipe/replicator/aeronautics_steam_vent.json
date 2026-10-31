@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 30.0,
+    "void_reclaimer:metallic": 40.0,
+    "void_reclaimer:silicate": 10.0
+  },
+  "milestone": "void_reclaimer:earthfall",
+  "result": {
+    "count": 1,
+    "id": "aeronautics:steam_vent"
+  },
+  "ticks": 800
+}

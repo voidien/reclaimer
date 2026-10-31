@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 80.0,
+    "void_reclaimer:ice": 40.0,
+    "void_reclaimer:metallic": 20.0,
+    "void_reclaimer:silicate": 30.0
+  },
+  "milestone": "void_reclaimer:earthfall",
+  "result": {
+    "count": 1,
+    "id": "aeronautics:gyroscopic_propeller_bearing"
+  },
+  "ticks": 1800
+}

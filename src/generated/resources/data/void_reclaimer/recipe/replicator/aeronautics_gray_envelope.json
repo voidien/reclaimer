@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:blocks",
+  "cost": {
+    "void_reclaimer:carbon": 10.0,
+    "void_reclaimer:metallic": 20.0,
+    "void_reclaimer:silicate": 10.0
+  },
+  "milestone": "void_reclaimer:earthfall",
+  "result": {
+    "count": 4,
+    "id": "aeronautics:gray_envelope"
+  },
+  "ticks": 400
+}

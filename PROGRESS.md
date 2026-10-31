@@ -786,6 +786,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Decisions pending (unattended):** the wind's top speed (1.5 blocks/s), swing period (a minute), cell size (96 blocks) and coupling (0.02) are first guesses; tune in play. Whether ruined Earth's air pressure should be about 1 at ground level (y 64) instead of 0.6 (a `pressure_function` in `dimension_physics/ruined_earth.json`, or a sea level in the generator) is for the owner.
 - **Not here:** the Earth-arrival milestone and Aeronautics recipes (part 2); our own airship kit (later, own interview).
 
+## Earth flight, part 2: Earthfall and the Aeronautics parts: done
+- **Earthfall** milestone: first setting foot on ruined Earth (new criterion `dimension_visited`; the player's visited dimensions are recorded on every dimension change and login in `ReplicatorData`). Log entry text is a placeholder.
+- **Replicator:** every Create Aeronautics block and item has a recipe (`aeronautics_<id>`, Blocks tab; 44 of them, Levitite Blend being a fluid) unlocked by Earthfall, with a short description each; dust costs are placeholders (propellers on carbon, lift parts on ice and metal, levitite on silicon).
+- **Create routes, three:** Andesite Propeller (press a Carbon Composite Plate), Steam Vent (press a Micro-Alloy Sheet), Levitite Blend (heated mixing of Pure Silicon Dust and Fine Carbon Powder), each under its chain's config toggle.
+- **Tests:** `EarthMilestoneGameTests`: stepping onto ruined Earth reaches Earthfall and it stays reached after leaving; the propeller recipe is LOCKED before and QUEUED after. Mutation-checked.
+- **Decisions pending (unattended):** the dust costs and times of the Aeronautics recipes; which parts deserve Create routes (three chosen).
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

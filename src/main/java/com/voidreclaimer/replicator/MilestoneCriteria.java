@@ -25,6 +25,7 @@ public final class MilestoneCriteria {
         TYPES.register("dust_full", () -> DustFull.CODEC);
         TYPES.register("dyson_tier", () -> DysonTier.CODEC);
         TYPES.register("items_made", () -> ItemsMade.CODEC);
+        TYPES.register("dimension_visited", () -> DimensionVisited.CODEC);
     }
 
     private MilestoneCriteria() {}
@@ -149,6 +150,23 @@ public final class MilestoneCriteria {
 
         @Override
         public MapCodec<ItemsMade> codec() {
+            return CODEC;
+        }
+    }
+
+    /** The player has set foot in a dimension (recorded on every dimension change and login). */
+    public record DimensionVisited(ResourceLocation dimension) implements MilestoneCriterion {
+        public static final MapCodec<DimensionVisited> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                ModCodecs.ID.fieldOf("dimension").forGetter(DimensionVisited::dimension)
+        ).apply(instance, DimensionVisited::new));
+
+        @Override
+        public boolean isReached(MilestoneContext context) {
+            return context.dimensionsVisited().contains(dimension);
+        }
+
+        @Override
+        public MapCodec<DimensionVisited> codec() {
             return CODEC;
         }
     }

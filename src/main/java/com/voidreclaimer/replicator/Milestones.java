@@ -32,6 +32,8 @@ public final class Milestones {
      */
     public static final ResourceKey<Milestone> STARSHIP = key("starship");
 
+    /** First set foot on ruined Earth. Unlocks the Aeronautics parts (propellers, envelopes, burners, levitite). */
+    public static final ResourceKey<Milestone> EARTHFALL = key("earthfall");
     /** The Dyson Sphere reached skybox tier 1 to 4. Log entries only; no recipe waits on them yet. */
     public static final ResourceKey<Milestone> DYSON_TIER_1 = key("dyson_tier_1");
     public static final ResourceKey<Milestone> DYSON_TIER_2 = key("dyson_tier_2");
@@ -128,6 +130,7 @@ public final class Milestones {
         map.put(STARSHIP, new Milestone(new MilestoneCriteria.ItemsMade(List.of(VoidReclaimer.id("coolant_frame_plate"),
                 VoidReclaimer.id("carbon_composite_plate"), VoidReclaimer.id("high_efficiency_solar_cell"),
                 VoidReclaimer.id("micro_alloy_sheet"))), 50));
+        map.put(EARTHFALL, new Milestone(new MilestoneCriteria.DimensionVisited(com.voidreclaimer.earth.RuinedEarth.DIMENSION.location()), 60));
         map.put(DYSON_TIER_1, new Milestone(new MilestoneCriteria.DysonTier(1), 100));
         map.put(DYSON_TIER_2, new Milestone(new MilestoneCriteria.DysonTier(2), 101));
         map.put(DYSON_TIER_3, new Milestone(new MilestoneCriteria.DysonTier(3), 102));
