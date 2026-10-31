@@ -6,6 +6,7 @@
 #   tools/client-test/quick.sh shot NAME       screenshot to build/client-shots/NAME.png
 #   tools/client-test/quick.sh cmd "/command"  run a chat command
 #   tools/client-test/quick.sh photo NAME [d]  four views (see PhotoScript) joined into build/client-shots/NAME.png, facts printed
+#   tools/client-test/quick.sh compare A B     how two shots differ: changed pixels, where, and a picture marking them (build/client-shots/compare.png)
 #   tools/client-test/quick.sh gclick X Y      left click at GUI coordinates (the window is 1280x720 at GUI scale 3)
 #   tools/client-test/quick.sh ghover X Y      move the mouse to GUI coordinates
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
@@ -111,6 +112,19 @@ photo)
     echo "$ROOT/$SHOTS/$2.png"
     cut -c1-400 "$shots/$2_front.txt"
     ;;
+compare)
+    # Names are shots in build/client-shots or run/screenshots, or paths. A little fuzz ignores dithering and sky specks.
+    find_shot() { for f in "$1" "$SHOTS/$1.png" "run/screenshots/$1.png"; do [ -f "$f" ] && { echo "$f"; return; }; done; echo "no shot called $1" >&2; exit 2; }
+    a=$(find_shot "$2") || exit 2
+    b=$(find_shot "$3") || exit 2
+    mkdir -p "$SHOTS"
+    pixels=$(magick compare -metric AE -fuzz "${4:-3}%" -highlight-color red -lowlight-color '#00000040' "$a" "$b" "$SHOTS/compare.png" 2>&1 | awk '{printf "%d", $1}')
+    if [ "${pixels:-0}" = "0" ]; then echo "identical (within ${4:-3}% colour difference)"; exit 0; fi
+    size=$(magick identify -format '%wx%h' "$a")
+    area=$(magick "$a" "$b" -compose difference -composite -colorspace gray -threshold "${4:-3}%" -trim -format '%wx%h%O' info: 2>/dev/null)
+    echo "$pixels pixels differ, of a $size picture, inside $area"
+    echo "$ROOT/$SHOTS/compare.png"
+    ;;
 gclick) $XT click $(($2 * SCALE)) $(($3 * SCALE)) ;;
 ghover) $XT hover $(($2 * SCALE)) $(($3 * SCALE)) ;;
 gdrag) $XT drag $(($2 * SCALE)) $(($3 * SCALE)) $(($4 * SCALE)) $(($5 * SCALE)) ;;
@@ -121,7 +135,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,17p' "$0" | sed 's/^# \?//'
+    sed -n '2,18p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac
