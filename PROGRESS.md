@@ -2,6 +2,12 @@
 
 ## Ideas for the owner
 Debug tools and recommendations noted during unattended stretches (`CLAUDE.md` rule 10), raised when the stretch ends. Remove an entry once the owner has answered it.
+- **Tell Sable about the plot lookup bug:** any mod assembling ships on Sable 2.0.6 can lose block contents this way. A fix upstream would let us delete `LevelPlotMixin`.
+- **A "lookup trap" debug tool:** a test-only mixin that logs who makes the chunk lookup remember Sable's empty chunk, with the caller. In one passing run it found `HelmSeat.follow` and Create Propulsion's raycast, with no failure needed.
+- **Show the game tick in GameTest failures,** and log when ships are assembled and removed. A flake that depends on two things landing in the same tick is invisible in a CI log today.
+- **Load all test chunks before a batch:** `setChunkForced` loads a chunk inside each test's start, which starves fresh-world runs. Doing it once up front could shorten runs and even out when tests begin.
+- **The old Mass Driver blocks (the owner asked for ideas):** a cargo railgun firing crates between stations; a probe launcher that fires Remote Shells or relays to far spots; an asteroid tug that drags rock towards a base; or derelict relics found in space and salvaged for parts.
+- **Plain Mech preset:** it has a tier 1 core with tier 2 hands, which the rules would refuse. It only matters for testing.
 
 ## Decisions pending (for the owner)
 Choices taken alone during unattended stretches, each the safest reversible default. The section named after each item has the details; the owner can overrule any of them.
@@ -981,6 +987,7 @@ Original plan, with where each stands (the revised plan for what is left is in `
 - [ ] Holo-displays (parked; plan in `docs/HOLO_DISPLAYS_PLAN.md`)
 
 ## Known issues
+- `tools/gametest.sh` prints "the server did not exit within 40 s" on both suites. It happens with and without the plot lookup fix, and CI on `main` is green, so it looks harmless; the cause is not known.
 - The Aeronautics thruster tests that failed now and then with a ship that never moved may or may not be cured by "Fix: a new ship could lose the contents of its blocks": the cause it fixes is proven, the link to those failures is not. If one comes back, its failure message now shows the thruster's state before assembly, just after it, and at the end.
 - Opening a world shows vanilla's "Worlds using Experimental Settings" warning, because the mod adds a datapack dimension. NeoForge usually suppresses it after the first confirmation, but it came back after the test world was opened by a dedicated server. It's harmless; it could be removed with a mixin if wanted.
 - Sounds were not heard during testing (the headless test client has no audio device). The sound events, `sounds.json`, and the triggering logic are in place, but volume and pitch need a listen on a real machine.
