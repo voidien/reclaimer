@@ -11,6 +11,11 @@ public enum HostRole {
     /** The display copy of the player's main body at the seat. Never saved: the seat rebuilds it. */
     MIRROR;
 
+    /** Whether the body lies asleep. A mirror does not: it shows the main body, whose mind is only away. */
+    public boolean dormant() {
+        return this != MIRROR;
+    }
+
     /** The name in a save. */
     public String id() {
         return name().toLowerCase(Locale.ROOT);

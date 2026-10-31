@@ -992,6 +992,12 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **The fix:** the server's copy starts empty too. Keys still held differ from the client's empty copy, so they are sent again. `PilotInput` does not have this flaw: the client keeps its last value in a static field.
 - Test: `aDimensionChangeForgetsTheKeysHeldBeforeIt`. Mutation-checked: without the fix it reads "the server still thinks keys are held".
 
+## Remote control, part 2: drawing the body host: done
+- `client/render/body/BodyHostRenderer` draws a host with the same `BodyRenderer` as a player, so a shell looks just as its wearer did, modules, paint and wear included. `BodyRenderer` and `BodyAnimatable` now take any `LivingEntity`. A shell or wreck plays `low_power` (a rig without that animation falls back to idle); a mirror does not, because it shows a main body whose mind is only away (`HostRole.dormant`).
+- A host shows no name: GeckoLib labels every living entity, and on a host the label came out doubled. Why it is drawn twice was not found; a named shell will need its own label.
+- `/void_reclaimer link spawn` now puts the shell further off the bigger its body, because long bodies reach far past their hit box.
+- Seen in the client on the arena with a Mech, Drone, Ship and Shuttle, each spawned and then removed with `/kill`, with no errors. Tests: `HostRoleTest.onlyAMirrorIsAwake`, `aDebugShellAppearsAheadOfThePlayerAndIsTheirs`. Not seen: a shell's `low_power` animation on a rig that has one, and a Titan shell.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

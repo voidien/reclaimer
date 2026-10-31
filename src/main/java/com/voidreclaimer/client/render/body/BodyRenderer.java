@@ -21,17 +21,18 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import software.bernie.geckolib.cache.GeckoLibCache;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
 
 /**
- * Draws a player as their body: the chassis rig, with every installed section and module plugged into its bones
- * ({@link BodyPartsLayer}). Called from {@link BodyRenderEvents}, which cancels the vanilla player model.
+ * Draws anything that wears a body: the chassis rig, with every installed section and module plugged into its bones
+ * ({@link BodyPartsLayer}). Called for players from {@link BodyRenderEvents}, which cancels the vanilla player model, and for
+ * empty bodies from {@link BodyHostRenderer}.
  */
-public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAnimatable> {
+public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, BodyAnimatable> {
     /** A fully spread section stands this share of the way further from its anchor. */
     private static final float EXPLODE_SPREAD = 0.9f;
     private static BodyRenderer instance;
@@ -207,8 +208,8 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     }
 
     @Override
-    public void render(Player player, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        BodyView view = previewView != null && player == Minecraft.getInstance().player ? previewView : Bodies.view(player);
+    public void render(LivingEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+        BodyView view = previewView != null && entity == Minecraft.getInstance().player ? previewView : Bodies.view(entity);
         SectionStats core = Parts.section(view.data().core());
         String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
@@ -237,7 +238,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             }
         }
         ResourceLocation texture = spec != null ? spec.texture()
-                : BodyTextures.INSTANCE.painted(rig, player.registryAccess(), cosmetics.casing(view.data().coreSocket()));
+                : BodyTextures.INSTANCE.painted(rig, entity.registryAccess(), cosmetics.casing(view.data().coreSocket()));
         frame = new Frame(view, rig, texture, rigMountBones, inRig, spec, specMounts);
         if (explode > 0f) {
             measureSpread(rigModel, view, spec);
@@ -248,11 +249,11 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             } else {
                 hideFilledCaps(rigModel, view);
             }
-            boolean probed = player == Minecraft.getInstance().player;
+            boolean probed = entity == Minecraft.getInstance().player;
             if (probed) {
                 BoneProbe.begin();
             }
-            super.render(player, entityYaw, partialTick, poseStack, bufferSource,
+            super.render(entity, entityYaw, partialTick, poseStack, bufferSource,
                     BodyLight.atLeast(packedLight, com.voidreclaimer.ClientConfig.BODY_MIN_LIGHT.get()));
             if (probed) {
                 BoneProbe.end();
@@ -260,6 +261,12 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
         } finally {
             frame = null;
         }
+    }
+
+    /** GeckoLib labels every living entity with its type: a body lying empty shows no name. */
+    @Override
+    public boolean shouldShowName(LivingEntity entity) {
+        return !(entity instanceof com.voidreclaimer.link.BodyHost) && super.shouldShowName(entity);
     }
 
     /** A whole-model rig shows a limb only when the section of its socket is installed; the bone's children go with it. */
@@ -308,19 +315,19 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
             return;
         }
         drawnBodyScale = matrixScale(poseStack);
-        Player player = getCurrentEntity();
+        LivingEntity entity = getCurrentEntity();
         Frame current = frame;
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
         BodyRigSpec spec = current == null ? null : current.spec();
         boolean pitches = spec != null ? spec.pitches() : BodyLook.pitches(rig);
-        float yaw = pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
+        float yaw = pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
         poseStack.mulPose(Axis.YP.rotationDegrees(180f - yaw + (spec == null ? 0f : spec.yaw())));
         if (pitches) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(-player.getViewXRot(partialTick)));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-entity.getViewXRot(partialTick)));
         }
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
-            applyLean(poseStack, player, lean, pitches ? player.getViewYRot(partialTick) : Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot), partialTick, nativeScale);
+            applyLean(poseStack, entity, lean, pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot), partialTick, nativeScale);
         }
     }
 
@@ -331,12 +338,12 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     private static final BodyLean.State LEAN = new BodyLean.State();
 
     /** Leans the model into its motion about the middle of the body (the rig's front is local +Z after the turn above). */
-    private static void applyLean(PoseStack poseStack, Player player, BodyRigSpec.Lean lean, float yaw, float partialTick, float scale) {
-        double dx = player.getX() - player.xo;
-        double dz = player.getZ() - player.zo;
-        LEAN.update(player.getId(), player.tickCount, BodyLook.forward(dx, dz, yaw), BodyLook.lateral(dx, dz, yaw), lean);
-        BodyLean.Angles angles = LEAN.at(player.getId(), partialTick);
-        float pivot = player.getBbHeight() * 0.5f / scale;
+    private static void applyLean(PoseStack poseStack, LivingEntity entity, BodyRigSpec.Lean lean, float yaw, float partialTick, float scale) {
+        double dx = entity.getX() - entity.xo;
+        double dz = entity.getZ() - entity.zo;
+        LEAN.update(entity.getId(), entity.tickCount, BodyLook.forward(dx, dz, yaw), BodyLook.lateral(dx, dz, yaw), lean);
+        BodyLean.Angles angles = LEAN.at(entity.getId(), partialTick);
+        float pivot = entity.getBbHeight() * 0.5f / scale;
         poseStack.translate(0.0, pivot, 0.0);
         poseStack.mulPose(Axis.XP.rotationDegrees(angles.pitch()));
         poseStack.mulPose(Axis.ZP.rotationDegrees(angles.roll()));
@@ -344,21 +351,21 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<Player, BodyAn
     }
 
     /** The way a body's model faces, in degrees of yaw: the view for bodies that pitch with it, the body's own turn for an upright one. */
-    public static float facing(Player player) {
-        BodyView view = Bodies.view(player);
+    public static float facing(LivingEntity entity) {
+        BodyView view = Bodies.view(entity);
         SectionStats core = Parts.section(view.data().core());
         String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
-        return (spec != null ? spec.pitches() : BodyLook.pitches(rig)) ? player.getYRot() : player.yBodyRot;
+        return (spec != null ? spec.pitches() : BodyLook.pitches(rig)) ? entity.getYRot() : entity.yBodyRot;
     }
 
     /** Where the rig's origin sits above the player's feet: its middle for flyers, the pelvis height for the upright Mech. */
-    public static double originHeight(String rig, Player player) {
+    public static double originHeight(String rig, LivingEntity entity) {
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
         if (spec != null) {
-            return (spec.grounded() ? 0.0 : player.getBbHeight() / 2.0) + spec.offsetY() / 16.0 * player.getScale();
+            return (spec.grounded() ? 0.0 : entity.getBbHeight() / 2.0) + spec.offsetY() / 16.0 * entity.getScale();
         }
-        return "mech".equals(rig) ? 15.0 / 16.0 * player.getScale() : player.getBbHeight() / 2.0;
+        return "mech".equals(rig) ? 15.0 / 16.0 * entity.getScale() : entity.getBbHeight() / 2.0;
     }
 
     @Override

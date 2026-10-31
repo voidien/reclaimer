@@ -31,7 +31,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public class BodyHost extends LivingEntity {
     private static final EntityDataAccessor<Integer> ROLE = SynchedEntityData.defineId(BodyHost.class, EntityDataSerializers.INT);
-    private static final double AHEAD = 6.0;
+    /** Blocks ahead per unit of scale, with one to spare: long bodies such as the Shuttle reach far past their hit box. */
+    private static final double AHEAD = 4.0;
 
     /** Which link this copy belongs to: after a crash, a copy with an old epoch knows it is stale. */
     private long epoch;
@@ -63,8 +64,10 @@ public class BodyHost extends LivingEntity {
 
     /** A new shell of {@code owner}'s in their view, far enough off for its size. Debug only: nothing in survival makes one yet. */
     public static BodyHost shellAhead(ServerPlayer owner, BodyData body) {
-        Vec3 where = owner.getEyePosition().add(owner.getLookAngle().scale(AHEAD));
-        return spawn(owner.serverLevel(), where, HostRole.SHELL, body, owner.getUUID());
+        Vec3 eyes = owner.getEyePosition();
+        BodyHost shell = spawn(owner.serverLevel(), eyes, HostRole.SHELL, body, owner.getUUID());
+        shell.setPos(eyes.add(owner.getLookAngle().scale(AHEAD * (1.0 + shell.getScale()))));
+        return shell;
     }
 
     /** Puts {@code body} on this host: its size, health limit and reach follow. */

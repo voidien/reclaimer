@@ -138,7 +138,7 @@ public final class LinkGameTests {
             helper.assertTrue(shell.role() == HostRole.SHELL, "role " + shell.role());
             helper.assertTrue(player.getUUID().equals(shell.owner()), "owner " + shell.owner());
             helper.assertTrue(Bodies.data(shell).equals(body), "not the body it was given");
-            helper.assertTrue(shell.distanceTo(player) > player.getBbWidth(), "the shell is inside the player");
+            helper.assertTrue(shell.distanceTo(player) > 4.0f * shell.getScale(), "too close for its size: " + shell.distanceTo(player));
             helper.succeed();
         } finally {
             shell.discard();
