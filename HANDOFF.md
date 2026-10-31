@@ -9,11 +9,7 @@ Last updated 2026-10-31, with the repository cleanup (PR #134).
 
 Verified on `main`: 194 GameTests in `runGameTestServer`, 26 Aeronautics GameTests, the build (unit tests), `runData`, the Python art tool tests.
 
-**Nothing is in flight.** Everything left needs the owner's interview first (`CLAUDE.md` workflow rule 2: questions, then a file list, then wait for the go):
-- The owner's own **airship kit** for ruined Earth (airships stay Create-flown; thrusters only in space; the Helm's airship support is planned, not built). See `CLAUDE.md` "7b block ships".
-- **Holo-displays**: the design is written up in `docs/HOLO_DISPLAYS_PLAN.md`; no code exists.
-- The rest of **Act III**: the Data Monolith and villagers, Restoration (`CLAUDE.md`, revised plan).
-- Art: first-person pieces for the Drone and Mech, the Titan's module models, the placeholders listed in `PROGRESS.md`.
+**Next: the four stages in `CLAUDE.md` "Next four stages", already interviewed, built unattended in order:** the 3D assembly view, Act III's Spire, holo-displays (`docs/HOLO_DISPLAYS_PLAN.md`), the airship kit. Still needing an interview after those: phases 13 and 14 (Data Monolith and villagers, Restoration), first-person pieces for the Drone and Mech, the Titan's module models.
 
 **Waiting on the owner (do not decide alone):**
 - Everything under "Decisions pending (for the owner)" at the top of `PROGRESS.md`: the unattended defaults of hover flight, the Cloud Siphon's power numbers, the RCS block, the Helm, Earth's wind, the stations, the docking clamp, the portal crossing, the launch complex, the renderer and the helper drones.
