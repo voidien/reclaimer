@@ -982,6 +982,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **Correction to the plan:** it said the lookup failed because it searched at the Helm's position in the plot. It does not: Sable's `entity_aabb_lookup` mixin carries a box from the plot to where the ship is in the world. The first test passed on the old code for that reason, then failed in 2 runs of 16, and a probe showed the seat's chunk had `entityTicking false`, `entitiesLoaded false`.
 - Tests: `aHelmKnowsItsPilotOnASeatRestoredFromASave` (the seat through its NBT and into the level) and `aHelmKnowsItsPilotBeforeEntityLookupsSeeTheSeat` (the same seat kept out of the level, which is what makes the failure happen every time). Mutation-checked: on the old code the second fails 3 runs of 3; breaking the seat's saved Helm position or ship id fails the first.
 
+## Fix: thrust kept charging after a dimension change: done
+- **The bug:** a dimension change leaves the client with no attachments, so its copy of the held keys starts empty, and it only reports a change. Keys let go during the load were never reported, so the server went on charging energy and wear for them until the next key press.
+- **The fix:** the server's copy starts empty too. Keys still held differ from the client's empty copy, so they are sent again. `PilotInput` does not have this flaw: the client keeps its last value in a static field.
+- Test: `aDimensionChangeForgetsTheKeysHeldBeforeIt`. Mutation-checked: without the fix it reads "the server still thinks keys are held".
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

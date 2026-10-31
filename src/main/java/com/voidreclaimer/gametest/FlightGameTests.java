@@ -68,6 +68,24 @@ public final class FlightGameTests {
         });
     }
 
+    /** Keys held before a dimension change may be let go during the load, and the client would never say so. */
+    @GameTest(template = "empty")
+    public static void aDimensionChangeForgetsTheKeysHeldBeforeIt(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 66_000.5, 80, 0.5);
+        try {
+            player.setData(ModAttachments.FLIGHT_INPUT, FlightInput.of(true, false, false, false, false, false));
+            ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+            player.teleportTo(earth, 66_000.5, 200, 0.5, 0f, 0f);
+            ServerPlayer now = helper.getLevel().getServer().getPlayerList().getPlayer(player.getUUID());
+            helper.assertTrue(now != null && now.level() == earth, "the player did not arrive on Earth");
+            helper.assertTrue(now.getData(ModAttachments.FLIGHT_INPUT).equals(FlightInput.NONE),
+                    "the server still thinks keys are held: " + now.getData(ModAttachments.FLIGHT_INPUT));
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
     @GameTest(template = "empty")
     public static void zeroEnergyEntersLowPower(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 22_000.5, 80, 0.5);
