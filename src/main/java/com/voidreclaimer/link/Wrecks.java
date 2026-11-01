@@ -69,6 +69,6 @@ public final class Wrecks {
         } else {
             player.displayClientMessage(Component.translatable("message.void_reclaimer.wreck.left", taken, left.size()), true);
         }
-        player.getServer().getPlayerList().saveAll();
+        Links.saveNow(player.getServer());
     }
 }

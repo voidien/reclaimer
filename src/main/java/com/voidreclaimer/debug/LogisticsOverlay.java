@@ -48,10 +48,15 @@ public final class LogisticsOverlay {
             shapes.line(Vec3.atCenterOf(stops.get(i)), Vec3.atCenterOf(stops.get(i + 1)), ROUTE);
         }
         drone.target().ifPresent(target -> shapes.arrow(at, target.subtract(at), HEADING));
+        Vec3 leg = at;
+        for (Vec3 waypoint : drone.waypoints()) {
+            shapes.line(leg, waypoint, HEADING);
+            leg = waypoint;
+        }
         String job = links.collecting() ? "collecting, " + drone.collectPhase() : links.mining() ? "mining, " + drone.minePhase()
                 : links.complete() ? "ferrying, " + drone.phase() : "idle, no links";
         String cargo = drone.carried().isEmpty() ? "" : ", carrying " + drone.carried().getCount() + " " + drone.carried().getHoverName().getString();
-        String line = "Drone " + job + cargo;
+        String line = "Drone " + job + cargo + (drone.blocked() ? ", blocked" : "");
         shapes.text(at.add(0, 0.8, 0), line, HEADING);
         facts.add(line + String.format(Locale.ROOT, " at %.1f %.1f %.1f", at.x, at.y, at.z));
     }

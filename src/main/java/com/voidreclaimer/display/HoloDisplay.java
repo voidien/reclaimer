@@ -22,9 +22,10 @@ import net.minecraft.util.StringRepresentable;
  * @param scale     size of the picture, {@link #MIN_SCALE} to {@link #MAX_SCALE}
  * @param height    blocks from the top of the projector to the picture, 0 to {@link #MAX_HEIGHT}
  * @param billboard whether the picture turns to the viewer
- * @param subject   what {@link Mode#MODEL} shows: a GeckoLib model id; unused by the other modes
+ * @param subject   what {@link Mode#MODEL} shows, a GeckoLib model id, or which globe {@link Mode#GLOBE} shows; unused by the others
+ * @param progress  what a globe shows, from the server; see {@link HoloGlobes}
  */
-public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocation source, float scale, float height, boolean billboard, String subject) {
+public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocation source, float scale, float height, boolean billboard, String subject, HoloGlobes.Progress progress) {
     public static final int MAX_LINES = 8;
     public static final int MAX_CHARS = 48;
     public static final int DEFAULT_COLOR = 0x7FDFFF;
@@ -34,11 +35,11 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
     public static final float MAX_SCALE = 4f;
     public static final float MAX_HEIGHT = 4f;
     public static final ResourceLocation DEFAULT_SOURCE = VoidReclaimer.id("clock");
-    public static final HoloDisplay EMPTY = new HoloDisplay(List.of(), DEFAULT_COLOR, Mode.TEXT, DEFAULT_SOURCE, 1f, 0.5f, true, "");
+    public static final HoloDisplay EMPTY = new HoloDisplay(List.of(), DEFAULT_COLOR, Mode.TEXT, DEFAULT_SOURCE, 1f, 0.5f, true, "", HoloGlobes.Progress.NONE);
 
     /** What the projector is showing. Saved by name, so new modes keep old saves readable. */
     public enum Mode implements StringRepresentable {
-        TEXT, READOUT, MODEL, BODY;
+        TEXT, READOUT, MODEL, BODY, GLOBE;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -70,7 +71,8 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
             Codec.FLOAT.optionalFieldOf("scale", 1f).forGetter(HoloDisplay::scale),
             Codec.FLOAT.optionalFieldOf("height", 0.5f).forGetter(HoloDisplay::height),
             Codec.BOOL.optionalFieldOf("billboard", true).forGetter(HoloDisplay::billboard),
-            Codec.STRING.optionalFieldOf("subject", "").forGetter(HoloDisplay::subject)
+            Codec.STRING.optionalFieldOf("subject", "").forGetter(HoloDisplay::subject),
+            HoloGlobes.Progress.CODEC.lenientOptionalFieldOf("progress", HoloGlobes.Progress.NONE).forGetter(HoloDisplay::progress)
     ).apply(instance, HoloDisplay::new));
 
     public HoloDisplay {
@@ -112,12 +114,12 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
             next.add(Line.BLANK);
         }
         next.set(index, new Line(text, lineColor));
-        return new HoloDisplay(next, color, Mode.TEXT, source, scale, height, billboard, subject);
+        return new HoloDisplay(next, color, Mode.TEXT, source, scale, height, billboard, subject, progress);
     }
 
     /** With all the text replaced. */
     public HoloDisplay withTexts(List<String> texts) {
-        return new HoloDisplay(texts.stream().map(text -> new Line(text, NO_COLOR)).toList(), color, Mode.TEXT, source, scale, height, billboard, subject);
+        return new HoloDisplay(texts.stream().map(text -> new Line(text, NO_COLOR)).toList(), color, Mode.TEXT, source, scale, height, billboard, subject, progress);
     }
 
     /** The same picture with other lines: for a client's own message, nothing saved. */
@@ -127,37 +129,47 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
 
     /** With the readout's newest lines; the mode stays what it was. */
     public HoloDisplay withReadoutLines(List<String> texts) {
-        return new HoloDisplay(texts.stream().map(text -> new Line(text, NO_COLOR)).toList(), color, mode, source, scale, height, billboard, subject);
+        return new HoloDisplay(texts.stream().map(text -> new Line(text, NO_COLOR)).toList(), color, mode, source, scale, height, billboard, subject, progress);
     }
 
     public HoloDisplay withColor(int value) {
-        return new HoloDisplay(lines, value, mode, source, scale, height, billboard, subject);
+        return new HoloDisplay(lines, value, mode, source, scale, height, billboard, subject, progress);
     }
 
     /** Showing a readout from now on. */
     public HoloDisplay withSource(ResourceLocation id) {
-        return new HoloDisplay(lines, color, Mode.READOUT, id, scale, height, billboard, subject);
+        return new HoloDisplay(lines, color, Mode.READOUT, id, scale, height, billboard, subject, progress);
     }
 
     /** Showing a GeckoLib model from now on. The server cannot tell whether it exists: a client without it says so. */
     public HoloDisplay withModel(ResourceLocation id) {
-        return new HoloDisplay(List.of(), color, Mode.MODEL, source, scale, height, billboard, id.toString());
+        return new HoloDisplay(List.of(), color, Mode.MODEL, source, scale, height, billboard, id.toString(), progress);
     }
 
     /** Showing the viewer's own body from now on. */
     public HoloDisplay withBody() {
-        return new HoloDisplay(List.of(), color, Mode.BODY, source, scale, height, billboard, "");
+        return new HoloDisplay(List.of(), color, Mode.BODY, source, scale, height, billboard, "", progress);
+    }
+
+    /** Showing one of {@link HoloGlobes#NAMES} from now on. */
+    public HoloDisplay withGlobe(String globe) {
+        return new HoloDisplay(List.of(), color, Mode.GLOBE, source, scale, height, billboard, globe, progress);
+    }
+
+    /** With a globe's newest progress; the mode stays what it was. */
+    public HoloDisplay withProgress(HoloGlobes.Progress value) {
+        return new HoloDisplay(lines, color, mode, source, scale, height, billboard, subject, value);
     }
 
     public HoloDisplay withScale(float value) {
-        return new HoloDisplay(lines, color, mode, source, value, height, billboard, subject);
+        return new HoloDisplay(lines, color, mode, source, value, height, billboard, subject, progress);
     }
 
     public HoloDisplay withHeight(float value) {
-        return new HoloDisplay(lines, color, mode, source, scale, value, billboard, subject);
+        return new HoloDisplay(lines, color, mode, source, scale, value, billboard, subject, progress);
     }
 
     public HoloDisplay withBillboard(boolean value) {
-        return new HoloDisplay(lines, color, mode, source, scale, height, value, subject);
+        return new HoloDisplay(lines, color, mode, source, scale, height, value, subject, progress);
     }
 }

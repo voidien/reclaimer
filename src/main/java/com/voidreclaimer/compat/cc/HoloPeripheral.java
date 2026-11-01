@@ -97,7 +97,7 @@ public final class HoloPeripheral implements GenericPeripheral {
         holo.setBillboard(billboard);
     }
 
-    /** What the projector shows now: {@code "text"}, {@code "readout"}, {@code "model"} or {@code "body"}. */
+    /** What the projector shows now: {@code "text"}, {@code "readout"}, {@code "model"}, {@code "body"} or {@code "globe"}. */
     @LuaFunction(mainThread = true)
     public final String getMode(HoloProjectorBlockEntity holo) {
         return holo.display().mode().name().toLowerCase(Locale.ROOT);
@@ -118,6 +118,12 @@ public final class HoloPeripheral implements GenericPeripheral {
     @LuaFunction(mainThread = true)
     public final void setBody(HoloProjectorBlockEntity holo) {
         holo.setBody();
+    }
+
+    /** Shows a globe with its live progress: {@code "dyson"} or {@code "earth"}. {@code true}, or {@code false} and why. */
+    @LuaFunction(mainThread = true)
+    public final MethodResult setGlobe(HoloProjectorBlockEntity holo, String globe) {
+        return holo.setGlobe(globe) ? MethodResult.of(true) : MethodResult.of(false, "unknown_globe");
     }
 
     /** The model shown, or nil when it is showing something else. */
