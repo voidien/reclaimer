@@ -17,7 +17,8 @@
     "LevelPlotMixin"
   ],
   "client": [
-    "CameraPhotoMixin"
+    "CameraPhotoMixin",
+    "RenderClassesFirstMixin"
   ],
   "injectors": {
     "defaultRequire": 1
