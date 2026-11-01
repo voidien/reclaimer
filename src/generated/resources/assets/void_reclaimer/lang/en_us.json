@@ -572,6 +572,8 @@
   "message.void_reclaimer.tether.other_dimension": "Tether anchor is out of reach in another dimension.",
   "message.void_reclaimer.tether.teleported": "Recalled to anchor.",
   "message.void_reclaimer.tether.unclipped": "Tether released. Anchor kept as recall point.",
+  "message.void_reclaimer.wreck.empty": "Salvaged %s stacks: the wreck is empty",
+  "message.void_reclaimer.wreck.left": "Salvaged %s stacks; %s more will not fit",
   "milestone.void_reclaimer.awakening": "Awakening",
   "milestone.void_reclaimer.awakening.hint": "Available from the start",
   "milestone.void_reclaimer.diversified": "Diversified",
