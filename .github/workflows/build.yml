@@ -88,7 +88,7 @@ jobs:
           # Pull requests write no chunks and skip the final save; main runs real saves and a real stop. With no saves a fresh world
           # keeps more chunks in memory at once, and CI's world is always fresh.
           flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags="$flags -PgametestChunkSaves"; fi
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestServer $flags --stacktrace && exit 0
             status=$?
@@ -133,11 +133,21 @@ jobs:
           if-no-files-found: ignore
 
   restart:
-    # Tests that span a restart, in a job of their own: they start the server four times and hold up nothing else.
+    # Tests that span a restart, each on its own machine: in a row they took over four minutes, the longest job of a pull request.
     needs: changes
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
+    strategy:
+      # One failure must not cancel the others: they are separate tests, and a fix should see them all.
+      fail-fast: false
+      matrix:
+        test:
+          - aCrashKeepsOnlyWhatWasSaved
+          - aLinkOutlivesACrash
+          - aWokenShellOutlivesACrash
+          - anOldShellGoesAfterACrash
+          - aNewerShellWinsAClash
     steps:
       - uses: actions/checkout@v7
 
@@ -150,19 +160,14 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      - name: A crash costs what was not saved
-        run: |
-          tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
-          tools/restart-test.sh main aLinkOutlivesACrash
-          tools/restart-test.sh main aWokenShellOutlivesACrash
-          tools/restart-test.sh main anOldShellGoesAfterACrash
-          tools/restart-test.sh main aNewerShellWinsAClash
+      - name: ${{ matrix.test }}
+        run: tools/restart-test.sh main ${{ matrix.test }}
 
       - name: Upload run logs
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: restart-logs
+          name: restart-logs-${{ matrix.test }}
           path: run/logs/
           if-no-files-found: ignore
 
@@ -188,7 +193,7 @@ jobs:
       - name: Aeronautics GameTests
         run: |
           flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags="$flags -PgametestChunkSaves"; fi
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestAeronautics $flags --stacktrace && exit 0
             status=$?
