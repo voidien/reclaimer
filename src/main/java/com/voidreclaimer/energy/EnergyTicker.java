@@ -64,15 +64,19 @@ public final class EnergyTicker {
 
     /**
      * 0..1 sunlight at the player's eyes: raw sky light minus the level's current sky darkening, over full daylight.
-     * Deep space's fixed dim sun gives about 2/3 in the open; anything shaded or enclosed gets less or none.
+     * Deep space's fixed dim sun gives about 2/3 in the open; anything shaded or enclosed gets less or none, and so does a body under
+     * a ship's hull, which sky light cannot see.
      */
-    static float sunExposure(ServerPlayer player) {
+    public static float sunExposure(ServerPlayer player) {
         Level level = player.level();
         if (!level.dimensionType().hasSkyLight()) {
             return 0f;
         }
         BlockPos eyes = BlockPos.containing(player.getEyePosition());
         int effective = level.getBrightness(LightLayer.SKY, eyes) - level.getSkyDarken();
+        if (effective <= 0 || com.voidreclaimer.ship.Ships.hullOverhead(level, player.getEyePosition(), player)) {
+            return 0f;
+        }
         return Mth.clamp(effective / 15f, 0f, 1f);
     }
 

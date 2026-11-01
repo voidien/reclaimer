@@ -299,6 +299,38 @@ public final class StationGameTests {
         });
     }
 
+    /** Sky light cannot see a ship's hull either: a body in a ship's shade gets no more sun than one in a cave. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aShipsHullShadesABodyFromTheSun(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        BlockPos pos = new BlockPos(154_000, 230, 3_000);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            var player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY() - 20, pos.getZ() + 0.5);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.energy.EnergyTicker.sunExposure(player) > 0f, "no sun in the open"))
+                    .thenExecute(() -> {
+                        float open = com.voidreclaimer.energy.EnergyTicker.sunExposure(player);
+                        helper.assertTrue(space.getBrightness(net.minecraft.world.level.LightLayer.SKY, player.blockPosition()) > 0, "no sky light, open " + open);
+                        command(server, space, pos, "fill " + (pos.getX() - 1) + " " + pos.getY() + " " + (pos.getZ() - 1) + " " + (pos.getX() + 1) + " " + pos.getY() + " " + (pos.getZ() + 1) + " minecraft:iron_block");
+                        command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.energy.EnergyTicker.sunExposure(player) == 0f,
+                            "sun " + com.voidreclaimer.energy.EnergyTicker.sunExposure(player) + " under a hull, " + shipsOver(space, pos, player)))
+                    .thenExecute(() -> {
+                        int ground = space.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+                        int sky = space.getBrightness(net.minecraft.world.level.LightLayer.SKY, player.blockPosition());
+                        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
+                        TestPlayers.remove(player);
+                        helper.assertFalse(ground > player.getEyeY(), "the blocks are still in the world, so this proves nothing about a ship");
+                        helper.assertTrue(sky > 0, "the sky light is what this test says cannot see the hull, and it reads " + sky);
+                        helper.succeed();
+                    });
+        });
+    }
+
     /**
      * A seat aboard a ship keeps the ship loaded while it is in use, so a shell run from a station does not cost the station, and a
      * wake lands by the ship in the world, not at the seat's position in the ship's own coordinates. The ship lets go after a wake.

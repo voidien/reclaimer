@@ -12,7 +12,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 - Respawn always goes to the deep space spawn until the **Backup Core** (built in Phase 4, Replicator recipe) provides a deep space respawn point.
 - **Energy** replaces hunger. Vanilla food is pinned full and hidden, and the energy bar takes its HUD slot.
   - Drain: slow idle drain above a 10% reserve, plus thrust (Phase 2), drilling, and the Replicator.
-  - Charge: sunlight, proportional to effective sky light (about 2/3 rate in deep space), plus batteries and chargers later. Dust clouds never give energy.
+  - Charge: sunlight, proportional to effective sky light (about 2/3 rate in deep space), plus batteries and chargers later. A ship's solid hull overhead shades a body fully (`Ships.hullOverhead`), since sky light cannot see a ship; its glass does not. Dust clouds never give energy.
   - Below the reserve, idle drain stops and an always-on emergency trickle charges, even in darkness.
   - At 0: low power mode (thrusters, tools, and the Replicator offline; no damage) until energy recovers to 5%.
 **Phase 2**
