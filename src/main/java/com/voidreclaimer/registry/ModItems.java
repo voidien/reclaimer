@@ -152,9 +152,9 @@ public final class ModItems {
 
     public static final DeferredItem<SectionItem> TITAN_SAUCER = section("titan_saucer", BuiltinBodies.TITAN_SAUCER, 4,
             s -> s.mass(10f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
-                    .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.TITAN));
+                    .mount(ModuleKind.COSMETIC, 1).mount(ModuleKind.TOOL, 2).chassis(BuiltinBodies.TITAN));
     public static final DeferredItem<SectionItem> TITAN_NECK = section("titan_neck", BuiltinBodies.TITAN_NECK, 4,
-            s -> s.mass(3f).budget(8f).health(20f));
+            s -> s.mass(3f).budget(8f).health(20f).mount(ModuleKind.TOOL, 2));
     public static final DeferredItem<SectionItem> TITAN_BRIDGE = section("titan_bridge", BuiltinBodies.TITAN_BRIDGE, 4,
             s -> s.mass(2.5f).health(10f).reach(3f).mount(ModuleKind.SENSOR, 1));
     public static final DeferredItem<SectionItem> TITAN_SENSOR_ARRAY = section("titan_sensor_array", BuiltinBodies.TITAN_SENSOR_ARRAY, 4,
