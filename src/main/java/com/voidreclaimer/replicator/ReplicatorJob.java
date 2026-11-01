@@ -17,31 +17,35 @@ import net.minecraft.world.item.ItemStack;
  * @param recipe   recipe id (display and bookkeeping)
  * @param results  items produced on completion
  * @param paid     dust paid when queued; refunded on cancel
+ * @param items    items taken from the inventory when queued; given back on cancel
  * @param progress ticks of work done
  * @param total    ticks of work needed
  */
-public record ReplicatorJob(ResourceLocation recipe, List<ItemStack> results, DustCost paid, int progress, int total) {
+public record ReplicatorJob(ResourceLocation recipe, List<ItemStack> results, DustCost paid, List<ItemStack> items, int progress, int total) {
     public static final Codec<ReplicatorJob> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("recipe").forGetter(ReplicatorJob::recipe),
             // Jobs saved before multi-output recipes have a single "result".
             ItemStack.CODEC.optionalFieldOf("result").forGetter(job -> Optional.empty()),
             ItemStack.CODEC.listOf().optionalFieldOf("results", List.of()).forGetter(ReplicatorJob::results),
             DustCost.CODEC.optionalFieldOf("paid", DustCost.NONE).forGetter(ReplicatorJob::paid),
+            ItemStack.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(ReplicatorJob::items),
             Codec.INT.optionalFieldOf("progress", 0).forGetter(ReplicatorJob::progress),
             Codec.INT.optionalFieldOf("total", 1).forGetter(ReplicatorJob::total)
-    ).apply(instance, (recipe, single, results, paid, progress, total) -> new ReplicatorJob(recipe,
-            results.isEmpty() ? single.map(List::of).orElse(List.of()) : results, paid, progress, total)));
+    ).apply(instance, (recipe, single, results, paid, items, progress, total) -> new ReplicatorJob(recipe,
+            results.isEmpty() ? single.map(List::of).orElse(List.of()) : results, paid, items, progress, total)));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorJob> STREAM_CODEC = StreamCodec.composite(
             ResourceLocation.STREAM_CODEC, ReplicatorJob::recipe,
             ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorJob::results,
             DustCost.STREAM_CODEC, ReplicatorJob::paid,
+            ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), ReplicatorJob::items,
             ByteBufCodecs.VAR_INT, ReplicatorJob::progress,
             ByteBufCodecs.VAR_INT, ReplicatorJob::total,
             ReplicatorJob::new);
 
     public ReplicatorJob {
         results = results.stream().map(ItemStack::copy).toList();
+        items = items.stream().map(ItemStack::copy).toList();
     }
 
     /** The first result (the one shown), or empty. */
@@ -62,6 +66,6 @@ public record ReplicatorJob(ResourceLocation recipe, List<ItemStack> results, Du
     }
 
     ReplicatorJob advanced(int steps) {
-        return new ReplicatorJob(recipe, results, paid, Math.min(total, progress + steps), total);
+        return new ReplicatorJob(recipe, results, paid, items, Math.min(total, progress + steps), total);
     }
 }

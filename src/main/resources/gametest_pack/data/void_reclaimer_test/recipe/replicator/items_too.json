@@ -1,0 +1,13 @@
+{
+  "type": "void_reclaimer:replicator",
+  "result": {"id": "minecraft:diamond", "count": 1},
+  "cost": {"void_reclaimer:metallic": 5},
+  "inputs": [
+    {"ingredient": {"item": "minecraft:iron_ingot"}, "count": 3},
+    {"ingredient": {"tag": "minecraft:planks"}, "count": 1}
+  ],
+  "ticks": 20,
+  "description": "Takes items as well as dust.",
+  "category": "void_reclaimer:blocks",
+  "milestone": "void_reclaimer:awakening"
+}

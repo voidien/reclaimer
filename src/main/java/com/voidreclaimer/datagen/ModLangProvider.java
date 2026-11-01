@@ -415,6 +415,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.replicator.locked", "That design is still locked.");
         add("message.void_reclaimer.replicator.queue_full", "Replicator queue is full.");
         add("message.void_reclaimer.replicator.not_enough_dust", "Not enough dust.");
+        add("message.void_reclaimer.replicator.not_enough_items", "You're missing the items this needs.");
         add("message.void_reclaimer.replicator.unknown_recipe", "Unknown design.");
         add("toast.void_reclaimer.log", "New log entry");
         add("jei.void_reclaimer.time", "%s s");
