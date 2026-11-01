@@ -57,6 +57,8 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
     private static final int INPUT_DETAIL_LINES = 3;
     private static final int INPUT_ROW_TOP = 33;
     private static final int INPUT_WIDTH = 44;
+    private static final int COST_GAP = 5;
+    private static final int TIGHT_COST_GAP = 2;
     private static final int VISIBLE_ROWS = 5;
     private static final int PANEL = 0xE0101418;
     private static final int PANEL_LIGHT = 0xFF1E2630;
@@ -397,6 +399,12 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         var access = minecraft.level.registryAccess();
         List<Component> hover = null;
         int cx = x;
+        // A big price tightens up to stay in its row.
+        int wide = font.width(costTime(recipe, true));
+        for (ResourceLocation kind : recipe.cost().amounts().keySet()) {
+            wide += DustIcons.SIZE + 1 + font.width(Integer.toString(Mth.ceil(recipe.cost().get(kind)))) + COST_GAP;
+        }
+        boolean tight = wide > LIST_WIDTH - 28;
         for (ResourceLocation kind : DustKinds.ordered(access, recipe.cost().amounts().keySet())) {
             float amount = recipe.cost().get(kind);
             boolean affordable = dust.get(kind) + 1.0E-4f >= amount;
@@ -408,11 +416,15 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
                 hover = List.of(Component.translatable("replicator.void_reclaimer.cost_tooltip", DustKinds.name(access, kind),
                         Mth.floor(dust.get(kind)), Mth.ceil(amount)));
             }
-            cx += width + 5;
+            cx += width + (tight ? TIGHT_COST_GAP : COST_GAP);
         }
-        graphics.drawString(font, Component.literal(String.format(java.util.Locale.ROOT, "· %ds", Mth.ceil(recipe.ticks() / 20f))).withColor(0x8899AA),
+        graphics.drawString(font, Component.literal(costTime(recipe, !tight)).withColor(0x8899AA),
                 cx, y + 1, TEXT, false);
         return hover;
+    }
+
+    private static String costTime(ReplicatorRecipe recipe, boolean dot) {
+        return (dot ? "· " : "") + Mth.ceil(recipe.ticks() / 20f) + "s";
     }
 
     private void renderLogs(GuiGraphics graphics, ReplicatorData data) {
