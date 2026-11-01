@@ -117,8 +117,9 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
         double overload = overload(mass, budget);
         double handling = 1.0 / (1.0 + HANDLING_PENALTY * overload);
         double speedFactor = 1.0 / (1.0 + SPEED_PENALTY * overload);
+        double bySize = Math.min(topSpeed * size.speedFactor(), size.maxSpeed());
         FlightStats flight = new FlightStats(mass, thrust * handling, brake * handling,
-                topSpeed * speedFactor / FlightStats.TICKS_PER_SECOND);
+                bySize * speedFactor / FlightStats.TICKS_PER_SECOND);
         return new BodyStats(sizeKey, size.scale(), size.rank(), mass, budget, coreTier, flight,
                 (float) (1.0 + ENERGY_PENALTY * overload), energyCapacity, solarRate, Math.max(MIN_HEALTH, health), reach,
                 intake, Math.min(MAX_ROWS, rows), dustCapacity, stability, turnRate);

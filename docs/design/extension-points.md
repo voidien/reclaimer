@@ -11,7 +11,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:casing` | Synced datapack registry (`api.body.Casing`) | `order`, `name`, `texture`, `requires` (milestone) |
 | `void_reclaimer:trail` | Synced datapack registry (`api.body.Trail`) | `color` (none = accent), `particles`, `order`, `name`, `requires` |
 | `void_reclaimer:replicator` recipes | Recipe type | `result` or `results` (kits), optional `title` and `description`; `cost` is a map of dust kind id → amount; `category` and `milestone` are registry ids |
-| `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name` |
+| `void_reclaimer:size_class` | Synced datapack registry (`api.body.SizeClass`) | `scale` (`generic.scale`), `rank` (for module `min_size`), `name`, `speed_factor` (times the best thruster's top speed), `max_speed` (blocks a second, default 40) |
 | `void_reclaimer:chassis` | Synced datapack registry (`api.body.Chassis`) | Body layout: `size_class`, `core_socket`, `sockets` (`id`, `accepts` socket types, `required`, `parent`, `pivot`, `area`, optional `mirror`: draw the section flipped left to right, for the far side of a pair built from one lopsided model); socket id = GeckoLib bone (5b); optional `cockpit` (`forward`, `up`, `right` in blocks at scale 1): first-person camera offset, and the hand is hidden |
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
 | `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |

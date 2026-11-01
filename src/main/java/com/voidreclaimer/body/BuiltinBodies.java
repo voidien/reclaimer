@@ -29,12 +29,12 @@ public final class BuiltinBodies {
 
     public static final Map<ResourceKey<SizeClass>, SizeClass> SIZE_CLASSES = Map.of(
             DRONE_SIZE, new SizeClass(0.4, 0),
-            MECH_SIZE, new SizeClass(1.2, 1),
-            SHIP_SIZE, new SizeClass(3.0, 2),
+            MECH_SIZE, new SizeClass(1.2, 1, 1.4),
+            SHIP_SIZE, new SizeClass(3.0, 2, 3.0),
             // The same rank as the Ship, so parts and unlocks treat it alike. The model is 8.5 blocks long at scale 1: about 17 at 2.
-            SHUTTLE_SIZE, new SizeClass(2.0, 2),
+            SHUTTLE_SIZE, new SizeClass(2.0, 2, 4.0),
             // The Titan model is 8.4 blocks long at scale 1: at 8 it is about 67 blocks.
-            TITAN_SIZE, new SizeClass(8.0, 3));
+            TITAN_SIZE, new SizeClass(8.0, 3, 2.0));
 
     // ---- socket types (what sections are) -----------------------------------------------------------------
 

@@ -149,4 +149,20 @@ class BodyStatsTest {
         assertEquals(Cosmetics.EMBER, cosmetics.trail());
         assertEquals(Cosmetics.DEFAULT_ACCENT, cosmetics.accent());
     }
+
+    @Test
+    void aSizeClassSetsHowFastItsBodiesGoUpToItsLimit() {
+        double mk1 = drone(List.of(CORE_MK1, THRUSTER_MK1)).flight().maxSpeed();
+        SizeClass triple = new SizeClass(1.0, 0, 3.0);
+        assertEquals(mk1 * 3.0, BodyStats.compute(BuiltinBodies.DRONE_SIZE, triple, DRONE_SECTIONS, List.of(CORE_MK1, THRUSTER_MK1)).flight().maxSpeed(), 1e-4);
+        SizeClass limited = new SizeClass(1.0, 0, Optional.empty(), 100.0, 25.0);
+        assertEquals(25.0 / 20.0, BodyStats.compute(BuiltinBodies.DRONE_SIZE, limited, DRONE_SECTIONS, List.of(CORE_MK1, THRUSTER_MK1)).flight().maxSpeed(), 1e-4, "the limit holds");
+    }
+
+    @Test
+    void theBuiltInClassesGiveTheOwnersSpeedsOnAMarkOneThruster() {
+        Map<String, Double> wanted = Map.of("drone", 10.0, "mech", 14.0, "titan", 20.0, "ship", 30.0, "shuttle", 40.0);
+        BuiltinBodies.SIZE_CLASSES.forEach((key, size) ->
+                assertEquals(wanted.get(key.location().getPath()), Math.min(10.0 * size.speedFactor(), size.maxSpeed()), 1e-6, key.location().toString()));
+    }
 }

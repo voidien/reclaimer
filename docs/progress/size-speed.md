@@ -1,0 +1,2 @@
+## Bigger bodies are faster
+- Every preset topped out at 10 m/s, so big bodies looked slow. A size class now multiplies the best thruster's top speed (`speed_factor`) up to a limit (`max_speed`, default 40). With Mk I thrusters that gives the owner's numbers: Drone 10, Mech 14, Titan 20, Ship 30, Shuttle 40. A body over its mass budget still loses speed. The limit stays at 40 until chunk loading has been measured at speed.
