@@ -3519,6 +3519,15 @@
             2,
             0
           ]
+        },
+        {
+          "name": "mount_storage_1",
+          "pivot": [
+            0,
+            -3,
+            2
+          ],
+          "parent": "ship_keel"
         }
       ]
     }

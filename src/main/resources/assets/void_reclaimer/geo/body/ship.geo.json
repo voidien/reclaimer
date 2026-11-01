@@ -4310,6 +4310,15 @@
           ]
         },
         {
+          "name": "mount_storage_1",
+          "pivot": [
+            0,
+            -3,
+            2
+          ],
+          "parent": "keel"
+        },
+        {
           "name": "bridge__mount_sensor_1",
           "parent": "bridge",
           "pivot": [
