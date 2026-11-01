@@ -10,6 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.voidreclaimer.display.HoloDisplay;
+import com.voidreclaimer.display.HoloGlobes;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
 import com.voidreclaimer.registry.ModRegistries;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,7 +20,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.network.chat.Component;
 
-/** {@code /void_reclaimer holo <pos> line|scale|source|billboard|model|body|clear}: writes to a Holo Projector without a computer, for checks. */
+/** {@code /void_reclaimer holo <pos> line|scale|source|billboard|model|body|globe|clear}: writes to a Holo Projector without a computer, for checks. */
 final class HoloCommand {
     private static final SimpleCommandExceptionType NOT_A_PROJECTOR =
             new SimpleCommandExceptionType(Component.translatable("commands.void_reclaimer.holo.not_a_projector"));
@@ -55,6 +56,9 @@ final class HoloCommand {
                     projector(ctx).setBody();
                     return Command.SINGLE_SUCCESS;
                 }))
+                .then(Commands.literal("globe").then(Commands.argument("globe", StringArgumentType.word())
+                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(HoloGlobes.NAMES, builder))
+                        .executes(ctx -> projector(ctx).setGlobe(StringArgumentType.getString(ctx, "globe")) ? Command.SINGLE_SUCCESS : 0)))
                 .then(Commands.literal("clear").executes(ctx -> {
                     projector(ctx).clearLines();
                     return Command.SINGLE_SUCCESS;
