@@ -30,7 +30,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Build and unit tests
         run: ./gradlew build --stacktrace
@@ -111,7 +111,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: ${{ matrix.test }}
         run: tools/restart-test.sh main ${{ matrix.test }}
@@ -136,7 +136,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Aeronautics GameTests
         run: |
