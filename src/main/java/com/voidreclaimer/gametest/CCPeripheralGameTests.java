@@ -241,7 +241,8 @@ public final class CCPeripheralGameTests {
             ServerLevel space = TestPlayers.deepSpace(helper);
             SpireBlockEntity idle = place(space, spacePos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
             requireMethods(helper, Lookup.of(space, spacePos), "Terraforming Spire",
-                    "isRunning", "getProgress", "getPulses", "getRadius", "pulse", "isAssembled", "assemble", "disassemble", "getSpeed");
+                    "isRunning", "getProgress", "getPulses", "getRadius", "pulse", "isAssembled", "assemble", "disassemble", "getSpeed",
+                    "getSector", "getSectors", "getRestoredCount");
             helper.assertFalse(lua.isAssembled(idle), "a lone Spire reads as assembled");
             helper.assertTrue("frame_incomplete".equals(lua.assemble(idle)), "assemble() without a frame: " + lua.assemble(idle));
             helper.assertTrue("not_assembled".equals(lua.disassemble(idle)), "disassemble() without a tower: " + lua.disassemble(idle));
@@ -250,7 +251,7 @@ public final class CCPeripheralGameTests {
             helper.assertTrue(Boolean.FALSE.equals(refused[0]) && "wrong_world".equals(refused[1]),
                     "pulse() in deep space: " + Arrays.toString(refused));
             helper.assertFalse(lua.isRunning(idle), "running in deep space");
-            helper.assertTrue(lua.getRadius(idle) == com.voidreclaimer.Config.SPIRE_RADIUS.get(), "getRadius " + lua.getRadius(idle));
+            helper.assertTrue(lua.getRadius(idle) == 0, "getRadius away from the planet " + lua.getRadius(idle));
             space.setBlock(spacePos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 
             // On ruined Earth pulse() starts it, and a second call is refused while it runs. The block is removed in
@@ -264,6 +265,11 @@ public final class CCPeripheralGameTests {
                 helper.assertTrue(Boolean.FALSE.equals(noTower[0]) && "not_assembled".equals(noTower[1]), "pulse() with no tower: " + Arrays.toString(noTower));
                 SpireTowerGameTests.frame(earth, earthPos, ModBlocks.SCAFFOLD.get());
                 helper.assertTrue("assembled".equals(lua.assemble(spire)) && lua.isAssembled(spire), "assemble() with a frame");
+                java.util.Map<String, Object> sector = lua.getSector(spire);
+                helper.assertTrue(sector != null && sector.get("column").equals(4) && sector.get("row").equals(1), "getSector " + sector);
+                helper.assertTrue(lua.getRadius(spire) > 128, "getRadius of a tower off the middle of its sector " + lua.getRadius(spire));
+                com.voidreclaimer.earth.SectorMap map = com.voidreclaimer.earth.SectorMap.of(earth);
+                helper.assertTrue(lua.getRestoredCount(idle) == map.count() && lua.getSectors(idle).size() == 16, "the planet read from deep space");
                 Object[] started = lua.pulse(spire).getResult();
                 helper.assertTrue(started.length == 1 && Boolean.TRUE.equals(started[0]), "pulse() on ruined Earth: " + Arrays.toString(started));
                 helper.assertTrue(lua.isRunning(spire), "not running after pulse()");

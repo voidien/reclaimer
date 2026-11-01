@@ -60,7 +60,7 @@ public final class RuinedEarthEffects extends DimensionSpecialEffects {
     @Override
     public boolean renderClouds(ClientLevel level, int ticks, float partialTick, PoseStack poseStack, double camX, double camY,
                                 double camZ, Matrix4f modelViewMatrix, Matrix4f projectionMatrix) {
-        return !SkyLook.of(SkyEra.of(level)).clouds();
+        return !SkyLook.in(level).clouds();
     }
 
     @Override
@@ -70,7 +70,7 @@ public final class RuinedEarthEffects extends DimensionSpecialEffects {
         if (fluid == FogType.LAVA || fluid == FogType.POWDER_SNOW || fluid == FogType.WATER) {
             return false;
         }
-        SkyLook look = SkyLook.of(SkyEra.of(level));
+        SkyLook look = SkyLook.in(level);
 
         PoseStack pose = new PoseStack();
         pose.mulPose(modelViewMatrix);

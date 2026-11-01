@@ -133,7 +133,6 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
     public static final ModConfigSpec.IntValue HOLO_SOURCE_RANGE;
-    public static final ModConfigSpec.IntValue SPIRE_RADIUS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
 
     public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
@@ -372,9 +371,7 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");
-        SPIRE_RADIUS = BUILDER.comment("Blocks from the Spire to the edge of its square area. 128 makes 16 Spires tile the planet.")
-                .defineInRange("spireRadius", 128, 1, 256);
-        SPIRE_PULSE_TICKS = BUILDER.comment("Ticks the Genesis Pulse takes to sweep from the Spire to the edge of its area.")
+        SPIRE_PULSE_TICKS = BUILDER.comment("Ticks the Genesis Pulse takes to sweep from the tower to the far edge of its sector.")
                 .defineInRange("pulseTicks", 300, 1, 24_000);
         BUILDER.pop();
 

@@ -1,12 +1,18 @@
 package com.voidreclaimer.compat.cc;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.earth.EarthRestoration;
+import com.voidreclaimer.earth.SectorMap;
+import com.voidreclaimer.earth.Sectors;
 import com.voidreclaimer.terraform.SpireAssembly;
 import com.voidreclaimer.terraform.SpireBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Lua functions of the Terraforming Spire (CC: Tweaked generic peripheral). {@code pulse()} is the player's right-click
@@ -60,10 +66,39 @@ public final class SpirePeripheral implements GenericPeripheral {
         return spire.pulses();
     }
 
-    /** Blocks from the Spire to the edge of its square area. */
+    /** Blocks from the tower to the far edge of its sector; 0 outside the planet. */
     @LuaFunction(mainThread = true)
     public final int getRadius(SpireBlockEntity spire) {
         return spire.radius();
+    }
+
+    /** The sector this tower stands in as a table of {@code column}, {@code row} (1 to 4) and {@code restored}; nil off the planet. */
+    @LuaFunction(mainThread = true)
+    @Nullable
+    public final Map<String, Object> getSector(SpireBlockEntity spire) {
+        int sector = spire.sector();
+        if (sector == Sectors.NONE) {
+            return null;
+        }
+        SectorMap map = EarthRestoration.map(spire.getLevel().getServer());
+        return Map.of("column", Sectors.column(sector) + 1, "row", Sectors.row(sector) + 1, "restored", map.isRestored(sector));
+    }
+
+    /** Whether each sector is restored: a list of 16 booleans, row by row from the north-west. Reads the planet from any dimension. */
+    @LuaFunction(mainThread = true)
+    public final Map<Integer, Boolean> getSectors(SpireBlockEntity spire) {
+        SectorMap map = EarthRestoration.map(spire.getLevel().getServer());
+        Map<Integer, Boolean> sectors = new HashMap<>();
+        for (int sector = 0; sector < Sectors.COUNT; sector++) {
+            sectors.put(sector + 1, map.isRestored(sector));
+        }
+        return sectors;
+    }
+
+    /** How many sectors of the planet are restored, 0 to 16. */
+    @LuaFunction(mainThread = true)
+    public final int getRestoredCount(SpireBlockEntity spire) {
+        return EarthRestoration.map(spire.getLevel().getServer()).count();
     }
 
     /**
