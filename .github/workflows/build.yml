@@ -98,12 +98,6 @@ jobs:
           done
           exit 1
 
-      - name: A crash costs what was not saved
-        if: needs.changes.outputs.full == 'true'
-        run: |
-          tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
-          tools/restart-test.sh main aLinkOutlivesACrash
-
       - name: Datagen output is up to date
         if: needs.changes.outputs.full == 'true'
         # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
@@ -136,6 +130,37 @@ jobs:
             build/reports/tests/
             build/test-results/
             run/logs/
+          if-no-files-found: ignore
+
+  restart:
+    # Tests that span a restart, in a job of their own: they start the server four times and hold up nothing else.
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: A crash costs what was not saved
+        run: |
+          tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
+          tools/restart-test.sh main aLinkOutlivesACrash
+
+      - name: Upload run logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: restart-logs
+          path: run/logs/
           if-no-files-found: ignore
 
   aeronautics:
