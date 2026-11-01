@@ -1,0 +1,2 @@
+## The Titan shell
+- `Remote Shell: Titan` unfolds into a basic Titan at the Dyson tier 3 milestone, like the Titan itself. The owner chose this on the build plans page: it takes a real Saucer, Neck and Bridge as items, plus a dust fee, because its parts cost 4,172 metallic and no body holds more than 1,400. The fee follows `link.shellPrices`: 1,400 metallic, 1,030 silicate, 670 ice and 900 carbon at the default. The premium setting can't go higher, so it takes longer instead. Item art is the shared placeholder. Test: `theTitanShellTakesTheCoreSectionsAndAFeeABodyCanHold`.

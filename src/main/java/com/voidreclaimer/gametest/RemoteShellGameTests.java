@@ -74,6 +74,39 @@ public final class RemoteShellGameTests {
         helper.succeed();
     }
 
+    /** Its parts cost more than any body holds, so it is paid in real sections and a fee a Titan can hold. */
+    @GameTest(template = "empty")
+    public static void theTitanShellTakesTheCoreSectionsAndAFeeABodyCanHold(GameTestHelper helper) {
+        var recipe = helper.getLevel().getServer().getRecipeManager().byKey(VoidReclaimer.id("replicator/titan_shell_parts"));
+        helper.assertTrue(recipe.isPresent(), "no recipe for the Titan shell");
+        var value = (com.voidreclaimer.replicator.ReplicatorRecipe) recipe.get().value();
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        player.getInventory().clearContent();
+        com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+        for (var mount : List.copyOf(com.voidreclaimer.body.Bodies.data(player).modules().keySet())) {
+            if (mount.kind() == com.voidreclaimer.api.body.ModuleKind.STORAGE) {
+                com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.data(player).withModule(mount, new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.STORAGE_MK2.get())));
+            }
+        }
+        float capacity = com.voidreclaimer.dust.DustData.capacity(player);
+        var dust = com.voidreclaimer.dust.DustData.of(0, 0, 0, 0);
+        for (var cost : value.cost().amounts().entrySet()) {
+            helper.assertTrue(cost.getValue() <= capacity, "a Titan can't hold the fee: " + cost);
+            dust = dust.with(cost.getKey(), cost.getValue());
+        }
+        player.setData(com.voidreclaimer.registry.ModAttachments.DUST, dust);
+        com.voidreclaimer.replicator.Replicator.store(player, com.voidreclaimer.replicator.Replicator.data(player).withUnlocked(value.milestone()));
+        var id = VoidReclaimer.id("replicator/titan_shell_parts");
+        helper.assertTrue(com.voidreclaimer.replicator.Replicator.queue(player, id) == com.voidreclaimer.replicator.ReplicatorLogic.QueueResult.NOT_ENOUGH_ITEMS, "queued with no sections");
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.TITAN_SAUCER.get()));
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.TITAN_NECK.get()));
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.TITAN_BRIDGE.get()));
+        helper.assertTrue(com.voidreclaimer.replicator.Replicator.queue(player, id) == com.voidreclaimer.replicator.ReplicatorLogic.QueueResult.QUEUED, "not queued with the sections and the fee");
+        helper.assertTrue(player.getInventory().isEmpty(), "the sections stayed");
+        TestPlayers.remove(player);
+        helper.succeed();
+    }
+
     /** The extension point: one setting of a config choice keeps one set of recipes. */
     @GameTest(template = "empty")
     public static void theConfigKeepsOneSetOfShellPrices(GameTestHelper helper) {
@@ -81,6 +114,7 @@ public final class RemoteShellGameTests {
         for (String setting : List.of("cheap", "reduced", "premium")) {
             helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/ship_shell_" + setting)).isEmpty(), "a second price for the ship shell: " + setting);
             helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/shuttle_shell_" + setting)).isEmpty(), "a second price for the shuttle shell: " + setting);
+            helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/titan_shell_" + setting)).isEmpty(), "a second price for the titan shell: " + setting);
         }
         helper.assertTrue(new ConfigChoiceCondition("shellPrices", "parts").test(null), "the default did not pass");
         helper.assertFalse(new ConfigChoiceCondition("shellPrices", "cheap").test(null), "another setting passed");

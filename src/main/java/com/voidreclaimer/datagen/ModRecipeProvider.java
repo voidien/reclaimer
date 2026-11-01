@@ -1,28 +1,29 @@
 package com.voidreclaimer.datagen;
 
 import com.voidreclaimer.VoidReclaimer;
-import com.voidreclaimer.registry.ModItems;
-import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.link.ShellPrices;
 import com.voidreclaimer.machine.ConfigChoiceCondition;
 import com.voidreclaimer.machine.ConfigCondition;
+import com.voidreclaimer.registry.ModItems;
 import com.voidreclaimer.registry.ModMaterials;
-import com.voidreclaimer.replicator.ReplicatorCategories;
+import com.voidreclaimer.replicator.DustCost;
 import com.voidreclaimer.replicator.Milestones;
-import net.minecraft.resources.ResourceKey;
+import com.voidreclaimer.replicator.ReplicatorCategories;
 import com.voidreclaimer.replicator.ReplicatorRecipe;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.network.chat.Component;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /** Replicator recipes. Costs are metallic / silicate / ice / carbon dust; times are in seconds. */
 public final class ModRecipeProvider extends RecipeProvider {
@@ -57,6 +58,11 @@ public final class ModRecipeProvider extends RecipeProvider {
         shell(output, ShellPrices.REDUCED, DustCost.of(85, 50, 0, 5), 90, DustCost.of(140, 95, 20, 40), 180, DustCost.of(715, 525, 285, 435), 585, DustCost.of(370, 275, 150, 210), 295);
         shell(output, ShellPrices.PARTS, DustCost.of(115, 65, 0, 5), 120, DustCost.of(190, 130, 30, 55), 240, DustCost.of(950, 700, 380, 585), 780, DustCost.of(490, 365, 200, 280), 390);
         shell(output, ShellPrices.PREMIUM, DustCost.of(140, 80, 0, 5), 150, DustCost.of(235, 160, 35, 65), 300, DustCost.of(1190, 875, 475, 730), 975, DustCost.of(615, 460, 250, 350), 490);
+        titanShell(output, ShellPrices.CHEAP, DustCost.of(560, 410, 270, 360), 700);
+        titanShell(output, ShellPrices.REDUCED, DustCost.of(1050, 770, 505, 675), 1050);
+        titanShell(output, ShellPrices.PARTS, DustCost.of(1400, 1030, 670, 900), 1400);
+        // The fee is at the most a body can hold already, so this setting costs time instead.
+        titanShell(output, ShellPrices.PREMIUM, DustCost.of(1400, 1030, 670, 900), 1750);
         machineRecipe(output, "holo_projector", ModItems.HOLO_PROJECTOR.get(), DustCost.of(30, 40, 10, 20), "holoProjector");
         replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
                 ReplicatorCategories.TOOLS, Milestones.STARSHIP);
@@ -190,6 +196,18 @@ public final class ModRecipeProvider extends RecipeProvider {
     private static final ResourceKey<Milestone> TITAN_UNLOCK = Milestones.DYSON_TIER_3;
 
     /** A multi-output recipe, titled {@code recipe.void_reclaimer.<name>}. */
+    /**
+     * The Titan shell at one setting of {@code link.shellPrices}. Its parts cost 4,172 metallic and no body holds more than 1,400, so it
+     * takes the Core Kit's three sections as items, and the rest as a fee a body can hold.
+     */
+    private static void titanShell(RecipeOutput output, ShellPrices prices, DustCost fee, int seconds) {
+        String setting = prices.name().toLowerCase(java.util.Locale.ROOT);
+        ReplicatorRecipe recipe = new ReplicatorRecipe(List.of(new ItemStack(ModItems.TITAN_SHELL.get())), fee, seconds * 20, ReplicatorCategories.TOOLS, TITAN_UNLOCK,
+                Optional.empty(), Optional.empty(), List.of(SizedIngredient.of(ModItems.TITAN_SAUCER.get(), 1), SizedIngredient.of(ModItems.TITAN_NECK.get(), 1),
+                SizedIngredient.of(ModItems.TITAN_BRIDGE.get(), 1)));
+        output.withConditions(new ConfigChoiceCondition("shellPrices", setting)).accept(VoidReclaimer.id("replicator/titan_shell_" + setting), recipe, null);
+    }
+
     /** The shells at one setting of {@code link.shellPrices}: the config keeps exactly one set of these. */
     private static void shell(RecipeOutput output, ShellPrices prices, DustCost drone, int droneSeconds, DustCost mech, int mechSeconds, DustCost ship, int shipSeconds,
                               DustCost shuttle, int shuttleSeconds) {
