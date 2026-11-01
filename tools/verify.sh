@@ -52,8 +52,15 @@ fi
 if [ "${1:-}" = "all" ] || touches '^tools/art/'; then
     run art bash -c 'python3 tools/art/test_rd_generate.py && python3 tools/art/test_rig_check.py && python3 tools/art/test_anim_slice.py'
 fi
+if [ "${1:-}" = "all" ] || touches '^tools/(verified|test_verified|land)'; then
+    run verified bash tools/test_verified.sh
+fi
 if [ "${1:-}" = "all" ] || touches '^tools/progress_fold|^docs/progress/'; then
     run progress python3 tools/test_progress_fold.py
 fi
 echo "done in $((SECONDS - start))s"
+# What tools/land.sh asks about. Only a clean tree counts: a passing run of uncommitted work says nothing about a commit.
+if [ "$failed" = 0 ] && [ -z "$(git status --porcelain -- src tools .github build.gradle gradle.properties)" ]; then
+    git rev-parse HEAD >> "$(git rev-parse --git-common-dir)/void-reclaimer-verified"
+fi
 exit $failed
