@@ -19,7 +19,8 @@ import net.minecraft.world.phys.AABB;
 /**
  * Counts items, by kind, so that a test or a person can say nothing appeared or vanished on the way from one place to another.
  * It counts everything a body carries: armor, offhand, the stack on the cursor, and the sections, modules and pending items of
- * the body itself. Dropped items are only counted when asked for, with {@link #nearby}.
+ * the body itself, and what the Replicator holds: items a queued job took, and its output. Dropped items are only counted when
+ * asked for, with {@link #nearby}.
  */
 public record ItemCensus(Map<ResourceLocation, Integer> counts) {
     public static ItemCensus of(ServerPlayer player) {
@@ -30,6 +31,9 @@ public record ItemCensus(Map<ResourceLocation, Integer> counts) {
         }
         add(counts, player.containerMenu.getCarried());
         add(counts, Bodies.data(player));
+        com.voidreclaimer.replicator.ReplicatorData replicator = com.voidreclaimer.replicator.Replicator.data(player);
+        replicator.jobs().forEach(job -> job.items().forEach(stack -> add(counts, stack)));
+        replicator.buffer().forEach(stack -> add(counts, stack));
         return new ItemCensus(counts);
     }
 

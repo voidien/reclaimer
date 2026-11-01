@@ -475,6 +475,11 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         int bufferY = top + HEIGHT - 28 - 46;
         graphics.drawString(font, Component.translatable("replicator.void_reclaimer.output"), x, bufferY, ACCENT, false);
         List<ItemStack> buffer = data.buffer();
+        // A cancel with a full inventory can go past the slots. Collect still takes them all.
+        if (buffer.size() > ReplicatorData.BUFFER_SLOTS) {
+            int hidden = buffer.size() - ReplicatorData.BUFFER_SLOTS;
+            graphics.drawString(font, "+" + hidden, x + font.width(Component.translatable("replicator.void_reclaimer.output")) + 6, bufferY, TEXT, false);
+        }
         for (int i = 0; i < ReplicatorData.BUFFER_SLOTS; i++) {
             int slotX = x + (i % 5) * 18;
             int slotY = bufferY + 10 + (i / 5) * 18;
