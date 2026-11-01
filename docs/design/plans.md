@@ -33,17 +33,28 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 
 **Danger (owner, 2026-11-01; replaces "no hazards except time"):** environmental only, with still no enemies or combat. Comes after remote control. Nothing below is built yet, and each item gets its own interview and file list.
 - **Done, shells:** a parked shell takes no harm; only a command that ignores invulnerability reaches one, and it leaves a wreck. While linked the shell is the player's body, and takes harm as a body does. Sneak-use scraps your own idle shell into a wreck to loot; the shell item does not come back.
-- **Main body destroyed:** it stays as a wreck where it died, holding the items, and the player flies back to salvage it. Reuses the shell wreck code. Replaces today's respawn rules for what is carried.
-- **Crashes:** a hard ship crash breaks blocks near the impact, more at higher speed, with a safe speed below that. Bodies take collision damage too. Fall damage on Earth stays.
+- **Main body destroyed:** it stays as a wreck where it died and the player flies back to salvage it. Reuses the shell wreck code. Replaces today's respawn rules for what is carried. (Danger page, 2026-11-01:)
+  - **Where you wake:** at a Backup Core in a new starter Drone, or in a Remote Shell if you own one.
+  - **What stays:** everything: inventory, sections and modules.
+  - **How long:** for good, with a HUD marker. In space it drifts slowly, which suits the Wreck Finder.
+- **Crashes:** a hard ship crash breaks blocks near the impact, more at higher speed. Under 5 blocks a second nothing breaks. Weak blocks go first, and at high enough speed anything can break, the Helm and Station Core included. Bodies take collision damage too. Fall damage on Earth stays.
+- **Toxic air:** wears the body's parts, and a part worn to zero stops giving its stats until repaired. It never takes health.
+- **Storms:** come every 2 to 3 hours by default, set in the mods menu, and begin after the Expansion milestone.
+- **Landing without a module:** you may go through the portal, fall damage applies, and the portal or an AI log warns you first.
 - **Hazards chosen:** debris storms (fast rock showers that chip bodies and stations), Earth's toxic air (hurts bodies until sectors heal), ion storms (scramble sensors and the HUD and weaken remote links), solar flares (a warning, then take cover behind rock or a station), fracturing asteroids (too much drilling splits a rock and sends pieces drifting), and a debris belt around Earth (a dangerous crossing that clears as the planet heals).
 - **Not chosen:** radiation near stars, running out of power, dust squalls, quakes and sinkholes.
 
-**New modules (owner, 2026-11-01; picks from https://claude.ai/artifact/PXMVuZsNbJqhSc9pRAHA83; nothing built):** a new `utility` mount kind holds always-on modules (a change to the `ModuleKind` fixed set). Each sensor is a different job, and a repeat is refused at install. Tool modules fit the Drone, Mech and Ship.
+**New modules (owner, 2026-11-01; picks from https://claude.ai/artifact/PXMVuZsNbJqhSc9pRAHA83; nothing built):** a new `utility` mount kind holds always-on modules (a change to the `ModuleKind` fixed set). Each sensor is a different job, and a repeat is refused at install. Tool modules fit the Drone, Mech, Ship and Titan.
 - **Sensors:** Storm Scanner gives earlier warning, type and strength, and shows where rocks come from. Signal Mapper draws coverage on a holo map. Wreck Finder marks your wrecks and shells, and derelict relics once they exist. Ore Prospector waits until ore veins exist.
 - **Protection (utility):** Deflector absorbs small rocks for energy and drops at empty (Mech and up). Hull Plating adds health and mass, and should bulk the body up visibly where a model allows. Toxic Air Filter gives full protection and burns filter items. Ion Shielding comes both ways: an upgrade for Relays and Seats, and a body module on the shell.
 - **Flight:** RCS Jets add stronger braking off the nose and stronger sideways thrust; the second needs directional thrust. Gyro Stabiliser is a utility module, Ship and up. Afterburner: hold for +50% top speed up to 5 s, heavy energy, then a cooldown. Ion Drive is plain data, and one sets the top speed.
 - **Tools:** Repair Arm repairs your own sections, shells, helper drones and ship blocks, with care for Sable #1636 (a block holding a constraint can hang the server when removed). Tractor Beam pulls loose items within 16 blocks and drags small ships; dragging is a physics risk to spike first. Mining Laser has 16-block reach, slower than the drill, costs energy, Mech and up.
 - **Other:** Dust Compressor comes in all three shapes: +600 dust per kind with no inventory rows, tiers Mk I to III, and a bonus for one chosen kind. Solar Core: a variant per tier (double solar, 60% energy) whose solar also grows with Dyson tier. Running lights glow in the accent colour with blink patterns.
+- **Bodies (ideas page, 2026-11-01; https://claude.ai/artifact/As9sihZCg6s9tHDmRjASsS; nothing built):**
+  - **Tool mounts:** the Titan gets two or more; the Shuttle stays without. The owner would rather keep several ships or shells with one tool each than swap tools often, so that is a play style to support.
+  - **Shells:** a Shuttle shell recipe and a Titan shell recipe, priced through `ShellPrices`. The Titan's drive half also appears on separation, with no item.
+  - **Titan hit box:** matches the model. That won't fit near most stations, and the owner's answer is the custom: park the Titan in orbit and take a Shuttle in.
+  - **Braking:** wait for a real flight. If a fast Shuttle turns too slowly, RCS Jets are the fix, with no brake factor by size class.
 - **Already chosen:** Uplink module for the Ship, Shuttle and Titan, at plain Seat range. Landing module always on: no fall damage, and an automatic brake near the ground.
 
 **The old Mass Driver blocks (owner, 2026-10-31; not built, each needs its own interview and go-ahead):** the owner wants all four ideas: a **probe launcher** firing Remote Shells or relays to far spots, a **cargo railgun** firing crates between stations, an **asteroid tug** that brings rock to a base, and **derelict relics** found in space and salvaged. Queued after the airship kit unless the owner moves them.
