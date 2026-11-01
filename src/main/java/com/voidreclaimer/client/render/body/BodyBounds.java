@@ -18,6 +18,7 @@ public final class BodyBounds {
     private static final float DEFAULT_RADIUS = 1f;
     /** Read every frame by the camera, so measured once per baked model; a resource reload makes new models. */
     private static final java.util.Map<BakedGeoModel, Float> RADII = new java.util.WeakHashMap<>();
+    private static final java.util.Map<BakedGeoModel, float[]> BOXES = new java.util.WeakHashMap<>();
 
     private BodyBounds() {}
 
@@ -33,11 +34,21 @@ public final class BodyBounds {
         return RADII.computeIfAbsent(model, baked -> measure(baked, spec == null));
     }
 
-    private static float measure(BakedGeoModel model, boolean composed) {
+    /** The box round a whole model, in blocks: min x, y, z, then max x, y, z. */
+    public static float[] box(BakedGeoModel model) {
+        return BOXES.computeIfAbsent(model, baked -> box(baked, false));
+    }
+
+    private static float[] box(BakedGeoModel model, boolean composed) {
         float[] box = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         for (GeoBone bone : model.topLevelBones()) {
             reach(bone, composed, box);
         }
+        return box;
+    }
+
+    private static float measure(BakedGeoModel model, boolean composed) {
+        float[] box = box(model, composed);
         float x = box[3] - box[0];
         float y = box[4] - box[1];
         float z = box[5] - box[2];

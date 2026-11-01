@@ -174,7 +174,10 @@ Lines count from 1. Writing text switches the projector to text and `setSource` 
 | `getScale()` / `setScale(x)` | size of the picture, 0.25 to 4 (held to that range) |
 | `getHeight()` / `setHeight(x)` | blocks above the projector, 0 to 4 (held to that range) |
 | `setBillboard(on)` | whether the picture turns to face the viewer |
-| `getMode()` | `"text"` or `"readout"` |
+| `setModel(id)` | shows a GeckoLib model, turning slowly: `"entity/mining_probe"` means `geo/entity/mining_probe.geo.json` (a bare id means ours); `false` for a malformed id. A client without that model shows "NO MODEL" |
+| `setBody()` | shows each viewer their own body |
+| `getModel()` | the model shown, or nil |
+| `getMode()` | `"text"`, `"readout"`, `"model"` or `"body"` |
 | `getSource()` | the chosen readout kind's id |
 | `setSource(id)` | shows a readout from now on (a bare id means ours); `true`, or `false, "unknown_source"` |
 | `getSources()` | every readout kind's id, sorted |

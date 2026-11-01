@@ -80,4 +80,22 @@ class HoloContentTest {
         assertEquals(HoloDisplay.MAX_CHARS, line.text().length());
         assertEquals(0xFF0000, line.color(), "only the colour bits are kept");
     }
+
+    @Test
+    void aModelAndABodySurviveNbt() {
+        HoloDisplay model = HoloDisplay.EMPTY.withModel(ResourceLocation.fromNamespaceAndPath("some_addon", "entity/rover"));
+        assertEquals(HoloDisplay.Mode.MODEL, model.mode());
+        assertEquals("some_addon:entity/rover", roundTrip(model).subject());
+        assertEquals(model, roundTrip(model));
+        assertEquals(HoloDisplay.Mode.BODY, roundTrip(HoloDisplay.EMPTY.withBody()).mode());
+    }
+
+    @Test
+    void theLastWriterWinsOverAModel() {
+        HoloDisplay model = HoloDisplay.EMPTY.withLine(0, "old", HoloDisplay.NO_COLOR).withModel(ResourceLocation.fromNamespaceAndPath("a", "b"));
+        assertEquals(List.of(), model.texts(), "a model replaces the text");
+        HoloDisplay text = model.withLine(0, "new", HoloDisplay.NO_COLOR);
+        assertEquals(HoloDisplay.Mode.TEXT, text.mode());
+        assertEquals(HoloDisplay.Mode.READOUT, model.withSource(HoloDisplay.DEFAULT_SOURCE).mode());
+    }
 }

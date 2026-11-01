@@ -105,6 +105,8 @@ shots + docs.
 
 ## PR 2: models and maps
 
+**Checked:** `GeoObjectRenderer.render` always moves a model by (0.5, 0.51, 0.5), so `HoloModels` moves it back. `HoloBody` is `BodyRenderer.drawHologram`. A tinted texture alone stays dark on our art, so every model has a second pass in plain cyan.
+
 - `HoloModels` through GeckoLib `GeoObjectRenderer<T>(GeoModel)` with a controller-less `GeoAnimatable` and a
   `HoloGeoModel` (`DefaultedBlockGeoModel` / `DefaultedEntityGeoModel` ids; `GeckoLibCache.getBakedModels()` to check a
   model exists).
