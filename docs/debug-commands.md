@@ -61,7 +61,7 @@ Scenes: `arena` (a pale lit floor and walls for judging dark bodies and sizes), 
 | `link force <player> <shell>` | Links to a shell by selector, with no seat or signal |
 | `link reach <player> <shell>` | Links by shell id, wherever it is, loading its chunks first |
 | `link wake <player>` | Ends the link and wakes the player |
-| `link census <player>` | Counts everything carried and lying nearby, and what changed since the last count |
+| `link census <player>` | Counts everything carried, in the Replicator's queue and output, and lying nearby, and what changed since the last count |
 
 ### Holo Projector
 Writes to a projector with no computer. All start `holo <pos>`:

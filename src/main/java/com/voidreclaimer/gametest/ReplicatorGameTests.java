@@ -262,7 +262,9 @@ public final class ReplicatorGameTests {
             ItemStack named = new ItemStack(net.minecraft.world.item.Items.IRON_INGOT);
             named.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Spare"));
             player.getInventory().setItem(8, named);
+            var census = com.voidreclaimer.debug.ItemCensus.of(player);
             helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued with everything there");
+            helper.assertTrue(com.voidreclaimer.debug.ItemCensus.of(player).since(census).isEmpty(), "the census lost track of a queued job's items");
             helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 0, "the ingots stayed");
             helper.assertTrue(held(player, net.minecraft.world.item.Items.OAK_PLANKS) == 0, "the tag did not take the planks");
             helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 5f) < 1e-4, "the dust was not paid");

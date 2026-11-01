@@ -53,6 +53,10 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
     /** The description box under the recipe list. */
     private static final int DETAIL_TOP = 38 + 5 * 22 + 4;
     private static final int DETAIL_LINES = 5;
+    /** A recipe that takes items keeps the bottom of the detail box for them. */
+    private static final int INPUT_DETAIL_LINES = 3;
+    private static final int INPUT_ROW_TOP = 33;
+    private static final int INPUT_WIDTH = 44;
     private static final int VISIBLE_ROWS = 5;
     private static final int PANEL = 0xE0101418;
     private static final int PANEL_LIGHT = 0xFF1E2630;
@@ -180,6 +184,17 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
             }
         }
         int queueX = left + LIST_WIDTH + 18;
+        if (selected != null && tab < categoryTabs && data.isUnlocked(selected.value().milestone())) {
+            int inputY = top + DETAIL_TOP + INPUT_ROW_TOP;
+            List<net.neoforged.neoforge.common.crafting.SizedIngredient> inputs = selected.value().inputs();
+            for (int i = 0; i < inputs.size(); i++) {
+                int inputX = left + 10 + i * INPUT_WIDTH;
+                ItemStack[] shown = inputs.get(i).getItems();
+                if (shown.length > 0 && inside(mouseX, mouseY, inputX, inputY, 16, 16)) {
+                    return new ItemHit(shown[0], inputX, inputY, 16, 16);
+                }
+            }
+        }
         for (int i = 0; i < data.jobs().size(); i++) {
             int itemY = top + 54 + i * 18;
             if (inside(mouseX, mouseY, queueX, itemY, 16, 16)) {
@@ -222,7 +237,8 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         collectButton.visible = tab != bodyTab;
         assemblyButton.visible = tab == bodyTab;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
-                && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST));
+                && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST))
+                && com.voidreclaimer.replicator.RecipeInputs.plan(player.getInventory().items, selected.value().inputs()) != null;
         collectButton.active = !data.buffer().isEmpty();
     }
 
@@ -348,13 +364,27 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
             }
             return;
         }
+        List<net.neoforged.neoforge.common.crafting.SizedIngredient> inputs = selected.value().inputs();
         Component text = description(selected);
-        if (text == null) {
-            return;
+        if (text != null) {
+            List<net.minecraft.util.FormattedCharSequence> lines = font.split(text, LIST_WIDTH - 12);
+            int room = inputs.isEmpty() ? DETAIL_LINES : INPUT_DETAIL_LINES;
+            for (int i = 0; i < Math.min(lines.size(), room); i++) {
+                graphics.drawString(font, lines.get(i), x, y + i * 9, TEXT, false);
+            }
         }
-        List<net.minecraft.util.FormattedCharSequence> lines = font.split(text, LIST_WIDTH - 12);
-        for (int i = 0; i < Math.min(lines.size(), DETAIL_LINES); i++) {
-            graphics.drawString(font, lines.get(i), x, y + i * 9, TEXT, false);
+        // What the job takes from the inventory, with how many are held: red when short.
+        int inputY = top + DETAIL_TOP + INPUT_ROW_TOP;
+        for (int i = 0; i < inputs.size(); i++) {
+            ItemStack[] shown = inputs.get(i).getItems();
+            if (shown.length == 0) {
+                continue;
+            }
+            int inputX = left + 10 + i * INPUT_WIDTH;
+            int needed = inputs.get(i).count();
+            int held = com.voidreclaimer.replicator.RecipeInputs.held(minecraft.player.getInventory().items, inputs.get(i));
+            graphics.renderItem(shown[0], inputX, inputY);
+            graphics.drawString(font, held + "/" + needed, inputX + 18, inputY + 4, held >= needed ? TEXT : 0xFF5050, false);
         }
     }
 
@@ -445,6 +475,11 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         int bufferY = top + HEIGHT - 28 - 46;
         graphics.drawString(font, Component.translatable("replicator.void_reclaimer.output"), x, bufferY, ACCENT, false);
         List<ItemStack> buffer = data.buffer();
+        // A cancel with a full inventory can go past the slots. Collect still takes them all.
+        if (buffer.size() > ReplicatorData.BUFFER_SLOTS) {
+            int hidden = buffer.size() - ReplicatorData.BUFFER_SLOTS;
+            graphics.drawString(font, "+" + hidden, x + font.width(Component.translatable("replicator.void_reclaimer.output")) + 6, bufferY, TEXT, false);
+        }
         for (int i = 0; i < ReplicatorData.BUFFER_SLOTS; i++) {
             int slotX = x + (i % 5) * 18;
             int slotY = bufferY + 10 + (i / 5) * 18;
