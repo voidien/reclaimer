@@ -2,8 +2,11 @@ package com.voidreclaimer.core;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustData;
+import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.tether.Tether;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -191,13 +194,28 @@ public final class BackupCores {
             return null;
         }
         core.setCharges(core.charges() - 1);
-        // A core built into a station is addressed in the ship's own coordinates: respawn where the ship has carried it.
+        return new DimensionTransition(level, inWorld(level, core, spot), Vec3.ZERO, player.getYRot(), 0f, DimensionTransition.DO_NOTHING);
+    }
+
+    /** A core built into a station is addressed in the ship's own coordinates: this is where the ship has carried {@code spot}. */
+    private static Vec3 inWorld(ServerLevel level, BackupCoreBlockEntity core, BlockPos spot) {
         Vec3 where = Vec3.atBottomCenterOf(spot);
         dev.ryanhcode.sable.sublevel.ServerSubLevel ship = com.voidreclaimer.ship.Ships.shipAt(level, core.getBlockPos());
-        if (ship != null) {
-            where = ship.logicalPose().transformPosition(where);
+        return ship == null ? where : ship.logicalPose().transformPosition(where);
+    }
+
+    /** Where {@code player}'s listed cores could put them now. Reading this spends nothing: a mind going home is not a death. */
+    public static List<LinkState.Place> wakePlaces(ServerPlayer player) {
+        List<LinkState.Place> places = new ArrayList<>();
+        for (BackupCoreList.Entry entry : list(player).cores()) {
+            BackupCoreBlockEntity core = core(player, entry.pos());
+            ServerLevel level = player.server.getLevel(entry.pos().dimension());
+            BlockPos spot = core == null || level == null ? null : Tether.freeSpotNear(level, core.getBlockPos());
+            if (spot != null) {
+                places.add(new LinkState.Place(level.dimension(), inWorld(level, core, spot), player.getYRot(), 0f));
+            }
         }
-        return new DimensionTransition(level, where, Vec3.ZERO, player.getYRot(), 0f, DimensionTransition.DO_NOTHING);
+        return places;
     }
 
     @SubscribeEvent
