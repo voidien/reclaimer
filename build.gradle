@@ -94,8 +94,12 @@ neoForge {
         gameTestServer {
             type = 'gameTestServer'
             // An explicit heap: the default (a quarter of the machine's RAM) differs between CI runners and laptops.
-            // ./gradlew runGameTestServer -PgametestHeap=1200m runs the suite in a small heap to catch memory growth.
+            // ./gradlew runGameTestServer -PgametestUnloads -PgametestHeap=1200m runs the suite in a small heap to catch memory growth;
+            // held chunks (below) need about 3G on their own.
             jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
+            // Chunks stay in memory and the run ends after its summary, for twice the speed. -PgametestUnloads runs real unloads
+            // and a real stop, as CI does on main (GameTestChunkHoldMixin).
+            systemProperty 'void_reclaimer.gametestHoldChunks', (!project.hasProperty('gametestUnloads')).toString()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
             // ./gradlew runGameTestServer -PgametestFilter=ZeroGMining (class or test name, comma-separated)
             if (project.hasProperty('gametestFilter')) {
@@ -109,6 +113,7 @@ neoForge {
             // Its own directory: Gradle runs tasks in parallel and the two GameTest worlds must not collide.
             gameDirectory = file('run-aero')
             jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
+            systemProperty 'void_reclaimer.gametestHoldChunks', (!project.hasProperty('gametestUnloads')).toString()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id + '_aero'
             // ./gradlew runGameTestAeronautics -PgametestFilter=theHoldsStop (same filter as runGameTestServer)
             if (project.hasProperty('gametestFilter')) {

@@ -85,8 +85,11 @@ jobs:
         # The upstream Aeronautics/Simulated/Veil start-up hang (see the datagen step) can also stall the GameTest server. A healthy
         # run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
         run: |
+          # Pull requests hold chunks in memory and skip the final save; main runs real unloads and a real stop.
+          unloads=""
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then unloads=-PgametestUnloads; fi
           for attempt in 1 2 3; do
-            timeout 900 ./gradlew runGameTestServer --stacktrace && exit 0
+            timeout 900 ./gradlew runGameTestServer $unloads --stacktrace && exit 0
             status=$?
             if [ "$status" -ne 124 ]; then exit "$status"; fi
             echo "runGameTestServer hung (attempt $attempt)"
@@ -155,8 +158,10 @@ jobs:
 
       - name: Aeronautics GameTests
         run: |
+          unloads=""
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then unloads=-PgametestUnloads; fi
           for attempt in 1 2 3; do
-            timeout 900 ./gradlew runGameTestAeronautics --stacktrace && exit 0
+            timeout 900 ./gradlew runGameTestAeronautics $unloads --stacktrace && exit 0
             status=$?
             if [ "$status" -ne 124 ]; then exit "$status"; fi
             echo "runGameTestAeronautics hung (attempt $attempt)"

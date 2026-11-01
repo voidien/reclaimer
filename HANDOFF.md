@@ -54,7 +54,7 @@ Verified on `main`: 228 GameTests in `runGameTestServer`, 36 Aeronautics GameTes
 ## Working tricks
 ### Commands
 - `./gradlew build` (includes unit tests).
-- `./gradlew runGameTestServer` (or `tools/gametest.sh main`): look for `All N required tests passed`. `-PgametestFilter=ZeroGMining` runs only the tests whose class or method name contains the text (comma-separated alternatives, ignoring case): about 30 s for one class. `-PgametestHeap=8G` runs the server in another heap (default 6G).
+- `./gradlew runGameTestServer` (or `tools/gametest.sh main`): look for `All N required tests passed`. `-PgametestFilter=ZeroGMining` runs only the tests whose class or method name contains the text (comma-separated alternatives, ignoring case): about 30 s for one class. `-PgametestHeap=8G` runs the server in another heap (default 6G; held chunks need about 3G). `-PgametestUnloads` runs real chunk unloads and a real stop, as CI does on `main`: use it when a suite passes locally but fails after merging.
 - `./gradlew runGameTestAeronautics` (or `tools/gametest.sh aero`): the Aeronautics suite, separate world in `run-aero/`, own CI job.
 - `./gradlew runData`: commit the output in `src/generated/resources`. CI fails if it's stale.
 - For a GameTest failure, grep the log for `failed at` and the message.

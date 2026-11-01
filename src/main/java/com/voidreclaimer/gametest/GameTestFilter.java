@@ -10,8 +10,10 @@ import java.util.Locale;
  */
 public final class GameTestFilter {
     public static final String PROPERTY = "void_reclaimer.gametestFilter";
+    public static final String HOLD_CHUNKS_PROPERTY = "void_reclaimer.gametestHoldChunks";
     private static final String BEFORE_RESTART = "beforerestart";
     private static final String AFTER_RESTART = "afterrestart";
+    private static final boolean HOLD_CHUNKS = holdsChunks(Boolean.getBoolean(HOLD_CHUNKS_PROPERTY), System.getProperty(PROPERTY));
 
     private GameTestFilter() {}
 
@@ -23,6 +25,16 @@ public final class GameTestFilter {
             return !none && Arrays.stream(filter.split(",")).map(term -> term.strip().toLowerCase(Locale.ROOT)).anyMatch(method::equals);
         }
         return none || matches(filter, className, methodName);
+    }
+
+    /** Whether this run keeps its chunks in memory and skips the final save (GameTestChunkHoldMixin, GameTestQuickExitMixin). */
+    public static boolean holdsChunks() {
+        return HOLD_CHUNKS;
+    }
+
+    /** A test that spans a restart needs the real save, however the run was asked for. */
+    static boolean holdsChunks(boolean asked, String filter) {
+        return asked && (filter == null || !filter.toLowerCase(Locale.ROOT).contains("restart"));
     }
 
     public static boolean matches(String filter, String className, String methodName) {
