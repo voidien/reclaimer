@@ -1,0 +1,2 @@
+## Colour for whole-model bodies
+- Only the composed Ship painted its casing and accent, while the Drone, Mech, Shuttle and Titan showed the same buttons and ignored them. The owner's choice: those four take one colour over the whole model (`Cosmetics.tint`, white is none, saved, older saves read as none). The Body tab shows a Colour row for them, with the casing chip and per-section paint hidden, because neither does anything there. Materials need a mask per body: art, for later.

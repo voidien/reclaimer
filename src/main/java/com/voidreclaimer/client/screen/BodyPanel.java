@@ -11,6 +11,8 @@ import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyRules;
 import com.voidreclaimer.body.BodyStats;
 import com.voidreclaimer.body.BodyView;
+import com.voidreclaimer.client.render.body.BodyLook;
+import com.voidreclaimer.client.render.body.BodyRigSpec;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.body.Parts;
 import com.voidreclaimer.body.Wear;
@@ -137,7 +139,7 @@ final class BodyPanel {
         renderTree(graphics, view, mouseX, mouseY);
         if (selectedSocket == null) {
             renderStats(graphics, player, view.stats());
-            renderCosmetics(graphics, player, view.data().cosmetics(), view.stats().overloaded(), mouseX, mouseY);
+            renderCosmetics(graphics, player, view, view.stats().overloaded(), mouseX, mouseY);
         } else {
             renderSocket(graphics, player, view, mouseX, mouseY, hover);
         }
@@ -308,7 +310,9 @@ final class BodyPanel {
         ty += 13;
         if (!section.isEmpty()) {
             ty = renderCondition(graphics, player, socketId, section, tx, ty, mouseX, mouseY);
-            ty = renderPaint(graphics, player, view.data().cosmetics(), socketId, tx, ty, mouseX, mouseY);
+            if (!wholeModel(view)) {
+                ty = renderPaint(graphics, player, view.data().cosmetics(), socketId, tx, ty, mouseX, mouseY);
+            }
         }
         ty += 3;
 
@@ -609,7 +613,15 @@ final class BodyPanel {
         }
     }
 
-    private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, Cosmetics cosmetics, boolean overloaded, int mouseX, int mouseY) {
+    /** A body drawn as one model has no sections to paint: one tint over all of it stands in for casing and accent. */
+    private static boolean wholeModel(BodyView view) {
+        var core = com.voidreclaimer.body.Parts.section(view.data().core());
+        return BodyRigSpec.Loader.get(BodyLook.rig(core == null ? null : core.chassis().orElse(null))) != null;
+    }
+
+    private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, BodyView view, boolean overloaded, int mouseX, int mouseY) {
+        Cosmetics cosmetics = view.data().cosmetics();
+        boolean whole = wholeModel(view);
         int cx = rightX() + 2;
         // Under the stats: the overload warning is one line more.
         int cy = y + (overloaded ? 106 : 94);
@@ -617,11 +629,13 @@ final class BodyPanel {
         ReplicatorData replicator = player.getData(ModAttachments.REPLICATOR);
         Component casing = Component.translatable("body.void_reclaimer.casing", Cosmetics.name(access, VoidReclaimerRegistries.CASING, cosmetics.casing()));
         Component trail = Component.translatable("body.void_reclaimer.trail", Cosmetics.name(access, VoidReclaimerRegistries.TRAIL, cosmetics.trail()));
-        int casingWidth = font.width(casing) + 6;
-        chip(graphics, cx, cy, casingWidth, casing, false, mouseX, mouseY);
-        regions.add(new Region(cx, cy, casingWidth, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
-                cosmetics.withCasing(Cosmetics.next(access, VoidReclaimerRegistries.CASING, Casing::order, cosmetics.casing(),
-                        replicator::isUnlocked))))));
+        int casingWidth = whole ? -4 : font.width(casing) + 6;
+        if (!whole) {
+            chip(graphics, cx, cy, casingWidth, casing, false, mouseX, mouseY);
+            regions.add(new Region(cx, cy, casingWidth, 11, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(
+                    cosmetics.withCasing(Cosmetics.next(access, VoidReclaimerRegistries.CASING, Casing::order, cosmetics.casing(),
+                            replicator::isUnlocked))))));
+        }
         int trailX = cx + casingWidth + 4;
         int trailY = cy;
         int trailWidth = font.width(trail) + 6;
@@ -635,14 +649,14 @@ final class BodyPanel {
                 cosmetics.withTrail(Cosmetics.next(access, VoidReclaimerRegistries.TRAIL, Trail::order, cosmetics.trail(),
                         replicator::isUnlocked))))));
         int sy = trailY + 14;
-        graphics.drawString(font, Component.translatable("body.void_reclaimer.accent"), cx, sy + 1, DIM, false);
+        graphics.drawString(font, Component.translatable(whole ? "body.void_reclaimer.tint" : "body.void_reclaimer.accent"), cx, sy + 1, DIM, false);
         int sx = cx + 40;
         for (int color : ACCENTS) {
             graphics.fill(sx, sy, sx + 10, sy + 10, 0xFF000000 | color);
-            if (cosmetics.accent() == color) {
+            if ((whole ? cosmetics.tint() : cosmetics.accent()) == color) {
                 graphics.renderOutline(sx - 1, sy - 1, 12, 12, 0xFFFFFFFF);
             }
-            regions.add(new Region(sx, sy, 10, 10, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(cosmetics.withAccent(color)))));
+            regions.add(new Region(sx, sy, 10, 10, () -> PacketDistributor.sendToServer(BodyActionPayload.cosmetics(whole ? cosmetics.withTint(color) : cosmetics.withAccent(color)))));
             sx += 12;
         }
         renderBlueprint(graphics, player, cx, sy + 16, mouseX, mouseY);
