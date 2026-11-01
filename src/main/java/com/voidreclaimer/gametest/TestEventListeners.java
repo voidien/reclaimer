@@ -54,6 +54,40 @@ public final class TestEventListeners {
 
     private TestEventListeners() {}
 
+    /** A link by a test player with this tag is refused. */
+    public static final String REFUSE_LINK = "vr_test_refuse_link";
+    /** Listeners throw before and after a link by a test player with these tags, as a broken addon's would. */
+    public static final String THROW_BEFORE_LINK = "vr_test_throw_before_link";
+    public static final String THROW_AFTER_LINK = "vr_test_throw_after_link";
+    /** What each player's links have done, oldest first. */
+    static final Map<UUID, List<String>> LINK_EVENTS = new ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    static void onLinkPre(com.voidreclaimer.api.event.ShellLinkEvent.Pre event) {
+        if (event.getPlayer().getTags().contains(THROW_BEFORE_LINK)) {
+            throw new IllegalStateException("a broken addon's listener");
+        }
+        if (event.getPlayer().getTags().contains(REFUSE_LINK)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    static void onLinkStarted(com.voidreclaimer.api.event.ShellLinkEvent.Started event) {
+        LINK_EVENTS.computeIfAbsent(event.getPlayer().getUUID(), id -> new java.util.concurrent.CopyOnWriteArrayList<>()).add("started");
+        if (event.getPlayer().getTags().contains(THROW_AFTER_LINK)) {
+            throw new IllegalStateException("a broken addon's listener");
+        }
+    }
+
+    @SubscribeEvent
+    static void onLinkEnded(com.voidreclaimer.api.event.ShellLinkEvent.Ended event) {
+        LINK_EVENTS.computeIfAbsent(event.getPlayer().getUUID(), id -> new java.util.concurrent.CopyOnWriteArrayList<>()).add("ended " + event.getReason());
+        if (event.getPlayer().getTags().contains(THROW_AFTER_LINK)) {
+            throw new IllegalStateException("a broken addon's listener");
+        }
+    }
+
     @SubscribeEvent
     static void onMassDriverLaunch(com.voidreclaimer.api.event.MassDriverLaunchEvent event) {
         if (event.getDriverPos().getX() == FIVE_TRUSS_DRIVER_X) {

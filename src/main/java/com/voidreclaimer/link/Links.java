@@ -3,6 +3,7 @@ package com.voidreclaimer.link;
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.event.ShellLinkEvent;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
@@ -31,6 +32,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -74,12 +76,14 @@ public final class Links {
         WAITING,
         /** The seat's signal does not reach the shell. */
         OUT_OF_RANGE,
+        /** An addon said no ({@link ShellLinkEvent.Pre}). */
+        CANCELLED,
         /** Something threw part way, and the move was undone. */
         FAILED
     }
 
-    /** A waiting move. No shell means a wake, and {@code lost} that the shell was destroyed around the player. */
-    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, @Nullable UUID seat, boolean lost, Consumer<Result> then) {}
+    /** A waiting move. No shell means a wake, and {@code end} says why. */
+    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, @Nullable UUID seat, ShellLinkEvent.Reason end, Consumer<Result> then) {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
@@ -97,7 +101,7 @@ public final class Links {
 
     /** {@link #requestLink(ServerPlayer, BodyHost, Consumer)} from the Uplink Seat with id {@code seat}, if any. */
     static void requestLink(ServerPlayer player, BodyHost shell, @Nullable UUID seat, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), seat, false, then));
+        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), seat, ShellLinkEvent.Reason.LEFT, then));
     }
 
     /** Asks for {@link #link} to a shell anywhere, by the player's list of shells: see {@link ShellReach}. */
@@ -112,7 +116,12 @@ public final class Links {
 
     /** Asks for {@link #wake} at the end of this tick; {@code then} hears how it went. */
     public static void requestWake(ServerPlayer player, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), null, null, null, false, then));
+        requestWake(player, ShellLinkEvent.Reason.LEFT, then);
+    }
+
+    /** {@link #requestWake(ServerPlayer, Consumer)} for {@code why}, which {@link ShellLinkEvent.Ended} reports. */
+    static void requestWake(ServerPlayer player, ShellLinkEvent.Reason why, Consumer<Result> then) {
+        MOVES.add(new Move(player.getUUID(), null, null, null, why, then));
     }
 
     @SubscribeEvent
@@ -148,7 +157,7 @@ public final class Links {
         if (event.getEntity() instanceof ServerPlayer player && state(player).linked()) {
             event.setCanceled(true);
             player.setHealth(1f);
-            MOVES.add(new Move(player.getUUID(), null, null, null, true, result -> {
+            MOVES.add(new Move(player.getUUID(), null, null, null, ShellLinkEvent.Reason.BODY_LOST, result -> {
                 if (result == Result.WOKEN) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.link.lost"), false);
                 } else if (result != Result.NOT_LINKED) {
@@ -169,7 +178,7 @@ public final class Links {
             return Result.PLAYER_GONE;
         }
         if (move.shell() == null) {
-            return wake(player, move.lost());
+            return wake(player, move.end());
         }
         ServerLevel level = server.getLevel(move.shellLevel());
         return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell, move.seat()) : Result.NOT_A_SHELL;
@@ -197,6 +206,9 @@ public final class Links {
         ServerLevel there = (ServerLevel) shell.level();
         if (!mayEnter(player, there)) {
             return Result.CANNOT_REACH;
+        }
+        if (refused(player, shell.getUUID())) {
+            return Result.CANCELLED;
         }
         LinkState.Place from = place(player);
         ServerLevel here = player.serverLevel();
@@ -226,18 +238,21 @@ public final class Links {
             return Result.FAILED;
         }
         setHomeDust(player, homeDust);
+        UUID id = shell.getUUID();
         shell.discard();
         settle(player);
         saveNow(player.server);
+        tell(new ShellLinkEvent.Started(player, id));
         return Result.LINKED;
     }
 
     /** Brings {@code player} back to the main body, and puts the shell back in the world where they were. */
     public static Result wake(ServerPlayer player) {
-        return wake(player, false);
+        return wake(player, ShellLinkEvent.Reason.LEFT);
     }
 
-    private static Result wake(ServerPlayer player, boolean lost) {
+    private static Result wake(ServerPlayer player, ShellLinkEvent.Reason why) {
+        boolean lost = why == ShellLinkEvent.Reason.BODY_LOST;
         LinkState state = state(player);
         if (!present(player)) {
             return Result.PLAYER_GONE;
@@ -292,6 +307,7 @@ public final class Links {
         setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
         saveNow(player.server);
+        tell(new ShellLinkEvent.Ended(player, link.shell(), why));
         return Result.WOKEN;
     }
 
@@ -337,6 +353,25 @@ public final class Links {
     static void homeCarriedTo(ServerPlayer player, Vec3 position) {
         LinkState state = state(player);
         state.link().ifPresent(link -> player.setData(ModAttachments.LINK, state.withLink(link.carriedTo(position))));
+    }
+
+    /** Whether an addon refuses this link. One that throws refuses it: nothing has changed yet, so that costs nothing. */
+    private static boolean refused(ServerPlayer player, UUID shell) {
+        try {
+            return NeoForge.EVENT_BUS.post(new ShellLinkEvent.Pre(player, shell)).isCanceled();
+        } catch (RuntimeException e) {
+            LOGGER.error("A listener threw before {} could link", player.getScoreboardName(), e);
+            return true;
+        }
+    }
+
+    /** The move is done and saved: an addon that throws now must not take the server down with it. */
+    private static void tell(ShellLinkEvent event) {
+        try {
+            NeoForge.EVENT_BUS.post(event);
+        } catch (RuntimeException e) {
+            LOGGER.error("A listener threw after a link changed", e);
+        }
     }
 
     /** A throw is an addon's. The outbox already holds the shell, so a wake goes on without it, as when the level will not take it. */

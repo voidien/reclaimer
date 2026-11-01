@@ -102,6 +102,8 @@ public final class LinkSignalGameTests {
                         helper.assertTrue(level.getEntity(id) instanceof BodyHost shell && shell.role() == HostRole.SHELL, "the shell did not stay");
                         helper.assertTrue(level.getEntity(id).position().distanceTo(left) < 1.0, "the shell moved");
                         helper.assertTrue(player.position().distanceTo(Vec3.atCenterOf(pos)) < 4.0, "woke at " + player.position());
+                        var heard = TestEventListeners.LINK_EVENTS.getOrDefault(player.getUUID(), java.util.List.of());
+                        helper.assertTrue(heard.equals(java.util.List.of("started", "ended SIGNAL_LOST")), "heard " + heard);
                         finish(helper, player, level, pos, id);
                     });
         });

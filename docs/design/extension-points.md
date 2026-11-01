@@ -38,6 +38,8 @@ Every new extension point is added here in the same change.
 | `BodyChangedEvent` | Event | After a body changed (sections, modules, looks), server side |
 | `ModuleUseEvent` | Event, cancellable | Before the active tool module is used |
 | `MassDriverLaunchEvent` | Event, cancellable, mutable counts | When a Mass Driver fires a payload, before the Dyson counters change; counts start from the payload's tag |
+| `ShellLinkEvent.Pre` | Event, cancellable | Before a link changes anything; cancelled, the link ends `CANCELLED`. A listener that throws counts as a refusal |
+| `ShellLinkEvent.Started`, `.Ended` | Event | After a link is made, or ended with its `Reason`, and saved. An end cannot be stopped |
 | `SectorRestoredEvent` | Event | After a sector of ruined Earth first counts as restored, with its number and the new count |
 | `void_reclaimer:planet_sectors` | Data component (Integer) | One bit per restored sector; any item carrying it is kept up to date only by `PlanetaryGridItem`, and the map layer shows it in either hand |
 | `#void_reclaimer:dyson/satellite_payloads` | Item tag | Items the Mass Driver launches as one Dyson Swarm Satellite each |

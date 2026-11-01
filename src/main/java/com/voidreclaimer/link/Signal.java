@@ -1,6 +1,7 @@
 package com.voidreclaimer.link;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.event.ShellLinkEvent;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public final class Signal {
             show(player, (float) reading.strength());
         } else {
             show(player, CLEAN);
-            Links.requestWake(player, result -> {
+            Links.requestWake(player, ShellLinkEvent.Reason.SIGNAL_LOST, result -> {
                 if (result == Links.Result.WOKEN) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.link.signal_lost"), false);
                 }
