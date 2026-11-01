@@ -133,6 +133,8 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
     public static final ModConfigSpec.IntValue HOLO_SOURCE_RANGE;
+    public static final ModConfigSpec.BooleanValue EARTH_ACID_DRIZZLE;
+    public static final ModConfigSpec.DoubleValue EARTH_ACID_WEAR;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
     public static final ModConfigSpec.IntValue SPIRE_CATALYSTS;
     public static final ModConfigSpec.IntValue SPIRE_WATER;
@@ -244,6 +246,10 @@ public final class Config {
         EARTH_WIND_SPEED = BUILDER
                 .comment("Top speed of the wind over ruined Earth, in blocks per second; it drifts ships and the flying body (the dampener holds). 0 switches it off.")
                 .defineInRange("windSpeed", 1.5, 0.0, 20.0);
+        EARTH_ACID_DRIZZLE = BUILDER.comment("Acid Drizzle falls on ruined Earth outside restored sectors, and slowly wears body sections under the open sky.")
+                .define("acidDrizzle", true);
+        EARTH_ACID_WEAR = BUILDER.comment("Condition each section loses per minute in full Acid Drizzle (1.0 = all of it). Less as the planet heals. It never breaks a section.")
+                .defineInRange("acidWearPerMinute", 0.003, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust Sensor.").push("sensor");

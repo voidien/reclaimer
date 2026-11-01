@@ -34,6 +34,7 @@ public final class VoidReclaimerClient {
                 net.neoforged.neoforge.client.gui.ConfigurationScreen::new);
         modBus.addListener(VoidReclaimerClient::onRegisterDimensionEffects);
         modBus.addListener(VoidReclaimerClient::onRegisterGuiLayers);
+        modBus.addListener(VoidReclaimerClient::onRegisterParticles);
         modBus.addListener(ModKeyMappings::register);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) ->
                 event.register(com.voidreclaimer.registry.ModMenus.BODY_INVENTORY.get(), com.voidreclaimer.client.screen.BodyInventoryScreen::new));
@@ -88,6 +89,10 @@ public final class VoidReclaimerClient {
     private static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
         event.register(DeepSpaceEffects.ID, new DeepSpaceEffects());
         event.register(com.voidreclaimer.client.render.RuinedEarthEffects.ID, new com.voidreclaimer.client.render.RuinedEarthEffects());
+    }
+
+    private static void onRegisterParticles(net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(com.voidreclaimer.registry.ModParticles.ACID_DROP.get(), com.voidreclaimer.client.render.AcidDropParticle.Provider::new);
     }
 
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
