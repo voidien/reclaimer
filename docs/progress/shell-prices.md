@@ -1,0 +1,2 @@
+## Remote Shell prices are a config choice
+- The owner's request: shells cost well under the parts inside, and scrapping one gives those parts back. `link.shellPrices` in the mods menu picks CHEAP (the first prices), REDUCED, PARTS (the default) or PREMIUM. Each has its own recipes, kept or dropped by a new recipe condition, so the Replicator, JEI and salvage follow by themselves. A change needs a restart or `/reload`.

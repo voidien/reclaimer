@@ -25,6 +25,7 @@ public record ConfigCondition(String key) implements ICondition {
 
     static {
         CONDITIONS.register("config", () -> CODEC);
+        CONDITIONS.register("config_choice", () -> ConfigChoiceCondition.CODEC);
     }
 
     @Override

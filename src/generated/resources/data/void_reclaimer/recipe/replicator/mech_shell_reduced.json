@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config_choice",
+      "key": "shellPrices",
+      "value": "reduced"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:carbon": 40.0,
+    "void_reclaimer:ice": 20.0,
+    "void_reclaimer:metallic": 140.0,
+    "void_reclaimer:silicate": 95.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:mech_shell"
+  },
+  "ticks": 3600
+}

@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config_choice",
+      "key": "shellPrices",
+      "value": "parts"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:carbon": 585.0,
+    "void_reclaimer:ice": 380.0,
+    "void_reclaimer:metallic": 950.0,
+    "void_reclaimer:silicate": 700.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:ship_shell"
+  },
+  "ticks": 15600
+}

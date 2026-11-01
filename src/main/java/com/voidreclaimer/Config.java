@@ -1,5 +1,6 @@
 package com.voidreclaimer;
 
+import com.voidreclaimer.link.ShellPrices;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -43,6 +44,7 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_4_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_STATIC_BAND;
     public static final ModConfigSpec.IntValue LINK_SIGNAL_GRACE;
+    public static final ModConfigSpec.EnumValue<ShellPrices> LINK_SHELL_PRICES;
     public static final ModConfigSpec.DoubleValue LINK_STATION_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_STATION_STATIC_BAND;
     public static final ModConfigSpec.DoubleValue LINK_SEAT_CHARGE;
@@ -89,6 +91,20 @@ public final class Config {
     public static final ModConfigSpec.IntValue RECALL_TELEPORT_COOLDOWN;
 
     public static final ModConfigSpec.IntValue CORE_SUN_TICKS;
+
+    /** The setting of a config choice, in lower case, or the empty string for an unknown name. Before the config has loaded, its default. */
+    public static String choice(String key) {
+        if (!"shellPrices".equals(key)) {
+            return "";
+        }
+        ShellPrices value;
+        try {
+            value = LINK_SHELL_PRICES.get();
+        } catch (IllegalStateException e) {
+            value = LINK_SHELL_PRICES.getDefault();
+        }
+        return value.name().toLowerCase(java.util.Locale.ROOT);
+    }
 
     /** Whether a feature toggle is on. Before the config has loaded (or for an unknown name) the feature counts as on. */
     public static boolean isEnabled(String key) {
@@ -261,6 +277,8 @@ public final class Config {
         LINK_STATIC_BAND = BUILDER.comment("The outer share of a range that carries static: strength falls from full to nothing across it.")
                 .defineInRange("staticBand", 0.25, 0.0, 1.0);
         LINK_STATION_RANGE = BUILDER.comment("A seat at a station multiplies its range by this.").defineInRange("stationRange", 1.5, 1.0, 16.0);
+        LINK_SHELL_PRICES = BUILDER.comment("How dear Remote Shells are: CHEAP (well under the parts inside), REDUCED (3/4 of them), PARTS (what they cost), PREMIUM (5/4).",
+                "Recipes read this when they load: restart or /reload after changing it.").defineEnum("shellPrices", ShellPrices.PARTS);
         LINK_SIGNAL_GRACE = BUILDER.comment("Seconds a link stands after its signal is lost, with a countdown; a signal back in time keeps it.").defineInRange("signalGrace", 5, 0, 60);
         LINK_STATION_STATIC_BAND = BUILDER.comment("staticBand for a seat at a station, across its whole network, so static starts later.")
                 .defineInRange("stationStaticBand", 0.1, 0.0, 1.0);

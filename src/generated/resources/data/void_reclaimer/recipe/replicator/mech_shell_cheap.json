@@ -1,4 +1,11 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config_choice",
+      "key": "shellPrices",
+      "value": "cheap"
+    }
+  ],
   "type": "void_reclaimer:replicator",
   "category": "void_reclaimer:tools",
   "cost": {
