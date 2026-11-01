@@ -19,8 +19,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Thrust is relative to the view: forward/back along the look vector, strafe along the view's right vector
  * (always horizontal, since there is no roll), up/down along the view's up vector. With the inertial dampener on,
- * the body brakes to a stop whenever no thrust key is held. There is no drag otherwise, so with the dampener off
- * the body drifts until it thrusts the other way. Speed is hard-capped by {@link FlightStats#maxSpeed()}. In low
+ * the body brakes to a stop whenever no thrust key is held, and while one is held it brakes the drift off the
+ * thrust's direction, so velocity follows the nose. There is no drag otherwise, so with the dampener off the body
+ * drifts until it thrusts the other way. Speed is hard-capped by {@link FlightStats#maxSpeed()}. In low
  * power mode thrusters and dampener are offline and the body drifts. A clipped Tether Anchor leashes the body, and
  * the tether recall winch pulls it toward the anchor faster than top speed.
  *
