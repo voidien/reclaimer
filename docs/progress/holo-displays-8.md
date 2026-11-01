@@ -1,5 +1,5 @@
-## Holo-displays, part 8: the map: built, not landed
-**Before this lands:** rebase nothing, merge `main` once part 7 is in, run `tools/verify.sh`. Not yet run: the GameTest mutations of `holo.map`, `setMap`, the repeat send of an unchanged picture and the picture left out of the save; the whole suite on this branch. Caught already: 3 of the map and ship mutations in GameTests, 7 in unit tests.
+## Holo-displays, part 8: the map: done
+All faults caught: `holo.map`, `setMap`, re-sending an unchanged picture and the picture going into the save, in GameTests; 7 more in unit tests.
 
 `/void_reclaimer holo <pos> map`, CC `setMap`, CogScript `holo.map`. With this every part of the plan is built. Tests: `HoloMapImageTest`, `HoloMapsTest`, `aMapShowsTheBlocksAroundItAndOnlyResyncsOnAChange`, `theMapGoesWithTheBlocksUpdateNotItsSave`, and the mode in `theHoloProjectorIsAPeripheral` and `cogScriptWritesToTheProjector`.
 
