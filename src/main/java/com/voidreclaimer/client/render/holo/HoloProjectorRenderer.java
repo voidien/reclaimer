@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.display.HoloDisplay;
+import com.voidreclaimer.display.HoloGlobes;
 import com.voidreclaimer.display.HoloProjectorBlock;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
 import java.util.List;
@@ -37,6 +38,8 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
     private static final float BEAM_WIDTH = 0.35f;
     /** The most room a picture can need around the block: a full panel at the biggest scale. */
     private static final float MAX_REACH = 12f;
+    /** Blocks between a globe and the lines over it. */
+    private static final float CAPTION_GAP = 0.15f;
 
     private final Font font;
 
@@ -60,6 +63,7 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
             }
             case MODEL -> drawModel(projector, display, time, flicker, partialTick, pose, buffers);
             case BODY -> drawBody(display, time, flicker, partialTick, pose, buffers);
+            case GLOBE -> drawGlobe(projector, display, time, flicker, pose, buffers);
         }
     }
 
@@ -93,6 +97,25 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
         pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
         BodyRenderer.drawHologram(viewer, size, HoloStyle.MODEL_ALPHA * flicker, partialTick, pose, buffers);
         pose.popPose();
+    }
+
+    private void drawGlobe(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
+        float size = HoloTransform.MODEL_SIZE * display.scale();
+        Quaternionf camera = Minecraft.getInstance().gameRenderer.getMainCamera().rotation();
+        pose.pushPose();
+        pose.translate(0.5, 1, 0.5);
+        beam(pose, buffers, display.height(), flicker);
+        pose.translate(0, display.height() + size / 2, 0);
+        pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
+        Quaternionf parent = pose.last().pose().getNormalizedRotation(new Quaternionf());
+        if (HoloGlobes.EARTH.equals(display.subject())) {
+            HoloGlobeRenderer.earth(pose, buffers, display.progress(), size / 2, flicker);
+        } else {
+            HoloGlobeRenderer.dyson(pose, buffers, display.progress(), size / 2, flicker, time, HoloTransform.billboard(parent, camera));
+        }
+        pose.popPose();
+        drawText(projector, display.withLines(HoloGlobes.caption(display.subject(), display.progress())).withHeight(display.height() + size + CAPTION_GAP),
+                time, flicker, pose, buffers);
     }
 
     private void drawText(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
