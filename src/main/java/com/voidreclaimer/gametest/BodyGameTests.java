@@ -45,6 +45,25 @@ public final class BodyGameTests {
 
     private BodyGameTests() {}
 
+    @GameTest(template = "empty")
+    public static void theRemoveCommandTakesOffASectionOrOneModule(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        Bodies.store(player, Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE));
+        var commands = player.server.getCommands();
+        var source = player.createCommandSourceStack().withPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS).withSuppressedOutput();
+        BodyData.Mount thruster = new BodyData.Mount("rotor_front_left", ModuleKind.THRUSTER, 0);
+        helper.assertFalse(Bodies.data(player).module(thruster).isEmpty(), "the preset has no thruster there, so this proves nothing");
+        commands.performPrefixedCommand(source, "void_reclaimer body remove @s rotor_front_left no_such_kind 0");
+        helper.assertFalse(Bodies.data(player).module(thruster).isEmpty(), "an unknown kind took something off");
+        commands.performPrefixedCommand(source, "void_reclaimer body remove @s rotor_front_left thruster 0");
+        helper.assertTrue(Bodies.data(player).module(thruster).isEmpty(), "the module stayed on");
+        helper.assertFalse(Bodies.data(player).section("rotor_front_left").isEmpty(), "the section went with the module");
+        commands.performPrefixedCommand(source, "void_reclaimer body remove @s rotor_front_left");
+        helper.assertTrue(Bodies.data(player).section("rotor_front_left").isEmpty(), "the section stayed on");
+        TestPlayers.remove(player);
+        helper.succeed();
+    }
+
     private static int put(ServerPlayer player, int slot, ItemStack stack) {
         player.getInventory().items.set(slot, stack);
         return slot;
