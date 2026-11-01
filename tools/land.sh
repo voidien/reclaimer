@@ -2,12 +2,20 @@
 # Merges a pull request that has passed tools/verify.sh and moves the primary checkout to the new main. CI runs on main after the
 # merge, not before it: read it with `gh run list --branch main --limit 1`. Usage: tools/land.sh 181
 #
-# Exit status is 0 once merged. A draft or a PR that cannot merge exits non-zero and merges nothing.
+# Exit status is 0 once merged. A draft, a PR that has not passed tools/verify.sh or one that cannot merge exits non-zero and merges
+# nothing.
 set -u
 cd "$(dirname "$0")/.."
 pr=${1:?usage: tools/land.sh PR_NUMBER}
 
 [ "$(gh pr view "$pr" --json isDraft -q .isDraft)" = "false" ] || { echo "PR $pr is a draft" >&2; exit 2; }
+
+# CI no longer stands between a branch and main, so this does. A docs-only PR has nothing to check.
+git fetch -q origin "pull/$pr/head"
+if [ -n "$(gh pr diff "$pr" --name-only | grep -Ev '\.md$|^docs/|^art/' || true)" ] && ! tools/verified.sh "$(gh pr view "$pr" --json headRefOid -q .headRefOid)"; then
+    echo "PR $pr has not passed tools/verify.sh here: run it on this branch, or on a stack above it" >&2
+    exit 3
+fi
 
 gh pr merge "$pr" --merge --delete-branch || { echo "PR $pr did not merge" >&2; exit 1; }
 
