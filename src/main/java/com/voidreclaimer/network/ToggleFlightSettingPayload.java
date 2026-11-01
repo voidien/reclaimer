@@ -23,7 +23,8 @@ public record ToggleFlightSettingPayload(Setting setting) implements CustomPacke
     public enum Setting {
         DAMPENER,
         CREATIVE_THRUSTERS,
-        RCS_LOCK;
+        RCS_LOCK,
+        AIM_STEERING;
 
         private static final IntFunction<Setting> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
         static final StreamCodec<ByteBuf, Setting> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
@@ -50,6 +51,11 @@ public record ToggleFlightSettingPayload(Setting setting) implements CustomPacke
                 settings = settings.withRcsLock(!settings.rcsLock());
                 player.displayClientMessage(Component.translatable(settings.rcsLock()
                         ? "message.void_reclaimer.rcs_lock_on" : "message.void_reclaimer.rcs_lock_off").withStyle(ChatFormatting.AQUA), true);
+            }
+            case AIM_STEERING -> {
+                settings = settings.withAimSteering(!settings.aimSteering());
+                player.displayClientMessage(Component.translatable(settings.aimSteering()
+                        ? "message.void_reclaimer.aim_steering" : "message.void_reclaimer.mouse_steering"), true);
             }
             case CREATIVE_THRUSTERS -> {
                 if (!player.isCreative()) {

@@ -1,0 +1,3 @@
+## Helm steering: the mouse turns the ship
+- The owner's choice: direct mouse steering by default, with the aim-style controller as a second mode to compare. `ship/AimController` (pure) turns the pilot's keys, mouse and look into a torque. The client sends raw mouse movement (`PilotMouse`), because a seat turns with its ship and reading the view would feed the ship's own turn back in. In direct steering the mouse no longer turns the view; Free Look (Left Alt, held) gives it back. A new key, unbound by default, switches modes.
+- Keys beat the steering on their axis. The steering also stops a spin, so it replaces the RCS hold's torque.

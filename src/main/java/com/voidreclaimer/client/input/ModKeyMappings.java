@@ -48,6 +48,11 @@ public final class ModKeyMappings {
 
     public static final KeyMapping TOGGLE_RCS_LOCK = new KeyMapping("key.void_reclaimer.toggle_rcs_lock",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY);
+    /** No default key: choosing how the Helm steers is a setting, not something to press by accident in flight. */
+    public static final KeyMapping TOGGLE_AIM_STEERING = new KeyMapping("key.void_reclaimer.toggle_aim_steering",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, CATEGORY);
+    public static final KeyMapping FREE_LOOK = new KeyMapping("key.void_reclaimer.free_look",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, CATEGORY);
 
     /** The Helm's rotation axes; its translation axes are the movement keys. */
     public static final KeyMapping ROLL_LEFT = new KeyMapping("key.void_reclaimer.roll_left",
@@ -78,6 +83,8 @@ public final class ModKeyMappings {
         event.register(PHOTO_MODE);
         event.register(ASSEMBLY);
         event.register(TOGGLE_RCS_LOCK);
+        event.register(TOGGLE_AIM_STEERING);
+        event.register(FREE_LOOK);
         event.register(ROLL_LEFT);
         event.register(ROLL_RIGHT);
         event.register(PITCH_UP);

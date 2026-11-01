@@ -13,6 +13,7 @@ public final class ModPayloads {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
         registrar.playToServer(ThrustInputPayload.TYPE, ThrustInputPayload.STREAM_CODEC, ThrustInputPayload::handle);
         registrar.playToServer(PilotInputPayload.TYPE, PilotInputPayload.STREAM_CODEC, PilotInputPayload::handle);
+        registrar.playToServer(PilotMousePayload.TYPE, PilotMousePayload.STREAM_CODEC, PilotMousePayload::handle);
         registrar.playToServer(ToggleFlightSettingPayload.TYPE, ToggleFlightSettingPayload.STREAM_CODEC, ToggleFlightSettingPayload::handle);
         registrar.playToServer(SensorPulsePayload.TYPE, SensorPulsePayload.STREAM_CODEC, SensorPulsePayload::handle);
         registrar.playToServer(ReplicatorActionPayload.TYPE, ReplicatorActionPayload.STREAM_CODEC, ReplicatorActionPayload::handle);
