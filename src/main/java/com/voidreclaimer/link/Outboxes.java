@@ -117,10 +117,17 @@ public final class Outboxes {
     private static void saved(ServerPlayer player, ServerLevel level) {
         LinkState state = Links.state(player);
         LinkState after = state;
+        for (LinkState.KnownShell known : state.shells()) {
+            if (known.at().dimension() == level.dimension() && level.getEntity(known.shell()) instanceof BodyHost shell) {
+                after = Links.noted(after, shell);
+            }
+        }
         for (LinkState.Outbox outbox : state.outboxes()) {
             if (outbox.at().dimension() == level.dimension() && there(level, outbox)) {
-                Vec3 now = level.getEntity(outbox.shell()).position();
-                after = outbox.saved() ? after.withoutOutbox(outbox.shell()) : after.withOutbox(outbox.seenInASave(now));
+                BodyHost shell = (BodyHost) level.getEntity(outbox.shell());
+                Vec3 now = shell.position();
+                // A save from before the list has an outbox and no entry: the entry takes over from the outbox here.
+                after = outbox.saved() ? Links.noted(after, shell).withoutOutbox(outbox.shell()) : after.withOutbox(outbox.seenInASave(now));
             }
         }
         if (after != state) {
