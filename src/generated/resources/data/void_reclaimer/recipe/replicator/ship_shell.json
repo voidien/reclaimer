@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:carbon": 100.0,
+    "void_reclaimer:ice": 100.0,
+    "void_reclaimer:metallic": 200.0,
+    "void_reclaimer:silicate": 200.0
+  },
+  "milestone": "void_reclaimer:starship",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:ship_shell"
+  },
+  "ticks": 6000
+}

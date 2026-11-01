@@ -33,6 +33,10 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<Float>> CONDITION = COMPONENTS.registerComponentType("condition",
             builder -> builder.persistent(Codec.floatRange(0f, 1f)).networkSynchronized(ByteBufCodecs.FLOAT));
 
+    /** The chassis a Remote Shell item unfolds into; a default component, so a recipe can give another. */
+    public static final Supplier<DataComponentType<net.minecraft.resources.ResourceLocation>> SHELL_BODY = COMPONENTS.registerComponentType("shell_body",
+            builder -> builder.persistent(net.minecraft.resources.ResourceLocation.CODEC).networkSynchronized(net.minecraft.resources.ResourceLocation.STREAM_CODEC));
+
     /** A saved body design on a Body Blueprint. */
     public static final Supplier<DataComponentType<com.voidreclaimer.body.Blueprint>> BLUEPRINT = COMPONENTS.registerComponentType(
             "blueprint", builder -> builder.persistent(com.voidreclaimer.body.Blueprint.CODEC)
