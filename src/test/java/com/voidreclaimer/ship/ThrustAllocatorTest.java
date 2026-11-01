@@ -60,20 +60,24 @@ class ThrustAllocatorTest {
     }
 
     @Test
-    void pitchAndRollPickTheRightJets() {
-        // A jet under the bow pushing up (nose up) and a jet on the right wing tip pushing up (roll left).
-        Thruster bowUp = at(0, 0, -3, 0, 1, 0);      // lever (0,0,-3) x (0,1,0) = (3,0,0): about +X = nose down? right-hand: +X torque
-        Thruster wingUp = at(3, 0, 0, 0, 1, 0);      // lever (3,0,0) x (0,1,0) = (0,0,3): about +Z = roll left (forward is -Z)
+    void pitchAndRollOpenTheJetsThatTurnTheShipThatWay() {
+        // Pushing the bow up raises the nose, whatever the signs say. Pushing the right wing up rolls left.
+        Thruster bowUp = at(0, 0, -3, 0, 1, 0);
+        Thruster wingUp = at(3, 0, 0, 0, 1, 0);
         List<Thruster> ship = List.of(bowUp, wingUp);
-        double[] noseDown = ThrustAllocator.throttles(ship, FRAME, keys("down"));
-        double[] noseUp = ThrustAllocator.throttles(ship, FRAME, keys("up"));
-        assertTrue(noseDown[0] > 0.99 && noseDown[1] == 0.0 || noseUp[0] > 0.99 && noseUp[1] == 0.0,
-                "the bow jet serves exactly one pitch direction: down=" + noseDown[0] + " up=" + noseUp[0]);
-        assertEquals(0.0, noseDown[0] * noseUp[0], EPS, "never both");
-        double[] rollLeft = ThrustAllocator.throttles(ship, FRAME, keys("Q"));
-        double[] rollRight = ThrustAllocator.throttles(ship, FRAME, keys("E"));
-        assertEquals(1.0, Math.max(rollLeft[1], rollRight[1]), EPS, "the wing jet rolls one way");
-        assertEquals(0.0, rollLeft[1] * rollRight[1], EPS, "never both");
+        assertArrayEquals(new double[] {1, 0}, ThrustAllocator.throttles(ship, FRAME, keys("up")), EPS, "arrow up opens the jet under the bow");
+        assertArrayEquals(new double[] {0, 0}, ThrustAllocator.throttles(ship, FRAME, keys("down")), EPS, "nothing here pushes the bow down");
+        assertArrayEquals(new double[] {0, 1}, ThrustAllocator.throttles(ship, FRAME, keys("Q")), EPS, "Q opens the jet under the right wing");
+        assertArrayEquals(new double[] {0, 0}, ThrustAllocator.throttles(ship, FRAME, keys("E")), EPS, "nothing here rolls right");
+    }
+
+    @Test
+    void theHudSaysTheTurnsTheShipCanReallyMake() {
+        double[] coverage = ThrustAllocator.rotationCoverage(List.of(at(0, 0, -3, 0, 1, 0), at(3, 0, 0, 0, 1, 0)), FRAME);
+        assertEquals(1.0, coverage[1], EPS, "roll left");
+        assertEquals(0.0, coverage[0], EPS, "roll right");
+        assertEquals(1.0, coverage[2], EPS, "nose up");
+        assertEquals(0.0, coverage[3], EPS, "nose down");
     }
 
     @Test
