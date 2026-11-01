@@ -2,7 +2,7 @@
 - `earth/PlanetaryGridItem`, component `planet_sectors`, `client/hud/PlanetaryGridLayer` and `PlanetaryGridLayout` (pure). The item keeps its own copy of the planet's map, so it reads the same from deep space.
 - Replicator recipe `planetary_grid`: Tools tab, Earthfall, 10/15/5/10 dust (placeholder).
 - No CC peripheral: it is an item with no block, and the Spire's `getSectors` already reads the planet from any dimension.
-- Tests: `PlanetaryGridLayoutTest`, `PlanetaryGridGameTests` (2), and `RecipeDescriptionTest` for the line in the Replicator.
+- Tests: `PlanetaryGridLayoutTest`, `PlanetaryGridGameTests` (2), and `RecipeDescriptionTest` for the line in the Replicator. Mutation-checked: a refresh every tick and a component that is not saved each fail a test.
 
 ### Placeholder assets
 - `textures/item/planetary_grid.png`: a small drawn grid. The map itself is plain `GuiGraphics.fill`; the `gui/planetary_grid.png` row in the asset list stays future.
