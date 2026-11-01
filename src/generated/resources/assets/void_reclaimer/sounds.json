@@ -1,4 +1,15 @@
 {
+  "acid_drizzle": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "weather.rain",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ],
+    "subtitle": "subtitles.void_reclaimer.acid_drizzle"
+  },
   "dampener": {
     "sounds": [
       {

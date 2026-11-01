@@ -184,8 +184,8 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         var access = net.minecraft.client.Minecraft.getInstance().level.registryAccess();
         ResourceLocation texture = BodyTextures.INSTANCE.painted(part, access, cosmetics.casing(paintSocket));
         if (ghost) {
-            RenderType glass = RenderType.entityTranslucent(texture);
-            renderer.reRender(model, poseStack, bufferSource, animatable, glass, bufferSource.getBuffer(glass), partialTick, LightTexture.FULL_BRIGHT, overlay, GHOST);
+            RenderType glass = BodyRenderer.ghostType(texture);
+            renderer.reRender(model, poseStack, bufferSource, animatable, glass, bufferSource.getBuffer(glass), partialTick, LightTexture.FULL_BRIGHT, overlay, BodyRenderer.ghostColor(GHOST));
             return;
         }
         RenderType base = RenderType.entityCutoutNoCull(texture);

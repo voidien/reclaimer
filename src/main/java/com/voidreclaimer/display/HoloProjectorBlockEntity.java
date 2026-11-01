@@ -99,6 +99,14 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         return display.source();
     }
 
+    public void setModel(ResourceLocation id) {
+        apply(display.withModel(id));
+    }
+
+    public void setBody() {
+        apply(display.withBody());
+    }
+
     public void setScale(float scale) {
         apply(display.withScale(scale));
     }
