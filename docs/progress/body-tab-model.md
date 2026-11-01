@@ -1,0 +1,2 @@
+## A small body model beside the Body tab
+- The owner asked for a smaller 3D model alongside the full-screen editor. There is no room inside the panel, so it stands in the margin beside it, and only when that margin is at least 96 GUI pixels wide: seen at smaller GUI scales and hidden otherwise (`SidePreview`). Drag to turn it and scroll to zoom, as in the editor, whose drawing it shares (`BodyStage`). Tests: `SidePreviewTest`. Seen in a client at both sizes.

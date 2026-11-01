@@ -45,6 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class ReplicatorScreen extends Screen implements com.voidreclaimer.client.debug.GuiDebug.Regions {
     private static final int WIDTH = 320;
+    private final SidePreview preview = new SidePreview();
     /** At most 240 so the panel fits a 720p window at GUI scale 3 (the owner's usual test size). */
     private static final int HEIGHT = 236;
     private static final int LIST_WIDTH = 190;
@@ -241,6 +242,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         }
         if (tab == bodyTab) {
             bodyPanel.render(graphics, player, mouseX, mouseY);
+            preview.render(graphics, player, left, top, top + HEIGHT);
             return;
         }
         if (tab < categoryTabs) {
@@ -459,7 +461,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
             return false;
         }
         if (tab == bodyTab) {
-            return bodyPanel.mouseClicked(player, mouseX, mouseY);
+            return preview.press(left, top, top + HEIGHT, mouseX, mouseY) || bodyPanel.mouseClicked(player, mouseX, mouseY);
         }
         ReplicatorData data = player.getData(ModAttachments.REPLICATOR);
         int x = left + 6;
@@ -503,7 +505,13 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
     }
 
     @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        return preview.drag(dragX, dragY) || super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        preview.release();
         LocalPlayer player = Minecraft.getInstance().player;
         if (dragFrom >= 0 && player != null) {
             int size = player.getData(ModAttachments.REPLICATOR).jobs().size();
@@ -526,7 +534,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && tab == bodyTab) {
-            return bodyPanel.mouseScrolled(player, scrollY);
+            return preview.scroll(left, top, top + HEIGHT, mouseX, mouseY, scrollY) || bodyPanel.mouseScrolled(player, scrollY);
         }
         if (player != null && tab < categoryTabs) {
             int max = Math.max(0, recipesForTab(player.getData(ModAttachments.REPLICATOR)).size() - VISIBLE_ROWS);
