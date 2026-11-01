@@ -97,6 +97,7 @@ Use these before guessing from pixels. If one is missing, say so (workflow rule 
 - **Item census (`/void_reclaimer link census <player>`, `debug/ItemCensus`):** counts everything a body carries and the items lying near it, and says what changed since the last count: run it before and after anything that moves items.
 - **Helm (`/void_reclaimer debug helm [player]`, `debug/HelmTrace`):** the last two seconds of a Helm's steering: the mouse, the turn it asked for, the ship's real spin, what its thrusters can do, and the lag from asking to turning. Use it before tuning `AimController`.
 - **Chunks (`/void_reclaimer debug chunks [x z]`, `debug/ChunkReadout`):** one chunk's ticket level, status and entity state, plus how many chunks are held, finished and waiting, and the state of the queue. Use it when a chunk will not tick: a long queue looks just like a stuck chunk.
+- **Handling (`/vrphoto handling [all]`, `debug/HandlingReadout`):** your body's mass, top speed, top speed in its own lengths a second, acceleration, braking, time to top speed and stopping distance, or every built-in body's, in chat and the log. It is a client command because only the model knows a body's length. Use it before tuning speeds.
 - **Time (P freeze, period step, comma quarter speed, in photo mode; `/vrphoto time freeze|step|slow|normal`):** `debug/DebugTime` drives the server's tick manager. Leaving photo mode restores normal time, and only if photo mode changed it, so a player's own `/tick` settings stay.
 
 ## Branches

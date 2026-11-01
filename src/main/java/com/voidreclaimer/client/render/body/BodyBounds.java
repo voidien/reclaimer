@@ -34,6 +34,19 @@ public final class BodyBounds {
         return RADII.computeIfAbsent(model, baked -> measure(baked, spec == null));
     }
 
+    /** The longest side of the box round this body's rig, in blocks at scale 1; 0 when the model is not loaded. */
+    public static float length(BodyView view) {
+        SectionStats core = Parts.section(view.data().core());
+        String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
+        BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
+        BakedGeoModel model = GeckoLibCache.getBakedModels().get(spec != null ? spec.model() : VoidReclaimer.id("geo/body/" + rig + ".geo.json"));
+        if (model == null) {
+            return 0f;
+        }
+        float[] box = box(model, spec == null);
+        return Math.max(0f, Math.max(box[3] - box[0], Math.max(box[4] - box[1], box[5] - box[2])));
+    }
+
     /** The box round a whole model, in blocks: min x, y, z, then max x, y, z. */
     public static float[] box(BakedGeoModel model) {
         return BOXES.computeIfAbsent(model, baked -> box(baked, false));

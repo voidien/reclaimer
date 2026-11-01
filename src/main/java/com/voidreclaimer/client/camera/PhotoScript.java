@@ -9,15 +9,21 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.body.BodyView;
+import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.client.render.body.BodyBounds;
+import com.voidreclaimer.debug.HandlingReadout;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -103,6 +109,8 @@ public final class PhotoScript {
                         .then(Commands.literal("step").executes(c -> time(PhotoDebug.Time.STEP)))
                         .then(Commands.literal("slow").executes(c -> time(PhotoDebug.Time.TOGGLE_SLOW)))
                         .then(Commands.literal("normal").executes(c -> time(PhotoDebug.Time.RESET))))
+                .then(Commands.literal("handling").executes(c -> handling(false))
+                        .then(Commands.literal("all").executes(c -> handling(true))))
                 .then(Commands.literal("shot").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
                     String name = StringArgumentType.getString(c, "name");
                     later(mc -> queue(new Shot(null, 0f, 0f, 0.0, name)));
@@ -166,6 +174,30 @@ public final class PhotoScript {
             }
         });
         return 1;
+    }
+
+    /** Your body's handling, or every built-in body's: a line each in chat and the log. */
+    private static int handling(boolean all) {
+        later(mc -> {
+            List<HandlingReadout.Row> rows = new ArrayList<>();
+            if (all) {
+                rows.add(row("Starter Drone", Bodies.preview(Bodies.starter(), mc.player.registryAccess())));
+                for (var key : BuiltinBodies.CHASSIS.keySet()) {
+                    rows.add(row(key.location().getPath(), Bodies.preview(Bodies.preset(key), mc.player.registryAccess())));
+                }
+            } else {
+                rows.add(row("Your body", Bodies.view(mc.player)));
+            }
+            for (String line : HandlingReadout.lines(rows)) {
+                mc.gui.getChat().addMessage(Component.literal(line));
+                VoidReclaimer.LOGGER.info("[handling] {}", line);
+            }
+        });
+        return 1;
+    }
+
+    private static HandlingReadout.Row row(String name, BodyView view) {
+        return HandlingReadout.row(name, view.stats(), BodyBounds.length(view));
     }
 
     private static int time(PhotoDebug.Time action) {
