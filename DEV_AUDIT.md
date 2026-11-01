@@ -8,11 +8,31 @@ First audit: 2026-10-31, on `main` at 081141a. The owner approved all findings o
 - **CI:** GitHub Actions, public repo (free runners), `main` not protected, auto-merge off.
 - **Your answers:** slowest are local verify before push and waiting on CI. You playtest from checklists. You restart the client 6+ times a session. For approved items, the normal rules apply: small PRs, and I merge my own on green CI.
 
-## Status
-- F1: done (`tools/land.sh`).
-- F2: done (`docs/progress/`, `tools/progress_fold.py`). Pays off as fewer merges of `main`: check the count on the next audit (34 for 115 PRs before).
-- F3, F5, F11, F15: done. F5 took the slowest batch from 35 s to 22 s.
-- Everything else: in progress.
+## Status (2026-11-01)
+| Item | Result |
+|---|---|
+| F1 land script | Done (#181). Green PRs merge themselves and the primary checkout stays current |
+| F2 progress files | Done (#182). Check the conflict count on the next audit |
+| F3 allowlist | Done (#185) |
+| F4 verify script | Done (#188), with a guard against two runs in one checkout (#204) |
+| F5 slow batch | Done (#186): 35 s to 22 s |
+| F6 restart job | Done (#196). Full CI's longest job is now build |
+| F7 sharding | **Dropped:** after F16 the main GameTests take 52 s on CI, so there is nothing left to gain |
+| F8 asset reload | Done (#190): about 15 s against about 50 s for a restart, GeckoLib models included |
+| F9 windowed swap | Done (#192) |
+| F10 fastTest | Done (#189): 5 s against 20 s, for 336 of 369 tests |
+| F11 source search | Done (#184) |
+| F12 short CLAUDE.md | Done (#195): 139 KB to 23 KB, moved word for word to `docs/design/` |
+| F13 new-block skill | Done (#193) |
+| F14 JetBrains Runtime | **Open:** needs a JDK installed; `quick.sh swap` covers method bodies meanwhile |
+| F15 suite kill | Done (#183) |
+| F16 no chunk saves | Done (#191): full CI 7.8 to 3.5 minutes |
+
+**Result:** CI's main GameTests went from 256 s to 52 s. Local runs gained less: about 90 s against 110 s, because they read an old world back from disk.
+
+**Corrections to this report:** the first version said GameTests were simply limited by CPU. They were not: most of a run was chunk saving (F16). Holding chunks in memory looked twice as fast locally and then ran out of memory on CI's fresh world; writing none replaced it.
+
+**Open and not a dev-speed item:** the JVM crashes below got worse, and they now make local full-suite runs unreliable. CI is the judge of full runs until memtest settles it.
 
 ## Top 3 changes by payoff
 1. **Land PRs without waiting (F1).** A small script watches CI, merges on green and refreshes the primary checkout. Today a green PR waits until you next write, and the primary checkout, which sets the `CLAUDE.md` a session starts with, is 67 commits behind.
@@ -102,6 +122,7 @@ Dependabot #178 is still open. No upgrade would change these numbers.
 | Date | Commit | Cold build | Warm no-op | One-line: compile / build | Unit | GameTest main / aero | Filtered main / aero | Datagen | Restart test main / aero | Client: title / world | CI full |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-31 | 081141a | 34 s | 0.74 s | 1 s / 21 s | 21 s | 110 s / 52 s | 29 s / 36 s | 18 s | 94 s / 87 s | 28 s / 29-47 s | 7.8 min |
+| 2026-11-01 | 516fd1a | not rerun | 0.74 s | 1 s / 21 s (`fastTest` 5 s) | 21 s | 90 s / 56 s | 29 s / 36 s | 18 s | about 100 s | 28 s / 40-50 s | 3.5 min |
 
 **How measured:** on an idle machine, with medians of 2-3 runs. Cold means daemon stopped, `build/` cleaned and build cache off, but dependency caches kept; clearing those was ruled out. Cold includes unit tests. Main GameTest uses 2 of 3 timed runs (102 and 117 s), because the third wrote over its own log and has no exact time; its batches took 77 s. Title is 3 headless launches to the sound engine starting; world is from 3 earlier logs, because I did not open a world save in this audit.
 

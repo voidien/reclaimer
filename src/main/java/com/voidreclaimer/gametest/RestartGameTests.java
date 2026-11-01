@@ -73,4 +73,77 @@ public final class RestartGameTests {
         helper.assertTrue(state.linked(), "the player file does not know about the link");
         helper.succeed();
     }
+
+    private static final UUID WOKEN_PLAYER = new UUID(0x7E57L, 0xB0B2L);
+    private static final BlockPos WOKEN_SPOT = new BlockPos(75_700, 80, 0);
+
+    /** A shell put back in the world reaches the disk with its chunk: a crash first must not cost the player that body. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aWokenShellOutlivesACrashBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, WOKEN_SPOT, 1, () -> {
+            ServerPlayer player = TestPlayers.joinAs(helper, WOKEN_PLAYER);
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            player.teleportTo(space, WOKEN_SPOT.getX() + 0.5, WOKEN_SPOT.getY(), WOKEN_SPOT.getZ() + 0.5, 0f, 0f);
+            player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            BodyHost shell = BodyHost.spawn(space, player.position().add(0.0, 0.0, 4.0), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
+            helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
+            helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+            RestartTests.crash();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aWokenShellOutlivesACrashAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerPlayer player = TestPlayers.joinAs(helper, WOKEN_PLAYER);
+        LinkState state = Links.state(player);
+        helper.assertTrue(state.outboxes().size() == 1, "the player file holds " + state.outboxes().size() + " outboxes");
+        UUID id = state.outboxes().get(0).shell();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(space.getEntity(id) instanceof BodyHost, "the shell is lost"))
+                .thenExecute(() -> {
+                    space.getEntity(id).discard();
+                    player.setData(ModAttachments.LINK, LinkState.NONE);
+                    TestPlayers.remove(player);
+                    helper.succeed();
+                });
+    }
+
+    private static final UUID STALE_PLAYER = new UUID(0x7E57L, 0xB0B3L);
+    private static final BlockPos STALE_SPOT = new BlockPos(75_900, 80, 0);
+
+    /** The chunk reaches the disk with the shell in it, and the crash comes after the link: that copy must not walk again. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void anOldShellGoesAfterACrashBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, STALE_SPOT, 1, () -> {
+            ServerPlayer player = TestPlayers.joinAs(helper, STALE_PLAYER);
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            player.teleportTo(space, STALE_SPOT.getX() + 0.5, STALE_SPOT.getY(), STALE_SPOT.getZ() + 0.5, 0f, 0f);
+            player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            BodyHost shell = BodyHost.spawn(space, player.position().add(0.0, 0.0, 4.0), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
+            helper.runAfterDelay(5, () -> {
+                space.save(null, true, false);
+                helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
+                RestartTests.crash();
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void anOldShellGoesAfterACrashAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerPlayer player = TestPlayers.joinAs(helper, STALE_PLAYER);
+        LinkState state = Links.state(player);
+        helper.assertTrue(state.linked(), "the player file does not know about the link");
+        UUID id = state.link().orElseThrow().shell();
+        // Waits for the chunk's entities to load and then past the shell's own check, which runs once a second.
+        NaniteGameTests.inEntityTickingArea(helper, STALE_SPOT, 1, () -> helper.runAfterDelay(60, () -> {
+            helper.assertTrue(space.getEntity(id) == null, "the old copy of the shell came back");
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            TestPlayers.remove(player);
+            helper.succeed();
+        }));
+    }
 }
