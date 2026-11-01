@@ -121,6 +121,11 @@ public final class ModCommands {
         return 1;
     }
 
+    private static int chunks(CommandSourceStack source, net.minecraft.world.level.ChunkPos pos) {
+        com.voidreclaimer.debug.ChunkReadout.of(source.getLevel(), pos).forEach(line -> source.sendSuccess(() -> Component.literal(line), false));
+        return 1;
+    }
+
     private static int scene(CommandSourceStack source, String name) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var scene = java.util.Arrays.stream(com.voidreclaimer.debug.TestScenes.Scene.values()).filter(s -> s.id().equals(name)).findFirst();
         if (scene.isEmpty()) {
@@ -150,6 +155,11 @@ public final class ModCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("condition", FloatArgumentType.floatArg(0f, 1f))
                                         .executes(ctx -> wear(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), FloatArgumentType.getFloat(ctx, "condition"))))))
+                .then(Commands.literal("debug")
+                        .then(Commands.literal("chunks")
+                                .executes(ctx -> chunks(ctx.getSource(), new net.minecraft.world.level.ChunkPos(net.minecraft.core.BlockPos.containing(ctx.getSource().getPosition()))))
+                                .then(Commands.argument("where", net.minecraft.commands.arguments.coordinates.ColumnPosArgument.columnPos())
+                                        .executes(ctx -> chunks(ctx.getSource(), net.minecraft.commands.arguments.coordinates.ColumnPosArgument.getColumnPos(ctx, "where").toChunkPos())))))
                 .then(Commands.literal("link")
                         .then(Commands.literal("census")
                                 .then(Commands.argument("player", EntityArgument.player())

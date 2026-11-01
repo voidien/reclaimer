@@ -1036,6 +1036,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Tool: the item census command: done
 - `/void_reclaimer link census <player>` counts everything a body carries (armor, offhand, the cursor, sections, modules, pending items) and the items lying within 32 blocks, and says what changed since that player's last count, so "nothing appeared or vanished" can be checked in a real client too. `ItemCensus` moved from test code to `debug/`. Its command result is the total.
 - Tests: `ItemCensusTest`, `theCensusCountsCursorAndBodyParts`. Dropped items are only seen in a ticking chunk, as with any entity lookup.
+## Tool: a chunk readout and a thread dump for CI: done
+- `/void_reclaimer debug chunks [x z]` shows one chunk's ticket level, status and entity state, plus how many chunks are held, finished and waiting, and the state of the queue (`debug/ChunkReadout`). It took temporary code to get these numbers while finding why forced chunks seemed never to tick.
+- When a `runData` on CI is about to be cut off, the step prints a thread dump of it. The start-up deadlock is an upstream one, and the classes in it are what a workaround needs. It fired on its own first run, and showed the cycle: see "Fix: the start-up deadlock".
+- Tests: `theChunkReadoutTellsATickingChunkFromAnUnloadedOne`, `ChunkReadoutTest`.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

@@ -103,10 +103,18 @@ jobs:
         # HANDOFF.md). A healthy run takes under a minute, so cut a hung one off and try again.
         run: |
           for attempt in 1 2 3; do
+            # Just before the cut-off, what a hung run is stuck on: the classes in the deadlock are what a workaround needs.
+            ( sleep 285; ps -eo pid,args | awk '$2 ~ /\/bin\/java$/ && /moddev\/data/ {print $1}' | while read -r pid; do
+                echo "::group::Thread dump of the hung runData, attempt $attempt"; jstack -l "$pid"; echo "::endgroup::"
+              done ) &
+            dump=$!
             if timeout 300 ./gradlew runData --stacktrace; then
+              kill "$dump" 2>/dev/null || true
               git diff --exit-code -- src/generated
               exit $?
             fi
+            # The dump may be over already, and the step runs with -e: a failed kill must not end the retries.
+            kill "$dump" 2>/dev/null || true
             echo "runData attempt $attempt failed or hung"
             ./gradlew --stop
           done
