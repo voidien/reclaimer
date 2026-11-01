@@ -3,6 +3,7 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BuiltinBodies;
+import com.voidreclaimer.core.BackupCoreList;
 import com.voidreclaimer.debug.ItemCensus;
 import com.voidreclaimer.link.BodyHost;
 import com.voidreclaimer.link.BodySnapshot;
@@ -10,6 +11,7 @@ import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
 import com.voidreclaimer.registry.ModAttachments;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -105,6 +107,37 @@ public final class LinkWreckGameTests {
                 helper.assertTrue(shell.role() == HostRole.WRECK && !shell.isDeadOrDying(), "the wreck did not last");
                 finish(helper, player, shell);
             });
+        });
+    }
+
+    /** The player is in the shell when it dies, so vanilla's death would drop everything and take a Backup Core's charge. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void dyingInAShellWakesYouAtHomeAndLeavesAWreck(GameTestHelper helper) {
+        beside(helper, new BlockPos(81_900, 80, 0), (player, shell) -> {
+            ItemCensus carried = ItemCensus.of(BodySnapshot.of(shell), player.registryAccess());
+            ItemCensus home = ItemCensus.of(player);
+            UUID id = shell.getUUID();
+            ServerLevel level = player.serverLevel();
+            BackupCoreList cores = player.getData(ModAttachments.BACKUP_CORES);
+            helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
+            player.hurt(level.damageSources().genericKill(), Float.MAX_VALUE);
+            helper.assertTrue(player.isAlive(), "the player died in the shell");
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertFalse(Links.state(player).linked(), "still in the shell"))
+                    .thenExecuteAfter(2, () -> {
+                        helper.assertTrue(level.getEntity(id) instanceof BodyHost wreck && wreck.role() == HostRole.WRECK, "no wreck where the shell was");
+                        BodyHost wreck = (BodyHost) level.getEntity(id);
+                        helper.assertTrue(ItemCensus.of(player).since(home).isEmpty(), "the main body changed: " + ItemCensus.of(player).since(home));
+                        helper.assertTrue(ItemCensus.nearby(player, 16.0).total() == 0, "items fell");
+                        helper.assertTrue(player.getData(ModAttachments.DEATH_MARKER).pos().isEmpty(), "a death marker was set");
+                        helper.assertTrue(player.getData(ModAttachments.BACKUP_CORES).equals(cores), "the Backup Cores changed");
+                        helper.assertTrue(player.getHealth() > 1f, "the main body came home at the shell's health");
+                        ItemCensus before = ItemCensus.of(player);
+                        wreck.interact(player, InteractionHand.MAIN_HAND);
+                        helper.assertTrue(ItemCensus.of(player).since(before).equals(carried.counts()),
+                                "salvaged " + ItemCensus.of(player).since(before) + ", the shell held " + carried.counts());
+                        finish(helper, player, wreck);
+                    });
         });
     }
 

@@ -514,6 +514,7 @@
   "message.void_reclaimer.launch.failed": "The launch complex could not be assembled.",
   "message.void_reclaimer.launch.not_assembled": "The launch complex is not assembled.",
   "message.void_reclaimer.launch.ring_incomplete": "The ring is incomplete: 15 x 15 of frame blocks, with the controller in the middle of one side.",
+  "message.void_reclaimer.link.lost": "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]",
   "message.void_reclaimer.low_power": "LOW POWER: thrusters, tools and replicator offline.",
   "message.void_reclaimer.nanite.blocked": "Something is in the way.",
   "message.void_reclaimer.nanite.no_blocks": "No material: hold a block in the offhand or carry Scaffold.",
