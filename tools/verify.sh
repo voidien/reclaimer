@@ -7,7 +7,8 @@
 set -u
 cd "$(dirname "$0")/.."
 # Two runs in one checkout overwrite each other's logs and builds.
-exec 8>build/verify.lock 2>/dev/null || { mkdir -p build; exec 8>build/verify.lock; }
+mkdir -p build
+exec 8>build/verify.lock
 flock -n 8 || { echo "another tools/verify.sh is running in this checkout" >&2; exit 2; }
 git fetch -q origin 2>/dev/null
 base=$(git merge-base origin/main HEAD)
