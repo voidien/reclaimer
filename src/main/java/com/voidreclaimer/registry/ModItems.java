@@ -189,6 +189,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> STATION_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.STATION_CORE);
     public static final DeferredItem<BlockItem> HOLO_PROJECTOR = ITEMS.registerSimpleBlockItem(ModBlocks.HOLO_PROJECTOR);
     public static final DeferredItem<BlockItem> DOCKING_CLAMP = ITEMS.registerSimpleBlockItem(ModBlocks.DOCKING_CLAMP);
+    public static final DeferredItem<BlockItem> UPLINK_SEAT = ITEMS.registerSimpleBlockItem(ModBlocks.UPLINK_SEAT);
+    public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> DRONE_SHELL = remoteShell("drone_shell", com.voidreclaimer.body.BuiltinBodies.DRONE);
+    public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> MECH_SHELL = remoteShell("mech_shell", com.voidreclaimer.body.BuiltinBodies.MECH);
+    public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> SHIP_SHELL = remoteShell("ship_shell", com.voidreclaimer.body.BuiltinBodies.SHIP);
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));
@@ -218,6 +222,11 @@ public final class ModItems {
     }
 
     private ModItems() {}
+
+    private static DeferredItem<com.voidreclaimer.link.RemoteShellItem> remoteShell(String name, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> chassis) {
+        return ITEMS.register(name, () -> new com.voidreclaimer.link.RemoteShellItem(
+                new Item.Properties().stacksTo(1).component(ModDataComponents.SHELL_BODY.get(), chassis.location())));
+    }
 
     private static DeferredItem<ModuleItem> module(String name, ModuleStats stats) {
         return ITEMS.register(name, () -> new ModuleItem(new Item.Properties().stacksTo(1).component(ModDataComponents.MODULE.get(), stats)));

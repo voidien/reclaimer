@@ -1,0 +1,2 @@
+## Remote control: reaching a far shell
+- `link/ShellReach`: a link by id finds the shell from the player's list, loads the 3 x 3 chunks round it with a ticket that ends by itself, and moves the player when the shell turns up. Nothing changes before that. New results: `NOT_FOUND`, `TIMED_OUT` (10 seconds), `WAITING` (one wait per player). `/void_reclaimer link reach <player> <id>` asks for it by hand. Tests: `LinkReachGameTests` (7), mutation-checked.

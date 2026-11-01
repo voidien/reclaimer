@@ -43,6 +43,10 @@ import org.slf4j.Logger;
 public record BodySnapshot(BodyData body, EnergyData energy, TetherData tether, ListTag items, int selected, float health, ListTag effects) {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    public BodySnapshot withEnergy(EnergyData value) {
+        return new BodySnapshot(body, value, tether, items, selected, health, effects);
+    }
+
     /**
      * Takes what {@code player} is wearing, ready to move: it closes their screen, so this is not a way to look. Call it before
      * anything moves the player. Nothing is taken away: until a body is put on over it, the player still wears all of this.

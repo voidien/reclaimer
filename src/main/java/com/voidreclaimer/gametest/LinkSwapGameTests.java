@@ -188,8 +188,7 @@ public final class LinkSwapGameTests {
         withShell(helper, new BlockPos(79_400, 80, 0), (player, shell) -> {
             helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
             LinkState.Link link = Links.state(player).link().orElseThrow();
-            LinkState.Place locked = new LinkState.Place(helper.getLevel().dimension(), new Vec3(0.5, 100, 0.5), 0f, 0f);
-            player.setData(ModAttachments.LINK, LinkState.NONE.withLink(new LinkState.Link(link.shell(), link.epoch(), link.home(), locked)));
+            player.setData(ModAttachments.LINK, LinkState.NONE.withLink(new LinkState.Link(link.shell(), link.epoch(), new CompoundTag(), link.from())));
             Inventory inventory = player.getInventory();
             for (int slot = 0; slot < inventory.items.size(); slot++) {
                 inventory.setItem(slot, new ItemStack(Items.DIRT, 64));
@@ -198,7 +197,7 @@ public final class LinkSwapGameTests {
             player.containerMenu.setCarried(new ItemStack(Items.GOLD_INGOT, 2));
             ItemCensus before = ItemCensus.of(player);
             for (int asked = 0; asked < 3; asked++) {
-                helper.assertTrue(Links.wake(player) == Links.Result.CANNOT_REACH, "woke into a locked dimension");
+                helper.assertTrue(Links.wake(player) == Links.Result.HOME_UNREADABLE, "woke into a body nobody can read");
             }
             helper.assertTrue(ItemCensus.of(player).equals(before), "a refused wake cost items");
             helper.assertTrue(player.containerMenu instanceof BodyInventoryMenu, "a refused wake closed the screen");

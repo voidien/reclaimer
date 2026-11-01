@@ -70,6 +70,9 @@ public class BodyHost extends LivingEntity {
         host.wear(body);
         host.setHealth(host.getMaxHealth());
         level.addFreshEntity(host);
+        if (role == HostRole.SHELL) {
+            Links.note(host);
+        }
         return host;
     }
 
@@ -99,6 +102,7 @@ public class BodyHost extends LivingEntity {
         Vec3 eyes = owner.getEyePosition();
         BodyHost shell = spawn(owner.serverLevel(), eyes, HostRole.SHELL, body, owner.getUUID());
         shell.setPos(eyes.add(owner.getLookAngle().scale(AHEAD * (1.0 + shell.getScale()))));
+        Links.note(shell);
         return shell;
     }
 
@@ -115,7 +119,7 @@ public class BodyHost extends LivingEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() == HostRole.SHELL && Links.stale(this)) {
+        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() != HostRole.MIRROR && Links.replaced(this)) {
             LOGGER.info("Shell {} was an old copy and has been removed", getUUID());
             Outboxes.lookAgain(getUUID());
             discard();
@@ -142,7 +146,7 @@ public class BodyHost extends LivingEntity {
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        return role() == HostRole.WRECK ? !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) : super.isInvulnerableTo(source);
+        return role() != HostRole.SHELL ? !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) : super.isInvulnerableTo(source);
     }
 
     @Override
@@ -150,7 +154,7 @@ public class BodyHost extends LivingEntity {
         if (role() != HostRole.WRECK || hand != InteractionHand.MAIN_HAND) {
             return InteractionResult.PASS;
         }
-        if (player instanceof ServerPlayer server) {
+        if (player instanceof ServerPlayer server && !Links.stale(this)) {
             Wrecks.salvage(server, this);
         }
         return InteractionResult.sidedSuccess(level().isClientSide);

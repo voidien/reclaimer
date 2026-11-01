@@ -1,0 +1,163 @@
+package com.voidreclaimer.link;
+
+import com.voidreclaimer.network.ShellListPayload;
+import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.ship.ShipTickets;
+import com.voidreclaimer.ship.Ships;
+import com.voidreclaimer.tether.Tether;
+import dev.ryanhcode.sable.sublevel.ServerSubLevel;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+/**
+ * An Uplink Seat. Its id lasts as long as the block does, wherever a ship takes it, because a link has to find its seat again and a
+ * position on a ship means nothing. Who sits in it is not stored: a link says which seat it came from, so a wake by any route frees
+ * the seat and there is no second record to disagree.
+ *
+ * <p>While someone is linked from it the seat shows their main body, which is held in the player file and not in the world: a
+ * mirror, rebuilt by the seat whenever it is missing and never saved, so there is never one on disk to go stale.
+ *
+ * <p>A seat aboard a ship holds the ship loaded while it is in use, and keeps the link's record of the main body's place current,
+ * so the player wakes where the ship has got to and never at a position in the ship's own coordinates.
+ */
+public class UplinkSeatBlockEntity extends BlockEntity {
+    private static final String ID = "seat_id";
+    private static final int CHECK_TICKS = 20;
+
+    private UUID id = UUID.randomUUID();
+    @Nullable
+    private BodyHost mirror;
+
+    public UplinkSeatBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.UPLINK_SEAT.get(), pos, state);
+    }
+
+    public UUID id() {
+        return id;
+    }
+
+    /** The player linked from this seat, if they are online. */
+    public Optional<ServerPlayer> occupant() {
+        if (level == null || level.getServer() == null) {
+            return Optional.empty();
+        }
+        return level.getServer().getPlayerList().getPlayers().stream()
+                .filter(player -> Links.state(player).link().filter(link -> link.seat().filter(id::equals).isPresent()).isPresent())
+                .findFirst();
+    }
+
+    static void serverTick(Level level, BlockPos pos, BlockState state, UplinkSeatBlockEntity seat) {
+        ServerLevel server = (ServerLevel) level;
+        ServerSubLevel ship = Ships.shipAt(server, pos);
+        boolean check = level.getGameTime() % CHECK_TICKS == 0;
+        if (ship != null) {
+            seat.keepShip(server, ship, check);
+        }
+        if (check) {
+            seat.keepMirror(server);
+        }
+    }
+
+    private void keepShip(ServerLevel level, ServerSubLevel ship, boolean check) {
+        Optional<ServerPlayer> player = occupant();
+        if (player.isPresent()) {
+            ShipTickets.hold(level, ship, id);
+            BlockPos spot = Tether.freeSpotNear(level, worldPosition);
+            if (spot != null) {
+                Links.homeCarriedTo(player.get(), ship.logicalPose().transformPosition(Vec3.atBottomCenterOf(spot)));
+            }
+        } else if (check) {
+            ShipTickets.release(level, ship, id);
+        }
+    }
+
+    private void keepMirror(ServerLevel level) {
+        Optional<ServerPlayer> player = occupant();
+        if (player.isEmpty()) {
+            dropMirror();
+        } else if (mirror == null || mirror.isRemoved()) {
+            Links.state(player.get()).link()
+                    .flatMap(link -> BodySnapshot.load(link.home(), level.registryAccess()))
+                    .ifPresent(home -> mirror = BodyHost.spawn(level, Vec3.atBottomCenterOf(worldPosition.above()), HostRole.MIRROR, home.body(), player.get().getUUID()));
+        }
+    }
+
+    private void dropMirror() {
+        if (mirror != null) {
+            mirror.discard();
+            mirror = null;
+        }
+    }
+
+    /** Also runs when the chunk unloads: the mirror is not saved, and the seat builds it again when it comes back. */
+    @Override
+    public void setRemoved() {
+        dropMirror();
+        super.setRemoved();
+    }
+
+    /** How far this seat reaches now, in blocks. */
+    public double range() {
+        ServerLevel server = (ServerLevel) level;
+        ServerSubLevel ship = Ships.shipAt(server, worldPosition);
+        Vec3 here = Vec3.atCenterOf(worldPosition);
+        return Signal.range(server.getServer(), new LinkState.Place(server.dimension(), ship == null ? here : ship.logicalPose().transformPosition(here), 0f, 0f));
+    }
+
+    /** Opens the picker for {@code player}, or tells them why not. */
+    public void showPicker(ServerPlayer player) {
+        List<ShellRow> rows = Signal.rows(player);
+        if (occupant().isPresent()) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.taken"), true);
+        } else if (rows.isEmpty()) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.no_shell"), true);
+        } else {
+            PacketDistributor.sendToPlayer(player, new ShellListPayload(worldPosition, rows));
+        }
+    }
+
+    /** Takes {@code player} to {@code shell}, or tells them why not. */
+    public void connect(ServerPlayer player, UUID shell) {
+        if (occupant().isPresent()) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.taken"), true);
+            return;
+        }
+        // Before the player leaves: nothing else is keeping the ship loaded once they have.
+        ServerSubLevel ship = Ships.shipAt(player.serverLevel(), worldPosition);
+        if (ship != null) {
+            ShipTickets.hold(player.serverLevel(), ship, id);
+        }
+        Links.requestLink(player, shell, id, result -> {
+            if (result != Links.Result.LINKED) {
+                player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.failed", result.name()), true);
+            }
+        });
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putUUID(ID, id);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.hasUUID(ID)) {
+            id = tag.getUUID(ID);
+        }
+    }
+}

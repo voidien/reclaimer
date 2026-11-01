@@ -31,6 +31,7 @@ public final class Wrecks {
         shell.setRole(HostRole.WRECK);
         shell.setHealth(shell.getMaxHealth());
         shell.setDeltaMovement(Vec3.ZERO);
+        Links.note(shell);
     }
 
     private static void add(ListTag contents, ItemStack stack, HolderLookup.Provider registries) {
@@ -68,6 +69,6 @@ public final class Wrecks {
         } else {
             player.displayClientMessage(Component.translatable("message.void_reclaimer.wreck.left", taken, left.size()), true);
         }
-        player.getServer().getPlayerList().saveAll();
+        Links.saveNow(player.getServer());
     }
 }

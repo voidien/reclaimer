@@ -413,6 +413,22 @@ public final class CCPeripheralGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theUplinkSeatIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(61_000, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            var lua = new com.voidreclaimer.compat.cc.UplinkSeatPeripheral();
+            var seat = place(level, pos, ModBlocks.UPLINK_SEAT.get(), com.voidreclaimer.link.UplinkSeatBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Uplink Seat", "getSeatId", "getRange", "isOccupied", "getOccupant");
+            helper.assertTrue(lua.getRange(seat) >= com.voidreclaimer.Config.LINK_SEAT_RANGE.get(), "the seat reaches " + lua.getRange(seat));
+            helper.assertTrue(seat.id().toString().equals(lua.getSeatId(seat)), "the seat's id");
+            helper.assertTrue(!lua.isOccupied(seat) && "".equals(lua.getOccupant(seat)), "a fresh seat reads as taken");
+            level.removeBlock(pos, false);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void theDockingClampIsAPeripheral(GameTestHelper helper) {
         BlockPos pos = new BlockPos(60_800, 80, 0);
         NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {

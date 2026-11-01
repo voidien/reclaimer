@@ -57,6 +57,9 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         var clamp = models().cubeBottomTop("docking_clamp", modLoc("block/docking_clamp_side"), modLoc("block/docking_clamp_back"), modLoc("block/docking_clamp_face"));
         directionalBlock(ModBlocks.DOCKING_CLAMP.get(), clamp);
         simpleBlockItem(ModBlocks.DOCKING_CLAMP.get(), clamp);
+        var uplinkSeat = models().cubeBottomTop("uplink_seat", modLoc("block/station_core_side"), modLoc("block/station_core_bottom"), modLoc("block/station_core_top"));
+        simpleBlock(ModBlocks.UPLINK_SEAT.get(), uplinkSeat);
+        simpleBlockItem(ModBlocks.UPLINK_SEAT.get(), uplinkSeat);
         var holo = models().cubeBottomTop("holo_projector", modLoc("block/holo_projector_side"), modLoc("block/holo_projector_bottom"), modLoc("block/holo_projector_top"));
         horizontalBlock(ModBlocks.HOLO_PROJECTOR.get(), holo);
         simpleBlockItem(ModBlocks.HOLO_PROJECTOR.get(), holo);
