@@ -54,6 +54,11 @@ final class TestPlayers {
         return join(helper, profile);
     }
 
+    /** The same account every time, for a test that spans a restart: its player file is what is being checked. */
+    static ServerPlayer joinAs(GameTestHelper helper, UUID id) {
+        return join(helper, new GameProfile(id, "vr_test_restart"));
+    }
+
     private static ServerPlayer join(GameTestHelper helper, GameProfile profile) {
         MinecraftServer server = helper.getLevel().getServer();
         CommonListenerCookie cookie = CommonListenerCookie.createInitial(profile, false);

@@ -9,14 +9,14 @@ public final class FlightTracker {
     private double lastSpeed;
 
     /** Records this tick's position, dropping the oldest beyond {@code window} entries. */
-    void record(Vec3 position, int window) {
+    public void record(Vec3 position, int window) {
         positions.addLast(position);
         while (positions.size() > window) {
             positions.removeFirst();
         }
     }
 
-    int size() {
+    public int size() {
         return positions.size();
     }
 

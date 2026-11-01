@@ -95,7 +95,9 @@ jobs:
 
       - name: A crash costs what was not saved
         if: needs.changes.outputs.full == 'true'
-        run: tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
+        run: |
+          tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
+          tools/restart-test.sh main aLinkOutlivesACrash
 
       - name: Datagen output is up to date
         if: needs.changes.outputs.full == 'true'

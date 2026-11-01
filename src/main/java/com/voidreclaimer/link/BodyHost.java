@@ -5,6 +5,7 @@ import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModEntities;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
@@ -63,6 +64,27 @@ public class BodyHost extends LivingEntity {
         host.setHealth(host.getMaxHealth());
         level.addFreshEntity(host);
         return host;
+    }
+
+    /**
+     * A shell back in the world after a link: the same entity id, so a stale copy of it on disk is replaced, and the link's epoch.
+     * A copy that can be seen goes first. The level can still refuse it, for one in a chunk that is not ready, which is empty here:
+     * the caller holds the body in the outbox until then.
+     */
+    public static Optional<BodyHost> restore(ServerLevel level, LinkState.Place at, UUID id, long epoch, BodySnapshot body, @Nullable UUID owner) {
+        if (level.getEntity(id) instanceof BodyHost stale) {
+            stale.discard();
+        }
+        BodyHost host = new BodyHost(ModEntities.BODY_HOST.get(), level);
+        host.setUUID(id);
+        host.setPos(at.position());
+        host.setYRot(at.yaw());
+        host.setXRot(at.pitch());
+        host.setYBodyRot(at.yaw());
+        host.owner = owner;
+        host.epoch = epoch;
+        body.applyTo(host);
+        return level.addFreshEntity(host) ? Optional.of(host) : Optional.empty();
     }
 
     /** A new shell of {@code owner}'s in their view, far enough off for its size. Debug only: nothing in survival makes one yet. */

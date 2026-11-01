@@ -43,20 +43,42 @@ class LinkStateTest {
     }
 
     @Test
-    void anOutboxComesBackFromASaveBesideALink() {
+    void outboxesComeBackFromASaveBesideALink() {
         LinkState state = LinkState.NONE
                 .withLink(new LinkState.Link(SHELL, 7L, body(1), PLACE))
-                .withOutbox(new LinkState.Outbox(new UUID(3L, 4L), 2L, body(2), PLACE));
+                .withOutbox(new LinkState.Outbox(new UUID(3L, 4L), 2L, body(2), PLACE))
+                .withOutbox(new LinkState.Outbox(new UUID(5L, 6L), 1L, body(3), PLACE));
         assertEquals(state, throughASave(state));
     }
 
     @Test
-    void endingALinkLeavesTheOutboxAndTheOtherWayRound() {
+    void endingALinkLeavesTheOutboxesAndTheOtherWayRound() {
         LinkState.Link link = new LinkState.Link(SHELL, 7L, body(1), PLACE);
         LinkState.Outbox outbox = new LinkState.Outbox(SHELL, 8L, body(2), PLACE);
         LinkState both = LinkState.NONE.withLink(link).withOutbox(outbox);
-        assertEquals(Optional.of(outbox), both.withoutLink().outbox());
-        assertEquals(Optional.of(link), both.withoutOutbox().link());
+        assertEquals(Optional.of(outbox), both.withoutLink().outbox(SHELL));
+        assertEquals(Optional.of(link), both.withoutOutbox(SHELL).link());
+    }
+
+    /** Waking two shells before either reaches the disk must not lose the first. */
+    @Test
+    void eachShellHasItsOwnOutbox() {
+        UUID other = new UUID(3L, 4L);
+        LinkState state = LinkState.NONE
+                .withOutbox(new LinkState.Outbox(SHELL, 1L, body(1), PLACE))
+                .withOutbox(new LinkState.Outbox(other, 1L, body(2), PLACE));
+        assertEquals(2, state.outboxes().size());
+        assertTrue(state.withoutOutbox(SHELL).outbox(SHELL).isEmpty());
+        assertTrue(state.withoutOutbox(SHELL).outbox(other).isPresent());
+    }
+
+    @Test
+    void aNewerCopyOfAShellReplacesTheOlder() {
+        LinkState state = LinkState.NONE
+                .withOutbox(new LinkState.Outbox(SHELL, 1L, body(1), PLACE))
+                .withOutbox(new LinkState.Outbox(SHELL, 2L, body(2), PLACE));
+        assertEquals(1, state.outboxes().size());
+        assertEquals(2L, state.outbox(SHELL).orElseThrow().epoch());
     }
 
     @Test

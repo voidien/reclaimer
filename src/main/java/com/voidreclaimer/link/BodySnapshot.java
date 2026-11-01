@@ -45,27 +45,34 @@ public record BodySnapshot(BodyData body, EnergyData energy, TetherData tether, 
 
     /**
      * Takes what {@code player} is wearing, ready to move: it closes their screen, so this is not a way to look. Call it before
-     * anything moves the player. A stack on the cursor is in no inventory, and closing a screen with no room for it would drop
-     * it where nobody may come back for it, so it is put away here, in the body's pending items if it has to be.
+     * anything moves the player. Nothing is taken away: until a body is put on over it, the player still wears all of this.
      */
     public static BodySnapshot take(ServerPlayer player) {
-        ItemStack carried = player.containerMenu.getCarried();
-        player.containerMenu.setCarried(ItemStack.EMPTY);
-        player.closeContainer();
+        tidy(player);
         Inventory inventory = player.getInventory();
-        inventory.add(carried);
-        BodyData body = Bodies.data(player);
-        if (!carried.isEmpty()) {
-            body = body.plusPending(List.of(carried));
-        }
         ListTag items = new ListTag();
         inventory.save(items);
         ListTag effects = new ListTag();
         for (MobEffectInstance effect : player.getActiveEffects()) {
             effects.add(effect.save());
         }
-        return new BodySnapshot(body, player.getData(ModAttachments.ENERGY), restingTether(player),
+        return new BodySnapshot(Bodies.data(player), player.getData(ModAttachments.ENERGY), restingTether(player),
                 items, inventory.selected, player.getHealth(), effects);
+    }
+
+    /**
+     * Closes the player's screen with nothing left on the cursor. A stack on the cursor is in no inventory, and closing a screen
+     * with no room for it would drop it where nobody may come back for it, so it goes into the inventory or the body's pending
+     * items. Those are the player's own, so this costs nothing if the move then stops.
+     */
+    private static void tidy(ServerPlayer player) {
+        ItemStack carried = player.containerMenu.getCarried();
+        player.containerMenu.setCarried(ItemStack.EMPTY);
+        player.closeContainer();
+        player.getInventory().add(carried);
+        if (!carried.isEmpty()) {
+            Bodies.store(player, Bodies.data(player).plusPending(List.of(carried)));
+        }
     }
 
     /** What {@code host} is holding now. */

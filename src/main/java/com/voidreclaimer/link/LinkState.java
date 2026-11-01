@@ -2,6 +2,8 @@ package com.voidreclaimer.link;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.UUIDUtil;
@@ -17,11 +19,11 @@ import net.minecraft.world.phys.Vec3;
  * is dropped by NeoForge with a log line, and with it a main body; a tag always reads, and {@link BodySnapshot#load} then says
  * whether it is whole.
  *
- * @param link   the shell the player is in, if any
- * @param outbox a shell put back in the world that may not have reached the disk yet, see {@link Outbox}
+ * @param link     the shell the player is in, if any
+ * @param outboxes shells put back in the world that may not have reached the disk yet, at most one each, see {@link Outbox}
  */
-public record LinkState(Optional<Link> link, Optional<Outbox> outbox) {
-    public static final LinkState NONE = new LinkState(Optional.empty(), Optional.empty());
+public record LinkState(Optional<Link> link, List<Outbox> outboxes) {
+    public static final LinkState NONE = new LinkState(Optional.empty(), List.of());
 
     private static final Codec<ResourceKey<Level>> DIMENSION = Level.RESOURCE_KEY_CODEC;
 
@@ -73,7 +75,7 @@ public record LinkState(Optional<Link> link, Optional<Outbox> outbox) {
 
     public static final Codec<LinkState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Link.CODEC.optionalFieldOf("link").forGetter(LinkState::link),
-            Outbox.CODEC.optionalFieldOf("outbox").forGetter(LinkState::outbox)
+            Outbox.CODEC.listOf().lenientOptionalFieldOf("outboxes", List.of()).forGetter(LinkState::outboxes)
     ).apply(instance, LinkState::new));
 
     public boolean linked() {
@@ -81,18 +83,26 @@ public record LinkState(Optional<Link> link, Optional<Outbox> outbox) {
     }
 
     public LinkState withLink(Link value) {
-        return new LinkState(Optional.of(value), outbox);
+        return new LinkState(Optional.of(value), outboxes);
     }
 
     public LinkState withoutLink() {
-        return new LinkState(Optional.empty(), outbox);
+        return new LinkState(Optional.empty(), outboxes);
     }
 
+    /** The copy of {@code shell} waiting for the disk, if any. */
+    public Optional<Outbox> outbox(UUID shell) {
+        return outboxes.stream().filter(outbox -> outbox.shell().equals(shell)).findFirst();
+    }
+
+    /** Replaces any older copy of the same shell. */
     public LinkState withOutbox(Outbox value) {
-        return new LinkState(link, Optional.of(value));
+        List<Outbox> all = new ArrayList<>(withoutOutbox(value.shell()).outboxes);
+        all.add(value);
+        return new LinkState(link, List.copyOf(all));
     }
 
-    public LinkState withoutOutbox() {
-        return new LinkState(link, Optional.empty());
+    public LinkState withoutOutbox(UUID shell) {
+        return new LinkState(link, outboxes.stream().filter(outbox -> !outbox.shell().equals(shell)).toList());
     }
 }

@@ -293,6 +293,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
         add("commands.void_reclaimer.link.unknown", "No body called %s");
+        add("commands.void_reclaimer.link.not_a_shell", "That is not a shell");
+        add("commands.void_reclaimer.link.result", "Link: %s");
+        add("commands.void_reclaimer.link.status.home", "In the main body");
+        add("commands.void_reclaimer.link.status.linked", "In shell %s, link %s; main body in %s at %s");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");
         add("commands.void_reclaimer.scene.unknown", "No test scene called %s");
         add("replicator.void_reclaimer.assembly", "3D view");
