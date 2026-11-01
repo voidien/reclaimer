@@ -73,11 +73,12 @@ jobs:
       - name: Build and unit tests
         run: ./gradlew build --stacktrace
 
-      - name: Art tool tests (offline, fake Retro Diffusion server)
+      - name: Tool tests (offline, fake Retro Diffusion server)
         run: |
           python3 tools/art/test_rd_generate.py
           python3 tools/art/test_rig_check.py
           python3 tools/art/test_anim_slice.py
+          python3 tools/test_progress_fold.py
 
       - name: GameTests
         if: needs.changes.outputs.full == 'true'

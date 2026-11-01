@@ -10,6 +10,7 @@ First audit: 2026-10-31, on `main` at 081141a. The owner approved all findings o
 
 ## Status
 - F1: done (`tools/land.sh`).
+- F2: done (`docs/progress/`, `tools/progress_fold.py`). Pays off as fewer merges of `main`: check the count on the next audit (34 for 115 PRs before).
 - Everything else: in progress.
 
 ## Top 3 changes by payoff
