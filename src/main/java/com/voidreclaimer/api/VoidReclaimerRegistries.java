@@ -38,6 +38,8 @@ public final class VoidReclaimerRegistries {
     public static final ResourceKey<Registry<com.voidreclaimer.api.terraform.TerraformProfile>> TERRAFORM_PROFILE = key("terraform_profile");
     /** Code registry: what tool modules do. */
     public static final ResourceKey<Registry<ToolModuleType>> TOOL_MODULE_TYPE = key("tool_module_type");
+    /** Code registry: what a Holo Projector can show as a readout. */
+    public static final ResourceKey<Registry<com.voidreclaimer.api.holo.HoloReadout<?>>> HOLO_READOUT = key("holo_readout");
     /** Code registry: the codecs of milestone criterion types, by the {@code type} name used in JSON. */
     public static final ResourceKey<Registry<MapCodec<? extends MilestoneCriterion>>> MILESTONE_CRITERION_TYPE =
             key("milestone_criterion_type");

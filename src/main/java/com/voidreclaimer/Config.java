@@ -131,6 +131,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue RCS_FE_PER_TICK;
     public static final ModConfigSpec.IntValue RCS_FE_BUFFER;
 
+    public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
     public static final ModConfigSpec.IntValue SPIRE_RADIUS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
 
@@ -360,6 +361,11 @@ public final class Config {
         RCS_THRUST = BUILDER.comment("Force of an RCS Thruster at full throttle.").defineInRange("rcsThrust", 40.0, 0.0, 1_000_000.0);
         RCS_FE_PER_TICK = BUILDER.comment("Forge Energy per tick an RCS Thruster uses at full throttle.").defineInRange("rcsFePerTick", 20, 0, 1_000_000);
         RCS_FE_BUFFER = BUILDER.comment("Forge Energy an RCS Thruster can hold.").defineInRange("rcsFeBuffer", 2000, 1, 100_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("Holo Projector.").push("holo");
+        toggle("holoProjector", "The Replicator can make the Holo Projector.");
+        HOLO_REFRESH_TICKS = BUILDER.comment("Ticks between refreshes of a projector showing a readout.").defineInRange("refreshTicks", 10, 1, 1200);
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");

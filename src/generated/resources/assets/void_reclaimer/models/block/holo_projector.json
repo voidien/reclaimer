@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "void_reclaimer:block/holo_projector_bottom",
+    "side": "void_reclaimer:block/holo_projector_side",
+    "top": "void_reclaimer:block/holo_projector_top"
+  }
+}

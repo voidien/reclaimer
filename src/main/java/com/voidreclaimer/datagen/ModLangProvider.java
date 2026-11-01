@@ -96,6 +96,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.HELM.get(), "Helm");
         add("entity.void_reclaimer.helm_seat", "Helm Seat");
         add(ModItems.STATION_CORE.get(), "Station Core");
+        add(ModItems.HOLO_PROJECTOR.get(), "Holo Projector");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
         add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
         add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
@@ -113,6 +114,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.docking_clamp", "Build it into a station with its face outward. A ship that touches the face, level and square to the station, is docked while the clamp is powered (or on sneak-use): its blocks join the station and move with it. Power off, or sneak-use again, lets it go as its own ship.");
         add("container.void_reclaimer.station", "Station");
         add("hud.void_reclaimer.station_marker", "%s %sm");
+        add("message.void_reclaimer.holo.source", "Showing: %s");
+        add("commands.void_reclaimer.holo.not_a_projector", "No Holo Projector there.");
+        add("holo_readout.void_reclaimer.clock", "Mission clock");
         add("message.void_reclaimer.station.assembled", "Station %s assembled.");
         add("message.void_reclaimer.station.disassembled", "Station %s set down.");
         add("message.void_reclaimer.station.already_assembled", "This is already a station.");
@@ -649,6 +653,7 @@ public final class ModLangProvider extends LanguageProvider {
     /** One short gameplay hint per built-in Replicator recipe (not lore); a recipe's own {@code description} overrides it. */
     private void addReplicatorDescriptions() {
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
+        add("replicator.void_reclaimer.description.holo_projector", "Shows up to eight lines of text in the air above itself. Write to it from a computer or a Create Display Link, or sneak-use it with an empty hand to pick a built-in readout.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");
         add("replicator.void_reclaimer.description.terraforming_spire", "Fires the Genesis Pulse: a wave sweeps out over 256 by 256 blocks of ruined Earth, turning Ashen Slag into soil and the biome into plains. Right-click it, or power it with redstone.");
         add("replicator.void_reclaimer.description.chemical_thruster", "Pushes a block ship. Build it into the ship with the nozzle pointing away from where you want to go, turn it with a shaft, pipe in Nebulite Propellant, and open the throttle with redstone.");

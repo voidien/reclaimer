@@ -4,12 +4,17 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.compat.cc.CCCompat;
 import com.voidreclaimer.compat.cc.DysonPeripheral;
 import com.voidreclaimer.compat.cc.HelmPeripheral;
+import com.voidreclaimer.compat.cc.HoloPeripheral;
 import com.voidreclaimer.compat.cc.MachinePeripheral;
 import com.voidreclaimer.compat.cc.SpawnTravelPeripherals;
 import com.voidreclaimer.compat.cc.SpirePeripheral;
 import com.voidreclaimer.compat.cc.ThrusterPeripheral;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
+import com.voidreclaimer.display.HoloDisplay;
+import com.voidreclaimer.display.HoloProjectorBlockEntity;
 import com.voidreclaimer.dyson.DysonSphereData;
+import dan200.computercraft.api.lua.LuaException;
+import dan200.computercraft.api.lua.ObjectArguments;
 import com.voidreclaimer.launch.LaunchComplex;
 import com.voidreclaimer.launch.LaunchControllerBlockEntity;
 import com.voidreclaimer.launch.LaunchPad;
@@ -37,6 +42,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -408,6 +414,58 @@ public final class CCPeripheralGameTests {
             helper.assertTrue("nothing".equals(lua.assemble(core)), "assembling a lone core: " + lua.assemble(core));
             helper.assertTrue("not_assembled".equals(lua.disassemble(core)), "disassembling a core in the world: " + lua.disassemble(core));
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theHoloProjectorIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_900, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloPeripheral lua = new HoloPeripheral();
+            HoloProjectorBlockEntity holo = HoloGameTests.place(level, pos);
+            requireMethods(helper, Lookup.of(level, pos), "Holo Projector", "getLines", "getLine", "setLine", "setLines", "clear", "setColor",
+                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "getMode", "getSource", "setSource", "getSources", "getSize");
+            try {
+                Object[] written = lua.setLine(holo, new ObjectArguments(2.0, "two", "red")).getResult();
+                helper.assertTrue(Boolean.TRUE.equals(written[0]), "setLine refused");
+                helper.assertTrue("two".equals(lua.getLine(holo, 2)), "lines count from 1 in Lua: " + lua.getLines(holo));
+                helper.assertTrue(holo.display().lines().get(1).color() == DyeColor.RED.getTextColor(), "the dye name was not used");
+                Object[] past = lua.setLine(holo, new ObjectArguments(9.0, "no")).getResult();
+                helper.assertTrue(Boolean.FALSE.equals(past[0]) && "no_such_line".equals(past[1]), "line 9 " + Arrays.toString(past));
+                lua.setColor(holo, new ObjectArguments("#123456"));
+                helper.assertTrue(holo.display().color() == 0x123456, "setColor " + holo.display().color());
+                boolean refused = false;
+                try {
+                    lua.setColor(holo, new ObjectArguments("plaid"));
+                } catch (LuaException e) {
+                    refused = true;
+                }
+                helper.assertTrue(refused, "setColor took a colour that is none");
+            } catch (LuaException e) {
+                throw new IllegalStateException(e);
+            }
+            lua.setLines(holo, Map.of(1.0, "a", 2.0, "b"));
+            helper.assertTrue(lua.getLines(holo).equals(List.of("a", "b")), "setLines " + lua.getLines(holo));
+            lua.clear(holo);
+            helper.assertTrue(lua.getLines(holo).isEmpty(), "clear " + lua.getLines(holo));
+            lua.setScale(holo, 99);
+            helper.assertTrue(lua.getScale(holo) == HoloDisplay.MAX_SCALE, "setScale " + lua.getScale(holo));
+            lua.setHeight(holo, 2);
+            helper.assertTrue(lua.getHeight(holo) == 2, "setHeight " + lua.getHeight(holo));
+            lua.setBillboard(holo, false);
+            helper.assertTrue(!holo.display().billboard(), "setBillboard");
+            helper.assertTrue("text".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
+            helper.assertTrue(lua.getSources(holo).contains("void_reclaimer:clock"), "getSources " + lua.getSources(holo));
+            Object[] unknown = lua.setSource(holo, "void_reclaimer:nope").getResult();
+            helper.assertTrue(Boolean.FALSE.equals(unknown[0]) && "text".equals(lua.getMode(holo)), "an unknown source was taken");
+            Object[] known = lua.setSource(holo, "clock").getResult();
+            helper.assertTrue(Boolean.TRUE.equals(known[0]) && "readout".equals(lua.getMode(holo)), "a bare id means our namespace");
+            helper.assertTrue("void_reclaimer:clock".equals(lua.getSource(holo)), "getSource " + lua.getSource(holo));
+            helper.assertTrue(!lua.getLines(holo).isEmpty(), "the readout composed nothing");
+            Object[] size = lua.getSize(holo).getResult();
+            helper.assertTrue(Integer.valueOf(HoloDisplay.MAX_LINES).equals(size[0]) && Integer.valueOf(HoloDisplay.MAX_CHARS).equals(size[1]), "getSize");
             helper.succeed();
         });
     }

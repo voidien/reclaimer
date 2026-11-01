@@ -27,6 +27,9 @@ public final class ModRegistries {
     public static final Registry<ToolModuleType> TOOL_MODULE_TYPES =
             new RegistryBuilder<>(VoidReclaimerRegistries.TOOL_MODULE_TYPE).sync(true).create();
 
+    public static final Registry<com.voidreclaimer.api.holo.HoloReadout<?>> HOLO_READOUTS =
+            new RegistryBuilder<>(VoidReclaimerRegistries.HOLO_READOUT).create();
+
     private ModRegistries() {}
 
     public static void register(IEventBus modBus) {
@@ -34,10 +37,12 @@ public final class ModRegistries {
         modBus.addListener(ModRegistries::onNewDatapackRegistries);
         MilestoneCriteria.TYPES.register(modBus);
         ToolModules.TYPES.register(modBus);
+        com.voidreclaimer.display.ReadoutKinds.KINDS.register(modBus);
     }
 
     private static void onNewRegistries(NewRegistryEvent event) {
         event.register(MILESTONE_CRITERION_TYPES);
+        event.register(HOLO_READOUTS);
         event.register(TOOL_MODULE_TYPES);
     }
 

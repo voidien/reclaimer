@@ -14,6 +14,9 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<BackupCoreBlockEntity>> BACKUP_CORE = BLOCK_ENTITIES.register("backup_core",
             () -> BlockEntityType.Builder.of(BackupCoreBlockEntity::new, ModBlocks.BACKUP_CORE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.display.HoloProjectorBlockEntity>> HOLO_PROJECTOR = BLOCK_ENTITIES.register("holo_projector",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.display.HoloProjectorBlockEntity::new, ModBlocks.HOLO_PROJECTOR.get()).build(null));
+
     public static final Supplier<BlockEntityType<com.voidreclaimer.machine.ElectrolyzerBlockEntity>> ELECTROLYZER = BLOCK_ENTITIES.register("electrolyzer",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.machine.ElectrolyzerBlockEntity::new, ModBlocks.ELECTROLYZER.get()).build(null));
 

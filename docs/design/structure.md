@@ -29,6 +29,7 @@ src/main/java/com/voidreclaimer/
 │   ├── part/                     SectionItem, ModuleItem
 │   └── assembly/                 (5b) 3D assembly view logic
 ├── starship/                     Test Starship placeholder entity (RD model/animation check), StarshipDrift
+├── display/                      Holo Projector: HoloDisplay, block and block entity, Readouts, ReadoutKinds
 ├── asteroid/                     Phase 6: AsteroidField/AsteroidBody (pure), AsteroidChunkGenerator, AsteroidBlock, Drilling
 ├── machine/                      Phase 7: machine blocks, block entities, menus, transport
 ├── station/                      Phase 8: multiblock validation & controllers
