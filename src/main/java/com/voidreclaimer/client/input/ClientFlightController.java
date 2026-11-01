@@ -74,6 +74,9 @@ public final class ClientFlightController {
         while (ModKeyMappings.TOGGLE_RCS_LOCK.consumeClick()) {
             PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.RCS_LOCK));
         }
+        while (ModKeyMappings.TOGGLE_AIM_STEERING.consumeClick()) {
+            PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.AIM_STEERING));
+        }
         while (ModKeyMappings.TOGGLE_DAMPENER.consumeClick()) {
             PacketDistributor.sendToServer(new ToggleFlightSettingPayload(ToggleFlightSettingPayload.Setting.DAMPENER));
         }

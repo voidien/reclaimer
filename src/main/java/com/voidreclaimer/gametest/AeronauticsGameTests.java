@@ -43,6 +43,8 @@ public final class AeronauticsGameTests {
     private static final double STOPPED = 0.6;
     /** How long the holds get to stop the shoved ship: 8 s. */
     private static final int HOLD_TICKS = 160;
+    /** How long a turn test steers before it reads where the ship points. */
+    private static final int TURN_TICKS = 60;
     private static final double STOPPED_SPIN = 0.15;
     private static final int SETTLE_TICKS = 10;
     private static final int SAMPLE_TICKS = 40;
@@ -778,6 +780,114 @@ public final class AeronauticsGameTests {
      * Helm brings it to a stop without any key held. With both off it keeps drifting and spinning.
      */
     private static void holdShip(GameTestHelper helper, BlockPos pos, boolean holdsOn, java.util.function.Consumer<List<String>> then) {
+        holdShip(helper, pos, holdsOn, (player, ship) -> {
+            // The shove and the spin, straight into the physics body.
+            dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship).addLinearAndAngularVelocity(new org.joml.Vector3d(0, 0, -3), new org.joml.Vector3d(0, 1.0, 0));
+        }, then);
+    }
+
+    /**
+     * Runs {@code step} for {@code ticks} ticks, then {@code done}. One task at a time: the test's task map is walked while tasks run,
+     * so queuing many at once makes it grow mid-walk, which runs the current task over again.
+     */
+    private static void eachTick(GameTestHelper helper, int ticks, Runnable step, Runnable done) {
+        if (ticks <= 0) {
+            done.run();
+            return;
+        }
+        step.run();
+        helper.runAfterDelay(1, () -> eachTick(helper, ticks - 1, step, done));
+    }
+
+    /** Tells a real ship to turn for a while, then reports where its nose and right wing point, in the world. */
+    private static void turnTest(GameTestHelper helper, BlockPos pos, int ticks, java.util.function.Consumer<ServerPlayer> everyTick, java.util.function.Consumer<ServerPlayer> first,
+                                 java.util.function.BiConsumer<org.joml.Vector3d, org.joml.Vector3d> check) {
+        org.joml.Vector3d nose = new org.joml.Vector3d();
+        org.joml.Vector3d wing = new org.joml.Vector3d();
+        holdShip(helper, pos, true, (player, ship) -> {
+            first.accept(player);
+            eachTick(helper, ticks, () -> everyTick.accept(player), () -> {
+                com.voidreclaimer.ship.Ships.orientation(ship).transform(new org.joml.Vector3d(0, 0, -1), nose);
+                com.voidreclaimer.ship.Ships.orientation(ship).transform(new org.joml.Vector3d(1, 0, 0), wing);
+            });
+        }, log -> {
+            check.accept(nose, wing);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theMouseTurnsTheShipAtTheHelm(GameTestHelper helper) {
+        turnTest(helper, new BlockPos(107_000, 200, 3_000), TURN_TICKS,
+                player -> player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f)),
+                player -> {},
+                (nose, wing) -> helper.assertTrue(nose.x > 0.1, "moving the mouse right should swing the nose east: " + nose));
+    }
+
+    /** The review's case: with both engines wide open on W, a turn has to throttle one back, and this ship has nothing else to turn with. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theMouseStillTurnsAShipUnderFullThrust(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(150_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int chunks = 0; chunks <= 8; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) - chunks, true);
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) + chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            command(server, space, pos, "fill " + (x - 3) + " " + y + " " + z + " " + (x + 3) + " " + y + " " + z + " minecraft:iron_block");
+            command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]");
+            command(server, space, pos, "setblock " + x + " " + (y - 1) + " " + z + " minecraft:stone");
+            // Two engines far apart, pushing north, and nothing else.
+            List<BlockPos> engines = List.of(new BlockPos(x - 3, y, z + 1), new BlockPos(x + 3, y, z + 1));
+            for (BlockPos engine : engines) {
+                command(server, space, pos, "setblock " + engine.getX() + " " + engine.getY() + " " + engine.getZ() + " void_reclaimer:ion_thruster[facing=south]");
+                ((com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(engine)).energy().receiveEnergy(8000, false);
+            }
+            helper.runAfterDelay(10, () -> {
+                command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z);
+                helper.runAfterDelay(1, () -> {
+                    nameShip(server, space, pos);
+                    ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.of(true, false, false, false, false, false, false, false, false, false, false, false));
+                    var ship = shipNamed(space, pos);
+                    eachTick(helper, TURN_TICKS, () -> player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f)), () -> {
+                        org.joml.Vector3d nose = com.voidreclaimer.ship.Ships.orientation(ship).transform(new org.joml.Vector3d(0, 0, -1));
+                        removeShip(server, space, pos);
+                        TestPlayers.remove(player);
+                        helper.assertTrue(nose.x > 0.1, "full thrust stopped the mouse turning the ship: " + nose);
+                        helper.succeed();
+                    });
+                });
+            });
+        });
+    }
+
+    /** Looking east with the aim mode on: the ship comes round by itself, with no mouse movement at all. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theAimModeSwingsTheShipToTheView(GameTestHelper helper) {
+        turnTest(helper, new BlockPos(108_000, 200, 3_000), TURN_TICKS,
+                player -> {
+                    player.setYRot(-90f);
+                    player.setXRot(0f);
+                },
+                player -> player.setData(com.voidreclaimer.registry.ModAttachments.FLIGHT_SETTINGS, player.getData(com.voidreclaimer.registry.ModAttachments.FLIGHT_SETTINGS).withAimSteering(true)),
+                (nose, wing) -> helper.assertTrue(nose.x > 0.1, "looking east should swing the nose east: " + nose));
+    }
+
+    /** The direction on a real ship: the key's name, not just some jet opening. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theRollKeyRollsTheShipThatWay(GameTestHelper helper) {
+        // Soon after the key: jets this strong roll past 180 degrees within a few seconds, and then the sign says nothing.
+        turnTest(helper, new BlockPos(109_000, 200, 3_000), 15, player -> {},
+                player -> player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_INPUT, com.voidreclaimer.ship.PilotInput.of(false, false, false, false, false, false, true, false, false, false, false, false)),
+                (nose, wing) -> helper.assertTrue(wing.y < -0.02 && wing.x > 0.0, "roll right should drop the right wing: " + wing));
+    }
+
+    /** A ship with engines and jets, its pilot seated, and {@code act} run once it is ready. */
+    private static void holdShip(GameTestHelper helper, BlockPos pos, boolean holdsOn, java.util.function.BiConsumer<ServerPlayer, dev.ryanhcode.sable.sublevel.ServerSubLevel> act,
+                                 java.util.function.Consumer<List<String>> then) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
@@ -821,11 +931,8 @@ public final class AeronauticsGameTests {
                     ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
                     player.setData(com.voidreclaimer.registry.ModAttachments.FLIGHT_SETTINGS,
                             com.voidreclaimer.flight.FlightSettings.DEFAULT.withDampener(holdsOn).withRcsLock(holdsOn));
-                    // The shove and the spin, straight into the physics body.
-                    var ship = shipNamed(space, pos);
-                    var body = dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship);
-                    body.addLinearAndAngularVelocity(new org.joml.Vector3d(0, 0, -3), new org.joml.Vector3d(0, 1.0, 0));
-                    log.add("shoved");
+                    act.accept(player, shipNamed(space, pos));
+                    log.add("acted");
                     helper.runAfterDelay(HOLD_TICKS, () -> {
                         List<String> info = command(server, space, pos, "sable info " + shipSelector(pos));
                         removeShip(server, space, pos);

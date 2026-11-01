@@ -3,6 +3,7 @@ package com.voidreclaimer.ship;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 class ShipCameraMathTest {
@@ -41,5 +42,15 @@ class ShipCameraMathTest {
     void lookingStraightAlongTheShipsUpKeepsTheLastRoll() {
         // A level ship's up is straight up; a pilot looking straight up has no horizon to roll against.
         assertEquals(7f, ShipCameraMath.roll(new Quaterniond(), NORTH, -90f, 7f), EPS);
+    }
+
+    @Test
+    void theViewFollowsTheNose() {
+        assertEquals(0f, ShipCameraMath.yaw(new Vector3d(0, 0, 1)), 1e-3f, "south");
+        assertEquals(90f, Math.abs(ShipCameraMath.yaw(new Vector3d(-1, 0, 0))), 1e-3f);
+        assertEquals(90f, ShipCameraMath.yaw(new Vector3d(-1, 0, 0)), 1e-3f, "west");
+        assertEquals(-90f, ShipCameraMath.yaw(new Vector3d(1, 0, 0)), 1e-3f, "east");
+        assertEquals(-45f, ShipCameraMath.pitch(new Vector3d(0, 1, 1)), 1e-3f, "up is negative");
+        assertEquals(45f, ShipCameraMath.pitch(new Vector3d(1, -1, 0)), 1e-3f, "down is positive");
     }
 }

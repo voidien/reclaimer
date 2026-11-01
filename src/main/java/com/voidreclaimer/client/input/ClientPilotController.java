@@ -1,6 +1,8 @@
 package com.voidreclaimer.client.input;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.network.PilotMousePayload;
+import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.network.PilotInputPayload;
 import com.voidreclaimer.ship.HelmSeat;
 import com.voidreclaimer.ship.PilotInput;
@@ -11,6 +13,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -21,6 +24,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class ClientPilotController {
     private static PilotInput last = PilotInput.NONE;
+    private static double lastMouseX;
+    private static double lastMouseY;
+    private static boolean haveMouse;
     private static volatile com.voidreclaimer.ship.HelmBlockEntity.Readout readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
 
     private ClientPilotController() {}
@@ -44,12 +50,48 @@ public final class ClientPilotController {
         readout = payload.readout();
     }
 
+    /** In direct steering the mouse turns the ship, so it must not turn the view as well. Holding Free Look gives it back. */
+    @SubscribeEvent
+    static void onPlayerTurn(CalculatePlayerTurnEvent event) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && steersWithMouse(player)) {
+            event.setMouseSensitivity(com.voidreclaimer.client.camera.OrbitCamera.NO_TURN);
+        }
+    }
+
+    /** Whether the mouse steers the ship now, so the view belongs to the nose. */
+    public static boolean steersWithMouse(LocalPlayer player) {
+        return isPiloting(player) && !player.getData(ModAttachments.FLIGHT_SETTINGS).aimSteering() && !ModKeyMappings.FREE_LOOK.isDown()
+                && !com.voidreclaimer.client.camera.OrbitCamera.orbiting();
+    }
+
+    /** Sends how far the mouse moved, in the degrees it would have turned the view. */
+    private static void sendMouse(LocalPlayer player, Minecraft mc) {
+        double x = mc.mouseHandler.xpos();
+        double y = mc.mouseHandler.ypos();
+        // No jump on sitting down or closing a menu: grabbing the mouse recentres it.
+        boolean counted = haveMouse;
+        double dx = x - lastMouseX;
+        double dy = y - lastMouseY;
+        lastMouseX = x;
+        lastMouseY = y;
+        haveMouse = steersWithMouse(player) && mc.screen == null && mc.isWindowActive();
+        if (!counted || !haveMouse || (dx == 0.0 && dy == 0.0)) {
+            return;
+        }
+        double feel = mc.options.sensitivity().get() * 0.6 + 0.2;
+        double degrees = feel * feel * feel * 8.0 * 0.15;
+        float up = (float) (-dy * degrees) * (mc.options.invertYMouse().get() ? -1f : 1f);
+        PacketDistributor.sendToServer(new PilotMousePayload((float) (dx * degrees), up));
+    }
+
     @SubscribeEvent
     static void onMovementInput(MovementInputUpdateEvent event) {
         if (!(event.getEntity() instanceof LocalPlayer player)) {
             return;
         }
         if (!isPiloting(player)) {
+            haveMouse = false;
             send(player, PilotInput.NONE);
             readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
             return;
@@ -61,6 +103,7 @@ public final class ClientPilotController {
                 ModKeyMappings.PITCH_UP.isDown(), ModKeyMappings.PITCH_DOWN.isDown(),
                 ModKeyMappings.YAW_LEFT.isDown(), ModKeyMappings.YAW_RIGHT.isDown());
         send(player, now);
+        sendMouse(player, mc);
         // The seat holds the pilot: none of this should walk, jump or dismount.
         input.forwardImpulse = 0f;
         input.leftImpulse = 0f;

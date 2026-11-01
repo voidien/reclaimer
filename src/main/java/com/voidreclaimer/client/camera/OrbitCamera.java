@@ -22,6 +22,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 public final class OrbitCamera {
     private static final OrbitState STATE = new OrbitState();
     private static boolean held;
+    /** Vanilla's mouse turn is the cube of this sum, sensitivity x 0.6 + 0.2, so this gives no turn at all. */
+    public static final double NO_TURN = -1.0 / 3.0;
     private static double lastX;
     private static double lastY;
     private static boolean haveLast;
@@ -78,7 +80,7 @@ public final class OrbitCamera {
     @SubscribeEvent
     static void onTurn(CalculatePlayerTurnEvent event) {
         if (held) {
-            event.setMouseSensitivity(0.0);
+            event.setMouseSensitivity(NO_TURN);
         }
     }
 

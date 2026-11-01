@@ -153,6 +153,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.launch.failed", "The launch complex could not be assembled.");
         add("replicator.void_reclaimer.description.station_core", "The heart of a station. Build it into a hull and sneak-use it: everything connected becomes one floating station, named after the core. Right-click opens the station's chest. The Replicator works faster nearby, and a Backup Core aboard respawns you wherever the station has moved to.");
         add("key.void_reclaimer.toggle_rcs_lock", "Toggle RCS Lock (ship)");
+        add("key.void_reclaimer.toggle_aim_steering", "Switch Helm Steering (mouse or aim)");
+        add("key.void_reclaimer.free_look", "Free Look (hold, at the Helm)");
+        add("message.void_reclaimer.mouse_steering", "Helm steering: the mouse turns the ship");
+        add("message.void_reclaimer.aim_steering", "Helm steering: the ship swings to where you look");
         add("message.void_reclaimer.rcs_lock_on", "RCS lock: ON. The ship holds its heading.");
         add("message.void_reclaimer.rcs_lock_off", "RCS lock: OFF. The ship keeps spinning until you stop it.");
         add("key.void_reclaimer.roll_left", "Ship: Roll Left");

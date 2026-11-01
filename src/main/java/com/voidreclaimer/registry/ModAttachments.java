@@ -130,6 +130,10 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<com.voidreclaimer.ship.PilotInput>> PILOT_INPUT = ATTACHMENT_TYPES.register("pilot_input",
             () -> AttachmentType.builder(() -> com.voidreclaimer.ship.PilotInput.NONE).build());
 
+    /** Server-only, transient: mouse movement at a Helm since the Helm last read it, sent by the client while steering. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.ship.PilotMouse>> PILOT_MOUSE = ATTACHMENT_TYPES.register("pilot_mouse",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.ship.PilotMouse.NONE).build());
+
     /** Server-only, transient: sensor pulse cooldown and the pending echo. */
     public static final Supplier<AttachmentType<SensorState>> SENSOR_STATE = ATTACHMENT_TYPES.register("sensor_state",
             () -> AttachmentType.builder(SensorState::new).build());
