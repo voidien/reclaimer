@@ -142,15 +142,19 @@ class BodyRigMountsTest {
     }
 
     @Test
-    void theMechsShoulderSensorsClearItsHeadAndDoNotTurnWithIt() throws Exception {
-        JsonObject rig = json("body_rigs/mech.json");
-        Map<String, Bone> bones = bones(rig);
-        Map<String, double[]> points = mounts(rig, bones);
-        double headEdge = bones.get("head").cubes().stream().mapToDouble(cube -> Math.max(Math.abs(cube.from()[0]), Math.abs(cube.to()[0]))).max().orElseThrow();
+    void theMechsThrusterPodsGoWithItsArms() throws Exception {
+        JsonObject sockets = json("body_rigs/mech.json").getAsJsonObject("sockets");
+        assertTrue(sockets.getAsJsonArray("left_upper_arm").toString().contains("thruster_l"), "the left pod would float with no arm");
+        assertTrue(sockets.getAsJsonArray("right_upper_arm").toString().contains("thruster_r"), "the right pod would float with no arm");
+    }
+
+    @Test
+    void theMechsSensorsSitSmallOnItsHead() throws Exception {
+        JsonObject mounts = json("body_rigs/mech.json").getAsJsonObject("mounts");
         for (String name : List.of("head__mount_sensor_1", "head__mount_sensor_2")) {
-            double innerEdge = Math.abs(points.get(name)[0]) - MODULE_HALF_WIDTH;
-            assertTrue(innerEdge > headEdge, name + ": the module's inner edge is at " + innerEdge + ", the head's at " + headEdge);
-            assertEquals("chest", rig.getAsJsonObject("mounts").getAsJsonObject(name).get("bone").getAsString(), "a shoulder piece stays with the shoulders");
+            JsonObject mount = mounts.getAsJsonObject(name);
+            assertEquals("head", mount.get("bone").getAsString(), name + " should turn with the head");
+            assertTrue(mount.get("scale").getAsDouble() * MODULE_HEIGHT <= 3.12, name + " would stand taller than the head");
         }
     }
 }

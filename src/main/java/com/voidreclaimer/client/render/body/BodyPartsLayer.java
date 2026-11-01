@@ -53,11 +53,14 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         if (!section.isEmpty() && !name.equals(view.data().coreSocket()) && view.chassis().socket(name) != null) {
             poseStack.pushPose();
             moveToPivot(poseStack, bone);
-            if (view.chassis().socket(name).mirror()) {
+            boolean mirrored = view.chassis().socket(name).mirror();
+            if (mirrored) {
                 poseStack.scale(-1f, 1f, 1f);
             }
+            BodyRenderer.setMirrored(mirrored);
             drawPart("section", section, name, BodyRenderer.isGhost(name), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             drawInnerModules(name, section, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
+            BodyRenderer.setMirrored(false);
             poseStack.popPose();
         }
         BodyData.Mount mount = frame.rigMountBones().get(name);
@@ -90,6 +93,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             // Offsets use the axes of the pivots in the .geo.json file, where x is mirrored against the rendered model.
             poseStack.translate(-place.x() / 16f, place.y() / 16f, place.z() / 16f);
             poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(place.yaw()));
+            poseStack.scale(place.scale(), place.scale(), place.scale());
             drawPart("module", module, entry.mount().socket(), BodyRenderer.isGhost(entry.mount()), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
             poseStack.popPose();
         }

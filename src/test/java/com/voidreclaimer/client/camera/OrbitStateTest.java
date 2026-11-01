@@ -57,6 +57,15 @@ class OrbitStateTest {
     }
 
     @Test
+    void holdingTheCameraPastHalfWayRoundDoesNotSpinTheBlend() {
+        OrbitState state = new OrbitState();
+        state.tick(true, 179 / OrbitState.SENSITIVITY, 0);
+        state.tick(true, 2 / OrbitState.SENSITIVITY, 0);
+        assertEquals(-179f, state.yaw(1f), 1e-2f, "the yaw wraps");
+        assertEquals(180f, Math.abs(state.yaw(0.5f)), 1e-2f, "half a tick in, the blend is between the two sides, not across the circle");
+    }
+
+    @Test
     void theReturnTakesTheShortWayRound() {
         OrbitState state = new OrbitState();
         state.tick(true, 170 / OrbitState.SENSITIVITY, 0);
