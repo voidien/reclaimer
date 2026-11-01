@@ -34,6 +34,8 @@ public class BodyHost extends LivingEntity {
     private static final EntityDataAccessor<Integer> ROLE = SynchedEntityData.defineId(BodyHost.class, EntityDataSerializers.INT);
     /** Blocks ahead per unit of scale, with one to spare: long bodies such as the Shuttle reach far past their hit box. */
     private static final double AHEAD = 4.0;
+    private static final int STALE_CHECK_TICKS = 20;
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     /** Which link this copy belongs to: after a crash, a copy with an old epoch knows it is stale. */
     private long epoch;
@@ -103,6 +105,24 @@ public class BodyHost extends LivingEntity {
         }
         Bodies.apply(this);
         refreshDimensions();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() == HostRole.SHELL && Links.stale(this)) {
+            LOGGER.info("Shell {} was an old copy and has been removed", getUUID());
+            Outboxes.lookAgain(getUUID());
+            discard();
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!level().isClientSide && reason == RemovalReason.KILLED && role() == HostRole.SHELL) {
+            Links.destroyed(this);
+        }
+        super.remove(reason);
     }
 
     /** The scale is a modifier that is not saved, so a host loaded from disk has to put it back. */
