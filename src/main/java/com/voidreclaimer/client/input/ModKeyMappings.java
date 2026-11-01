@@ -23,6 +23,10 @@ public final class ModKeyMappings {
     public static final KeyMapping RECALL = new KeyMapping("key.void_reclaimer.recall",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY);
 
+    /** Leaves a shell and goes home (H for home). */
+    public static final KeyMapping UNLINK = new KeyMapping("key.void_reclaimer.unlink",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, CATEGORY);
+
     public static final KeyMapping CLOUD_SCANNER = new KeyMapping("key.void_reclaimer.cloud_scanner",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, CATEGORY);
 
@@ -68,6 +72,7 @@ public final class ModKeyMappings {
         event.register(REPLICATOR);
         event.register(RECALL);
         event.register(CLOUD_SCANNER);
+        event.register(UNLINK);
         event.register(MODULE_WHEEL);
         event.register(ORBIT_CAMERA);
         event.register(PHOTO_MODE);
