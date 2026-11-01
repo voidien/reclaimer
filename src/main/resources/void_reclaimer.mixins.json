@@ -11,6 +11,8 @@
     "GameTestChunkTasksMixin",
     "ChunkMapAccessor",
     "GameTestRegistryMixin",
+    "GameTestChunkSaveMixin",
+    "GameTestQuickExitMixin",
     "GameTestTimeMixin",
     "InventoryLockMixin",
     "SlotLockMixin",

@@ -20,6 +20,15 @@ class GameTestFilterTest {
     }
 
     @Test
+    void chunkSavesAreSkippedOnlyWhenAskedAndNeverAcrossARestart() {
+        assertTrue(GameTestFilter.skipsChunkSaves(true, null), "a full run");
+        assertTrue(GameTestFilter.skipsChunkSaves(true, "zerogmining"), "a filtered run");
+        assertFalse(GameTestFilter.skipsChunkSaves(false, null), "not asked");
+        assertFalse(GameTestFilter.skipsChunkSaves(true, "aCrashKeepsOnlyWhatWasSavedBeforeRestart"), "first half of a restart test");
+        assertFalse(GameTestFilter.skipsChunkSaves(true, "aLinkOutlivesACrashAfterRestart"), "second half");
+    }
+
+    @Test
     void aTestThatSpansARestartIsNeverInANormalRun() {
         assertFalse(GameTestFilter.registers(null, "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"));
         assertFalse(GameTestFilter.registers("", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedAfterRestart"));
