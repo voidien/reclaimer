@@ -15,7 +15,8 @@ permissions:
 
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # Each merge to main gets its answer: a later one waits rather than cancelling it.
+  cancel-in-progress: false
 
 jobs:
   build:
