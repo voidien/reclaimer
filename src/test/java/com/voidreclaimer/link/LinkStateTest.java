@@ -43,6 +43,29 @@ class LinkStateTest {
     }
 
     @Test
+    void aLinkKeepsItsSeatThroughASaveAndOlderLinksHaveNone() {
+        UUID seat = new UUID(7L, 8L);
+        LinkState state = LinkState.NONE.withLink(new LinkState.Link(SHELL, 1L, body(1), PLACE, Optional.of(seat)));
+        assertEquals(Optional.of(seat), throughASave(state).link().orElseThrow().seat());
+        LinkState old = LinkState.NONE.withLink(new LinkState.Link(SHELL, 1L, body(1), PLACE));
+        assertTrue(throughASave(old).link().orElseThrow().seat().isEmpty());
+    }
+
+    @Test
+    void aSeatTakesTheNewestShellThatStandsReady() {
+        UUID older = new UUID(3L, 4L);
+        UUID wreck = new UUID(5L, 6L);
+        UUID gone = new UUID(9L, 9L);
+        assertTrue(LinkState.NONE.idleShell().isEmpty());
+        LinkState state = LinkState.NONE
+                .withKnown(new LinkState.KnownShell(SHELL, 1L, PLACE, false, false))
+                .withKnown(new LinkState.KnownShell(older, 1L, PLACE, false, false))
+                .withKnown(new LinkState.KnownShell(wreck, 1L, PLACE, true, false))
+                .withKnown(new LinkState.KnownShell(gone, 1L, PLACE, false, true));
+        assertEquals(Optional.of(older), state.idleShell());
+    }
+
+    @Test
     void oneBadEntryCostsOnlyThatEntry() {
         LinkState.KnownShell good = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
         CompoundTag saved = (CompoundTag) LinkState.CODEC.encodeStart(NbtOps.INSTANCE, LinkState.NONE.withKnown(good)).getOrThrow();

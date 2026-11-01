@@ -189,6 +189,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> STATION_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.STATION_CORE);
     public static final DeferredItem<BlockItem> HOLO_PROJECTOR = ITEMS.registerSimpleBlockItem(ModBlocks.HOLO_PROJECTOR);
     public static final DeferredItem<BlockItem> DOCKING_CLAMP = ITEMS.registerSimpleBlockItem(ModBlocks.DOCKING_CLAMP);
+    public static final DeferredItem<BlockItem> UPLINK_SEAT = ITEMS.registerSimpleBlockItem(ModBlocks.UPLINK_SEAT);
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));

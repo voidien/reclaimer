@@ -62,12 +62,18 @@ public final class Links {
         HOME_UNREADABLE,
         /** The player logged out or died before the move ran. */
         PLAYER_GONE,
+        /** Its chunks were read, and it is not where the list says. */
+        NOT_FOUND,
+        /** Its chunks took too long to load. */
+        TIMED_OUT,
+        /** A link is on its way already. */
+        WAITING,
         /** Something threw part way, and the move was undone. */
         FAILED
     }
 
     /** A waiting move. No shell means a wake, and {@code lost} that the shell was destroyed around the player. */
-    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, boolean lost, Consumer<Result> then) {}
+    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, @Nullable UUID seat, boolean lost, Consumer<Result> then) {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
@@ -80,12 +86,27 @@ public final class Links {
 
     /** Asks for {@link #link} at the end of this tick; {@code then} hears how it went. */
     public static void requestLink(ServerPlayer player, BodyHost shell, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), false, then));
+        requestLink(player, shell, null, then);
+    }
+
+    /** {@link #requestLink(ServerPlayer, BodyHost, Consumer)} from the Uplink Seat with id {@code seat}, if any. */
+    static void requestLink(ServerPlayer player, BodyHost shell, @Nullable UUID seat, Consumer<Result> then) {
+        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), seat, false, then));
+    }
+
+    /** Asks for {@link #link} to a shell anywhere, by the player's list of shells: see {@link ShellReach}. */
+    public static void requestLink(ServerPlayer player, UUID shell, Consumer<Result> then) {
+        ShellReach.request(player, shell, then);
+    }
+
+    /** {@link #requestLink(ServerPlayer, UUID, Consumer)} from the Uplink Seat with id {@code seat}. */
+    static void requestLink(ServerPlayer player, UUID shell, UUID seat, Consumer<Result> then) {
+        ShellReach.request(player, shell, seat, then);
     }
 
     /** Asks for {@link #wake} at the end of this tick; {@code then} hears how it went. */
     public static void requestWake(ServerPlayer player, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), null, null, false, then));
+        MOVES.add(new Move(player.getUUID(), null, null, null, false, then));
     }
 
     @SubscribeEvent
@@ -121,7 +142,7 @@ public final class Links {
         if (event.getEntity() instanceof ServerPlayer player && state(player).linked()) {
             event.setCanceled(true);
             player.setHealth(1f);
-            MOVES.add(new Move(player.getUUID(), null, null, true, result -> {
+            MOVES.add(new Move(player.getUUID(), null, null, null, true, result -> {
                 if (result == Result.WOKEN) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.link.lost"), false);
                 } else if (result != Result.NOT_LINKED) {
@@ -145,11 +166,15 @@ public final class Links {
             return wake(player, move.lost());
         }
         ServerLevel level = server.getLevel(move.shellLevel());
-        return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell) : Result.NOT_A_SHELL;
+        return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell, move.seat()) : Result.NOT_A_SHELL;
     }
 
     /** Puts {@code player} in {@code shell}. The main body goes into the player file and the shell leaves the world. */
     public static Result link(ServerPlayer player, BodyHost shell) {
+        return link(player, shell, null);
+    }
+
+    private static Result link(ServerPlayer player, BodyHost shell, @Nullable UUID seat) {
         LinkState state = state(player);
         if (!present(player)) {
             return Result.PLAYER_GONE;
@@ -181,7 +206,7 @@ public final class Links {
         }
         // An old copy can be linked to when the outbox cannot be read, and the list must not go back with it.
         long epoch = Math.max(shell.epoch(), state.known(shell.getUUID()).map(LinkState.KnownShell::epoch).orElse(0L)) + 1;
-        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from))
+        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from, Optional.ofNullable(seat)))
                 .withKnown(new LinkState.KnownShell(shell.getUUID(), epoch, place(shell), false, false)));
         if (!wear(player, body)) {
             boolean restored = wear(player, home);

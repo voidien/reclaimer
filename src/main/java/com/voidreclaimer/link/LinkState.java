@@ -51,14 +51,20 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
      * @param epoch this link's number on the shell: a copy of the shell with an older one is stale
      * @param home  the main body, as a tag
      * @param from  where the main body was left
+     * @param seat  the id of the Uplink Seat this link started from, if it started from one
      */
-    public record Link(UUID shell, long epoch, CompoundTag home, Place from) {
+    public record Link(UUID shell, long epoch, CompoundTag home, Place from, Optional<UUID> seat) {
         static final Codec<Link> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("shell").forGetter(Link::shell),
                 Codec.LONG.fieldOf("epoch").forGetter(Link::epoch),
                 CompoundTag.CODEC.fieldOf("home").forGetter(Link::home),
-                Place.CODEC.fieldOf("from").forGetter(Link::from)
+                Place.CODEC.fieldOf("from").forGetter(Link::from),
+                UUIDUtil.CODEC.optionalFieldOf("seat").forGetter(Link::seat)
         ).apply(instance, Link::new));
+
+        public Link(UUID shell, long epoch, CompoundTag home, Place from) {
+            this(shell, epoch, home, from, Optional.empty());
+        }
     }
 
     /**
@@ -167,6 +173,17 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
 
     public LinkState withoutOutbox(UUID shell) {
         return new LinkState(link, outboxes.stream().filter(outbox -> !outbox.shell().equals(shell)).toList(), shells);
+    }
+
+    /** The shell a seat takes the player to until there is a picker: the newest on the list that stands ready. */
+    public Optional<UUID> idleShell() {
+        for (int i = shells.size() - 1; i >= 0; i--) {
+            KnownShell known = shells.get(i);
+            if (!known.gone() && !known.wrecked()) {
+                return Optional.of(known.shell());
+            }
+        }
+        return Optional.empty();
     }
 
     /** What is known of {@code shell}, if anything. */

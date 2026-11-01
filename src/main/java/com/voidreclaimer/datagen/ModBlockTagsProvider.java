@@ -16,7 +16,7 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.HOLO_PROJECTOR.get(), ModBlocks.HELM.get(), ModBlocks.STATION_CORE.get(), ModBlocks.DOCKING_CLAMP.get(), ModBlocks.RCS_THRUSTER.get(), ModBlocks.ION_THRUSTER.get(), ModBlocks.CHEMICAL_THRUSTER.get(), ModBlocks.PORTAL_FRAME.get(), ModBlocks.TERRAFORMING_SPIRE.get(), ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(), ModBlocks.CLOUD_SIPHON.get(),
+        tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.HOLO_PROJECTOR.get(), ModBlocks.HELM.get(), ModBlocks.STATION_CORE.get(), ModBlocks.DOCKING_CLAMP.get(), ModBlocks.UPLINK_SEAT.get(), ModBlocks.RCS_THRUSTER.get(), ModBlocks.ION_THRUSTER.get(), ModBlocks.CHEMICAL_THRUSTER.get(), ModBlocks.PORTAL_FRAME.get(), ModBlocks.TERRAFORMING_SPIRE.get(), ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(), ModBlocks.CLOUD_SIPHON.get(),
                 ModBlocks.KINETIC_DRIVE_BASE.get(), ModBlocks.PAYLOAD_CHAMBER.get(), ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), ModBlocks.QUANTUM_RECEIVER.get(),
                 ModBlocks.LAUNCH_CONTROLLER.get(), ModBlocks.LAUNCH_PAD.get(), ModBlocks.SPIRE_COLUMN.get());
         // Create's wrench picks these up whole.
