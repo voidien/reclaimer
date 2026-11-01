@@ -8,11 +8,13 @@ import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
+import com.voidreclaimer.link.ShellRecovery;
 import com.voidreclaimer.registry.ModEntities;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -335,6 +337,95 @@ public final class LinkLedgerGameTests {
             stranger.setShiftKeyDown(false);
             TestPlayers.remove(stranger);
             LinkOutboxGameTests.finish(helper, player, player.serverLevel(), shell.getUUID());
+        });
+    }
+
+    /** The newer copy is lost, so the old one stands refused: the picker offers it, and it becomes the shell. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyComesBackWhenTheNewerOneIsLost(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(265_400, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            long epoch = known(player, id).epoch();
+            noOutbox(player, id);
+            BodyHost old = (BodyHost) level.getEntity(id);
+            old.setEpoch(epoch - 1);
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(known(player, id).oldCopy().isPresent(), "the list did not hear of the old copy"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(com.voidreclaimer.link.Signal.rows(player).get(0).recoverable(), "the picker does not offer it");
+                        ShellRecovery.request(player, id, ended::set);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(ended.get() == ShellRecovery.Result.RECOVERED, "ended " + ended.get());
+                        helper.assertTrue(old.epoch() > epoch && known(player, id).epoch() == old.epoch(), "the copy is not the shell: " + old.epoch());
+                        helper.assertTrue(known(player, id).oldCopy().isEmpty(), "the list still offers it");
+                        helper.assertTrue(Links.link(player, old) == Links.Result.LINKED, "no link to the recovered shell");
+                        helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                        LinkOutboxGameTests.finish(helper, player, level, id);
+                    });
+        });
+    }
+
+    /** The worst thing recovery could do: replace a shell that is only far away with an older body. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void recoveryLeavesAHealthyShellAlone(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(265_600, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            noOutbox(player, id);
+            LinkState.KnownShell entry = known(player, id);
+            BodyHost shell = (BodyHost) level.getEntity(id);
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            ShellRecovery.request(player, id, ended::set);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(ended.get() == ShellRecovery.Result.STILL_THERE, "ended " + ended.get());
+                        helper.assertTrue(shell.epoch() == entry.epoch() && !shell.isRemoved(), "a healthy shell was touched");
+                        helper.assertTrue(known(player, id).oldCopy().isEmpty(), "the list still offers an old copy");
+                        LinkOutboxGameTests.finish(helper, player, level, id);
+                    });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void recoveryOfACopyThatHasGoneChangesNothing(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(265_800, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            noOutbox(player, id);
+            LinkState.KnownShell entry = known(player, id);
+            level.getEntity(id).discard();
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            ShellRecovery.request(player, id, ended::set);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(ended.get() == ShellRecovery.Result.NOT_FOUND, "ended " + ended.get());
+                        helper.assertTrue(known(player, id).oldCopy().isEmpty() && known(player, id).epoch() == entry.epoch(), "the list changed");
+                        LinkOutboxGameTests.finish(helper, player, level, id);
+                    });
+        });
+    }
+
+    /** A client can send anything, and an outbox still running decides alone. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void recoveryAsksForASeatInReachAndNoOutbox(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(266_000, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            LinkState.KnownShell entry = known(player, id);
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            ShellRecovery.request(player, id, ended::set);
+            helper.assertTrue(ended.get() == ShellRecovery.Result.REFUSED, "ran with an outbox: " + ended.get());
+            noOutbox(player, id);
+            com.voidreclaimer.network.RecoverShellPayload.apply(player, player.blockPosition().above(40), id);
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(known(player, id).oldCopy().isPresent(), "a request with no seat did something");
+                LinkOutboxGameTests.finish(helper, player, level, id);
+            });
         });
     }
 

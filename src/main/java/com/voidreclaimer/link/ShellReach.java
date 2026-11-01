@@ -101,7 +101,7 @@ public final class ShellReach {
         } else if (server.getTickCount() >= waiting.until()) {
             end(waiting, Links.Result.TIMED_OUT);
         } else {
-            level.getChunkSource().addRegionTicket(REACH, waiting.chunk(), RADIUS, waiting.chunk());
+            hold(level, waiting.chunk());
         }
     }
 
@@ -110,7 +110,13 @@ public final class ShellReach {
         waiting.then().accept(result);
     }
 
-    private static boolean read(ServerLevel level, ChunkPos middle) {
+    /** Asks for the chunks round {@code middle}, for a moment. */
+    static void hold(ServerLevel level, ChunkPos middle) {
+        level.getChunkSource().addRegionTicket(REACH, middle, RADIUS, middle);
+    }
+
+    /** Whether the entities of the chunks round {@code middle} have loaded. */
+    static boolean read(ServerLevel level, ChunkPos middle) {
         for (int x = -RADIUS; x <= RADIUS; x++) {
             for (int z = -RADIUS; z <= RADIUS; z++) {
                 if (!level.areEntitiesLoaded(ChunkPos.asLong(middle.x + x, middle.z + z))) {

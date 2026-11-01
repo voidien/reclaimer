@@ -116,14 +116,24 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
      * @param wrecked whether it is a wreck
      * @param gone    whether it has been destroyed for good
      */
-    public record KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone) {
+    public record KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone, Optional<Place> oldCopy) {
+        public KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone) {
+            this(shell, epoch, at, wrecked, gone, Optional.empty());
+        }
+
         static final Codec<KnownShell> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("shell").forGetter(KnownShell::shell),
                 Codec.LONG.fieldOf("epoch").forGetter(KnownShell::epoch),
                 Place.CODEC.fieldOf("at").forGetter(KnownShell::at),
                 Codec.BOOL.optionalFieldOf("wrecked", false).forGetter(KnownShell::wrecked),
-                Codec.BOOL.optionalFieldOf("gone", false).forGetter(KnownShell::gone)
+                Codec.BOOL.optionalFieldOf("gone", false).forGetter(KnownShell::gone),
+                Place.CODEC.optionalFieldOf("old_copy").forGetter(KnownShell::oldCopy)
         ).apply(instance, KnownShell::new));
+
+        /** With an older copy seen standing at {@code place}, or none. */
+        KnownShell withOldCopy(Optional<Place> place) {
+            return new KnownShell(shell, epoch, at, wrecked, gone, place);
+        }
 
         KnownShell destroyed() {
             return new KnownShell(shell, epoch, at, wrecked, true);

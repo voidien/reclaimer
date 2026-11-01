@@ -24,6 +24,7 @@ public final class ModPayloads {
         registrar.playToServer(BodyActionPayload.TYPE, BodyActionPayload.STREAM_CODEC, BodyActionPayload::handle);
         registrar.playToServer(UnlinkPayload.TYPE, UnlinkPayload.STREAM_CODEC, UnlinkPayload::handle);
         registrar.playToServer(PickShellPayload.TYPE, PickShellPayload.STREAM_CODEC, PickShellPayload::handle);
+        registrar.playToServer(RecoverShellPayload.TYPE, RecoverShellPayload.STREAM_CODEC, RecoverShellPayload::handle);
         registrar.playToClient(LaunchStreakPayload.TYPE, LaunchStreakPayload.STREAM_CODEC, LaunchStreakPayload::handle);
         registrar.playToClient(SensorEchoPayload.TYPE, SensorEchoPayload.STREAM_CODEC, SensorEchoPayload::handle);
         registrar.playToClient(HelmReadoutPayload.TYPE, HelmReadoutPayload.STREAM_CODEC, HelmReadoutPayload::handle);
