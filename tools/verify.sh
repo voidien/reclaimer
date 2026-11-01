@@ -6,6 +6,10 @@
 #   tools/verify.sh all      everything, whatever changed
 set -u
 cd "$(dirname "$0")/.."
+# Two runs in one checkout overwrite each other's logs and builds.
+mkdir -p build
+exec 8>build/verify.lock
+flock -n 8 || { echo "another tools/verify.sh is running in this checkout" >&2; exit 2; }
 git fetch -q origin 2>/dev/null
 base=$(git merge-base origin/main HEAD)
 changed=$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)
@@ -16,11 +20,12 @@ failed=0
 run() { # name command...
     local name=$1 at=$SECONDS
     shift
-    if "$@" > "build/verify-$name.log" 2>&1; then
+    if "$@" > "build/verify-$name.log" 2>&1 8>&-; then
         echo "ok    $name $((SECONDS - at))s"
     else
         echo "FAIL  $name $((SECONDS - at))s, see build/verify-$name.log"
         grep -aE "failed at|error:|What went wrong" "build/verify-$name.log" | grep -v "DEBUG\|WARN" | cut -c1-200 | head -5
+        if grep -aq "exit value 134\|fatal error has been detected" "build/verify-$name.log"; then echo "      the JVM crashed, not a test: run it again (HANDOFF.md, \"JVM crash\")"; fi
         failed=1
     fi
 }
