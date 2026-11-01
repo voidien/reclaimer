@@ -7,6 +7,14 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SignalMathTest {
+    @Test
+    void aLostSignalCountsDownThenEnds() {
+        assertEquals(5, SignalMath.countdown(0, 5), "the first second starts it");
+        assertEquals(4, SignalMath.countdown(5, 5));
+        assertEquals(0, SignalMath.countdown(1, 5), "the last second ends the link");
+        assertEquals(0, SignalMath.countdown(0, 0), "no grace ends it at once");
+    }
+
     private static final double EXACT = 1e-9;
     private static final SignalMath RULES = new SignalMath(1000, 2000, List.of(10.0, 200.0, 3000.0, 40000.0), 0.25, 1.5, 0.1);
 

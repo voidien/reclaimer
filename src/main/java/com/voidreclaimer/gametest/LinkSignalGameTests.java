@@ -109,6 +109,31 @@ public final class LinkSignalGameTests {
         });
     }
 
+    /** Back in range before the count ends, the link stands. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aLostSignalGivesYouTimeToComeBack(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(265_200, 80, 0);
+        double beyond = Config.LINK_SEAT_RANGE.get() + 200.0;
+        linked(helper, pos, beyond, (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            Vec3 inRange = new Vec3(pos.getX() + 8.5, pos.getY(), pos.getZ() + 0.5);
+            player.teleportTo(pos.getX() + beyond, pos.getY(), pos.getZ());
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(player.getData(ModAttachments.LINK_LOSING) > 0, "no countdown"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(Links.state(player).linked(), "the link dropped with no warning");
+                        helper.assertTrue(player.getData(ModAttachments.LINK_SIGNAL) == 0f, "a lost signal shows no static");
+                        player.teleportTo(inRange.x, inRange.y, inRange.z);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(player.getData(ModAttachments.LINK_LOSING) == 0, "the countdown went on"))
+                    .thenExecuteAfter(Config.LINK_SIGNAL_GRACE.get() * 20 + 20, () -> {
+                        helper.assertTrue(Links.state(player).linked(), "the link dropped after the signal came back");
+                        helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                        finish(helper, player, level, pos, id);
+                    });
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void theSignalFadesTowardsTheEdge(GameTestHelper helper) {
         BlockPos pos = new BlockPos(148_400, 80, 0);

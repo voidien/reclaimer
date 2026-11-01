@@ -18,6 +18,7 @@ public final class ModLangProvider extends LanguageProvider {
     protected void addTranslations() {
         add("biome.void_reclaimer.deep_space", "Deep Space");
 
+        add("hud.void_reclaimer.link.losing", "SIGNAL LOST: RETURNING IN %s");
         add("hud.void_reclaimer.hover", "HOVER");
         add("hud.void_reclaimer.too_heavy", "TOO HEAVY: SINKING");
         add("hud.void_reclaimer.falling", "FALLING: DAMPENER OFF");

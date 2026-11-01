@@ -201,6 +201,12 @@ public final class ModAttachments {
                     .sync((holder, to) -> holder == to, net.minecraft.network.codec.ByteBufCodecs.FLOAT)
                     .build());
 
+    /** Seconds left of a lost signal before the player is pulled home, 0 with no drop coming. For the HUD and the check, and not saved. */
+    public static final Supplier<AttachmentType<Integer>> LINK_LOSING = ATTACHMENT_TYPES.register("link_losing",
+            () -> AttachmentType.builder(() -> 0)
+                    .sync((holder, to) -> holder == to, net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
+                    .build());
+
     /** While in a shell, the main body's dust storage: the mind's dust stays with it, and the HUD needs this too. Negative when not linked. */
     public static final Supplier<AttachmentType<Float>> HOME_DUST_CAPACITY = ATTACHMENT_TYPES.register("home_dust_capacity",
             () -> AttachmentType.builder(() -> com.voidreclaimer.dust.DustData.NOT_LINKED)
