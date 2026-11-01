@@ -142,6 +142,13 @@ class BodyRigMountsTest {
     }
 
     @Test
+    void theMechsThrusterPodsGoWithItsArms() throws Exception {
+        JsonObject sockets = json("body_rigs/mech.json").getAsJsonObject("sockets");
+        assertTrue(sockets.getAsJsonArray("left_upper_arm").toString().contains("thruster_l"), "the left pod would float with no arm");
+        assertTrue(sockets.getAsJsonArray("right_upper_arm").toString().contains("thruster_r"), "the right pod would float with no arm");
+    }
+
+    @Test
     void theMechsShoulderSensorsClearItsHeadAndDoNotTurnWithIt() throws Exception {
         JsonObject rig = json("body_rigs/mech.json");
         Map<String, Bone> bones = bones(rig);
