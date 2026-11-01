@@ -351,12 +351,15 @@ public final class LinkLedgerGameTests {
             BodyHost old = (BodyHost) level.getEntity(id);
             old.setEpoch(epoch - 1);
             AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            AtomicReference<Links.Result> picked = new AtomicReference<>();
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(known(player, id).oldCopy().isPresent(), "the list did not hear of the old copy"))
                     .thenExecute(() -> {
                         helper.assertFalse(com.voidreclaimer.link.Signal.rows(player).get(0).recoverable(), "offered before a link looked for the shell");
-                        ShellReach.request(player, id, 200, result -> helper.assertTrue(result == Links.Result.NOT_FOUND, "the pick ended " + result));
+                        ShellReach.request(player, id, 200, picked::set);
                     })
+                    .thenWaitUntil(() -> helper.assertTrue(picked.get() != null, "the pick did not end"))
+                    .thenExecute(() -> helper.assertTrue(picked.get() == Links.Result.NOT_FOUND, "the pick ended " + picked.get()))
                     .thenWaitUntil(() -> helper.assertTrue(known(player, id).recoverable(), "the look found nothing, and the list did not hear"))
                     .thenExecute(() -> {
                         helper.assertTrue(com.voidreclaimer.link.Signal.rows(player).get(0).recoverable(), "the picker does not offer it");

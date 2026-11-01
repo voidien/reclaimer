@@ -215,9 +215,12 @@ public final class RestartGameTests {
         ServerPlayer player = TestPlayers.joinAs(helper, RECOVERY_PLAYER);
         NaniteGameTests.inEntityTickingArea(helper, RECOVERY_SPOT, 1, () -> {
             AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            AtomicReference<Links.Result> picked = new AtomicReference<>();
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(player).known(RECOVERY_SHELL).orElseThrow().oldCopy().isPresent(), "the old copy did not report in"))
-                    .thenExecute(() -> ShellReach.request(player, RECOVERY_SHELL, 200, result -> helper.assertTrue(result == Links.Result.NOT_FOUND, "the pick ended " + result)))
+                    .thenExecute(() -> ShellReach.request(player, RECOVERY_SHELL, 200, picked::set))
+                    .thenWaitUntil(() -> helper.assertTrue(picked.get() != null, "the pick did not end"))
+                    .thenExecute(() -> helper.assertTrue(picked.get() == Links.Result.NOT_FOUND, "the pick ended " + picked.get()))
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(player).known(RECOVERY_SHELL).orElseThrow().recoverable(), "the picker would not offer it"))
                     .thenExecute(() -> ShellRecovery.request(player, RECOVERY_SHELL, ended::set))
                     .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
