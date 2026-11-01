@@ -547,6 +547,8 @@
   "message.void_reclaimer.sensor_cooldown": "Sensor recharging.",
   "message.void_reclaimer.sensor_low_power": "Not enough power for a sensor pulse.",
   "message.void_reclaimer.sensor_missing": "No Dust Sensor installed.",
+  "message.void_reclaimer.shell.not_yours": "This shell belongs to someone else",
+  "message.void_reclaimer.shell.scrapped": "Shell scrapped. Its contents stay in the wreck.",
   "message.void_reclaimer.ship_portal.blocked": "The far side of the portal is not clear for the ship.",
   "message.void_reclaimer.ship_portal.crossed": "The ship came through the portal.",
   "message.void_reclaimer.ship_portal.no_way_back": "The portal leads nowhere for a ship.",

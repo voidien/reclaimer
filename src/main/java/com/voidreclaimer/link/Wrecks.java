@@ -34,6 +34,17 @@ public final class Wrecks {
         Links.note(shell);
     }
 
+    /** Its owner gives up an idle shell: it becomes a wreck to loot like any other. Nothing else ends a parked shell. */
+    static void scrap(ServerPlayer player, BodyHost shell) {
+        if (!player.getUUID().equals(shell.owner())) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.shell.not_yours"), true);
+            return;
+        }
+        make(shell);
+        player.displayClientMessage(Component.translatable("message.void_reclaimer.shell.scrapped"), true);
+        Links.saveNow(player.getServer());
+    }
+
     private static void add(ListTag contents, ItemStack stack, HolderLookup.Provider registries) {
         if (!stack.isEmpty()) {
             contents.add(stack.save(registries));

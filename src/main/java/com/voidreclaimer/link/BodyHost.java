@@ -134,7 +134,7 @@ public class BodyHost extends LivingEntity {
         super.remove(reason);
     }
 
-    /** A shell that dies leaves a wreck, not items on the floor. Only a command can end a wreck, by a damage that nothing resists. */
+    /** Only a command can reach a host, by a damage that nothing resists: a shell then leaves a wreck, not items on the floor. */
     @Override
     public void die(DamageSource source) {
         if (!level().isClientSide && role() == HostRole.SHELL) {
@@ -146,16 +146,21 @@ public class BodyHost extends LivingEntity {
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        return role() != HostRole.SHELL ? !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) : super.isInvulnerableTo(source);
+        return !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY);
     }
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if (role() != HostRole.WRECK || hand != InteractionHand.MAIN_HAND) {
+        boolean scrap = role() == HostRole.SHELL && player.isSecondaryUseActive();
+        if (hand != InteractionHand.MAIN_HAND || !scrap && role() != HostRole.WRECK) {
             return InteractionResult.PASS;
         }
         if (player instanceof ServerPlayer server && !Links.stale(this)) {
-            Wrecks.salvage(server, this);
+            if (scrap) {
+                Wrecks.scrap(server, this);
+            } else {
+                Wrecks.salvage(server, this);
+            }
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }

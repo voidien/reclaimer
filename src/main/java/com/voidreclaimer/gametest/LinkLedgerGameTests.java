@@ -296,6 +296,49 @@ public final class LinkLedgerGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aParkedShellTakesNoHarmButACommandReachesIt(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(264_000, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            ServerLevel level = player.serverLevel();
+            BodyHost shell = beside(player);
+            float health = shell.getHealth();
+            var sources = level.damageSources();
+            for (var source : List.of(sources.generic(), sources.drown(), sources.inWall(), sources.playerAttack(player), sources.flyIntoWall(), sources.fall())) {
+                helper.assertFalse(shell.hurt(source, 1_000f), "a parked shell took " + source.getMsgId());
+            }
+            helper.assertTrue(shell.getHealth() == health && shell.role() == HostRole.SHELL, "a parked shell was hurt");
+            shell.hurt(sources.genericKill(), Float.MAX_VALUE);
+            helper.assertTrue(shell.role() == HostRole.WRECK, "a command should leave a wreck");
+            LinkOutboxGameTests.finish(helper, player, level, shell.getUUID());
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void sneakUseScrapsYourOwnShellAndNoOneElses(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(264_200, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            ServerPlayer stranger = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 1.5);
+            BodyHost shell = beside(player);
+            shell.interact(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(shell.role() == HostRole.SHELL, "a plain use scrapped a shell");
+            stranger.setShiftKeyDown(true);
+            shell.interact(stranger, InteractionHand.MAIN_HAND);
+            helper.assertTrue(shell.role() == HostRole.SHELL, "someone else scrapped a shell");
+            player.setShiftKeyDown(true);
+            shell.interact(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(shell.role() == HostRole.WRECK, "sneak-use left the shell standing");
+            helper.assertTrue(known(player, shell.getUUID()).wrecked(), "the list does not say it is a wreck");
+            helper.assertFalse(shell.items().isEmpty(), "a scrapped shell has nothing in it");
+            player.setShiftKeyDown(false);
+            stranger.setShiftKeyDown(false);
+            TestPlayers.remove(stranger);
+            LinkOutboxGameTests.finish(helper, player, player.serverLevel(), shell.getUUID());
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theShellsCommandCountsWhatIsLeft(GameTestHelper helper) {
         BlockPos origin = new BlockPos(143_800, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
