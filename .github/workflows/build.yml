@@ -88,7 +88,7 @@ jobs:
           # Pull requests write no chunks and skip the final save; main runs real saves and a real stop. With no saves a fresh world
           # keeps more chunks in memory at once, and CI's world is always fresh.
           flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags="$flags -PgametestChunkSaves"; fi
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestServer $flags --stacktrace && exit 0
             status=$?
@@ -193,7 +193,7 @@ jobs:
       - name: Aeronautics GameTests
         run: |
           flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags="$flags -PgametestChunkSaves"; fi
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestAeronautics $flags --stacktrace && exit 0
             status=$?

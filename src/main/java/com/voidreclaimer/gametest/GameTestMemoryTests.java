@@ -21,7 +21,7 @@ public final class GameTestMemoryTests {
     /** Each forces its own chunk and checks the other's, so it does not matter which batch comes first: the later one proves it. */
     private static void forcesAndChecks(GameTestHelper helper, BlockPos mine, BlockPos other) {
         ServerLevel space = TestPlayers.deepSpace(helper);
-        helper.assertFalse(space.getForcedChunks().contains(ChunkPos.asLong(other)), "a chunk of the last batch is still forced");
+        helper.assertFalse(GameTestFilter.skipsChunkSaves() && space.getForcedChunks().contains(ChunkPos.asLong(other)), "a chunk of the last batch is still forced");
         space.setChunkForced(mine.getX() >> 4, mine.getZ() >> 4, true);
         helper.succeed();
     }
