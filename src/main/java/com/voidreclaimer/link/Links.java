@@ -115,7 +115,7 @@ public final class Links {
         if (state.linked()) {
             return Result.ALREADY_LINKED;
         }
-        if (shell.isRemoved() || shell.isDeadOrDying() || shell.role() != HostRole.SHELL) {
+        if (shell.isRemoved() || shell.isDeadOrDying() || shell.role() != HostRole.SHELL || stale(shell)) {
             return Result.NOT_A_SHELL;
         }
         if (!player.getUUID().equals(shell.owner())) {
@@ -182,7 +182,7 @@ public final class Links {
         if (!arrive(player, target, link.from().position(), link.from().yaw(), link.from().pitch())) {
             return Result.CANNOT_REACH;
         }
-        LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at);
+        LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at, false);
         player.setData(ModAttachments.LINK, state.withOutbox(outbox));
         Optional<BodyHost> shell = BodyHost.restore(shellLevel, at, link.shell(), link.epoch(), body, player.getUUID());
         if (shell.isEmpty()) {
@@ -205,6 +205,20 @@ public final class Links {
     private static void setHomeDust(ServerPlayer player, float capacity) {
         player.setData(ModAttachments.HOME_DUST_CAPACITY, capacity);
         player.syncData(ModAttachments.HOME_DUST_CAPACITY);
+    }
+
+    /**
+     * Whether this copy of a shell lost to a newer one: its owner is in it, or a newer copy waits in the outbox. Only a crash leaves
+     * such a copy, on disk from before the link. With its owner away nobody can tell, and nobody can use it either.
+     */
+    public static boolean stale(BodyHost shell) {
+        ServerPlayer owner = shell.owner() == null ? null : shell.level().getServer().getPlayerList().getPlayer(shell.owner());
+        if (owner == null) {
+            return false;
+        }
+        LinkState state = state(owner);
+        return state.link().filter(link -> link.shell().equals(shell.getUUID())).isPresent()
+                || state.outbox(shell.getUUID()).filter(outbox -> outbox.epoch() > shell.epoch()).isPresent();
     }
 
     /** Whether there is still a living player here to move: a stale object or a corpse would take a body with it. */
