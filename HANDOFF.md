@@ -54,6 +54,7 @@ Verified on `main`: 228 GameTests in `runGameTestServer`, 36 Aeronautics GameTes
 ## Working tricks
 ### Commands
 - `./gradlew build` (includes unit tests).
+- `./gradlew fastTest`: the unit tests that do not need the game, about 5 s. `./gradlew test --tests '*Name'` takes 20 s, nearly all of it booting the game.
 - `./gradlew runGameTestServer` (or `tools/gametest.sh main`): look for `All N required tests passed`. `-PgametestFilter=ZeroGMining` runs only the tests whose class or method name contains the text (comma-separated alternatives, ignoring case): about 30 s for one class. `-PgametestHeap=8G` runs the server in another heap (default 6G).
 - `./gradlew runGameTestAeronautics` (or `tools/gametest.sh aero`): the Aeronautics suite, separate world in `run-aero/`, own CI job.
 - `./gradlew runData`: commit the output in `src/generated/resources`. CI fails if it's stale.

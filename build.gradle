@@ -234,6 +234,18 @@ tasks.named('test', Test) {
     maxHeapSize = '2G'
 }
 
+// Pure logic in about 5 s instead of 20: the game boots for neither. `test` stays the full run, in `build` and on CI. A new test
+// that fails here with NoClassDefFoundError needs the game: add it to this list.
+tasks.register('fastTest', Test) {
+    group = 'verification'
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath.filter { !it.name.startsWith('junit-fml') } + fileTree(layout.buildDirectory.dir('create-libs')) { include '*.jar' }
+    maxHeapSize = '1G'
+    exclude '**/ConfigConditionTest.class', '**/ItemsMadeCriterionTest.class', '**/LinkStateTest.class',
+            '**/RecipeDescriptionTest.class', '**/ReplicatorLogicTest.class'
+}
+
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).
 var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     var replaceProperties = [

@@ -85,6 +85,7 @@ Commands: `./gradlew build` (includes unit tests), `./gradlew runGameTestServer`
 
 ## Testing
 - **Unit tests** (`src/test/java`, JUnit 5 through MDG's `unitTest`, game classes on the classpath): pure logic only. Keep simulation math in config-free functions (`FlightPhysics`, `EnergyTicker.simulate` with `EnergyRules`) so it can be tested here.
+- **`./gradlew fastTest`** runs the unit tests that do not need the game in about 5 s, for the inner loop. `./gradlew test` (in `build` and on CI) stays the full run; one test costs 20 s there because the game boots. A test that needs the game goes on the exclude list in `build.gradle`.
 - **GameTests** (`com.voidreclaimer.gametest`, `@GameTestHolder(MOD_ID)`, template `void_reclaimer:empty`): run in a real headless server with `./gradlew runGameTestServer`.
   - `GameTestServerMixin` makes the GameTest server load datapack dimensions, so tests can use `deep_space`.
   - `GameTestChunkTasksMixin` keeps the GameTest server working on chunk tasks between ticks, as a normal server does; without it the server finishes one chunk per tick (`ChunkTaskGameTests`).
