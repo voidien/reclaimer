@@ -45,7 +45,7 @@ public final class AeronauticsGameTests {
     private static final int HOLD_TICKS = 160;
     /** How long a turn test steers before it reads where the ship points. */
     private static final int TURN_TICKS = 60;
-    private static final com.voidreclaimer.debug.HelmTrace[] lastTrace = new com.voidreclaimer.debug.HelmTrace[1];
+    private static final String[] lastReadout = {""};
     private static final double STOPPED_SPIN = 0.15;
     private static final int SETTLE_TICKS = 10;
     private static final int SAMPLE_TICKS = 40;
@@ -835,13 +835,13 @@ public final class AeronauticsGameTests {
                 player -> {
                     player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f));
                     if (player.getVehicle() instanceof com.voidreclaimer.ship.HelmSeat seat && space.getBlockEntity(seat.helmPos()) instanceof com.voidreclaimer.ship.HelmBlockEntity helm) {
-                        lastTrace[0] = helm.trace();
+                        // Read while it turns: a ship that has stopped has nothing in its last two seconds.
+                        lastReadout[0] = String.join(" | ", helm.trace().lines());
                     }
                 },
                 player -> {},
                 (nose, wing) -> {
-                    String text = String.join(" | ", lastTrace[0].lines());
-                    helper.assertTrue(text.contains("Steering: mouse") && text.contains("Lag: about"), text);
+                    helper.assertTrue(lastReadout[0].contains("Steering: mouse") && lastReadout[0].contains("Lag: about"), lastReadout[0]);
                 });
     }
 
