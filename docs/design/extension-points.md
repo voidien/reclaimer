@@ -19,6 +19,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
 | `void_reclaimer:holo_readout` | Code registry (`api.holo.HoloReadout`) | A readout a Holo Projector can show: a sampler (world to snapshot, server side) and a pure formatter. The lang key `holo_readout.<namespace>.<path>` names it; lines past 8 or 48 characters are cut |
 | `void_reclaimer:holo_projector` | Create registry entry (`create:display_target`) | `compat.create.HoloDisplayTarget`: a Display Link writes to a Holo Projector |
+| CogScript `holo` module | Mixin into Advanced Electricity's `ComputerOS` (`compat.act.HoloScript`) | Programs write to Holo Projectors: `docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md` |
 | `void_reclaimer:tool_module_type` built-ins `drill`, `harvester` | Code registry entries | Mechanical Drill and Matter Harvester: `breakSpeed` on `#void_reclaimer:asteroid_blocks`; the break rules are in `asteroid.Drilling` |
 | `CollectorPowerEvent` | Event, mutable power | About once a second for each Cloud Siphon: `power` starts as the shaft's (1.0 at 64 RPM, 0 below the minimum speed); an addon (electricity) raises it to run the block without rotation |
 | `void_reclaimer:freezing` recipes | Recipe type (`machine.FreezingRecipe`) | `ingredient`, `results`; run by the Encased Fan type below |
