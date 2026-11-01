@@ -76,6 +76,26 @@ class RecipeInputsTest {
         assertEquals(3, job.progress());
     }
 
+    private static final String GOOD_JOB = """
+            {"recipe": "void_reclaimer:replicator/good", "results": [{"id": "minecraft:stone", "count": 1}], "items": [{"id": "minecraft:iron_ingot", "count": 2}], "total": 9}
+            """;
+
+    @Test
+    void anItemFromAGoneModCostsThatItemAndNotTheQueue() {
+        String bad = """
+                {"recipe": "void_reclaimer:replicator/bad", "results": [{"id": "gone_mod:thing", "count": 1}],
+                 "items": [{"id": "minecraft:iron_ingot", "count": 1}, {"id": "gone_mod:part", "count": 1}], "total": 9}
+                """;
+        String unreadable = "{\"recipe\": 5}";
+        var saved = JsonParser.parseString("{\"jobs\": [" + GOOD_JOB + "," + unreadable + "," + bad + "], \"buffer\": [{\"id\": \"minecraft:stone\", \"count\": 1}, {\"id\": \"gone_mod:thing\", \"count\": 1}]}");
+        ReplicatorData data = ReplicatorData.CODEC.parse(JsonOps.INSTANCE, saved).getOrThrow();
+        assertEquals(2, data.jobs().size(), "a bad item took a job with it, or a job that can't be read took the queue");
+        assertEquals(1, data.jobs().get(0).items().size(), "the good job lost its items");
+        assertEquals(1, data.jobs().get(1).items().size(), "the bad job lost the item it could still read");
+        assertTrue(data.jobs().get(1).results().isEmpty(), "a result that has gone stays gone");
+        assertEquals(1, data.buffer().size(), "the output lost a good item to a bad one");
+    }
+
     @Test
     void aJobKeepsItsItemsThroughASaveAndAdvancing() {
         ReplicatorJob job = new ReplicatorJob(ID, List.of(new ItemStack(Items.STONE)), DustCost.NONE, List.of(new ItemStack(Items.IRON_INGOT, 2)), 0, 9);

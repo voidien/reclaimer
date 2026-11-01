@@ -16,7 +16,8 @@ public final class ReplicatorLogic {
     /** Outcome of queueing: the result code and, when queued, the new data and dust. */
     public record Queued(QueueResult result, ReplicatorData data, DustData dust) {}
 
-    public static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe) {
+    /** A job that takes no items: the rules alone, for tests. The game goes through the one below, which knows what the player holds. */
+    static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe) {
         return queue(data, dust, id, recipe, List.of());
     }
 
