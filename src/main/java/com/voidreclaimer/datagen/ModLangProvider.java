@@ -641,6 +641,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.casing", "Casing: %s");
         add("body.void_reclaimer.trail", "Trail: %s");
         add("body.void_reclaimer.accent", "Accent");
+        add("body.void_reclaimer.tint", "Colour");
         add("body.void_reclaimer.stats", "Body");
         add("body.void_reclaimer.stat.size", "%s (scale %s)");
         add("body.void_reclaimer.stat.mass", "Mass %s / %s");

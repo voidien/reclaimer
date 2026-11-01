@@ -180,7 +180,15 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
 
     @Override
     public Color getRenderColor(BodyAnimatable animatable, float partialTick, int packedLight) {
-        return hologram ? new Color(hologramColor) : super.getRenderColor(animatable, partialTick, packedLight);
+        if (hologram) {
+            return new Color(hologramColor);
+        }
+        Frame current = frame;
+        // Only a whole-model body: a composed one paints its casing and accent section by section.
+        if (current != null && current.spec() != null && current.cosmetics().tint() != Cosmetics.NO_TINT) {
+            return new Color(0xFF000000 | current.cosmetics().tint());
+        }
+        return super.getRenderColor(animatable, partialTick, packedLight);
     }
 
     /** The see-through look of a part in a preview or a hologram. */

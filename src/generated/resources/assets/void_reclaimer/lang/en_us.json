@@ -166,6 +166,7 @@
   "body.void_reclaimer.stat.size": "%s (scale %s)",
   "body.void_reclaimer.stat.tier": "Core tier %s",
   "body.void_reclaimer.stats": "Body",
+  "body.void_reclaimer.tint": "Colour",
   "body.void_reclaimer.trail": "Trail: %s",
   "body.void_reclaimer.trail.accent": "Accent",
   "body.void_reclaimer.trail.ember": "Ember",
