@@ -86,6 +86,7 @@ F8 (photo mode), then G: exact facts about whatever the camera looks at, read fr
 **Use `tools/client-test/quick.sh`: start the client once and swap code into it.** Measured: 40 to 50 s from nothing to a settled world, 3 s from a saved edit to seeing it in the running game.
 ```
 tools/client-test/quick.sh start        # Xvfb, client, world vrtest; returns when the world is on screen
+tools/client-test/quick.sh window       # your own game in a real window: a method-body edit reaches it with `swap`, no restart
 tools/client-test/quick.sh swap         # compile and replace the changed classes in the running game
 tools/client-test/quick.sh reload       # copy changed assets and lang in and reload them; GeckoLib models included
 tools/client-test/quick.sh shot NAME    # build/client-shots/NAME.png
