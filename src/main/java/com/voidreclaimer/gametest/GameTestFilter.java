@@ -32,6 +32,23 @@ public final class GameTestFilter {
         return SKIP_SAVES;
     }
 
+    /** Whether this JVM is a GameTest run at all: the build sets the property, to true or false, only on those. */
+    public static boolean isTestRun() {
+        return System.getProperty(SKIP_SAVES_PROPERTY) != null;
+    }
+
+    /**
+     * Whether each batch of tests lets go of the chunks the last one forced (GameTestBatchChunkMixin). Not for a test that spans a
+     * restart: what is forced is part of what it saves, and it asks for its own chunks.
+     */
+    public static boolean releasesChunks() {
+        return isTestRun() && releasesChunks(System.getProperty(PROPERTY));
+    }
+
+    static boolean releasesChunks(String filter) {
+        return filter == null || !filter.toLowerCase(Locale.ROOT).contains("restart");
+    }
+
     /** A test that spans a restart needs the real save, however the run was asked for. */
     static boolean skipsChunkSaves(boolean asked, String filter) {
         return asked && (filter == null || !filter.toLowerCase(Locale.ROOT).contains("restart"));
