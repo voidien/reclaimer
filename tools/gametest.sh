@@ -21,6 +21,11 @@ esac
 log=build/gametest-$suite.log
 mkdir -p build
 
+# One test server at a time across every checkout on this machine: each is a 6 GB JVM, and JVMs side by side have crashed here far
+# more often than one alone. Waits its turn. Gradle gets fd 9 closed below: a daemon it starts would hold the lock for hours.
+exec 9>/tmp/void-reclaimer-gametest.lock
+flock 9
+
 # The JVM and nothing else: a pattern like `grep gameTest` also matches the shell running this script.
 # Only this checkout's and this suite's: another worktree or the other suite may be running at the same time.
 killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/$run" '$2 ~ /\/bin\/java$/ && index($0, root) {print $1}' | xargs -r kill; }
@@ -28,9 +33,9 @@ killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/$run" '$2 ~ /\/bin\
 killjvm
 : > "$log"
 if [ -n "$filter" ]; then
-  ./gradlew "$task" -PgametestFilter="$filter" > "$log" 2>&1 &
+  ./gradlew "$task" -PgametestFilter="$filter" > "$log" 2>&1 9>&- &
 else
-  ./gradlew "$task" > "$log" 2>&1 &
+  ./gradlew "$task" > "$log" 2>&1 9>&- &
 fi
 gradle=$!
 for _ in $(seq 1 450); do
