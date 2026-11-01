@@ -4,6 +4,7 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.link.BodyHost;
+import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
@@ -14,8 +15,10 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -106,6 +109,77 @@ public final class RestartGameTests {
                     space.getEntity(id).discard();
                     player.setData(ModAttachments.LINK, LinkState.NONE);
                     TestPlayers.remove(player);
+                    helper.succeed();
+                });
+    }
+
+    private static final UUID CLASH_SHELL = new UUID(0x7E57L, 0xC1A5L);
+    private static final BlockPos CLASH_OLD = new BlockPos(262_000, 80, 0);
+    private static final BlockPos CLASH_NEW = new BlockPos(262_400, 80, 0);
+
+    private static long chunk(BlockPos pos) {
+        return ChunkPos.asLong(pos);
+    }
+
+    private static void force(ServerLevel level, BlockPos pos, boolean forced) {
+        level.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, forced);
+    }
+
+    private static String found(ServerLevel level) {
+        return level.getEntity(CLASH_SHELL) instanceof BodyHost shell ? "link number " + shell.epoch() + " at " + shell.blockPosition() : "nothing";
+    }
+
+    private static LinkState.Place place(ServerLevel level, BlockPos pos) {
+        return new LinkState.Place(level.dimension(), Vec3.atCenterOf(pos), 0f, 0f);
+    }
+
+    /**
+     * Two real copies on disk in two chunks, as a crash leaves them: link number 4 is written, its chunk unloads, and link number 5
+     * goes into another chunk. The owner stays away, so only the clash itself can decide.
+     */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aNewerShellWinsAClashBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, CLASH_OLD, 1, () -> {
+            force(space, CLASH_NEW, true);
+            BodyHost pattern = BodyHost.spawn(space, Vec3.atCenterOf(CLASH_OLD), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), null);
+            BodySnapshot body = BodySnapshot.of(pattern);
+            pattern.discard();
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(space.areEntitiesLoaded(chunk(CLASH_NEW)), "the new copy's chunk has not loaded"))
+                    .thenExecute(() -> {
+                        // A failed run leaves a copy behind, and the fix under test would let it push out the one written here.
+                        BodyHost.restore(space, place(space, CLASH_OLD), CLASH_SHELL, 4L, body, null).orElseThrow();
+                        space.save(null, true, false);
+                        force(space, CLASH_OLD, false);
+                    })
+                    .thenWaitUntil(() -> helper.assertFalse(space.areEntitiesLoaded(chunk(CLASH_OLD)), "the old copy's chunk has not unloaded"))
+                    .thenExecute(() -> {
+                        BodyHost.restore(space, place(space, CLASH_NEW), CLASH_SHELL, 5L, body, null).orElseThrow();
+                        // Forced chunks are saved too, and the second server has to choose which copy loads first.
+                        force(space, CLASH_NEW, false);
+                        space.save(null, true, false);
+                        helper.succeed();
+                    });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aNewerShellWinsAClashAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        force(space, CLASH_OLD, true);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(space.areEntitiesLoaded(chunk(CLASH_OLD)), "the old copy's chunk has not loaded"))
+                .thenExecute(() -> {
+                    helper.assertTrue(space.getEntity(CLASH_SHELL) instanceof BodyHost old && old.epoch() == 4L, "expected link number 4 to clash with, found " + found(space));
+                    force(space, CLASH_NEW, true);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(space.areEntitiesLoaded(chunk(CLASH_NEW)), "the new copy's chunk has not loaded"))
+                .thenExecute(() -> {
+                    helper.assertTrue(space.getEntity(CLASH_SHELL) instanceof BodyHost shell && shell.epoch() == 5L, "the newer copy was refused, found " + found(space));
+                    space.getEntity(CLASH_SHELL).discard();
+                    force(space, CLASH_OLD, false);
+                    force(space, CLASH_NEW, false);
                     helper.succeed();
                 });
     }
