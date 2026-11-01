@@ -117,6 +117,18 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.holo.source", "Showing: %s");
         add("commands.void_reclaimer.holo.not_a_projector", "No Holo Projector there.");
         add("holo_readout.void_reclaimer.clock", "Mission clock");
+        add("holo_readout.void_reclaimer.helm", "Helm");
+        add("holo_readout.void_reclaimer.thruster", "Thruster");
+        add("holo_readout.void_reclaimer.siphon", "Cloud Siphon");
+        add("holo_readout.void_reclaimer.electrolyzer", "Electrolyzer");
+        add("holo_readout.void_reclaimer.spinner", "Spinner");
+        add("holo_readout.void_reclaimer.launch_complex", "Launch Complex");
+        add("holo_readout.void_reclaimer.dyson", "Dyson Sphere");
+        add("holo_readout.void_reclaimer.spire", "Terraforming Spire");
+        add("holo_readout.void_reclaimer.backup_core", "Backup Core");
+        add("holo_readout.void_reclaimer.player", "Nearest body");
+        add("holo_readout.void_reclaimer.cloud", "Dust cloud");
+        add("holo_readout.void_reclaimer.device", "Device beside it");
         add("message.void_reclaimer.station.assembled", "Station %s assembled.");
         add("message.void_reclaimer.station.disassembled", "Station %s set down.");
         add("message.void_reclaimer.station.already_assembled", "This is already a station.");

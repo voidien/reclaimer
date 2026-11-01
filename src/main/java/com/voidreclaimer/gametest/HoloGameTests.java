@@ -1,8 +1,11 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.display.HoloDisplay;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
+import com.voidreclaimer.dyson.Dyson;
+import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModRegistries;
 import java.util.List;
@@ -144,6 +147,84 @@ public final class HoloGameTests {
             projector.setSource(VoidReclaimer.id("no_such_kind"));
             helper.assertTrue(projector.display().lines().isEmpty(), "an unknown kind showed " + projector.display().texts());
             helper.assertTrue(projector.display().source().equals(VoidReclaimer.id("no_such_kind")), "an unknown kind was not kept");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aReadoutSourceComposesAndFollowsItsSource(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(130_600, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            BlockPos near = pos.east(3);
+            BlockPos nearer = pos.west(2);
+            BlockPos far = pos.south(9);
+            level.setBlock(far, ModBlocks.BACKUP_CORE.get().defaultBlockState(), 3);
+            projector.setSource(VoidReclaimer.id("backup_core"));
+            helper.assertTrue(projector.display().lines().isEmpty(), "a core out of range showed " + projector.display().texts());
+            level.setBlock(near, ModBlocks.BACKUP_CORE.get().defaultBlockState(), 3);
+            level.setBlock(nearer, ModBlocks.BACKUP_CORE.get().defaultBlockState(), 3);
+            ((BackupCoreBlockEntity) level.getBlockEntity(near)).setName("near");
+            ((BackupCoreBlockEntity) level.getBlockEntity(nearer)).setName("nearer");
+            projector.refresh();
+            helper.assertTrue(projector.display().text(1).equals("nearer"), "read " + projector.display().texts());
+            level.setBlock(nearer, Blocks.AIR.defaultBlockState(), 3);
+            projector.refresh();
+            helper.assertTrue(projector.display().text(1).equals("near"), "did not move on: " + projector.display().texts());
+            level.setBlock(near, Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(far, Blocks.AIR.defaultBlockState(), 3);
+            projector.refresh();
+            helper.assertTrue(projector.display().lines().isEmpty(), "still showing " + projector.display().texts());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void playerReadoutReadsTheNearestBody(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(130_700, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            projector.setSource(VoidReclaimer.id("player"));
+            helper.assertTrue(projector.display().lines().isEmpty(), "no body in reach, but " + projector.display().texts());
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5);
+            player.setHealth(5);
+            projector.refresh();
+            helper.assertTrue(projector.display().text(0).equals(player.getGameProfile().getName()), "lines " + projector.display().texts());
+            helper.assertTrue(projector.display().text(1).startsWith("Health 5.0 /"), "lines " + projector.display().texts());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theDysonReadoutNeedsNoSource(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(130_800, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            DysonSphereData saved = DysonSphereData.of(level);
+            Dyson.set(level.getServer(), new DysonSphereData(123, 4, 0, 0));
+            projector.setSource(VoidReclaimer.id("dyson"));
+            List<String> lines = projector.display().texts();
+            Dyson.set(level.getServer(), saved);
+            helper.assertTrue(lines.get(2).equals("Satellites 123"), "lines " + lines);
+            helper.assertTrue(lines.get(3).startsWith("Trusses 4 / "), "lines " + lines);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theDeviceReadoutReadsAnyTankBesideIt(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(130_900, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            projector.setSource(VoidReclaimer.id("device"));
+            helper.assertTrue(projector.display().lines().isEmpty(), "nothing beside it, but " + projector.display().texts());
+            level.setBlock(pos.below(), ModBlocks.ION_THRUSTER.get().defaultBlockState(), 3);
+            projector.refresh();
+            helper.assertTrue(projector.display().text(1).startsWith("Energy 0 / "), "lines " + projector.display().texts());
             helper.succeed();
         });
     }

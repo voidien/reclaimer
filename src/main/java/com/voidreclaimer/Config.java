@@ -132,6 +132,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue RCS_FE_BUFFER;
 
     public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
+    public static final ModConfigSpec.IntValue HOLO_SOURCE_RANGE;
     public static final ModConfigSpec.IntValue SPIRE_RADIUS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
 
@@ -367,6 +368,7 @@ public final class Config {
         BUILDER.comment("Holo Projector.").push("holo");
         toggle("holoProjector", "The Replicator can make the Holo Projector.");
         HOLO_REFRESH_TICKS = BUILDER.comment("Ticks between refreshes of a projector showing a readout.").defineInRange("refreshTicks", 10, 1, 1200);
+        HOLO_SOURCE_RANGE = BUILDER.comment("How far a readout looks for the machine it shows, in blocks.").defineInRange("sourceRange", 8, 1, 32);
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");
