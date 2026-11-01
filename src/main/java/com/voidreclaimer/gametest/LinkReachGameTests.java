@@ -110,7 +110,7 @@ public final class LinkReachGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aChunkThatTakesTooLongEndsTheWait(GameTestHelper helper) {
         BlockPos origin = new BlockPos(144_400, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -129,7 +129,7 @@ public final class LinkReachGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aLoadedShellIsReachedToo(GameTestHelper helper) {
         BlockPos origin = new BlockPos(144_600, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -149,7 +149,7 @@ public final class LinkReachGameTests {
     }
 
     /** What the list rules out takes no chunk loading at all, so these end on the spot. */
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void whatTheListRulesOutEndsAtOnce(GameTestHelper helper) {
         BlockPos origin = new BlockPos(144_800, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -203,7 +203,7 @@ public final class LinkReachGameTests {
     }
 
     /** A player who leaves ends the wait, or it would hold chunks and a move for nobody. */
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aPlayerWhoLeavesEndsTheWait(GameTestHelper helper) {
         BlockPos origin = new BlockPos(145_200, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {

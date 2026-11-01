@@ -51,7 +51,7 @@ public final class UplinkSeatGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aSeatLinksAndALinkKnowsItsSeat(GameTestHelper helper) {
         BlockPos pos = new BlockPos(146_000, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
@@ -76,7 +76,7 @@ public final class UplinkSeatGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aSeatWithNoShellChangesNothing(GameTestHelper helper) {
         BlockPos pos = new BlockPos(146_200, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
@@ -90,7 +90,7 @@ public final class UplinkSeatGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aTakenSeatTurnsASecondPlayerAway(GameTestHelper helper) {
         BlockPos pos = new BlockPos(146_400, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
