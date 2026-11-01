@@ -1,7 +1,5 @@
 package com.voidreclaimer.client.screen;
 
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.Wear;
@@ -17,12 +15,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
 
 /**
  * The full-window assembly view: the body's model in the centre, turned by dragging and zoomed by scrolling, with the Body
@@ -47,7 +43,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private static final int ACCENT = 0xFF7FD4FF;
     /** How much of the view the body fills at zoom 1. */
     private static final float FIT = 0.42f;
-    private static final float START_YAW = 35f;
+    static final float START_YAW = 35f;
     /** {@code renderEntityInInventory} draws the body this far up the GUI's depth. */
     private static final float Z_BASE = 50f;
     /** How far behind the body's middle a marker still shows, as a share of its radius. */
@@ -60,7 +56,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private static final int TEXT = 0xFFDDE6EE;
     private static final int BETTER = 0xFF70E080;
     private static final int WORSE = 0xFFFF7060;
-    private static final float START_PITCH = -18f;
+    static final float START_PITCH = -18f;
 
     private Button explode;
     private final AssemblyCamera camera = new AssemblyCamera(START_YAW, START_PITCH);
@@ -270,54 +266,10 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
 
     /** Draws the body facing the camera, with the camera's angles and focus, clipped to the view. */
     private void renderBody(GuiGraphics graphics, LocalPlayer player) {
-        float yBodyRot = player.yBodyRot;
-        float yBodyRotO = player.yBodyRotO;
-        float yRot = player.getYRot();
-        float yRotO = player.yRotO;
-        float xRot = player.getXRot();
-        float xRotO = player.xRotO;
-        float yHeadRot = player.yHeadRot;
-        float yHeadRotO = player.yHeadRotO;
-        // Set like the inventory's preview: the body stands still here while the camera turns.
-        player.yBodyRot = 180f;
-        player.yBodyRotO = 180f;
-        player.setYRot(180f);
-        player.yRotO = 180f;
-        player.setXRot(0f);
-        player.xRotO = 0f;
-        player.yHeadRot = 180f;
-        player.yHeadRotO = 180f;
-
-        Quaternionf turn = new Quaternionf().rotateX((float) Math.toRadians(camera.pitch())).rotateY((float) Math.toRadians(camera.yaw()));
-        Quaternionf pose = new Quaternionf().rotateZ((float) Math.PI).mul(turn);
-        // The point of the body at the view's centre: the middle of its hitbox, plus the focus.
-        Vector3f centre = new Vector3f(camera.focusX(), player.getBbHeight() / 2f + camera.focusY(), camera.focusZ());
-        Vector3f translate = pose.transform(centre, new Vector3f()).negate();
         drawnScale = pixelsPerBlock(player);
-        drawnPose.set(pose);
-        drawnShift.set(translate);
-        // The panel behind the body wrote depth at z 0, which would cut off anything far behind the focus.
-        graphics.flush();
-        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-        graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
-        BodyRenderer.setExplode(camera.explode());
-        InventoryScreen.renderEntityInInventory(graphics, (viewLeft + viewRight) / 2f, (viewTop + viewBottom) / 2f, drawnScale,
-                translate, pose, turn, player);
-        BodyRenderer.setExplode(0f);
-        graphics.disableScissor();
-        // A big body reaches far towards the viewer: nothing drawn later may end up behind it.
-        graphics.flush();
-        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-        Lighting.setupFor3DItems();
-
-        player.yBodyRot = yBodyRot;
-        player.yBodyRotO = yBodyRotO;
-        player.setYRot(yRot);
-        player.yRotO = yRotO;
-        player.setXRot(xRot);
-        player.xRotO = xRotO;
-        player.yHeadRot = yHeadRot;
-        player.yHeadRotO = yHeadRotO;
+        BodyStage.Drawn drawn = BodyStage.draw(graphics, player, camera, viewLeft, viewTop, viewRight, viewBottom, drawnScale);
+        drawnPose.set(drawn.pose());
+        drawnShift.set(drawn.shift());
     }
 
     private boolean overView(double mouseX, double mouseY) {
