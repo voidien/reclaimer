@@ -454,7 +454,7 @@ public final class CCPeripheralGameTests {
             HoloPeripheral lua = new HoloPeripheral();
             HoloProjectorBlockEntity holo = HoloGameTests.place(level, pos);
             requireMethods(helper, Lookup.of(level, pos), "Holo Projector", "getLines", "getLine", "setLine", "setLines", "clear", "setColor",
-                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "setGlobe", "setShip", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
+                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "setGlobe", "setShip", "setMap", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
             try {
                 Object[] written = lua.setLine(holo, new ObjectArguments(2.0, "two", "red")).getResult();
                 helper.assertTrue(Boolean.TRUE.equals(written[0]), "setLine refused");
@@ -484,6 +484,8 @@ public final class CCPeripheralGameTests {
             helper.assertTrue("globe".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             lua.setShip(holo);
             helper.assertTrue("ship".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
+            lua.setMap(holo);
+            helper.assertTrue("map".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             lua.setBody(holo);
             helper.assertTrue("body".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             helper.assertTrue(lua.getModel(holo) == null, "a body has no model id");

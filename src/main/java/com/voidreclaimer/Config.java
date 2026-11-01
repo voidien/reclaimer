@@ -135,6 +135,8 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
     public static final ModConfigSpec.IntValue HOLO_SOURCE_RANGE;
+    public static final ModConfigSpec.IntValue HOLO_MAP_RADIUS;
+    public static final ModConfigSpec.IntValue HOLO_MAP_REFRESH_TICKS;
     public static final ModConfigSpec.BooleanValue EARTH_ACID_DRIZZLE;
     public static final ModConfigSpec.DoubleValue EARTH_ACID_WEAR;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
@@ -385,6 +387,8 @@ public final class Config {
         toggle("holoProjector", "The Replicator can make the Holo Projector.");
         HOLO_REFRESH_TICKS = BUILDER.comment("Ticks between refreshes of a projector showing a readout.").defineInRange("refreshTicks", 10, 1, 1200);
         HOLO_SOURCE_RANGE = BUILDER.comment("How far a readout looks for the machine it shows, in blocks.").defineInRange("sourceRange", 8, 1, 32);
+        HOLO_MAP_RADIUS = BUILDER.comment("Blocks from the middle of a map hologram to its edge.").defineInRange("mapRadius", 64, 16, 256);
+        HOLO_MAP_REFRESH_TICKS = BUILDER.comment("Ticks between new pictures of a map hologram.").defineInRange("mapRefreshTicks", 100, 20, 1200);
         BUILDER.pop();
 
         BUILDER.comment("Terraforming Spire.").push("terraform");

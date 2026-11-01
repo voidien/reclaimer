@@ -6,8 +6,12 @@ import com.mojang.math.Axis;
 import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.display.HoloDisplay;
 import com.voidreclaimer.display.HoloGlobes;
+import com.voidreclaimer.display.HoloMapImage;
 import com.voidreclaimer.display.HoloProjectorBlock;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
+import com.voidreclaimer.helper.HelperDrone;
+import com.voidreclaimer.ship.Ships;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -20,7 +24,11 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -42,6 +50,12 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
     private static final float MAX_REACH = 12f;
     /** Room between a globe and the lines over it, as a share of the globe's size: it must clear the Earth's atmosphere. */
     private static final float CAPTION_GAP = 0.12f;
+    /** Half a dot on a map, and how far it stands in front of it, in map pixels. */
+    private static final float DOT = 1.5f;
+    private static final float DOT_LIFT = 0.2f;
+    /** The brightest point of the glow texture, a beam that fades upward, so a dot is one flat colour. */
+    private static final float DOT_U = 0.5f;
+    private static final float DOT_V = 0.98f;
 
     private final Font font;
 
@@ -67,6 +81,7 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
             case BODY -> drawBody(display, time, flicker, partialTick, pose, buffers);
             case GLOBE -> drawGlobe(projector, display, time, flicker, pose, buffers);
             case SHIP -> drawShip(projector, display, time, flicker, pose, buffers);
+            case MAP -> drawMap(projector, display, time, flicker, pose, buffers);
         }
     }
 
@@ -124,6 +139,66 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
         mesh.replay(pose.last(), buffers.getBuffer(RenderType.entityTranslucentEmissive(TextureAtlas.LOCATION_BLOCKS, false)),
                 HoloStyle.argb(HoloStyle.MODEL_TINT, HoloStyle.MODEL_ALPHA * flicker));
         pose.popPose();
+    }
+
+    private void drawMap(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
+        ResourceLocation texture = projector.mapImage().length == 0 ? null : HoloMaps.texture(projector, projector.getLevel().getGameTime());
+        if (texture == null) {
+            return;
+        }
+        float size = HoloTransform.MODEL_SIZE * display.scale();
+        float pixel = size / HoloMapImage.SIZE;
+        pose.pushPose();
+        pose.translate(0.5, 1, 0.5);
+        beam(pose, buffers, display.height(), flicker);
+        pose.translate(0, display.height() + size / 2, 0);
+        pose.mulPose(turn(projector, display, pose));
+        pose.scale(pixel, -pixel, pixel);
+        pose.translate(-HoloMapImage.SIZE / 2f, -HoloMapImage.SIZE / 2f, 0);
+        Matrix4f matrix = pose.last().pose();
+        VertexConsumer map = buffers.getBuffer(RenderType.text(texture));
+        int color = HoloStyle.argb(0xFFFFFF, HoloStyle.MODEL_ALPHA * flicker);
+        float side = HoloMapImage.SIZE;
+        map.addVertex(matrix, 0, side, 0).setColor(color).setUv(0, 1).setLight(LightTexture.FULL_BRIGHT);
+        map.addVertex(matrix, side, side, 0).setColor(color).setUv(1, 1).setLight(LightTexture.FULL_BRIGHT);
+        map.addVertex(matrix, side, 0, 0).setColor(color).setUv(1, 0).setLight(LightTexture.FULL_BRIGHT);
+        map.addVertex(matrix, 0, 0, 0).setColor(color).setUv(0, 0).setLight(LightTexture.FULL_BRIGHT);
+        VertexConsumer glow = buffers.getBuffer(RenderType.entityTranslucentEmissive(HoloStyle.GLOW, false));
+        BlockPos center = projector.getBlockPos();
+        int radius = projector.mapRadius();
+        // A ship's map is its own deck plan, in plot coordinates: what flies about in the world has no place on it.
+        if (Ships.shipAt(projector.getLevel(), center) == null) {
+            for (Entity entity : projector.getLevel().getEntities((Entity) null, new AABB(center).inflate(radius), HoloProjectorRenderer::onMap)) {
+                int dot = entity instanceof Player ? HoloStyle.argb(0xFFFFFF, flicker) : HoloStyle.argb(HoloStyle.CYAN, flicker);
+                dot(glow, pose, matrix, entity.getX() - center.getX(), entity.getZ() - center.getZ(), radius, dot);
+            }
+            SubLevelContainer ships = SubLevelContainer.getContainer(projector.getLevel());
+            if (ships != null) {
+                for (SubLevel ship : ships.getAllSubLevels()) {
+                    var at = ship.logicalPose().position();
+                    dot(glow, pose, matrix, at.x() - center.getX(), at.z() - center.getZ(), radius, HoloStyle.argb(0xFFC860, flicker));
+                }
+            }
+        }
+        pose.popPose();
+    }
+
+    /** What a map marks: bodies and helper drones, not dropped items and the like. */
+    private static boolean onMap(Entity entity) {
+        return entity instanceof LivingEntity || entity instanceof HelperDrone;
+    }
+
+    /** A dot on the map at a block offset from its middle; nothing off the map. */
+    private static void dot(VertexConsumer glow, PoseStack pose, Matrix4f matrix, double x, double z, int radius, int color) {
+        int px = HoloMapImage.pixel(x, radius);
+        int py = HoloMapImage.pixel(z, radius);
+        if (px < 0 || py < 0) {
+            return;
+        }
+        vertex(glow, pose, matrix, px - DOT, py + DOT, DOT_LIFT, DOT_U, DOT_V, color);
+        vertex(glow, pose, matrix, px + DOT, py + DOT, DOT_LIFT, DOT_U, DOT_V, color);
+        vertex(glow, pose, matrix, px + DOT, py - DOT, DOT_LIFT, DOT_U, DOT_V, color);
+        vertex(glow, pose, matrix, px - DOT, py - DOT, DOT_LIFT, DOT_U, DOT_V, color);
     }
 
     private void drawGlobe(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
