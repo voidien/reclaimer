@@ -109,6 +109,10 @@ public final class PhotoModeScreen extends Screen {
             PhotoDebug.setLabels(!PhotoDebug.labels());
             return true;
         }
+        if (keyCode == GLFW.GLFW_KEY_K) {
+            PhotoDebug.cyclePaint();
+            return true;
+        }
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_F2) {
             // The HUD is already hidden and this screen draws nothing without the debug layer, so the frame is clean.
             PhotoDebug.capture(minecraft, "photo_" + net.minecraft.Util.getFilenameFormattedDateTime());

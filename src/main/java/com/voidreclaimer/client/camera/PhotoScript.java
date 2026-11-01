@@ -104,6 +104,10 @@ public final class PhotoScript {
                     later(mc -> PhotoDebug.setOverlay(on));
                     return 1;
                 })))
+                .then(Commands.literal("paint")
+                        .then(Commands.literal("all").executes(c -> paint(PhotoDebug.Paint.ALL)))
+                        .then(Commands.literal("base").executes(c -> paint(PhotoDebug.Paint.BASE)))
+                        .then(Commands.literal("accent").executes(c -> paint(PhotoDebug.Paint.ACCENT))))
                 .then(Commands.literal("time")
                         .then(Commands.literal("freeze").executes(c -> time(PhotoDebug.Time.TOGGLE_FREEZE)))
                         .then(Commands.literal("step").executes(c -> time(PhotoDebug.Time.STEP)))
@@ -198,6 +202,11 @@ public final class PhotoScript {
 
     private static HandlingReadout.Row row(String name, BodyView view) {
         return HandlingReadout.row(name, view.stats(), BodyBounds.length(view));
+    }
+
+    private static int paint(PhotoDebug.Paint value) {
+        later(mc -> PhotoDebug.setPaint(value));
+        return 1;
     }
 
     private static int time(PhotoDebug.Time action) {

@@ -71,6 +71,7 @@ public final class PhotoMode {
         PhotoDebug.set(mc, false);
         PhotoDebug.setLabels(false);
         PhotoDebug.setOverlay(false);
+        PhotoDebug.setPaint(PhotoDebug.Paint.ALL);
         PhotoDebug.resetTime(mc);
         mc.options.hideGui = hudWasHidden;
     }

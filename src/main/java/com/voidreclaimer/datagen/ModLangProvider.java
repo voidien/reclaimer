@@ -55,7 +55,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("key.void_reclaimer.sensor_pulse", "Dust Sensor Pulse");
         add("key.void_reclaimer.orbit_camera", "Orbit Camera (hold, third person)");
         add("key.void_reclaimer.assembly", "Body Assembly");
-        add("key.void_reclaimer.photo_mode", "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, O overlay, P freeze, period step, comma slow, T chat, Enter shot)");
+        add("key.void_reclaimer.photo_mode", "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, K paint, O overlay, P freeze, period step, comma slow, T chat, Enter shot)");
         add("screen.void_reclaimer.photo_mode", "Photo mode");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
         add("key.void_reclaimer.unlink", "Leave Shell");
