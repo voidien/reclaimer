@@ -209,7 +209,7 @@ dependencies {
     testRuntimeOnly "maven.modrinth:sable:${sable_version}"
     testRuntimeOnly "maven.modrinth:create-aeronautics:${aeronautics_version}"
 
-    // Required Create addons (runtime only, like Aeronautics; add implementation when our code needs their API).
+    // Required Create addons (runtime only, like Aeronautics; compile-only where our code reaches into one).
     def requiredAddons = [
             "maven.modrinth:createaddition:${createaddition_version}",
             "maven.modrinth:create-propulsion-simulated:${propulsion_version}",
@@ -221,6 +221,9 @@ dependencies {
         localRuntime it
         testRuntimeOnly it
     }
+    // The CogScript patch: docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md.
+    compileOnly "curse.maven:create-advanced-electricity-addon-1743391:${advanced_electricity_file}"
+    compileOnly "maven.modrinth:createaddition:${createaddition_version}"
 
     // Performance mods we stay compatible with. Dev runs only, never published.
     localRuntime "maven.modrinth:sodium:${sodium_version}"

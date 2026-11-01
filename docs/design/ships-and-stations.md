@@ -41,7 +41,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 - **Optional like JEI:** `compileOnly` against CC's API (`cc.tweaked:cc-tweaked-1.21.1-*-api` from `maven.squiddev.cc`), the full mod on `localRuntime` (dev runs and GameTests), `optional` in `neoforge.mods.toml`. Only `CCCompat.onCommonSetup` runs without CC; it checks `isLoaded()` before touching anything else in the package.
 - **Generic peripherals:** a class implementing `GenericPeripheral` whose `@LuaFunction(mainThread = true)` methods take our block entity as the first argument. No changes to our block classes; CC attaches them to computers next to the block or on wired modems.
 - **Control follows player rules:** a computer can do what a player can by right-click or redstone, through the same code paths and checks, never more.
-- **Ship scripting (owner's route 3):** Create: Avionics with CC: Tweaked (both optional). Advanced Computer Technic's CogScript has no extension API (hard-coded functions, a single device slot), so we do not patch it.
+- **Ship scripting (owner's route 3):** Create: Avionics with CC: Tweaked (both optional). CogScript has no extension API (hard-coded functions, a single device slot), so ship control stays out of it; the only patch is the small `holo` module for Holo Projectors (`docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md`).
 
 **7b block ships (interview 2026-10-30, owner's answers; not built yet)**
 - **Thrusters, three blocks:** **Chemical Thruster** (Create rotation plus fuel: high thrust, burns fast), **Ion Thruster** (Forge Energy only: low thrust, efficient), and an **RCS block** for fine rotation (our existing `rcs_thruster` item becomes placeable, keeping its item id so saves and recipes stay valid).

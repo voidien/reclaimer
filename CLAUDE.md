@@ -54,7 +54,7 @@ The player is a nameless AI consciousness. There are no enemies, no combat, and 
 | Create Propulsion: Simulated (required) | 1.1.5 (`maven.modrinth:create-propulsion-simulated:1.1.5`, mod id `createpropulsion`) | api.modrinth.com/maven |
 | Create: The Factory Must Grow (required) | 1.2.0 (`maven.modrinth:create-tfmg:uDi14nbt`, pinned by version id, mod id `tfmg`) | api.modrinth.com/maven |
 | Create: Advanced Electricity / Technology Addon (required) | 1.21.1 1.0.0 (`curse.maven:create-advanced-electricity-addon-1743391:9362753`, mod id `light_bulb_addon_create_crafts_and__addions`) | cursemaven.com (CurseForge only) |
-| Create: Advanced Computer Technic (required) | 1.21.1 1.0.2 (`curse.maven:create-advanced-computer-technic-1759784:9362807`, mod id `advanced_computer_technic`; All Rights Reserved) | cursemaven.com (CurseForge only) |
+| Create: Advanced Computer Technic (required) | 1.21.1 1.0.0 (`curse.maven:create-advanced-computer-technic-1759784:9362807`, mod id `advanced_computer_technic`; All Rights Reserved) | cursemaven.com (CurseForge only) |
 | Gradle wrapper | 9.2.1 | matches official NeoForge 1.21.1 MDK |
 | Sodium (dev run only) | mc1.21.1-0.8.13-neoforge | api.modrinth.com/maven |
 | ModernFix (dev run only) | 5.27.27+mc1.21.1 | api.modrinth.com/maven |

@@ -17,7 +17,8 @@
     "InventoryLockMixin",
     "SlotLockMixin",
     "ServerChunkCacheInvoker",
-    "LevelPlotMixin"
+    "LevelPlotMixin",
+    "CogScriptHoloMixin"
   ],
   "client": [
     "CameraPhotoMixin",
