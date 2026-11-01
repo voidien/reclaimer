@@ -388,6 +388,26 @@ public final class LinkSwapGameTests {
         });
     }
 
+    /** The mind's dust stays with it, so a shell's own storage parts neither add to the reserve nor cut it down. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aShellReadsTheMainBodysDustStorage(GameTestHelper helper) {
+        withShell(helper, new BlockPos(79_100, 80, 0), (player, shell) -> {
+            float mech = DustData.capacity(player);
+            float fullShip = Bodies.stats(shell).dustCapacity() + com.voidreclaimer.Config.DUST_CAPACITY.get().floatValue();
+            helper.assertTrue(mech != fullShip, "the two bodies store the same, so this checks nothing: " + mech);
+            helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
+            helper.assertTrue(DustData.capacity(player) == mech, "in the shell the storage is " + DustData.capacity(player) + ", not the main body's " + mech);
+            ServerPlayer back = TestPlayers.rejoin(helper, player);
+            helper.assertTrue(DustData.capacity(back) == mech, "a relog changed the storage: " + DustData.capacity(back));
+            helper.assertTrue(Links.wake(back) == Links.Result.WOKEN, "no wake");
+            helper.assertTrue(back.getData(ModAttachments.HOME_DUST_CAPACITY) == DustData.NOT_LINKED, "still reading a stored value at home");
+            helper.assertTrue(DustData.capacity(back) == mech, "at home the storage is " + DustData.capacity(back));
+            Bodies.store(back, Bodies.preset(BuiltinBodies.SHIP, true));
+            helper.assertTrue(DustData.capacity(back) == fullShip, "at home a new body should count: " + DustData.capacity(back));
+            helper.succeed();
+        });
+    }
+
     /**
      * The move runs between ticks, never inside anything else's tick. This test waits for those ticks, so it cannot use
      * {@link #withShell}, which cleans up as soon as its test returns.

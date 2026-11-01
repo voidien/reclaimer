@@ -188,6 +188,14 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** While in a shell, the main body's dust storage: the mind's dust stays with it, and the HUD needs this too. Negative when not linked. */
+    public static final Supplier<AttachmentType<Float>> HOME_DUST_CAPACITY = ATTACHMENT_TYPES.register("home_dust_capacity",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.dust.DustData.NOT_LINKED)
+                    .serialize(com.mojang.serialization.Codec.FLOAT)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, net.minecraft.network.codec.ByteBufCodecs.FLOAT)
+                    .build());
+
     public static final Supplier<AttachmentType<BodyData>> BODY = ATTACHMENT_TYPES.register("body",
             () -> AttachmentType.builder(Bodies::starter)
                     .serialize(BodyData.CODEC)
