@@ -1,6 +1,7 @@
 package com.voidreclaimer.link;
 
 import com.mojang.logging.LogUtils;
+import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.core.BackupCores;
@@ -209,7 +210,7 @@ public final class Links {
         }
         // An old copy can be linked to when the outbox cannot be read, and the list must not go back with it.
         long epoch = Math.max(shell.epoch(), state.known(shell.getUUID()).map(LinkState.KnownShell::epoch).orElse(0L)) + 1;
-        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from, Optional.ofNullable(seat)))
+        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from, Optional.ofNullable(seat), player.server.overworld().getGameTime()))
                 .withKnown(new LinkState.KnownShell(shell.getUUID(), epoch, place(shell), false, false)));
         if (!wear(player, body)) {
             boolean restored = wear(player, home);
@@ -269,7 +270,7 @@ public final class Links {
         if (shell.isEmpty()) {
             LOGGER.warn("Shell {} could not be put back in the world yet: it stays in the outbox", link.shell());
         }
-        if (!wear(player, home.get())) {
+        if (!wear(player, charged(player, home.get(), link))) {
             shell.ifPresent(BodyHost::discard);
             wear(player, body);
             arrive(player, shellLevel, at.position(), at.yaw(), at.pitch());
@@ -308,6 +309,17 @@ public final class Links {
         }
         LinkState.Place spawn = new LinkState.Place(ModDimensions.DEEP_SPACE, SpawnHandler.spawnPosition(), 0f, 0f);
         return reachable(player, spawn) ? spawn : null;
+    }
+
+    /** The main body after its time in a seat. It is not in the world to tick, so this is worked out from the time it took. */
+    private static BodySnapshot charged(ServerPlayer player, BodySnapshot home, LinkState.Link link) {
+        if (link.seat().isEmpty()) {
+            return home;
+        }
+        ServerLevel level = player.server.getLevel(link.from().dimension());
+        boolean atStation = level != null && level.getData(ModAttachments.STATIONS).nearest(link.from().position(), Config.STATION_RANGE.get()).isPresent();
+        double perSecond = Config.LINK_SEAT_CHARGE.get() * (atStation ? Config.LINK_STATION_CHARGE.get() : 1.0);
+        return home.withEnergy(SeatCharge.after(home.energy(), player.server.overworld().getGameTime() - link.since(), perSecond));
     }
 
     private static boolean reachable(ServerPlayer player, LinkState.Place place) {

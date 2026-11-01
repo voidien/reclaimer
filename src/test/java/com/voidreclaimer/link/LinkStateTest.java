@@ -52,6 +52,12 @@ class LinkStateTest {
     }
 
     @Test
+    void aLinkKeepsWhenItBeganThroughASave() {
+        LinkState state = LinkState.NONE.withLink(new LinkState.Link(SHELL, 1L, body(1), PLACE, Optional.empty(), 1234L));
+        assertEquals(1234L, throughASave(state).link().orElseThrow().since());
+    }
+
+    @Test
     void aSeatTakesTheNewestShellThatStandsReady() {
         UUID older = new UUID(3L, 4L);
         UUID wreck = new UUID(5L, 6L);

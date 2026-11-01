@@ -35,6 +35,8 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue DUST_SCOOP;
     public static final ModConfigSpec.DoubleValue CLOUD_DRAG;
     public static final ModConfigSpec.DoubleValue EARTH_WIND_SPEED;
+    public static final ModConfigSpec.DoubleValue LINK_SEAT_CHARGE;
+    public static final ModConfigSpec.DoubleValue LINK_STATION_CHARGE;
     public static final ModConfigSpec.DoubleValue STATION_RANGE;
     public static final ModConfigSpec.DoubleValue HELPER_SPEED;
     public static final ModConfigSpec.IntValue HELPER_CARRY;
@@ -235,6 +237,13 @@ public final class Config {
         HELPER_OWNER_RANGE = BUILDER.comment("How far a collecting drone will fly to its owner, in blocks.").defineInRange("ownerRange", 96.0, 8.0, 512.0);
         HELPER_SEARCH_NODES = BUILDER.comment("Cells one search for a way round blocks may look at. More finds ways round bigger walls and costs more when a drone is stuck.").defineInRange("searchNodes", 2048, 64, 65536);
         HELPER_BLOCKED_RETRY = BUILDER.comment("Ticks a drone with no way to its target holds still before it looks again.").defineInRange("blockedRetry", 100, 10, 12000);
+        BUILDER.pop();
+
+        BUILDER.comment("Remote control.").push("link");
+        LINK_SEAT_CHARGE = BUILDER.comment("Energy per second an Uplink Seat gives the main body while the mind is away.")
+                .defineInRange("seatCharge", 0.5, 0.0, 1000.0);
+        LINK_STATION_CHARGE = BUILDER.comment("A seat within station range of a Station Core charges this many times faster (1 = no bonus).")
+                .defineInRange("stationCharge", 2.0, 1.0, 100.0);
         BUILDER.pop();
 
         BUILDER.comment("Stations.").push("station");
