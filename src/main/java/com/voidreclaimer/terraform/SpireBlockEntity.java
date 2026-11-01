@@ -9,7 +9,9 @@ import com.voidreclaimer.earth.EarthRestoration;
 import com.voidreclaimer.earth.RuinedEarth;
 import com.voidreclaimer.earth.SectorMap;
 import com.voidreclaimer.earth.Sectors;
+import com.voidreclaimer.machine.MachineMath;
 import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.registry.ModTags;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -21,10 +23,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -39,10 +49,15 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * pulse stops at the edges of the {@link Sectors sector} it stands in, however far from the middle, and restores that
  * sector when it ends. A pulse in progress is saved with the block and carries on after a reload, whatever happens to the
  * tower. The tower is drawn from this block entity (GeckoLib, {@code geo/entity/spire_tower.geo.json}).
+ *
+ * <p>A pulse is paid for. Firing checks the cost and starts a charge, which needs the shaft turning all the way; the cost
+ * (catalysts from the one slot, Purified Water and Bio-Nutrient Slurry from the tanks) is taken when the charge ends and
+ * the wave leaves, so nothing is spent on a charge that does not finish. Automation only puts things in ({@link #items()},
+ * {@link #fluids()}).
  */
 public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEntity {
     public enum Start {
-        STARTED, BUSY, WRONG_WORLD, NOT_ASSEMBLED, OFF_PLANET, SECTOR_RESTORED, NO_PROFILE;
+        STARTED, BUSY, WRONG_WORLD, NOT_ASSEMBLED, OFF_PLANET, SECTOR_RESTORED, NO_PROFILE, NO_CATALYST, NO_WATER, NO_SLURRY, NO_ROTATION;
 
         /** The name scripts and lang keys use. */
         public String key() {
@@ -57,6 +72,24 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
     private static final int[][] RING_POINTS = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final ItemStackHandler catalyst = new ItemStackHandler(1) {
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return stack.is(ModTags.SPIRE_CATALYSTS);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
+    private final FluidTank water = tank(ModTags.SPIRE_WATER);
+    private final FluidTank slurry = tank(ModTags.SPIRE_SLURRY);
+    private final IItemHandler itemHandler = new ItemHandler();
+    private final IFluidHandler fluidHandler = new FluidHandler();
+    /** A charge is under way; {@link #charge} counts ticks at the reference speed. */
+    private boolean charging;
+    private float charge;
     private boolean assembled;
     private int checkIn;
     /** Ticks into the pulse; -1 when idle. */
@@ -106,6 +139,39 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         return elapsed >= 0;
     }
 
+    /** Whether the tower is charging for a pulse. */
+    public boolean charging() {
+        return charging;
+    }
+
+    /** How far the charge has come, 0 to 1; 0 when none is under way. */
+    public float chargeProgress() {
+        return charging ? Math.min(1f, charge / Math.max(1, Config.SPIRE_CHARGE_TICKS.get())) : 0f;
+    }
+
+    /** What automation sees: catalysts go in, nothing comes out. */
+    public IItemHandler items() {
+        return itemHandler;
+    }
+
+    /** What pipes see: the two fluids go in, nothing comes out. */
+    public IFluidHandler fluids() {
+        return fluidHandler;
+    }
+
+    /** The raw catalyst slot, for the block itself, scripts and tests. */
+    public ItemStackHandler catalyst() {
+        return catalyst;
+    }
+
+    public FluidTank waterTank() {
+        return water;
+    }
+
+    public FluidTank slurryTank() {
+        return slurry;
+    }
+
     /** Ticks into the running pulse, -1 when idle. */
     public int elapsed() {
         return elapsed;
@@ -149,12 +215,15 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         return lastChunksResent;
     }
 
-    /** Starts a pulse over the tower's sector, if the tower stands in one that is not restored yet and none is running. */
+    /**
+     * Starts the charge for a pulse over the tower's sector, if the tower stands in one that is not restored yet, none is
+     * under way, the cost is there and the shaft turns. {@link Start#STARTED} means charging has begun.
+     */
     public Start tryStart() {
         if (level == null || !RuinedEarth.is(level)) {
             return Start.WRONG_WORLD;
         }
-        if (running()) {
+        if (running() || charging) {
             return Start.BUSY;
         }
         if (!assembled) {
@@ -170,8 +239,64 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         if (profile(level).isEmpty()) {
             return Start.NO_PROFILE;
         }
-        start(radius(), Config.SPIRE_PULSE_TICKS.get(), here);
+        if (catalyst.getStackInSlot(0).getCount() < Config.SPIRE_CATALYSTS.get()) {
+            return Start.NO_CATALYST;
+        }
+        if (water.getFluidAmount() < Config.SPIRE_WATER.get()) {
+            return Start.NO_WATER;
+        }
+        if (slurry.getFluidAmount() < Config.SPIRE_SLURRY.get()) {
+            return Start.NO_SLURRY;
+        }
+        if (!MachineMath.runs(getSpeed(), Config.SPIRE_MIN_RPM.get())) {
+            return Start.NO_ROTATION;
+        }
+        charging = true;
+        charge = 0f;
+        setChanged();
+        level.playSound(null, worldPosition, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 2f, 0.6f);
         return Start.STARTED;
+    }
+
+    /** One tick of the charge: stops if the tower fell; waits while the shaft is still; pays and fires at the end. */
+    private void chargeTick(ServerLevel server) {
+        if (!assembled) {
+            charging = false;
+            charge = 0f;
+            setChanged();
+            return;
+        }
+        charge += MachineMath.progressPerTick(getSpeed(), Config.SPIRE_MIN_RPM.get());
+        if (charge > 0f && server.getGameTime() % 10 == 0) {
+            BlockPos top = SpireTower.centre(worldPosition, facing()).above(SpireTower.HEIGHT);
+            server.sendParticles(ParticleTypes.ELECTRIC_SPARK, top.getX() + 0.5, top.getY() + 0.5, top.getZ() + 0.5, 8, 1.0, 0.5, 1.0, 0.05);
+        }
+        if (charge < Config.SPIRE_CHARGE_TICKS.get()) {
+            return;
+        }
+        charging = false;
+        charge = 0f;
+        setChanged();
+        int here = sector();
+        // Another tower may have finished this sector during the charge, or the numbers changed: nothing is paid then.
+        if (here == Sectors.NONE || SectorMap.of(server).isRestored(here) || !pay()) {
+            return;
+        }
+        start(radius(), Config.SPIRE_PULSE_TICKS.get(), here);
+    }
+
+    /** Takes one pulse's cost, all of it or none. */
+    private boolean pay() {
+        int catalysts = Config.SPIRE_CATALYSTS.get();
+        int waterCost = Config.SPIRE_WATER.get();
+        int slurryCost = Config.SPIRE_SLURRY.get();
+        if (catalyst.getStackInSlot(0).getCount() < catalysts || water.getFluidAmount() < waterCost || slurry.getFluidAmount() < slurryCost) {
+            return false;
+        }
+        catalyst.extractItem(0, catalysts, false);
+        water.drain(waterCost, IFluidHandler.FluidAction.EXECUTE);
+        slurry.drain(slurryCost, IFluidHandler.FluidAction.EXECUTE);
+        return true;
     }
 
     /** Starts a pulse of the given size now, whatever the dimension: from the tower's centre, or this block without a tower. */
@@ -206,6 +331,10 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         if (assembled && ++checkIn >= CHECK_TICKS) {
             checkIn = 0;
             SpireAssembly.check(this);
+        }
+        applyCapacity();
+        if (charging) {
+            chargeTick(server);
         }
         pulseTick(server);
     }
@@ -274,6 +403,25 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         level.playSound(null, worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 3f, 0.5f);
     }
 
+    /** A tank that holds what a fluid tag allows; its size is set by {@link #applyCapacity}. */
+    private FluidTank tank(TagKey<Fluid> allowed) {
+        return new FluidTank(Config.SPIRE_TANK.getDefault(), stack -> stack.is(allowed)) {
+            @Override
+            protected void onContentsChanged() {
+                setChanged();
+            }
+        };
+    }
+
+    /** The tank size is a config value, which isn't loaded when the block entity is constructed. */
+    private void applyCapacity() {
+        int capacity = Config.SPIRE_TANK.get();
+        if (water.getCapacity() != capacity) {
+            water.setCapacity(capacity);
+            slurry.setCapacity(capacity);
+        }
+    }
+
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
@@ -284,6 +432,13 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         tag.putInt("pulses", pulses);
         tag.putLong("pulseCentre", pulseCentre.asLong());
         tag.putInt("sector", sector);
+        tag.putBoolean("charging", charging);
+        tag.putFloat("charge", charge);
+        if (!clientPacket) {
+            tag.put("catalyst", catalyst.serializeNBT(registries));
+            tag.put("water", water.writeToNBT(registries, new CompoundTag()));
+            tag.put("slurry", slurry.writeToNBT(registries, new CompoundTag()));
+        }
     }
 
     @Override
@@ -297,6 +452,15 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
         // A Spire saved before towers has no centre: its pulse carries on from the block itself.
         pulseCentre = tag.contains("pulseCentre") ? BlockPos.of(tag.getLong("pulseCentre")) : worldPosition;
         sector = tag.contains("sector") ? tag.getInt("sector") : Sectors.NONE;
+        charging = tag.getBoolean("charging");
+        charge = tag.getFloat("charge");
+        if (!clientPacket) {
+            if (tag.contains("catalyst")) {
+                catalyst.deserializeNBT(registries, tag.getCompound("catalyst"));
+            }
+            water.readFromNBT(registries, tag.getCompound("water"));
+            slurry.readFromNBT(registries, tag.getCompound("slurry"));
+        }
     }
 
     @Override
@@ -307,5 +471,78 @@ public class SpireBlockEntity extends KineticBlockEntity implements GeoBlockEnti
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return cache;
+    }
+
+    private final class ItemHandler implements IItemHandler {
+        @Override
+        public int getSlots() {
+            return catalyst.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return catalyst.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return catalyst.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return catalyst.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return catalyst.isItemValid(slot, stack);
+        }
+    }
+
+    private final class FluidHandler implements IFluidHandler {
+        private FluidTank tank(int index) {
+            return index == 0 ? water : slurry;
+        }
+
+        @Override
+        public int getTanks() {
+            return 2;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int index) {
+            return tank(index).getFluid();
+        }
+
+        @Override
+        public int getTankCapacity(int index) {
+            return tank(index).getCapacity();
+        }
+
+        @Override
+        public boolean isFluidValid(int index, FluidStack stack) {
+            return tank(index).isFluidValid(stack);
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            return water.isFluidValid(resource) ? water.fill(resource, action) : slurry.fill(resource, action);
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
     }
 }

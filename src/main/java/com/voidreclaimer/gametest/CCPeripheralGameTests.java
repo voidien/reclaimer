@@ -242,7 +242,7 @@ public final class CCPeripheralGameTests {
             SpireBlockEntity idle = place(space, spacePos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
             requireMethods(helper, Lookup.of(space, spacePos), "Terraforming Spire",
                     "isRunning", "getProgress", "getPulses", "getRadius", "pulse", "isAssembled", "assemble", "disassemble", "getSpeed",
-                    "getSector", "getSectors", "getRestoredCount");
+                    "getSector", "getSectors", "getRestoredCount", "isCharging", "getCharge", "getCost", "getStock");
             helper.assertFalse(lua.isAssembled(idle), "a lone Spire reads as assembled");
             helper.assertTrue("frame_incomplete".equals(lua.assemble(idle)), "assemble() without a frame: " + lua.assemble(idle));
             helper.assertTrue("not_assembled".equals(lua.disassemble(idle)), "disassemble() without a tower: " + lua.disassemble(idle));
@@ -270,10 +270,22 @@ public final class CCPeripheralGameTests {
                 helper.assertTrue(lua.getRadius(spire) > 128, "getRadius of a tower off the middle of its sector " + lua.getRadius(spire));
                 com.voidreclaimer.earth.SectorMap map = com.voidreclaimer.earth.SectorMap.of(earth);
                 helper.assertTrue(lua.getRestoredCount(idle) == map.count() && lua.getSectors(idle).size() == 16, "the planet read from deep space");
+                Object[] unpaid = lua.pulse(spire).getResult();
+                helper.assertTrue(Boolean.FALSE.equals(unpaid[0]) && "no_catalyst".equals(unpaid[1]), "pulse() with nothing loaded: " + Arrays.toString(unpaid));
+                helper.assertTrue(lua.getCost(spire).get("water") == com.voidreclaimer.Config.SPIRE_WATER.get(), "getCost " + lua.getCost(spire));
+                spire.catalyst().setStackInSlot(0, new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModMaterials.ATMOSPHERIC_CATALYST_CORE.get()));
+                spire.waterTank().fill(new net.neoforged.neoforge.fluids.FluidStack(com.voidreclaimer.registry.ModFluids.PURIFIED_WATER.source().get(), 8000),
+                        net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                spire.slurryTank().fill(new net.neoforged.neoforge.fluids.FluidStack(com.voidreclaimer.registry.ModFluids.BIO_NUTRIENT_SLURRY.source().get(), 4000),
+                        net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                helper.assertTrue(lua.getStock(spire).get("catalysts") == 1 && lua.getStock(spire).get("slurry") == 4000, "getStock " + lua.getStock(spire));
+                Object[] still = lua.pulse(spire).getResult();
+                helper.assertTrue(Boolean.FALSE.equals(still[0]) && "no_rotation".equals(still[1]), "pulse() with no rotation: " + Arrays.toString(still));
+                spire.setSpeed(64f);
                 Object[] started = lua.pulse(spire).getResult();
                 helper.assertTrue(started.length == 1 && Boolean.TRUE.equals(started[0]), "pulse() on ruined Earth: " + Arrays.toString(started));
-                helper.assertTrue(lua.isRunning(spire), "not running after pulse()");
-                helper.assertTrue(lua.getProgress(spire) == 0.0, "progress before the first tick " + lua.getProgress(spire));
+                helper.assertTrue(lua.isCharging(spire) && !lua.isRunning(spire), "not charging after pulse()");
+                helper.assertTrue(lua.getCharge(spire) == 0.0, "charge before the first tick " + lua.getCharge(spire));
                 Object[] busy = lua.pulse(spire).getResult();
                 helper.assertTrue(Boolean.FALSE.equals(busy[0]) && "busy".equals(busy[1]), "a second pulse(): " + Arrays.toString(busy));
                 helper.assertTrue("disassembled".equals(lua.disassemble(spire)) && !lua.isAssembled(spire), "disassemble()");

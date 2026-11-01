@@ -134,6 +134,13 @@ public final class Config {
     public static final ModConfigSpec.IntValue HOLO_REFRESH_TICKS;
     public static final ModConfigSpec.IntValue HOLO_SOURCE_RANGE;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
+    public static final ModConfigSpec.IntValue SPIRE_CATALYSTS;
+    public static final ModConfigSpec.IntValue SPIRE_WATER;
+    public static final ModConfigSpec.IntValue SPIRE_SLURRY;
+    public static final ModConfigSpec.IntValue SPIRE_TANK;
+    public static final ModConfigSpec.IntValue SPIRE_CHARGE_TICKS;
+    public static final ModConfigSpec.IntValue SPIRE_MIN_RPM;
+    public static final ModConfigSpec.DoubleValue SPIRE_STRESS;
 
     public static final ModConfigSpec.LongValue DYSON_LATTICE_START;
     public static final ModConfigSpec.LongValue DYSON_SHELL_TOTAL;
@@ -373,6 +380,13 @@ public final class Config {
         BUILDER.comment("Terraforming Spire.").push("terraform");
         SPIRE_PULSE_TICKS = BUILDER.comment("Ticks the Genesis Pulse takes to sweep from the tower to the far edge of its sector.")
                 .defineInRange("pulseTicks", 300, 1, 24_000);
+        SPIRE_CATALYSTS = BUILDER.comment("Items from #void_reclaimer:spire/catalysts one pulse burns.").defineInRange("catalysts", 1, 0, 64);
+        SPIRE_WATER = BUILDER.comment("Millibuckets of Purified Water one pulse burns.").defineInRange("water", 8_000, 0, 1_000_000);
+        SPIRE_SLURRY = BUILDER.comment("Millibuckets of Bio-Nutrient Slurry one pulse burns.").defineInRange("slurry", 4_000, 0, 1_000_000);
+        SPIRE_TANK = BUILDER.comment("Size of each of the Spire's two tanks, in millibuckets.").defineInRange("tank", 16_000, 1, 1_000_000);
+        SPIRE_CHARGE_TICKS = BUILDER.comment("Ticks a pulse charges for at 64 RPM, shorter when faster.").defineInRange("chargeTicks", 400, 1, 24_000);
+        SPIRE_MIN_RPM = BUILDER.comment("Slowest shaft that charges a pulse.").defineInRange("minRpm", 32, 0, 256);
+        SPIRE_STRESS = BUILDER.comment("Stress the Spire needs, in SU per RPM.").defineInRange("stress", 32.0, 0.0, 1024.0);
         BUILDER.pop();
 
         BUILDER.comment("Dyson Sphere.").push("dyson");

@@ -3,11 +3,16 @@ package com.voidreclaimer.terraform;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
 import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -19,12 +24,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.fluids.FluidUtil;
 
 /**
  * The Terraforming Spire: the controller of a tower ({@link SpireAssembly}). It faces the tower, which stands in front of
  * it, and takes its shaft on the face behind it. Sneak-use assembles or sets down the tower; once assembled, a right-click
- * or a redstone pulse fires the Genesis Pulse (ruined Earth only). A Spire placed before towers existed loads as this
- * block facing north, with no tower yet.
+ * or a redstone pulse charges and fires the Genesis Pulse (ruined Earth only). Right-click with a catalyst or a fluid
+ * container to load it. A Spire placed before towers existed loads as this block facing north, with no tower yet.
  */
 public class SpireBlock extends HorizontalKineticBlock implements IBE<SpireBlockEntity> {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -75,6 +81,28 @@ public class SpireBlock extends HorizontalKineticBlock implements IBE<SpireBlock
         return super.onWrenched(state, context);
     }
 
+    /** Right-click with a catalyst loads it; with a bucket or other container, fills a tank. */
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                              InteractionHand hand, BlockHitResult hit) {
+        if (player.isShiftKeyDown() || !(level.getBlockEntity(pos) instanceof SpireBlockEntity spire)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (stack.is(ModTags.SPIRE_CATALYSTS)) {
+            if (!level.isClientSide) {
+                ItemStack left = spire.items().insertItem(0, stack.copy(), false);
+                if (!player.getAbilities().instabuild) {
+                    stack.setCount(left.getCount());
+                }
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide() || !(level.getBlockEntity(pos) instanceof SpireBlockEntity spire)) {
@@ -106,6 +134,10 @@ public class SpireBlock extends HorizontalKineticBlock implements IBE<SpireBlock
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof SpireBlockEntity spire) {
             SpireAssembly.disassemble(spire);
+            ItemStack catalysts = spire.catalyst().getStackInSlot(0);
+            if (!catalysts.isEmpty()) {
+                level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, catalysts.copy()));
+            }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
