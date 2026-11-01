@@ -42,7 +42,8 @@ public final class ClientBodyController {
             return;
         }
         while (ModKeyMappings.MODULE_WHEEL.consumeClick()) {
-            if (mc.screen == null && com.voidreclaimer.body.Modules.hasToolMounts(player)) {
+            // Left Alt is Free Look at the Helm.
+            if (mc.screen == null && com.voidreclaimer.body.Modules.hasToolMounts(player) && !ClientPilotController.isPiloting(player)) {
                 mc.setScreen(new ModuleWheelScreen());
             }
         }

@@ -71,6 +71,11 @@ public final class ThrustAllocator {
         return out;
     }
 
+    /** The force the pilot's keys ask for, without their turn. */
+    public static Vector3d keyForce(Frame frame, PilotInput input) {
+        return wanted(frame, input.surge(), input.sway(), input.heave());
+    }
+
     /** Which of the six pushes the ship can make at all: {forward, back, right, left, up, down} as the best force fraction. */
     public static double[] translationCoverage(List<Thruster> thrusters, Frame frame) {
         Vector3dc[] dirs = {frame.forward(), new Vector3d(frame.forward()).negate(), frame.right(), new Vector3d(frame.right()).negate(),

@@ -174,6 +174,9 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         return new Vector3d[] {forward, right, up};
     }
 
+    private PilotMouse lastMouse = PilotMouse.NONE;
+    private boolean mouseHeld;
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, HelmBlockEntity helm) {
         if (!(level instanceof ServerLevel server)) {
             return;
@@ -181,6 +184,10 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         Player pilot = helm.pilot();
         ServerSubLevel ship = Ships.shipAt(server, pos);
         if (pilot == null || ship == null) {
+            if (pilot != null) {
+                pilot.setData(ModAttachments.PILOT_MOUSE, PilotMouse.NONE);
+            }
+            helm.lastMouse = PilotMouse.NONE;
             helm.readout = ship == null ? Readout.EMPTY : helm.look(server, ship, List.of(), new Vector3d(), new Vector3d());
             helm.tell(pilot);
             return;
@@ -193,7 +200,6 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
                     Ships.unit(t.pushDirection()), t.maxForce()));
         }
         ThrustAllocator.Frame frame = helm.frame(ship);
-        double[] throttles = ThrustAllocator.throttles(model, frame, input);
         // The ship's velocity and spin are in the world; the frame is the ship's own, so they are turned into it first.
         Vector3d velocity = new Vector3d();
         Vector3d spin = new Vector3d();
@@ -204,9 +210,13 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
             toShip.transform(body.getAngularVelocity(spin));
         }
         FlightSettings settings = pilot instanceof ServerPlayer p ? p.getData(ModAttachments.FLIGHT_SETTINGS) : FlightSettings.DEFAULT;
-        // The turn comes from the steering, which also stops a spin; the holds keep the force. A key always wins on its axis.
+        // Force and turn go through the allocator together, so a turn can throttle back the engines the keys opened: a ship that
+        // steers with its main engines still turns under full thrust. The steering carries the turn keys and stops a spin; the
+        // holds keep the force. A key always wins on its axis.
         Vector3d turn = helm.steer(pilot, ship, model, frame, input, spin, settings);
-        if (settings.dampener() || turn.lengthSquared() > 0.0) {
+        double[] throttles = ship.getMassTracker() == null ? ThrustAllocator.throttles(model, frame, input)
+                : ThrustAllocator.throttles(model, frame, ThrustAllocator.keyForce(frame, input), turn);
+        if (settings.dampener()) {
             Vector3d[] hold = ThrustAllocator.holdRequest(frame, input, velocity, spin, settings.dampener(), false, HOLD_DEADBAND, HOLD_RAMP);
             double[] holding = ThrustAllocator.throttles(model, frame, hold[0], turn);
             for (int i = 0; i < throttles.length; i++) {
@@ -220,11 +230,26 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         helm.tell(pilot);
     }
 
+    /**
+     * This tick's mouse movement. Client and server ticks don't line up, so a smooth sweep can leave one Helm tick with no packet,
+     * and steering would read that as stop: one empty tick repeats the last movement.
+     */
+    private PilotMouse heldMouse(Player pilot) {
+        PilotMouse now = pilot.getData(ModAttachments.PILOT_MOUSE);
+        pilot.setData(ModAttachments.PILOT_MOUSE, PilotMouse.NONE);
+        if (now.equals(PilotMouse.NONE) && !mouseHeld) {
+            mouseHeld = true;
+            return lastMouse;
+        }
+        mouseHeld = false;
+        lastMouse = now;
+        return now;
+    }
+
     /** The torque the pilot's steering asks for, in the ship's frame, each axis -1 to 1. */
     private Vector3d steer(Player pilot, ServerSubLevel ship, List<ThrustAllocator.Thruster> model, ThrustAllocator.Frame frame, PilotInput input,
                            Vector3d spin, FlightSettings settings) {
-        PilotMouse mouse = pilot.getData(ModAttachments.PILOT_MOUSE);
-        pilot.setData(ModAttachments.PILOT_MOUSE, PilotMouse.NONE);
+        PilotMouse mouse = heldMouse(pilot);
         // With the RCS lock off and nothing asked of it, a ship keeps spinning: that is what the lock's off position promises.
         boolean idle = mouse.right() == 0f && mouse.up() == 0f && !settings.aimSteering() && input.roll() == 0 && input.pitch() == 0 && input.yaw() == 0;
         if (ship.getMassTracker() == null || (idle && !settings.rcsLock())) {

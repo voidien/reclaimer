@@ -23,11 +23,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class ClientPilotController {
-    /** Vanilla's mouse turn is the cube of this sum, sensitivity x 0.6 + 0.2, so this gives no turn at all. */
-    private static final double NO_TURN = -1.0 / 3.0;
     private static PilotInput last = PilotInput.NONE;
     private static double lastMouseX;
     private static double lastMouseY;
+    private static boolean haveMouse;
     private static volatile com.voidreclaimer.ship.HelmBlockEntity.Readout readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
 
     private ClientPilotController() {}
@@ -56,23 +55,28 @@ public final class ClientPilotController {
     static void onPlayerTurn(CalculatePlayerTurnEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && steersWithMouse(player)) {
-            event.setMouseSensitivity(NO_TURN);
+            event.setMouseSensitivity(com.voidreclaimer.client.camera.OrbitCamera.NO_TURN);
         }
     }
 
-    private static boolean steersWithMouse(LocalPlayer player) {
-        return isPiloting(player) && !player.getData(ModAttachments.FLIGHT_SETTINGS).aimSteering() && !ModKeyMappings.FREE_LOOK.isDown();
+    /** Whether the mouse steers the ship now, so the view belongs to the nose. */
+    public static boolean steersWithMouse(LocalPlayer player) {
+        return isPiloting(player) && !player.getData(ModAttachments.FLIGHT_SETTINGS).aimSteering() && !ModKeyMappings.FREE_LOOK.isDown()
+                && !com.voidreclaimer.client.camera.OrbitCamera.orbiting();
     }
 
     /** Sends how far the mouse moved, in the degrees it would have turned the view. */
     private static void sendMouse(LocalPlayer player, Minecraft mc) {
         double x = mc.mouseHandler.xpos();
         double y = mc.mouseHandler.ypos();
+        // No jump on sitting down or closing a menu: grabbing the mouse recentres it.
+        boolean counted = haveMouse;
         double dx = x - lastMouseX;
         double dy = y - lastMouseY;
         lastMouseX = x;
         lastMouseY = y;
-        if (!steersWithMouse(player) || mc.screen != null || (dx == 0.0 && dy == 0.0)) {
+        haveMouse = steersWithMouse(player) && mc.screen == null && mc.isWindowActive();
+        if (!counted || !haveMouse || (dx == 0.0 && dy == 0.0)) {
             return;
         }
         double feel = mc.options.sensitivity().get() * 0.6 + 0.2;
@@ -87,6 +91,7 @@ public final class ClientPilotController {
             return;
         }
         if (!isPiloting(player)) {
+            haveMouse = false;
             send(player, PilotInput.NONE);
             readout = com.voidreclaimer.ship.HelmBlockEntity.Readout.EMPTY;
             return;

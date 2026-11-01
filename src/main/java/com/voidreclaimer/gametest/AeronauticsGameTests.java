@@ -824,6 +824,46 @@ public final class AeronauticsGameTests {
                 (nose, wing) -> helper.assertTrue(nose.x > 0.1, "moving the mouse right should swing the nose east: " + nose));
     }
 
+    /** The review's case: with both engines wide open on W, a turn has to throttle one back, and this ship has nothing else to turn with. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theMouseStillTurnsAShipUnderFullThrust(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(150_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int chunks = 0; chunks <= 8; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) - chunks, true);
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) + chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            command(server, space, pos, "fill " + (x - 3) + " " + y + " " + z + " " + (x + 3) + " " + y + " " + z + " minecraft:iron_block");
+            command(server, space, pos, "setblock " + x + " " + (y + 1) + " " + z + " void_reclaimer:helm[facing=north]");
+            command(server, space, pos, "setblock " + x + " " + (y - 1) + " " + z + " minecraft:stone");
+            // Two engines far apart, pushing north, and nothing else.
+            List<BlockPos> engines = List.of(new BlockPos(x - 3, y, z + 1), new BlockPos(x + 3, y, z + 1));
+            for (BlockPos engine : engines) {
+                command(server, space, pos, "setblock " + engine.getX() + " " + engine.getY() + " " + engine.getZ() + " void_reclaimer:ion_thruster[facing=south]");
+                ((com.voidreclaimer.ship.ElectricThrusterBlockEntity) space.getBlockEntity(engine)).energy().receiveEnergy(8000, false);
+            }
+            helper.runAfterDelay(10, () -> {
+                command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z);
+                helper.runAfterDelay(1, () -> {
+                    nameShip(server, space, pos);
+                    ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.of(true, false, false, false, false, false, false, false, false, false, false, false));
+                    var ship = shipNamed(space, pos);
+                    eachTick(helper, TURN_TICKS, () -> player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f)), () -> {
+                        org.joml.Vector3d nose = com.voidreclaimer.ship.Ships.orientation(ship).transform(new org.joml.Vector3d(0, 0, -1));
+                        removeShip(server, space, pos);
+                        TestPlayers.remove(player);
+                        helper.assertTrue(nose.x > 0.1, "full thrust stopped the mouse turning the ship: " + nose);
+                        helper.succeed();
+                    });
+                });
+            });
+        });
+    }
+
     /** Looking east with the aim mode on: the ship comes round by itself, with no mouse movement at all. */
     @GameTest(template = "empty", timeoutTicks = 900)
     public static void theAimModeSwingsTheShipToTheView(GameTestHelper helper) {
