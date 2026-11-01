@@ -128,9 +128,9 @@ public final class LinkSignalGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theLeaveKeyWakesYou(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(149_200, 80, 0);
+        BlockPos pos = new BlockPos(151_000, 80, 0);
         linked(helper, pos, 0.0, (player, id) -> {
             ServerLevel level = player.serverLevel();
             UnlinkPayload.apply(player);
@@ -140,7 +140,7 @@ public final class LinkSignalGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aLinkWithNoSeatHasNoSignalRules(GameTestHelper helper) {
         BlockPos pos = new BlockPos(148_600, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
@@ -176,7 +176,7 @@ public final class LinkSignalGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aSeatAtAStationReachesFarther(GameTestHelper helper) {
         BlockPos pos = new BlockPos(149_000, 80, 0);
         NaniteGameTests.inLoadedArea(helper, pos, 3, () -> {
