@@ -53,11 +53,14 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
         if (!section.isEmpty() && !name.equals(view.data().coreSocket()) && view.chassis().socket(name) != null) {
             poseStack.pushPose();
             moveToPivot(poseStack, bone);
-            if (view.chassis().socket(name).mirror()) {
+            boolean mirrored = view.chassis().socket(name).mirror();
+            if (mirrored) {
                 poseStack.scale(-1f, 1f, 1f);
             }
+            BodyRenderer.setMirrored(mirrored);
             drawPart("section", section, name, BodyRenderer.isGhost(name), frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
             drawInnerModules(name, section, frame, poseStack, bufferSource, animatable, partialTick, packedLight, packedOverlay);
+            BodyRenderer.setMirrored(false);
             poseStack.popPose();
         }
         BodyData.Mount mount = frame.rigMountBones().get(name);
