@@ -43,6 +43,52 @@ class LinkStateTest {
     }
 
     @Test
+    void oneBadEntryCostsOnlyThatEntry() {
+        LinkState.KnownShell good = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
+        CompoundTag saved = (CompoundTag) LinkState.CODEC.encodeStart(NbtOps.INSTANCE, LinkState.NONE.withKnown(good)).getOrThrow();
+        saved.getList("shells", Tag.TAG_COMPOUND).add(0, new CompoundTag());
+        assertEquals(java.util.List.of(good), LinkState.CODEC.parse(NbtOps.INSTANCE, saved).getOrThrow().shells());
+    }
+
+    @Test
+    void theShellListComesBackFromASave() {
+        LinkState.KnownShell idle = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
+        LinkState.KnownShell wreck = new LinkState.KnownShell(new UUID(3L, 4L), 1L, PLACE, true, true);
+        LinkState state = LinkState.NONE.withKnown(idle).withKnown(wreck);
+        assertEquals(state, throughASave(state));
+        assertEquals(java.util.List.of(idle, wreck), state.shells());
+    }
+
+    @Test
+    void aSaveFromBeforeTheListReadsAsNoShells() {
+        CompoundTag old = (CompoundTag) LinkState.CODEC.encodeStart(NbtOps.INSTANCE, LinkState.NONE).getOrThrow();
+        old.remove("shells");
+        assertEquals(LinkState.NONE, LinkState.CODEC.parse(NbtOps.INSTANCE, old).getOrThrow());
+    }
+
+    @Test
+    void aShellHasOneEntryAndKeepsItsPlaceInTheList() {
+        UUID other = new UUID(3L, 4L);
+        LinkState state = LinkState.NONE
+                .withKnown(new LinkState.KnownShell(SHELL, 1L, PLACE, false, false))
+                .withKnown(new LinkState.KnownShell(other, 1L, PLACE, false, false))
+                .withKnown(new LinkState.KnownShell(SHELL, 2L, PLACE, true, false));
+        assertEquals(2, state.shells().size());
+        assertEquals(SHELL, state.shells().get(0).shell());
+        assertEquals(2L, state.known(SHELL).orElseThrow().epoch());
+        assertTrue(state.known(SHELL).orElseThrow().wrecked());
+        assertTrue(state.known(new UUID(9L, 9L)).isEmpty());
+    }
+
+    @Test
+    void theShellListStaysThroughEveryOtherChange() {
+        LinkState known = LinkState.NONE.withKnown(new LinkState.KnownShell(SHELL, 1L, PLACE, false, false));
+        LinkState.Outbox outbox = new LinkState.Outbox(SHELL, 1L, body(2), PLACE, false);
+        LinkState changed = known.withLink(new LinkState.Link(SHELL, 2L, body(1), PLACE)).withOutbox(outbox).withoutOutbox(SHELL).withoutLink();
+        assertEquals(known, changed);
+    }
+
+    @Test
     void outboxesComeBackFromASaveBesideALink() {
         LinkState state = LinkState.NONE
                 .withLink(new LinkState.Link(SHELL, 7L, body(1), PLACE))
