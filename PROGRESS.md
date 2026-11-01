@@ -22,7 +22,8 @@ Choices taken alone during unattended stretches, each the safest reversible defa
 - **Docking Clamp:** the 10-degree alignment tolerance and the 5-tick look; the recipe (40/30/10/60 dust) ("Stations, part 2").
 - **Ships through the portal:** the 2-block clearance beyond the gate, the 5-second cooldown, half a block of fit slack ("Stations, part 3").
 - **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
-- **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
+- **Helper steering:** a search looks at up to 2048 cells (`helper.searchNodes`) and a drone with no way looks again every 100 ticks (`helper.blockedRetry`); a block with every face closed counts as out of reach; a drone does not work through a wall; a blocked miner waits on its rock and does not try another ("Helper drones, part 4").
+- **Helper drones:** the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
 - **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
 
 ## Setup (workflow step 1): done
@@ -1044,6 +1045,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Remote control, part 5: the saved link state: done
 - `link/LinkState`, in the player file: the shell the player is in with its epoch, the main body and where it was left, and an outbox for a shell put back in the world. Bodies are held as raw tags: an attachment that fails to read is dropped with a log line, and with it a main body, while a tag always reads and `BodySnapshot.load` then says whether it is whole.
 - Nothing uses it yet. Tests: `LinkStateTest`. Note on `.gitattributes`: `PROGRESS.md merge=union` works for local rebases, but GitHub's merge check ignores it, so a PR can still show a conflict until it is rebased. It saves the hand fixing, not the CI rerun.
+
+## Helper drones, part 4: steering round blocks: done
+- Drones no longer fly through blocks. Each tick a drone looks only at the cells its next step enters; when one is solid, a bounded search gives it a way round, straightened into a few waypoints. A long way that does not fit one search is walked in stages, each ending closer to the target. With no way, the drone holds still, its status says "Blocked" and it looks again every 100 ticks; opening a way sets it going, with its cargo and phase intact.
+- A drone hovers on a block's first free side (top, four sides, under), so a chest under a roof or the underside of a rock is reachable. A drone only counts as there with a clear line to that spot. Miners choose only rock with an open face. A drone with a block set on it leaves straight towards its target.
+- Photo mode's overlay draws the detour and says "blocked".
+- **Tests:** `HelperSteeringTest` (unit); `HelperSteeringGameTests`. Mutation-checked.
+- **Known limits:** drones do not see Sable ships, whose blocks live in their plots; a drone is a point to the steering, so its model can graze a corner (not seen in a client); a wall much wider than a search's reach with the target right behind it counts as no way (raise `helper.searchNodes`).
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

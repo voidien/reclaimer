@@ -10,6 +10,7 @@ import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModDataComponents;
 import com.voidreclaimer.registry.ModEntities;
 import com.voidreclaimer.registry.ModItems;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -57,14 +58,15 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * <li>collecting ({@link Collecting}): it hovers at its collect point gathering the cloud's dust into a tank of
  * {@code helper.tank}, and when full flies to its owner (online, within {@code helper.ownerRange}) and hands it over.</li>
  * </ul>
- * It flies straight at {@code helper.speed} blocks per tick and hovers a block above what it works on. It has no gravity
- * and flies through blocks (placeholder steering). Sneak-use with an empty hand takes it back as an item with its links;
- * a hit breaks it into that item as well. Right-click reports what it is doing.
+ * It flies at {@code helper.speed} blocks per tick, round blocks ({@link HelperSteering}), and hovers at a free face of what
+ * it works on, the top if it can. With no way there it holds still and says so. It has no gravity. Sneak-use with an empty
+ * hand takes it back as an item with its links; a hit breaks it into that item as well. Right-click reports what it is doing.
  */
 public class HelperDrone extends Entity implements GeoEntity {
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> MINE_PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> COLLECT_PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> HOLDING = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BOOLEAN);
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.idle");
     private static final RawAnimation THRUST = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.thrust");
     /** The drone hovers this far above the block it works on. */
@@ -83,6 +85,10 @@ public class HelperDrone extends Entity implements GeoEntity {
     private int scanIn;
     /** Collecting: the dust gathered and not yet handed over. */
     private DustData tank = DustData.EMPTY;
+    /** The way to the current target. Not saved: a drone works it out again after a load. */
+    private final HelperSteering.Route route = new HelperSteering.Route();
+    private final BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
+    private final HelperSteering.Cells cells = this::canFlyThrough;
 
     public HelperDrone(EntityType<? extends HelperDrone> type, Level level) {
         super(type, level);
@@ -112,6 +118,7 @@ public class HelperDrone extends Entity implements GeoEntity {
         builder.define(PHASE, (byte) Ferry.Phase.IDLE.ordinal());
         builder.define(MINE_PHASE, (byte) Mining.Phase.IDLE.ordinal());
         builder.define(COLLECT_PHASE, (byte) Collecting.Phase.IDLE.ordinal());
+        builder.define(HOLDING, false);
     }
 
     public Collecting.Phase collectPhase() {
@@ -167,8 +174,21 @@ public class HelperDrone extends Entity implements GeoEntity {
         return rock;
     }
 
+    /** Whether the drone found no way to its target and is holding still until its next try. */
+    public boolean blocked() {
+        return route.blocked();
+    }
+
+    /** The waypoints of a detour still ahead. */
+    public List<Vec3> waypoints() {
+        return route.waypoints();
+    }
+
     /** Whether the drone is flying somewhere (the thrust animation). */
     public boolean moving() {
+        if (entityData.get(HOLDING)) {
+            return false;
+        }
         if (links.collecting()) {
             return Collecting.moving(collectPhase());
         }
@@ -179,20 +199,30 @@ public class HelperDrone extends Entity implements GeoEntity {
     public Optional<Vec3> target() {
         if (links.mining()) {
             return switch (minePhase()) {
-                case TO_ROCK -> Optional.ofNullable(rock).map(HelperDrone::above);
-                case TO_DESTINATION -> links.destination().map(HelperDrone::above);
+                case TO_ROCK -> Optional.ofNullable(rock).map(this::spot);
+                case TO_DESTINATION -> links.destination().map(this::spot);
                 default -> Optional.empty();
             };
         }
         return switch (phase()) {
-            case TO_SOURCE -> links.source().map(HelperDrone::above);
-            case TO_DESTINATION -> links.destination().map(HelperDrone::above);
+            case TO_SOURCE -> links.source().map(this::spot);
+            case TO_DESTINATION -> links.destination().map(this::spot);
             default -> Optional.empty();
         };
     }
 
-    private static Vec3 above(BlockPos pos) {
-        return Vec3.atCenterOf(pos).add(0, HOVER, 0);
+    private Vec3 spot(BlockPos pos) {
+        return HelperSteering.workSpot(pos, cells);
+    }
+
+    /** Whether the drone can fly through a cell. A chunk that is not loaded counts as closed and is never loaded for this. */
+    public boolean canFlyThrough(int x, int y, int z) {
+        Level level = level();
+        probe.set(x, y, z);
+        if (level.isOutsideBuildHeight(y) || !level.isLoaded(probe)) {
+            return false;
+        }
+        return level.getBlockState(probe).getCollisionShape(level, probe).isEmpty();
     }
 
     @Override
@@ -213,12 +243,16 @@ public class HelperDrone extends Entity implements GeoEntity {
     /** Flies one step towards {@code target}; returns whether the drone is now within reach of it. */
     private boolean fly(Optional<Vec3> target) {
         if (target.isEmpty()) {
+            route.clear();
+            entityData.set(HOLDING, false);
             return false;
         }
+        double reach = Config.HELPER_REACH.get();
         Vec3 next = HelperSteering.step(position(), target.get(), Config.HELPER_SPEED.get());
-        setYRot(HelperSteering.yaw(position(), target.get(), getYRot()));
+        setYRot(HelperSteering.yaw(position(), next, getYRot()));
         setPos(next.x, next.y, next.z);
-        return HelperSteering.arrived(next, target.get(), Config.HELPER_REACH.get());
+        entityData.set(HOLDING, route.blocked());
+        return HelperSteering.reached(next, target.get(), reach, cells);
     }
 
     private void tickFerry(ServerLevel server) {
@@ -281,8 +315,8 @@ public class HelperDrone extends Entity implements GeoEntity {
         double range = Config.HELPER_OWNER_RANGE.get();
         boolean ownerNear = player != null && player.level() == server && player.distanceToSqr(this) <= range * range;
         Optional<Vec3> target = switch (phase) {
-            case TO_POINT -> links.collect().map(HelperDrone::above);
-            case TO_OWNER -> ownerNear ? Optional.of(player.position().add(0, 1.5, 0)) : Optional.empty();
+            case TO_POINT -> links.collect().map(this::spot);
+            case TO_OWNER -> ownerNear ? Optional.of(spot(player.blockPosition())) : Optional.empty();
             default -> Optional.empty();
         };
         boolean arrived = fly(target);
@@ -343,16 +377,16 @@ public class HelperDrone extends Entity implements GeoEntity {
         return level.getBlockState(pos).is(ModBlocks.ASTEROID_BLOCKS);
     }
 
-    /** The asteroid block nearest to {@code centre} within {@code helper.mineRadius}, or null. */
+    /** The asteroid block nearest to {@code centre} within {@code helper.mineRadius} with an open face, or null. */
     @Nullable
-    static BlockPos findRock(ServerLevel level, BlockPos centre) {
+    private BlockPos findRock(ServerLevel level, BlockPos centre) {
         int radius = Config.HELPER_MINE_RADIUS.get();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-radius, -radius, -radius), centre.offset(radius, radius, radius))) {
             if (isRock(level, pos)) {
                 double distance = pos.distSqr(centre);
-                if (distance < bestDistance) {
+                if (distance < bestDistance && HelperSteering.exposed(pos, cells)) {
                     bestDistance = distance;
                     best = pos.immutable();
                 }
@@ -434,11 +468,17 @@ public class HelperDrone extends Entity implements GeoEntity {
 
     /** One line about the job: the phase, what is carried, and the links. */
     public Component status() {
+        if (route.blocked()) {
+            return Component.translatable("message.void_reclaimer.helper.status.blocked", load());
+        }
         String phase = (links.collecting() ? collectPhase().name() : links.mining() ? minePhase().name() : phase().name()).toLowerCase(java.util.Locale.ROOT);
-        Component load = links.collecting() ? Component.translatable("message.void_reclaimer.helper.dust", String.format(java.util.Locale.ROOT, "%.1f", tank.total()))
+        return Component.translatable("message.void_reclaimer.helper.status." + phase, load());
+    }
+
+    private Component load() {
+        return links.collecting() ? Component.translatable("message.void_reclaimer.helper.dust", String.format(java.util.Locale.ROOT, "%.1f", tank.total()))
                 : carried.isEmpty() ? Component.translatable("message.void_reclaimer.helper.empty")
                 : Component.translatable("message.void_reclaimer.helper.carrying", carried.getCount(), carried.getHoverName());
-        return Component.translatable("message.void_reclaimer.helper.status." + phase, load);
     }
 
     /** The drone as an item, with its links. */
