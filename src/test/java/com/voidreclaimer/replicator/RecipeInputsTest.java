@@ -49,6 +49,12 @@ class RecipeInputsTest {
     }
 
     @Test
+    void heldCountsEverySlot() {
+        List<ItemStack> slots = inventory(new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.STONE, 5), new ItemStack(Items.IRON_INGOT, 4));
+        assertEquals(6, RecipeInputs.held(slots, SizedIngredient.of(Items.IRON_INGOT, 9)));
+    }
+
+    @Test
     void oneStackCannotPayTwoInputs() {
         List<ItemStack> slots = inventory(new ItemStack(Items.IRON_INGOT, 3));
         assertNull(RecipeInputs.plan(slots, List.of(SizedIngredient.of(Items.IRON_INGOT, 2), SizedIngredient.of(Items.IRON_INGOT, 2))));

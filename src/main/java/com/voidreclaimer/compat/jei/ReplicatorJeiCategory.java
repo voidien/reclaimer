@@ -75,6 +75,13 @@ final class ReplicatorJeiCategory implements IRecipeCategory<RecipeHolder<Replic
             builder.addSlot(RecipeIngredientRole.OUTPUT, 1 + (index % KIT_COLUMNS) * 18, KIT_ROW_Y + (index / KIT_COLUMNS) * 18)
                     .addItemStack(results.get(i));
         }
+        // What the job takes goes in the same rows, after a kit's parts.
+        List<net.neoforged.neoforge.common.crafting.SizedIngredient> inputs = holder.value().inputs();
+        for (int i = 0; i < inputs.size(); i++) {
+            int index = results.size() - 1 + i;
+            builder.addSlot(RecipeIngredientRole.INPUT, 1 + (index % KIT_COLUMNS) * 18, KIT_ROW_Y + (index / KIT_COLUMNS) * 18)
+                    .addItemStacks(List.of(inputs.get(i).getItems()));
+        }
     }
 
     @Override

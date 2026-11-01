@@ -21,6 +21,17 @@ public final class RecipeInputs {
 
     private RecipeInputs() {}
 
+    /** How many of the items {@code input} takes are in {@code inventory}. */
+    public static int held(List<ItemStack> inventory, SizedIngredient input) {
+        int held = 0;
+        for (ItemStack stack : inventory) {
+            if (input.ingredient().test(stack)) {
+                held += stack.getCount();
+            }
+        }
+        return held;
+    }
+
     /** How to pay {@code inputs} from {@code inventory}, or null when something is missing. Changes nothing. */
     @Nullable
     public static Plan plan(List<ItemStack> inventory, List<SizedIngredient> inputs) {
