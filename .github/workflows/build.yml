@@ -43,8 +43,7 @@ jobs:
           python3 tools/test_progress_fold.py
 
       - name: GameTests
-        # The upstream Aeronautics/Simulated/Veil start-up hang (see the datagen step) can also stall the GameTest server. A healthy
-        # run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
+        # A healthy run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
         run: |
           flags="-PgametestHeap=10G -PgametestChunkSaves"
           for attempt in 1 2 3; do
@@ -57,26 +56,22 @@ jobs:
           exit 1
 
       - name: Datagen output is up to date
-        # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
-        # HANDOFF.md). A healthy run takes under a minute, so cut a hung one off and try again.
+        # RenderClassesFirstMixin ended the start-up deadlock between Create and Veil (see HANDOFF.md), so a hang here is a new bug to
+        # read, not to try again. A healthy run takes under a minute: a hung one is cut off, after a thread dump of what it is stuck on.
         run: |
-          for attempt in 1 2 3; do
-            # Just before the cut-off, what a hung run is stuck on: the classes in the deadlock are what a workaround needs.
-            ( sleep 285; ps -eo pid,args | awk '$2 ~ /\/bin\/java$/ && /moddev\/data/ {print $1}' | while read -r pid; do
-                echo "::group::Thread dump of the hung runData, attempt $attempt"; jstack -l "$pid"; echo "::endgroup::"
-              done ) &
-            dump=$!
-            if timeout 300 ./gradlew runData --stacktrace; then
-              kill "$dump" 2>/dev/null || true
-              git diff --exit-code -- src/generated
-              exit $?
-            fi
-            # The dump may be over already, and the step runs with -e: a failed kill must not end the retries.
-            kill "$dump" 2>/dev/null || true
-            echo "runData attempt $attempt failed or hung"
-            ./gradlew --stop
-          done
-          exit 1
+          ( sleep 285; ps -eo pid,args | awk '$2 ~ /\/bin\/java$/ && /moddev\/data/ {print $1}' | while read -r pid; do
+              echo "::group::Thread dump of the hung runData"; jstack -l "$pid"; echo "::endgroup::"
+            done ) &
+          dump=$!
+          status=0
+          timeout 300 ./gradlew runData --stacktrace || status=$?
+          # The dump may be over already, and the step runs with -e: a failed kill must not hide the result.
+          kill "$dump" 2>/dev/null || true
+          if [ "$status" -ne 0 ]; then
+            echo "runData failed or hung"
+            exit "$status"
+          fi
+          git diff --exit-code -- src/generated
 
       - name: Upload test reports
         if: failure()
