@@ -165,6 +165,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.pilot.heading", "HDG %s");
         add("hud.void_reclaimer.pilot.tilt", "PIT %s ROL %s");
         add(ModItems.TERRAFORMING_SPIRE.get(), "Terraforming Spire");
+        add(ModItems.PLANETARY_GRID.get(), "Planetary Grid");
+        add("hud.void_reclaimer.planetary_grid", "%s of 16 sectors restored");
         add("message.void_reclaimer.spire.started", "The tower is charging for a Genesis Pulse.");
         add("message.void_reclaimer.spire.no_catalyst", "The Spire needs an Atmospheric Catalyst Core.");
         add("message.void_reclaimer.spire.no_water", "The Spire's tank needs more Purified Water.");
@@ -685,6 +687,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
         add("replicator.void_reclaimer.description.holo_projector", "Shows up to eight lines of text in the air above itself. Write to it from a computer or a Create Display Link, or sneak-use it with an empty hand to pick a built-in readout.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");
+        add("replicator.void_reclaimer.description.planetary_grid", "Hold it to see ruined Earth's 16 sectors and which ones are restored, from anywhere.");
         add("replicator.void_reclaimer.description.terraforming_spire", "The heart of a Spire tower. Build a 5 x 5 base of Scaffold or Portal Frame with this block in the middle of one side, with four corner pillars 9 tall, then sneak-use it. Feed it a Catalyst Core, Purified Water, Bio-Nutrient Slurry and rotation, and it restores one sector of ruined Earth.");
         add("replicator.void_reclaimer.description.chemical_thruster", "Pushes a block ship. Build it into the ship with the nozzle pointing away from where you want to go, turn it with a shaft, pipe in Nebulite Propellant, and open the throttle with redstone.");
         add("replicator.void_reclaimer.description.ion_thruster", "Pushes a block ship on Forge Energy. Weaker than a Chemical Thruster, but it needs no fuel and no shaft. Place it on a hull with the nozzle facing out, feed it electricity, and open the throttle with redstone.");

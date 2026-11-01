@@ -90,11 +90,12 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 ## The list
 
-### Tools & modules (15)
+### Tools & modules (16)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
 | dust_sensor | `item/dust_sensor.png` | 16x16 | no | art drop 1 (redo optional) | handheld brass sensor with a round cyan glass lens and small antenna |  |
+| planetary_grid | `item/planetary_grid.png` | 16x16 | no | placeholder | handheld slate with a small 4 by 4 sector map, some cells green, the rest ash brown | Placeholder drawn by script until RD art. |
 | portal_igniter | `item/portal_igniter.png` | 16x16 | no | placeholder | small brass igniter with a pale-blue crystal ring at the tip | Lights an Atmospheric Portal frame; used up. Act III slice placeholder. |
 | nanite_swarm | `item/nanite_swarm.png` | 16x16 | no | art drop 1 (redo optional) | swirling cloud of tiny silver-cyan nanite specks around a small emitter | Animated (nanite_swarm.png.mcmeta): a 16x64 vertical strip of 4 frames (3 ticks each). RD VFX animation as a sprite sheet, then stack 4 frames top to bottom. |
 | salvage_tool | `item/salvage_tool.png` | 16x16 | no | art drop 1 (redo optional) | compact cutting tool with a copper handle and glowing orange cutting edge |  |

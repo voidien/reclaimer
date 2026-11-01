@@ -39,6 +39,7 @@ Every new extension point is added here in the same change.
 | `ModuleUseEvent` | Event, cancellable | Before the active tool module is used |
 | `MassDriverLaunchEvent` | Event, cancellable, mutable counts | When a Mass Driver fires a payload, before the Dyson counters change; counts start from the payload's tag |
 | `SectorRestoredEvent` | Event | After a sector of ruined Earth first counts as restored, with its number and the new count |
+| `void_reclaimer:planet_sectors` | Data component (Integer) | One bit per restored sector; any item carrying it is kept up to date only by `PlanetaryGridItem`, and the map layer shows it in either hand |
 | `#void_reclaimer:dyson/satellite_payloads` | Item tag | Items the Mass Driver launches as one Dyson Swarm Satellite each |
 | `#void_reclaimer:dyson/truss_payloads` | Item tag | Items the Mass Driver launches as one Dyson Shell Truss Module each |
 | `#void_reclaimer:launch_frame` | Block tag | Blocks that may form the Launch Complex's ring (Scaffold, Portal Frame, Create's industrial iron block and andesite casing) |

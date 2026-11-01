@@ -20,6 +20,7 @@ public final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.NANITE_SWARM.get());
         basicItem(ModItems.BODY_BLUEPRINT.get());
         basicItem(ModItems.PORTAL_IGNITER.get());
+        basicItem(ModItems.PLANETARY_GRID.get());
         withExistingParent("test_starship", mcLoc("item/template_spawn_egg"));
         basicItem(ModItems.HELPER_DRONE.get());
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {

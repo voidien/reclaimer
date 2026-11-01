@@ -17,6 +17,10 @@ public final class ModDataComponents {
     public static final DeferredRegister.DataComponents COMPONENTS =
             DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, VoidReclaimer.MOD_ID);
 
+    /** The sectors of ruined Earth a Planetary Grid last read, one bit each (see {@code earth.SectorMap}). */
+    public static final Supplier<DataComponentType<Integer>> PLANET_SECTORS = COMPONENTS.registerComponentType("planet_sectors",
+            builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
     /** Nanite Swarm build distance in blocks. */
     public static final Supplier<DataComponentType<Integer>> NANITE_RANGE = COMPONENTS.registerComponentType("nanite_range",
             builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
