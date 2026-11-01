@@ -15,11 +15,12 @@
 #   tools/client-test/quick.sh gdrag X Y DX DY left drag at GUI coordinates
 #   tools/client-test/quick.sh key KEYSYM      press a key
 #   tools/client-test/quick.sh scroll N        scroll the wheel, up when positive
+#   tools/client-test/quick.sh reload          copy changed assets and lang into the running game, no restart
 #   tools/client-test/quick.sh stop            close the game
 #
 # `swap` can change what a method does. Adding, removing or renaming a method or field, or changing a mixin, needs
 # `stop` and `start`: it says so. Classes the game has not loaded yet need nothing, they load from build/classes.
-# Assets and lang need `stop` and `start` too.
+# Assets and lang need `reload`, which is F3+T after processResources. Data files need `/reload` in chat.
 set -u
 cd "$(dirname "$0")/../.."
 ROOT=$PWD
@@ -100,6 +101,25 @@ swap)
     mv "$STAMP.new" "$STAMP"
     echo "swapped $(wc -l <<< "$changed") classes in ${SECONDS}s"
     ;;
+reload)
+    SECONDS=0
+    ./gradlew processResources -q || exit 1
+    lines=$(wc -l < "$LOG")
+    $XT key t; sleep 0.4; $XT type "/vrphoto reload"; sleep 0.1; $XT key Return
+    for _ in $(seq 1 300); do
+        tail -n +"$lines" "$LOG" | grep -aq "TextureAtlas.*Created" && break
+        sleep 0.2
+    done
+    tail -n +"$lines" "$LOG" | grep -aq "TextureAtlas.*Created" || { echo "no reload seen in 60 s" >&2; exit 1; }
+    # The atlases come at the end of the reload, and keys are lost until the overlay has gone: wait for the picture to come back.
+    for _ in $(seq 1 60); do
+        [ "$(import -window root -resize 160x90 png:- 2>/dev/null | identify -format '%k' - 2>/dev/null || echo 0)" -gt 50 ] && break
+        sleep 0.5
+    done
+    # The first screen after a reload opens slowly, and a command typed into it loses its first keys.
+    $XT key t; sleep 3; $XT key Escape; sleep 0.5
+    echo "reloaded in ${SECONDS}s"
+    ;;
 shot)
     mkdir -p "$SHOTS"
     import -window root "$SHOTS/$2.png" && echo "$ROOT/$SHOTS/$2.png"
@@ -162,7 +182,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,21p' "$0" | sed 's/^# \?//'
+    sed -n '2,22p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac
