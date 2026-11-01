@@ -42,6 +42,7 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_3_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_4_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_STATIC_BAND;
+    public static final ModConfigSpec.IntValue LINK_SIGNAL_GRACE;
     public static final ModConfigSpec.DoubleValue LINK_STATION_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_STATION_STATIC_BAND;
     public static final ModConfigSpec.DoubleValue LINK_SEAT_CHARGE;
@@ -260,6 +261,7 @@ public final class Config {
         LINK_STATIC_BAND = BUILDER.comment("The outer share of a range that carries static: strength falls from full to nothing across it.")
                 .defineInRange("staticBand", 0.25, 0.0, 1.0);
         LINK_STATION_RANGE = BUILDER.comment("A seat at a station multiplies its range by this.").defineInRange("stationRange", 1.5, 1.0, 16.0);
+        LINK_SIGNAL_GRACE = BUILDER.comment("Seconds a link stands after its signal is lost, with a countdown; a signal back in time keeps it.").defineInRange("signalGrace", 5, 0, 60);
         LINK_STATION_STATIC_BAND = BUILDER.comment("staticBand for a seat at a station, across its whole network, so static starts later.")
                 .defineInRange("stationStaticBand", 0.1, 0.0, 1.0);
         LINK_SEAT_CHARGE = BUILDER.comment("Energy per second an Uplink Seat gives the main body while the mind is away.")

@@ -1,5 +1,6 @@
 package com.voidreclaimer.link;
 
+import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.event.ShellLinkEvent;
 import com.voidreclaimer.dyson.DysonSphereData;
@@ -67,18 +68,31 @@ public final class Signal {
         Optional<LinkState.Link> link = Links.state(player).link().filter(found -> found.seat().isPresent());
         if (link.isEmpty()) {
             show(player, CLEAN);
+            losing(player, 0);
             return;
         }
         RelayGraph.Reading reading = read(player.server, link.get().from(), Links.place(player));
         if (reading.reachable()) {
             show(player, (float) reading.strength());
-        } else {
-            show(player, CLEAN);
+            losing(player, 0);
+            return;
+        }
+        show(player, 0f);
+        int left = SignalMath.countdown(player.getData(ModAttachments.LINK_LOSING), Config.LINK_SIGNAL_GRACE.get());
+        losing(player, left);
+        if (left == 0) {
             Links.requestWake(player, ShellLinkEvent.Reason.SIGNAL_LOST, result -> {
                 if (result == Links.Result.WOKEN) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.link.signal_lost"), false);
                 }
             });
+        }
+    }
+
+    private static void losing(ServerPlayer player, int seconds) {
+        if (player.getData(ModAttachments.LINK_LOSING) != seconds) {
+            player.setData(ModAttachments.LINK_LOSING, seconds);
+            player.syncData(ModAttachments.LINK_LOSING);
         }
     }
 

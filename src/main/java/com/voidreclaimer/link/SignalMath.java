@@ -68,6 +68,14 @@ public record SignalMath(double seatRange, double relayRange, List<Double> dyson
         return fade <= 0 ? 1 : Math.min(1, (range - distance) / fade);
     }
 
+    /**
+     * Seconds left of a lost signal after one more second of it, from {@code left} now: the countdown starts at {@code grace}, and 0
+     * means the link ends now.
+     */
+    public static int countdown(int left, int grace) {
+        return left > 0 ? left - 1 : grace;
+    }
+
     /** How much static a link of this strength carries, 0 (clean) to 1 (about to drop). */
     public static double staticLevel(double strength) {
         return 1 - Math.max(0, Math.min(1, strength));
