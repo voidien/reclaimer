@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The checks to run before a push, chosen from what this branch changed by the same rules as CI's `changes` job, one suite at a
+# The checks to run before a merge, chosen from what this branch changed, one suite at a
 # time. One line per check; the full log of a failure is in build/verify-<check>.log. Exit status 0 means push.
 #
 #   tools/verify.sh          what this branch needs
@@ -32,7 +32,7 @@ run() { # name command...
 
 touches() { grep -qE "$1" <<< "$changed"; }
 
-# Mirrors the grep in .github/workflows/build.yml: these paths cannot change server behaviour or generated data.
+# These paths cannot change server behaviour or generated data.
 server=$(grep -Ev '^(src/test/|tools/|docs/|art/|src/main/java/com/voidreclaimer/client/|src/main/resources/assets/|.*\.md$)' <<< "$changed" || true)
 code=$(grep -Ev '^(docs/|art/|.*\.md$)' <<< "$changed" || true)
 
@@ -43,7 +43,7 @@ if [ "${1:-}" = "all" ] || [ -n "$server" ]; then
     run main tools/gametest.sh main
     run aero tools/gametest.sh aero
 else
-    echo "skip  GameTests: nothing here reaches the server (CI skips them too, and main runs them after the merge)"
+    echo "skip  GameTests: nothing here reaches the server (CI runs them on main after the merge)"
 fi
 if [ "${1:-}" = "all" ] || touches '^src/main/java/com/voidreclaimer/(datagen|registry)/|^src/generated/'; then
     run data timeout 300 ./gradlew runData
