@@ -32,7 +32,7 @@ public final class LinkOutboxGameTests {
     private LinkOutboxGameTests() {}
 
     /** A player who linked to a shell and woke again: the shell is back in the world and in the outbox. */
-    private static void woken(GameTestHelper helper, BlockPos origin, BiConsumer<ServerPlayer, UUID> test) {
+    static void woken(GameTestHelper helper, BlockPos origin, BiConsumer<ServerPlayer, UUID> test) {
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
             ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
             BodyHost shell = BodyHost.spawn(player.serverLevel(), player.position().add(AWAY), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
@@ -44,7 +44,7 @@ public final class LinkOutboxGameTests {
         });
     }
 
-    private static void finish(GameTestHelper helper, ServerPlayer player, ServerLevel level, UUID id) {
+    static void finish(GameTestHelper helper, ServerPlayer player, ServerLevel level, UUID id) {
         if (level.getEntity(id) != null) {
             level.getEntity(id).discard();
         }

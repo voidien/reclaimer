@@ -59,6 +59,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  *   <li>{@code /void_reclaimer wear <player> <condition>}: sets every section's condition, 1 new and 0 spent</li>
+ *   <li>{@code /void_reclaimer link shells <player>}: every shell the player has owned, where it was last seen and how it stands</li>
  *   <li>{@code /void_reclaimer scene <name>}: builds a ready-made test setup in deep space and moves you to it ({@link com.voidreclaimer.debug.TestScenes})</li>
  *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
  * </ul>
@@ -93,6 +94,26 @@ public final class ModCommands {
                 link.shell().toString(), link.epoch(), link.from().dimension().location().toString(), link.from().position().toString()))
                 .orElse(Component.translatable("commands.void_reclaimer.link.status.home")), false);
         return state.linked() ? 1 : 0;
+    }
+
+    /** Every shell the player has owned, as their player file has it. The result is how many are still in use: gone ones do not count. */
+    private static int linkShells(CommandSourceStack source, ServerPlayer player) {
+        var state = com.voidreclaimer.link.Links.state(player);
+        if (state.shells().isEmpty()) {
+            source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.link.shells.none"), false);
+            return 0;
+        }
+        int count = 0;
+        for (var known : state.shells()) {
+            boolean inUse = state.link().filter(link -> link.shell().equals(known.shell())).isPresent();
+            String how = inUse ? "in_use" : known.gone() ? "gone" : known.wrecked() ? "wrecked" : "idle";
+            count += known.gone() ? 0 : 1;
+            var at = known.at().position();
+            source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.link.shells.entry", known.shell().toString(), known.epoch(),
+                    known.at().dimension().location().toString(), String.format(java.util.Locale.ROOT, "%.0f %.0f %.0f", at.x, at.y, at.z),
+                    Component.translatable("commands.void_reclaimer.link.shells." + how)), false);
+        }
+        return count;
     }
 
     /** Debug: a link with no seat or signal. The move runs at the end of the tick, so a command's result only says it was asked for. */
@@ -201,6 +222,9 @@ public final class ModCommands {
                         .then(Commands.literal("status")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> linkStatus(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
+                        .then(Commands.literal("shells")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> linkShells(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
                         .then(Commands.literal("force")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("shell", EntityArgument.entity())

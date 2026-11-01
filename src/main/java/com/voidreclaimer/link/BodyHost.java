@@ -70,6 +70,9 @@ public class BodyHost extends LivingEntity {
         host.wear(body);
         host.setHealth(host.getMaxHealth());
         level.addFreshEntity(host);
+        if (role == HostRole.SHELL) {
+            Links.note(host);
+        }
         return host;
     }
 
@@ -99,6 +102,7 @@ public class BodyHost extends LivingEntity {
         Vec3 eyes = owner.getEyePosition();
         BodyHost shell = spawn(owner.serverLevel(), eyes, HostRole.SHELL, body, owner.getUUID());
         shell.setPos(eyes.add(owner.getLookAngle().scale(AHEAD * (1.0 + shell.getScale()))));
+        Links.note(shell);
         return shell;
     }
 
@@ -115,7 +119,7 @@ public class BodyHost extends LivingEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() == HostRole.SHELL && Links.stale(this)) {
+        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() != HostRole.MIRROR && Links.stale(this)) {
             LOGGER.info("Shell {} was an old copy and has been removed", getUUID());
             Outboxes.lookAgain(getUUID());
             discard();
