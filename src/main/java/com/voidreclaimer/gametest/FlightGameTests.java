@@ -41,7 +41,8 @@ public final class FlightGameTests {
     public static void darknessDrainsAndThrustCostsEnergy(GameTestHelper helper) {
         ServerLevel space = TestPlayers.deepSpace(helper);
         BlockPos center = new BlockPos(21_000, 80, 0);
-        space.getChunk(center);
+        // Forced: a chunk with no ticket can unload during the wait for the light, and the box with it.
+        space.setChunkForced(center.getX() >> 4, center.getZ() >> 4, true);
         BlockPos.betweenClosed(center.offset(-2, -2, -2), center.offset(2, 3, 2))
                 .forEach(pos -> space.setBlock(pos, Blocks.STONE.defaultBlockState(), 3));
         BlockPos.betweenClosed(center.offset(-1, -1, -1), center.offset(1, 2, 1))
@@ -64,6 +65,7 @@ public final class FlightGameTests {
                 helper.succeed();
             } finally {
                 TestPlayers.remove(player);
+                space.setChunkForced(center.getX() >> 4, center.getZ() >> 4, false);
             }
         });
     }

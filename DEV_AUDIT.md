@@ -11,6 +11,7 @@ First audit: 2026-10-31, on `main` at 081141a. The owner approved all findings o
 ## Status
 - F1: done (`tools/land.sh`).
 - F2: done (`docs/progress/`, `tools/progress_fold.py`). Pays off as fewer merges of `main`: check the count on the next audit (34 for 115 PRs before).
+- F3, F5, F11, F15: done. F5 took the slowest batch from 35 s to 22 s.
 - Everything else: in progress.
 
 ## Top 3 changes by payoff
@@ -54,6 +55,8 @@ Ranked by minutes saved ÷ effort. Minutes saved are estimates for a busy hour; 
 | F14 | `swap` can't add methods or fields | `quick.sh:20`; the standard JVM redefines method bodies only | Spike JetBrains Runtime with `-XX:+AllowEnhancedClassRedefinition`. **Unverified with NeoForge**; found no NeoForge source; needs an install | 3 | 2 h | Low if used for dev runs only |
 | F15 | `gametest.sh` can't run both suites at once | `killjvm` matches the prefix `build/moddev/gameTest` (`tools/gametest.sh:26`), so either suite kills the other | Match the exact suite | 0 | 2 min | None |
 
+| F16 | Most of a GameTest run is chunk saving | Found while doing F5. Stack samples sat in `PalettedContainer.pack`. One main run made about 10,700 deep space chunk saves in 74 s of tests and more at shutdown; a deep space chunk has 254 sections | Write no chunks and exit after the summary (`GameTestChunkSaveMixin`, `GameTestQuickExitMixin`) | 8 | 2 h | **Check moves:** real saves, chunk reloads and a real stop run on every push to `main` and in the restart tests, not on PRs or locally |
+
 ### Java crashes (for your memtest, not a dev-speed item)
 - One new crash in this audit: a main-suite SIGSEGV in a G1 GC thread scanning the heap (`run/hs_err_pid2547477.log`). That fits heap corruption, and it shows the main suite crashes too, not only Aeronautics.
 - It happened in 1 of 3 runs with both suites at once. All 5 single-suite full runs passed.
@@ -84,7 +87,7 @@ F2, F4, F5, F9 and F10 (30-45 min), F13 and F7 (1-2 h), F12 and F14 (2 h).
 ## Checked: no change needed
 - **Gradle is already well tuned.** Daemon, parallel, build cache and configuration cache are on, and the MDG docs confirm configuration cache support. Warm no-op is 0.74 s. Repositories have content filters. The 2 GB heap shows no sign of pressure: `compileJava` is 0.6 s.
 - **Running both suites at once:** 139-151 s against about 162 s in sequence, so 10% faster with one JVM crash in three runs. Not worth it until the crashes are explained.
-- **Forcing faster GameTest ticks:** no gain. `GameTestServer.waitUntilNextTick` doesn't wait, so tests are limited by CPU.
+- **Forcing faster GameTest ticks:** no real gain, measured at 200 and 1000 ticks per second. The first version of this audit said tests were simply CPU-bound; that missed the cause. See F16.
 - **Skipping JEI on quick runs:** about 2.5-4 s of its own time in idle-machine logs, too small to justify another run mode.
 - **Physics and progression tests:** already pure and unit-tested. Client code leaks are limited to `VoidReclaimerClient`, the JEI plugin and one client mixin, and headless GameTests work.
 - **Hooks:** not needed; F1 refreshes the checkout without one.
