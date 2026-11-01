@@ -333,6 +333,8 @@ public final class HoloGameTests {
             helper.assertTrue(projector.display().scale() == 2f, "scale " + projector.display().scale());
             script.run("seen = holo.get(addr)");
             helper.assertTrue(script.globals().get("seen") instanceof Map<?, ?> seen && "text".equals(seen.get("mode")), "holo.get: " + script.globals().get("seen"));
+            script.run("holo.globe(addr, \"earth\")");
+            helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.GLOBE && HoloGlobes.EARTH.equals(projector.display().subject()), "holo.globe did not take");
             script.run("holo.source(\"" + address + "\", \"clock\")");
             helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.READOUT, "the source did not take");
             // Out of reach is a script error, not a write.

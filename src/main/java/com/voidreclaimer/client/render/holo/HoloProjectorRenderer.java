@@ -38,8 +38,8 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
     private static final float BEAM_WIDTH = 0.35f;
     /** The most room a picture can need around the block: a full panel at the biggest scale. */
     private static final float MAX_REACH = 12f;
-    /** Blocks between a globe and the lines over it. */
-    private static final float CAPTION_GAP = 0.15f;
+    /** Room between a globe and the lines over it, as a share of the globe's size: it must clear the Earth's atmosphere. */
+    private static final float CAPTION_GAP = 0.12f;
 
     private final Font font;
 
@@ -114,7 +114,7 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
             HoloGlobeRenderer.dyson(pose, buffers, display.progress(), size / 2, flicker, time, HoloTransform.billboard(parent, camera));
         }
         pose.popPose();
-        drawText(projector, display.withLines(HoloGlobes.caption(display.subject(), display.progress())).withHeight(display.height() + size + CAPTION_GAP),
+        drawText(projector, display.withLines(HoloGlobes.caption(display.subject(), display.progress())).withHeight(display.height() + size * (1 + CAPTION_GAP)),
                 time, flicker, pose, buffers);
     }
 
