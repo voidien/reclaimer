@@ -106,6 +106,14 @@ public class UplinkSeatBlockEntity extends BlockEntity {
         super.setRemoved();
     }
 
+    /** How far this seat reaches now, in blocks. */
+    public double range() {
+        ServerLevel server = (ServerLevel) level;
+        ServerSubLevel ship = Ships.shipAt(server, worldPosition);
+        Vec3 here = Vec3.atCenterOf(worldPosition);
+        return Signal.range(server.getServer(), new LinkState.Place(server.dimension(), ship == null ? here : ship.logicalPose().transformPosition(here), 0f, 0f));
+    }
+
     /** Takes {@code player} to the shell that stands ready, or tells them why not. Stands in for the picker. */
     public void connect(ServerPlayer player) {
         if (occupant().isPresent()) {
