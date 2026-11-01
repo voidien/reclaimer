@@ -18,10 +18,10 @@
       "backpack"
     ],
     "left_upper_arm": [
-      "arm_l"
+      "arm_l", "thruster_l"
     ],
     "right_upper_arm": [
-      "arm_r"
+      "arm_r", "thruster_r"
     ],
     "left_forearm": [
       "elbow_l"
