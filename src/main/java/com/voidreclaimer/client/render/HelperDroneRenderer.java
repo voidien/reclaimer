@@ -1,6 +1,7 @@
 package com.voidreclaimer.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.helper.HelperDrone;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -20,5 +21,7 @@ public class HelperDroneRenderer extends GeoEntityRenderer<HelperDrone> {
     @Override
     protected void applyRotations(HelperDrone drone, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
         super.applyRotations(drone, poseStack, ageInTicks, Mth.rotLerp(partialTick, drone.yRotO, drone.getYRot()), partialTick, nativeScale);
+        // The probe model's nose is its +Z, so without this it flies tail first (the Drone's rig spec has the same turn).
+        poseStack.mulPose(Axis.YP.rotationDegrees(180f));
     }
 }
