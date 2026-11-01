@@ -42,6 +42,9 @@ public final class ModDataComponents {
     /** A Helper Drone item's source and destination. */
     public static final Supplier<DataComponentType<com.voidreclaimer.helper.HelperLinks>> HELPER_LINKS = COMPONENTS.registerComponentType("helper_links",
             builder -> builder.persistent(com.voidreclaimer.helper.HelperLinks.CODEC).networkSynchronized(com.voidreclaimer.helper.HelperLinks.STREAM_CODEC));
+    /** A Helper Drone item's battery as a share of full, 0 to 1. Absent means full. */
+    public static final Supplier<DataComponentType<Float>> HELPER_BATTERY = COMPONENTS.registerComponentType("helper_battery",
+            builder -> builder.persistent(com.mojang.serialization.Codec.floatRange(0f, 1f)).networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.FLOAT));
     public static final Supplier<DataComponentType<ModuleStats>> MODULE = COMPONENTS.registerComponentType("module",
             builder -> builder.persistent(ModuleStats.CODEC).networkSynchronized(ModuleStats.STREAM_CODEC));
 

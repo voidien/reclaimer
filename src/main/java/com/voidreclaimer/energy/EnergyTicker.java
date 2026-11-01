@@ -67,12 +67,15 @@ public final class EnergyTicker {
      * Deep space's fixed dim sun gives about 2/3 in the open; anything shaded or enclosed gets less or none.
      */
     static float sunExposure(ServerPlayer player) {
-        Level level = player.level();
+        return sunExposure(player.level(), BlockPos.containing(player.getEyePosition()));
+    }
+
+    /** 0..1 sunlight at a block position: anything that runs on sunlight reads the same light as the body. */
+    public static float sunExposure(Level level, BlockPos pos) {
         if (!level.dimensionType().hasSkyLight()) {
             return 0f;
         }
-        BlockPos eyes = BlockPos.containing(player.getEyePosition());
-        int effective = level.getBrightness(LightLayer.SKY, eyes) - level.getSkyDarken();
+        int effective = level.getBrightness(LightLayer.SKY, pos) - level.getSkyDarken();
         return Mth.clamp(effective / 15f, 0f, 1f);
     }
 

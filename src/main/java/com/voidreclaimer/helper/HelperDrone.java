@@ -1,10 +1,12 @@
 package com.voidreclaimer.helper;
 
 import com.voidreclaimer.Config;
+import com.voidreclaimer.api.event.HelperChargeEvent;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dust.DustField;
 import com.voidreclaimer.dust.DustLedger;
 import com.voidreclaimer.dust.DustTicker;
+import com.voidreclaimer.energy.EnergyTicker;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModDataComponents;
@@ -27,6 +29,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -39,6 +42,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -61,6 +65,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * It flies at {@code helper.speed} blocks per tick, round blocks ({@link HelperSteering}), and hovers at a free face of what
  * it works on, the top if it can. With no way there it holds still and says so. It has no gravity. Sneak-use with an empty
  * hand takes it back as an item with its links; a hit breaks it into that item as well. Right-click reports what it is doing.
+ * <p>It runs on a small battery ({@link HelperBattery}): flying and working spend it, sunlight and a Station Core in range fill
+ * it, and an empty one only slows the drone down.
  */
 public class HelperDrone extends Entity implements GeoEntity {
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
@@ -69,6 +75,8 @@ public class HelperDrone extends Entity implements GeoEntity {
     private static final EntityDataAccessor<Boolean> HOLDING = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BOOLEAN);
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.idle");
     private static final RawAnimation THRUST = RawAnimation.begin().thenLoop("animation.void_reclaimer.mining_probe.thrust");
+    /** Ticks between two looks at what charges the battery. */
+    private static final int CHARGE_LOOK = 20;
     /** The drone hovers this far above the block it works on. */
     public static final double HOVER = 1.0;
 
@@ -81,12 +89,16 @@ public class HelperDrone extends Entity implements GeoEntity {
     /** Mining: the rock being worked, how long it has been dug, and when to look for a rock again. */
     @Nullable
     private BlockPos rock;
-    private int dug;
+    private float dug;
     private int scanIn;
     /** Collecting: the dust gathered and not yet handed over. */
     private DustData tank = DustData.EMPTY;
     /** The way to the current target. Not saved: a drone works it out again after a load. */
     private final HelperSteering.Route route = new HelperSteering.Route();
+    /** The battery as a share of full, 0 to 1. A drone from a save older than the battery has none on file and starts full. */
+    private float battery = 1f;
+    /** What the battery takes in per tick, worked out about once a second. */
+    private float charging;
     private final BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
     private final HelperSteering.Cells cells = this::canFlyThrough;
 
@@ -174,6 +186,21 @@ public class HelperDrone extends Entity implements GeoEntity {
         return rock;
     }
 
+    /** The battery as a share of full, 0 to 1. */
+    public float battery() {
+        return battery;
+    }
+
+    /** Sets the battery: a released drone keeps its item's charge. */
+    public void setBattery(float share) {
+        battery = Mth.clamp(share, 0f, 1f);
+    }
+
+    /** The share of full speed and work the battery gives now. */
+    public float power() {
+        return HelperBattery.power(battery, Config.HELPER_BATTERY_LOW.get().floatValue(), Config.HELPER_FLAT_POWER.get().floatValue());
+    }
+
     /** Whether the drone found no way to its target and is holding still until its next try. */
     public boolean blocked() {
         return route.blocked();
@@ -231,6 +258,9 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (!(level() instanceof ServerLevel server)) {
             return;
         }
+        if (tickCount % CHARGE_LOOK == 0) {
+            charging = chargePerTick(server);
+        }
         if (links.collecting()) {
             tickCollecting(server);
         } else if (links.mining()) {
@@ -238,6 +268,19 @@ public class HelperDrone extends Entity implements GeoEntity {
         } else {
             tickFerry(server);
         }
+        battery = HelperBattery.next(battery, charging, 0f, Config.HELPER_BATTERY_CAPACITY.get().floatValue());
+    }
+
+    /** What sunlight and a Station Core give here, after any addon has had its say. */
+    private float chargePerTick(ServerLevel server) {
+        float sun = EnergyTicker.sunExposure(server, blockPosition());
+        boolean atCore = server.getData(ModAttachments.STATIONS).nearest(position(), Config.HELPER_CORE_RANGE.get()).isPresent();
+        float gain = HelperBattery.gain(sun, atCore, Config.HELPER_SUN_CHARGE.get().floatValue(), Config.HELPER_CORE_CHARGE.get().floatValue());
+        return NeoForge.EVENT_BUS.post(new HelperChargeEvent(this, gain)).getCharge();
+    }
+
+    private void spend(float drain) {
+        battery = HelperBattery.next(battery, 0f, drain, Config.HELPER_BATTERY_CAPACITY.get().floatValue());
     }
 
     /** Flies one step towards {@code target}; returns whether the drone is now within reach of it. */
@@ -248,8 +291,12 @@ public class HelperDrone extends Entity implements GeoEntity {
             return false;
         }
         double reach = Config.HELPER_REACH.get();
-        Vec3 next = route.advance(position(), target.get(), Config.HELPER_SPEED.get(), reach, Config.HELPER_SEARCH_NODES.get(), Config.HELPER_BLOCKED_RETRY.get(), cells);
+        float power = power();
+        Vec3 next = route.advance(position(), target.get(), Config.HELPER_SPEED.get() * power, reach, Config.HELPER_SEARCH_NODES.get(), Config.HELPER_BLOCKED_RETRY.get(), cells);
         setYRot(HelperSteering.yaw(position(), next, getYRot()));
+        if (!next.equals(position())) {
+            spend(Config.HELPER_FLIGHT_DRAIN.get().floatValue() * power);
+        }
         setPos(next.x, next.y, next.z);
         entityData.set(HOLDING, route.blocked());
         return HelperSteering.reached(next, target.get(), reach, cells);
@@ -283,11 +330,17 @@ public class HelperDrone extends Entity implements GeoEntity {
             rockFound = rock != null;
         }
         boolean arrived = fly(target());
-        boolean digDone = phase == Mining.Phase.DIGGING && rockFound && ++dug >= Config.HELPER_DIG_TICKS.get();
+        boolean digDone = false;
+        if (phase == Mining.Phase.DIGGING && rockFound) {
+            float power = power();
+            dug += power;
+            spend(Config.HELPER_WORK_DRAIN.get().floatValue() * power);
+            digDone = dug >= Config.HELPER_DIG_TICKS.get();
+        }
         Mining.Action action = Mining.actionOn(phase, arrived, digDone);
         switch (action) {
             case DIG -> {
-                if (rock != null && dug % 10 == 0) {
+                if (rock != null && tickCount % 10 == 0) {
                     BlockState state = server.getBlockState(rock);
                     server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), rock.getX() + 0.5, rock.getY() + 1.1, rock.getZ() + 0.5, 6, 0.2, 0.1, 0.2, 0.05);
                 }
@@ -302,7 +355,7 @@ public class HelperDrone extends Entity implements GeoEntity {
             wait = Config.HELPER_PAUSE.get();
         }
         if (next == Mining.Phase.TO_ROCK && phase != Mining.Phase.TO_ROCK) {
-            dug = 0;
+            dug = 0f;
         }
         if (next != phase) {
             setMinePhase(next);
@@ -351,8 +404,10 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (!sample.inCloud() || sample.cloud() == null) {
             return;
         }
+        float power = power();
         float gain = DustTicker.gainPerTick(sample.density(), 0.0, Config.DUST_TRICKLE.get(), Config.DUST_SCOOP.get())
-                * Config.HELPER_COLLECT_RATE.get().floatValue();
+                * Config.HELPER_COLLECT_RATE.get().floatValue() * power;
+        spend(Config.HELPER_WORK_DRAIN.get().floatValue() * power);
         tank = tank.add(sample.cloud().kind(), gain, Config.HELPER_TANK.get().floatValue());
     }
 
@@ -411,7 +466,7 @@ public class HelperDrone extends Entity implements GeoEntity {
             level().addFreshEntity(new ItemEntity(level(), rock.getX() + 0.5, rock.getY() + 0.5, rock.getZ() + 0.5, mined));
         }
         rock = null;
-        dug = 0;
+        dug = 0f;
     }
 
     /** Takes up to {@code helper.carry} items of the first non-empty slot of the inventory at {@code pos}. */
@@ -468,11 +523,10 @@ public class HelperDrone extends Entity implements GeoEntity {
 
     /** One line about the job: the phase, what is carried, and the links. */
     public Component status() {
-        if (route.blocked()) {
-            return Component.translatable("message.void_reclaimer.helper.status.blocked", load());
-        }
-        String phase = (links.collecting() ? collectPhase().name() : links.mining() ? minePhase().name() : phase().name()).toLowerCase(java.util.Locale.ROOT);
-        return Component.translatable("message.void_reclaimer.helper.status." + phase, load());
+        String phase = route.blocked() ? "blocked"
+                : (links.collecting() ? collectPhase().name() : links.mining() ? minePhase().name() : phase().name()).toLowerCase(java.util.Locale.ROOT);
+        return Component.translatable("message.void_reclaimer.helper.status." + phase, load())
+                .append(" ").append(Component.translatable("message.void_reclaimer.helper.battery", Math.round(battery * 100f)));
     }
 
     private Component load() {
@@ -485,6 +539,9 @@ public class HelperDrone extends Entity implements GeoEntity {
     public ItemStack toItem() {
         ItemStack item = new ItemStack(ModItems.HELPER_DRONE.get());
         item.set(ModDataComponents.HELPER_LINKS.get(), links);
+        if (battery < 1f) {
+            item.set(ModDataComponents.HELPER_BATTERY.get(), battery);
+        }
         return item;
     }
 
@@ -529,10 +586,11 @@ public class HelperDrone extends Entity implements GeoEntity {
         int minePhase = tag.getInt("minePhase");
         setMinePhase(minePhase >= 0 && minePhase < Mining.Phase.values().length ? Mining.Phase.values()[minePhase] : Mining.Phase.IDLE);
         rock = tag.contains("rock") ? NbtUtils.readBlockPos(tag, "rock").orElse(null) : null;
-        dug = tag.getInt("dug");
+        dug = tag.getFloat("dug");
         int collectPhase = tag.getInt("collectPhase");
         setCollectPhase(collectPhase >= 0 && collectPhase < Collecting.Phase.values().length ? Collecting.Phase.values()[collectPhase] : Collecting.Phase.IDLE);
         tank = tag.contains("tank") ? DustData.CODEC.parse(NbtOps.INSTANCE, tag.get("tank")).result().orElse(DustData.EMPTY) : DustData.EMPTY;
+        battery = tag.contains("battery") ? Mth.clamp(tag.getFloat("battery"), 0f, 1f) : 1f;
     }
 
     @Override
@@ -550,9 +608,10 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (rock != null) {
             tag.put("rock", NbtUtils.writeBlockPos(rock));
         }
-        tag.putInt("dug", dug);
+        tag.putFloat("dug", dug);
         tag.putInt("collectPhase", collectPhase().ordinal());
         DustData.CODEC.encodeStart(NbtOps.INSTANCE, tank).result().ifPresent(encoded -> tag.put("tank", (Tag) encoded));
+        tag.putFloat("battery", battery);
     }
 
     @Override

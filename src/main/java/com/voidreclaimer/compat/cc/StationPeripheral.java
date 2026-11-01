@@ -45,6 +45,18 @@ public final class StationPeripheral implements GenericPeripheral {
         return StationAssembly.disassemble(core).name().toLowerCase(java.util.Locale.ROOT);
     }
 
+    /** How many Helper Drones are close enough to charge from this core. */
+    @LuaFunction(mainThread = true)
+    public final int getDronesCharging(StationCoreBlockEntity core) {
+        if (core.getLevel() == null) {
+            return 0;
+        }
+        double range = com.voidreclaimer.Config.HELPER_CORE_RANGE.get();
+        net.minecraft.world.phys.Vec3 spot = core.worldSpot();
+        return core.getLevel().getEntitiesOfClass(com.voidreclaimer.helper.HelperDrone.class, new net.minecraft.world.phys.AABB(spot, spot).inflate(range),
+                drone -> drone.position().distanceToSqr(spot) <= range * range).size();
+    }
+
     /** Where the core is in the world right now (a station moves). */
     @LuaFunction(mainThread = true)
     public final Map<String, Double> getPosition(StationCoreBlockEntity core) {

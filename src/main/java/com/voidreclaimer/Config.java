@@ -47,6 +47,14 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue HELPER_OWNER_RANGE;
     public static final ModConfigSpec.IntValue HELPER_SEARCH_NODES;
     public static final ModConfigSpec.IntValue HELPER_BLOCKED_RETRY;
+    public static final ModConfigSpec.DoubleValue HELPER_BATTERY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue HELPER_FLIGHT_DRAIN;
+    public static final ModConfigSpec.DoubleValue HELPER_WORK_DRAIN;
+    public static final ModConfigSpec.DoubleValue HELPER_SUN_CHARGE;
+    public static final ModConfigSpec.DoubleValue HELPER_CORE_CHARGE;
+    public static final ModConfigSpec.DoubleValue HELPER_CORE_RANGE;
+    public static final ModConfigSpec.DoubleValue HELPER_BATTERY_LOW;
+    public static final ModConfigSpec.DoubleValue HELPER_FLAT_POWER;
     public static final ModConfigSpec.IntValue STATION_REPLICATOR_SPEED;
     public static final ModConfigSpec.IntValue STATION_MAX_BLOCKS;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
@@ -235,6 +243,14 @@ public final class Config {
         HELPER_OWNER_RANGE = BUILDER.comment("How far a collecting drone will fly to its owner, in blocks.").defineInRange("ownerRange", 96.0, 8.0, 512.0);
         HELPER_SEARCH_NODES = BUILDER.comment("Cells one search for a way round blocks may look at. More finds ways round bigger walls and costs more when a drone is stuck.").defineInRange("searchNodes", 2048, 64, 65536);
         HELPER_BLOCKED_RETRY = BUILDER.comment("Ticks a drone with no way to its target holds still before it looks again.").defineInRange("blockedRetry", 100, 10, 12000);
+        HELPER_BATTERY_CAPACITY = BUILDER.comment("Charge a drone's battery holds. Flying at full speed spends flightDrain a tick.").defineInRange("batteryCapacity", 2400.0, 1.0, 1000000.0);
+        HELPER_FLIGHT_DRAIN = BUILDER.comment("Charge spent per tick of flight at full speed. A drone holding still spends none.").defineInRange("flightDrain", 1.0, 0.0, 100.0);
+        HELPER_WORK_DRAIN = BUILDER.comment("Charge spent per tick of digging or gathering at full power.").defineInRange("workDrain", 0.5, 0.0, 100.0);
+        HELPER_SUN_CHARGE = BUILDER.comment("Charge gained per tick in full sunlight. Deep space's open sun is about 2/3 of full.").defineInRange("sunCharge", 1.2, 0.0, 100.0);
+        HELPER_CORE_CHARGE = BUILDER.comment("Charge gained per tick within coreRange of a Station Core, on top of sunlight.").defineInRange("coreCharge", 4.0, 0.0, 1000.0);
+        HELPER_CORE_RANGE = BUILDER.comment("How close to a Station Core a drone charges from it, in blocks.").defineInRange("coreRange", 32.0, 1.0, 256.0);
+        HELPER_BATTERY_LOW = BUILDER.comment("Share of a full battery below which a drone's speed and work start to fade.").defineInRange("batteryLow", 0.1, 0.01, 1.0);
+        HELPER_FLAT_POWER = BUILDER.comment("Share of full speed and work a flat battery still gives, so a drone is never stranded.").defineInRange("flatPower", 0.25, 0.05, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Stations.").push("station");

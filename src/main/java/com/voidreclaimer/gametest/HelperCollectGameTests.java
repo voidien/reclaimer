@@ -61,6 +61,27 @@ public final class HelperCollectGameTests {
         });
     }
 
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aFlatCollectorGathersSlowly(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        BlockPos centre = BlockPos.containing(cloud(space, new Vec3(91_000, 80, 20_000)).center());
+        NaniteGameTests.inEntityTickingArea(helper, centre, 2, () -> {
+            removeDrones(space, centre);
+            HelperLinks links = new HelperLinks(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(centre));
+            Vec3 spot = Vec3.atCenterOf(centre.above());
+            HelperDrone full = HelperDrone.spawn(space, spot, links, null);
+            HelperDrone flat = HelperDrone.spawn(space, spot, links, null);
+            flat.setBattery(0f);
+            helper.runAfterDelay(40, () -> {
+                float gotFull = full.tank().total(), gotFlat = flat.tank().total();
+                helper.assertTrue(gotFull > 0f, "the full drone gathered nothing, " + full.collectPhase());
+                helper.assertTrue(gotFlat > 0f && gotFlat < gotFull * 0.5f, "flat " + gotFlat + ", full " + gotFull);
+                removeDrones(space, centre);
+                helper.succeed();
+            });
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 600)
     public static void aCollectorFillsItsTankInTheCloudAndHandsTheDustToItsOwner(GameTestHelper helper) {
         withFastCollecting(helper, new Vec3(91_000, 80, 0), (space, cloud, centre) -> {

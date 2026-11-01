@@ -435,7 +435,7 @@ public final class CCPeripheralGameTests {
             ServerLevel level = TestPlayers.deepSpace(helper);
             var lua = new com.voidreclaimer.compat.cc.StationPeripheral();
             var core = place(level, pos, ModBlocks.STATION_CORE.get(), com.voidreclaimer.station.StationCoreBlockEntity.class);
-            requireMethods(helper, Lookup.of(level, pos), "Station Core", "getName", "setName", "isAssembled", "assemble", "disassemble", "getPosition", "getFilledSlots");
+            requireMethods(helper, Lookup.of(level, pos), "Station Core", "getName", "setName", "isAssembled", "assemble", "disassemble", "getPosition", "getFilledSlots", "getDronesCharging");
             lua.setName(core, "Relay Nine");
             helper.assertTrue("Relay Nine".equals(lua.getName(core)) && !lua.isAssembled(core) && lua.getFilledSlots(core) == 0, "a fresh core reads wrongly");
             helper.assertTrue(lua.getPosition(core).get("x") == pos.getX() + 0.5, "position " + lua.getPosition(core));

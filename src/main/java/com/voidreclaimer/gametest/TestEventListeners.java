@@ -38,6 +38,9 @@ public final class TestEventListeners {
     /** Tool module use is cancelled. */
     public static final String NO_MODULES = "vr_test_no_modules";
 
+    /** A Helper Drone with this tag charges at 240 per tick. */
+    public static final String CHARGED_DRONE = "vr_test_charged_drone";
+
     /** Body changes per player, for every player. */
     static final Map<UUID, Integer> BODY_CHANGES = new ConcurrentHashMap<>();
 
@@ -61,6 +64,13 @@ public final class TestEventListeners {
             event.setTrusses(5);
         } else if (event.getDriverPos().getX() == CANCELLED_DRIVER_X) {
             event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    static void onHelperCharge(com.voidreclaimer.api.event.HelperChargeEvent event) {
+        if (event.getDrone().getTags().contains(CHARGED_DRONE)) {
+            event.setCharge(240f);
         }
     }
 

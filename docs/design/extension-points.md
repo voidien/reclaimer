@@ -21,6 +21,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:holo_projector` | Create registry entry (`create:display_target`) | `compat.create.HoloDisplayTarget`: a Display Link writes to a Holo Projector |
 | CogScript `holo` module | Mixin into Advanced Electricity's `ComputerOS` (`compat.act.HoloScript`) | Programs write to Holo Projectors: `docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md` |
 | `void_reclaimer:tool_module_type` built-ins `drill`, `harvester` | Code registry entries | Mechanical Drill and Matter Harvester: `breakSpeed` on `#void_reclaimer:asteroid_blocks`; the break rules are in `asteroid.Drilling` |
+| `HelperChargeEvent` | Event, mutable charge | About once a second for each Helper Drone: `charge` per tick starts as what sunlight and a Station Core in range give; an addon raises it to add another way to charge a drone |
 | `CollectorPowerEvent` | Event, mutable power | About once a second for each Cloud Siphon: `power` starts as the shaft's (1.0 at 64 RPM, 0 below the minimum speed); an addon (electricity) raises it to run the block without rotation |
 | `void_reclaimer:freezing` recipes | Recipe type (`machine.FreezingRecipe`) | `ingredient`, `results`; run by the Encased Fan type below |
 | `void_reclaimer:freezing` fan type | Create registry entry (`create:fan_processing_type`) | `machine.FreezingFanType`, priority 450, active in powder snow; registered through `MachineSetup.FAN_TYPES` |

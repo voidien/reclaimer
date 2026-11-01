@@ -56,7 +56,7 @@ public final class LogisticsOverlay {
         String job = links.collecting() ? "collecting, " + drone.collectPhase() : links.mining() ? "mining, " + drone.minePhase()
                 : links.complete() ? "ferrying, " + drone.phase() : "idle, no links";
         String cargo = drone.carried().isEmpty() ? "" : ", carrying " + drone.carried().getCount() + " " + drone.carried().getHoverName().getString();
-        String line = "Drone " + job + cargo + (drone.blocked() ? ", blocked" : "");
+        String line = "Drone " + job + cargo + (drone.blocked() ? ", blocked" : "") + ", battery " + Math.round(drone.battery() * 100f) + "%";
         shapes.text(at.add(0, 0.8, 0), line, HEADING);
         facts.add(line + String.format(Locale.ROOT, " at %.1f %.1f %.1f", at.x, at.y, at.z));
     }

@@ -148,6 +148,7 @@ What a player can do at the core by hand.
 | `disassemble()` | sets the station down as blocks: `disassembled`, `not_assembled`, `not_level`, `blocked`, `nothing` or `failed` |
 | `getPosition()` | `{ x, y, z }` where the core is in the world right now |
 | `getFilledSlots()` | how many of the station chest's 27 slots hold something |
+| `getDronesCharging()` | how many Helper Drones are close enough to charge from this core |
 
 ## Docking Clamp (`DockingClampPeripheral`)
 What sneak-use and redstone do.

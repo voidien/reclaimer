@@ -37,6 +37,11 @@ public class HelperDroneItem extends Item {
         return stack.getOrDefault(ModDataComponents.HELPER_LINKS.get(), HelperLinks.EMPTY);
     }
 
+    /** The battery of a drone in item form, as a share of full. */
+    public static float battery(ItemStack stack) {
+        return stack.getOrDefault(ModDataComponents.HELPER_BATTERY.get(), 1f);
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
@@ -94,7 +99,7 @@ public class HelperDroneItem extends Item {
     }
 
     private static void release(ServerLevel level, Vec3 where, ItemStack stack, Player player) {
-        HelperDrone.spawn(level, where, links(stack), player == null ? null : player.getUUID());
+        HelperDrone.spawn(level, where, links(stack), player == null ? null : player.getUUID()).setBattery(battery(stack));
         if (player == null || !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
@@ -102,6 +107,7 @@ public class HelperDroneItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.void_reclaimer.helper.battery", Math.round(battery(stack) * 100f)).withStyle(ChatFormatting.GRAY));
         HelperLinks links = links(stack);
         if (links.collecting()) {
             tooltip.add(link("tooltip.void_reclaimer.helper.collect", links.collect().orElse(null)));
