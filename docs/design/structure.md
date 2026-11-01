@@ -45,6 +45,8 @@ src/main/java/com/voidreclaimer/
 ├── ship/                         7b: block ship thrusters (Sable actors), ThrusterMath, the Helm (seat, PilotInput, ThrustAllocator, Ships)
 ├── compat/jei/                   @JeiPlugin + categories (only loaded when JEI present)
 ├── compat/cc/                    CC: Tweaked generic peripherals (only loaded when CC present)
+├── compat/create/                Create hooks that are not machines: the Holo Projector as a Display Link target
+├── compat/act/                   the `holo` module for CogScript (docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md)
 ├── gametest/                     GameTests (./gradlew runGameTestServer) + TestPlayers helper
 └── datagen/                      GatherDataEvent providers (recipes, loot, tags, lang, models)
 

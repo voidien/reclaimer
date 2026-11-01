@@ -8,6 +8,7 @@ import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.compat.act.HoloScript;
 import com.voidreclaimer.compat.create.HoloDisplaySetup;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.display.HoloDisplay;
@@ -16,17 +17,30 @@ import com.voidreclaimer.dyson.Dyson;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModRegistries;
+import de.nightstudio.light_bulb_addon_create_crafts_and__addions.blockentity.ComputerBlockEntity;
+import de.nightstudio.light_bulb_addon_create_crafts_and__addions.computer.ComputerOS;
+import de.nightstudio.light_bulb_addon_create_crafts_and__addions.computer.Terminal;
+import de.nightstudio.light_bulb_addon_create_crafts_and__addions.computer.script.Interpreter;
+import de.nightstudio.light_bulb_addon_create_crafts_and__addions.computer.script.ScriptError;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
@@ -289,5 +303,94 @@ public final class HoloGameTests {
             helper.assertTrue(projector.display().text(7).equals("eight"), "lines " + projector.display().texts());
             helper.succeed();
         });
+    }
+
+    /** A computer's own block entity, as the addon places it. */
+    private static ComputerBlockEntity computer(ServerLevel level, BlockPos pos) {
+        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("light_bulb_addon_create_crafts_and__addions", "computer"));
+        level.setBlock(pos, block.defaultBlockState(), 3);
+        return (ComputerBlockEntity) level.getBlockEntity(pos);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void cogScriptWritesToTheProjector(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_200, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            ComputerBlockEntity computer = computer(level, pos.east(3));
+            Interpreter script = new Interpreter(() -> {});
+            HoloScript.install(script, computer, Supplier::get);
+            String address = pos.getX() + "," + pos.getY() + "," + pos.getZ();
+            script.run("addr = holo.find()\nholo.set(addr, 2, \"from cogscript\", \"red\")\nholo.scale(addr, 2)");
+            helper.assertTrue(projector.display().text(1).equals("from cogscript"), "lines " + projector.display().texts());
+            helper.assertTrue(projector.display().lines().get(1).color() == DyeColor.RED.getTextColor(), "colour");
+            helper.assertTrue(projector.display().scale() == 2f, "scale " + projector.display().scale());
+            script.run("seen = holo.get(addr)");
+            helper.assertTrue(script.globals().get("seen") instanceof Map<?, ?> seen && "text".equals(seen.get("mode")), "holo.get: " + script.globals().get("seen"));
+            script.run("holo.source(\"" + address + "\", \"clock\")");
+            helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.READOUT, "the source did not take");
+            // Out of reach is a script error, not a write.
+            HoloProjectorBlockEntity far = place(level, pos.east(30));
+            String farAddress = (pos.getX() + 30) + "," + pos.getY() + "," + pos.getZ();
+            try {
+                script.run("holo.clear(\"" + farAddress + "\")");
+                helper.fail("a projector out of reach took a write");
+            } catch (ScriptError expected) {
+                helper.assertTrue(expected.getMessage().contains("no Holo Projector"), expected.getMessage());
+            }
+            helper.assertTrue(far.display().equals(HoloDisplay.EMPTY), "the far projector changed");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theCogScriptMixinInstallsTheModule(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_300, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            ComputerOS os = new ComputerOS(computer(level, pos), new Terminal(), new HashMap<>());
+            Interpreter script = new Interpreter(os);
+            install(helper, os, script);
+            helper.assertTrue(script.globals().get("holo") instanceof Map<?, ?>, "holo is not defined");
+            helper.succeed();
+        });
+    }
+
+    /** A real program runs on its computer's thread and must hop to the server's: this is the path the other tests skip. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aProgramOnItsOwnThreadReachesTheProjector(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_400, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            ComputerOS os = new ComputerOS(computer(level, pos.east(3)), new Terminal(), new HashMap<>());
+            Interpreter script = new Interpreter(os);
+            install(helper, os, script);
+            Thread program = new Thread(() -> script.run("holo.set(holo.find(), 1, \"from its thread\")"), "holo-test-program");
+            program.setDaemon(true);
+            program.start();
+            // The hop waits in a queue that the computer's own tick empties; here that tick is called by hand.
+            try {
+                for (int i = 0; i < 400 && program.isAlive(); i++) {
+                    os.tick();
+                    Thread.sleep(5);
+                }
+            } catch (InterruptedException e) {
+                helper.fail("interrupted");
+            }
+            helper.assertTrue(projector.display().text(0).equals("from its thread"), "lines " + projector.display().texts());
+            helper.succeed();
+        });
+    }
+
+    private static void install(GameTestHelper helper, ComputerOS os, Interpreter script) {
+        try {
+            Method install = ComputerOS.class.getDeclaredMethod("installApi", Interpreter.class, List.class);
+            install.setAccessible(true);
+            install.invoke(os, script, List.of());
+        } catch (ReflectiveOperationException e) {
+            helper.fail("the addon's installApi moved: " + e);
+        }
     }
 }
