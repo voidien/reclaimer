@@ -1,6 +1,8 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.debug.GateTimer;
+import com.voidreclaimer.debug.Speedway;
 import com.voidreclaimer.debug.TestScenes;
 import com.voidreclaimer.helper.HelperDrone;
 import com.voidreclaimer.launch.LaunchControllerBlockEntity;
@@ -18,6 +20,29 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class TestScenesGameTests {
     private TestScenesGameTests() {}
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aFlightThroughTheSpeedwayIsTimed(GameTestHelper helper) {
+        BlockPos origin = TestScenes.origin(TestScenes.Scene.SPEEDWAY);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            TestScenes.build(space, TestScenes.Scene.SPEEDWAY, null);
+            TestScenes.build(space, TestScenes.Scene.SPEEDWAY, null);
+            GateTimer.Gate first = TestScenes.speedwayGates(origin).get(0);
+            BlockPos centre = BlockPos.containing(first.x(), first.y(), first.z());
+            helper.assertTrue(space.getBlockState(centre.offset(1, TestScenes.GATE_HALF + 1, 0)).is(Blocks.LIME_CONCRETE), "no green frame on the first gate");
+            helper.assertTrue(space.getBlockState(centre).isAir(), "the first gate has no hole");
+            var player = TestPlayers.survivalInDeepSpace(helper, first.x(), first.y(), first.z() - 1);
+            player.doTick();
+            player.setPos(first.x(), first.y(), first.z() + 1);
+            player.doTick();
+            helper.assertTrue(Speedway.run(player) != null && Speedway.run(player).running(), "flying through the first gate did not start the clock");
+            Speedway.close();
+            helper.assertTrue(Speedway.run(player) == null, "closing the course left a run behind");
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
 
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void theArenaIsAFloorWithWallsAndLampsAtEveryEighthBlock(GameTestHelper helper) {

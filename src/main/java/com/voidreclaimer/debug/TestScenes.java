@@ -13,6 +13,8 @@ import com.voidreclaimer.space.ModDimensions;
 import com.voidreclaimer.station.StationAssembly;
 import com.voidreclaimer.station.StationCoreBlockEntity;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,10 +49,16 @@ public final class TestScenes {
     private static final int STRIPE = 16;
     private static final int LAMP = 8;
     private static final String STATION_NAME = "Test Station";
+    /** Far enough apart that a Shuttle at 40 m/s has over two seconds between gates. */
+    private static final int GATE_GAP = 96;
+    /** Half a gate's hole: a Ship or Shuttle fits through with room to spare. */
+    public static final int GATE_HALF = 12;
+    /** Each gate's offset from the line: a straight for top speed, a slalom for handling, a straight to stop in. */
+    private static final int[][] GATE_OFFSETS = {{0, 0}, {0, 0}, {32, 0}, {32, 16}, {-32, 16}, {-32, -16}, {0, -16}, {0, 0}, {0, 0}};
 
     /** The scenes, by name in the command. */
     public enum Scene {
-        ARENA, LAUNCH, DRONES, STATION;
+        ARENA, LAUNCH, DRONES, STATION, SPEEDWAY;
 
         public String id() {
             return name().toLowerCase(Locale.ROOT);
@@ -81,7 +89,37 @@ public final class TestScenes {
             case LAUNCH -> launch(space, origin);
             case DRONES -> drones(space, origin, owner);
             case STATION -> station(space, origin, owner);
+            case SPEEDWAY -> speedway(space, origin);
         };
+    }
+
+    /** The speedway's gates, first to last. */
+    public static List<GateTimer.Gate> speedwayGates(BlockPos origin) {
+        List<GateTimer.Gate> gates = new ArrayList<>();
+        for (int i = 0; i < GATE_OFFSETS.length; i++) {
+            gates.add(new GateTimer.Gate(origin.getX() + 0.5 + GATE_OFFSETS[i][0], origin.getY() + 0.5 + GATE_OFFSETS[i][1], origin.getZ() + i * GATE_GAP, GATE_HALF));
+        }
+        return gates;
+    }
+
+    /** A line of lit gates down +z, timed by {@link Speedway}: green to start, red to finish. */
+    private static View speedway(ServerLevel level, BlockPos origin) {
+        List<GateTimer.Gate> gates = speedwayGates(origin);
+        for (int i = 0; i < gates.size(); i++) {
+            GateTimer.Gate gate = gates.get(i);
+            BlockPos centre = BlockPos.containing(gate.x(), gate.y(), gate.z());
+            Block frame = i == 0 ? Blocks.LIME_CONCRETE : i == gates.size() - 1 ? Blocks.RED_CONCRETE : Blocks.WHITE_CONCRETE;
+            int edge = GATE_HALF + 1;
+            for (int a = -edge; a <= edge; a++) {
+                BlockState state = a % LAMP == 0 ? Blocks.SEA_LANTERN.defaultBlockState() : frame.defaultBlockState();
+                set(level, centre.offset(a, edge, 0), state);
+                set(level, centre.offset(a, -edge, 0), state);
+                set(level, centre.offset(edge, a, 0), state);
+                set(level, centre.offset(-edge, a, 0), state);
+            }
+        }
+        Speedway.open(gates);
+        return new View(Vec3.atCenterOf(origin.north(GATE_GAP / 2)), 0f, 0f);
     }
 
     /** A pale floor with a back and a side wall, lit, with a line every 16 blocks to read sizes by. Dark bodies show up against it. */
