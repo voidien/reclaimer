@@ -60,6 +60,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
  *   <li>{@code /void_reclaimer wear <player> <condition>}: sets every section's condition, 1 new and 0 spent</li>
  *   <li>{@code /void_reclaimer link shells <player>}: every shell the player has owned, where it was last seen and how it stands</li>
+ *   <li>{@code /void_reclaimer link reach <player> <shell id>}: links to a shell on the player's list, loading its chunks first</li>
  *   <li>{@code /void_reclaimer scene <name>}: builds a ready-made test setup in deep space and moves you to it ({@link com.voidreclaimer.debug.TestScenes})</li>
  *   <li>{@code /void_reclaimer starship spawn}: a placeholder Test Starship 12 blocks ahead of the command source</li>
  * </ul>
@@ -122,6 +123,12 @@ public final class ModCommands {
             source.sendFailure(Component.translatable("commands.void_reclaimer.link.not_a_shell"));
             return 0;
         }
+        com.voidreclaimer.link.Links.requestLink(player, shell, result -> reportLink(source, result));
+        return 1;
+    }
+
+    /** Debug: {@link #linkForce} for a shell by its id, wherever it is. The shell's chunks load first, so the report comes later. */
+    private static int linkReach(CommandSourceStack source, ServerPlayer player, java.util.UUID shell) {
         com.voidreclaimer.link.Links.requestLink(player, shell, result -> reportLink(source, result));
         return 1;
     }
@@ -225,6 +232,11 @@ public final class ModCommands {
                         .then(Commands.literal("shells")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> linkShells(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
+                        .then(Commands.literal("reach")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("shell", net.minecraft.commands.arguments.UuidArgument.uuid())
+                                                .executes(ctx -> linkReach(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
+                                                        net.minecraft.commands.arguments.UuidArgument.getUuid(ctx, "shell"))))))
                         .then(Commands.literal("force")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("shell", EntityArgument.entity())

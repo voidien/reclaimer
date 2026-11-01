@@ -61,6 +61,12 @@ public final class Links {
         HOME_UNREADABLE,
         /** The player logged out or died before the move ran. */
         PLAYER_GONE,
+        /** Its chunks were read, and it is not where the list says. */
+        NOT_FOUND,
+        /** Its chunks took too long to load. */
+        TIMED_OUT,
+        /** A link is on its way already. */
+        WAITING,
         /** Something threw part way, and the move was undone. */
         FAILED
     }
@@ -80,6 +86,11 @@ public final class Links {
     /** Asks for {@link #link} at the end of this tick; {@code then} hears how it went. */
     public static void requestLink(ServerPlayer player, BodyHost shell, Consumer<Result> then) {
         MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), false, then));
+    }
+
+    /** Asks for {@link #link} to a shell anywhere, by the player's list of shells: see {@link ShellReach}. */
+    public static void requestLink(ServerPlayer player, UUID shell, Consumer<Result> then) {
+        ShellReach.request(player, shell, then);
     }
 
     /** Asks for {@link #wake} at the end of this tick; {@code then} hears how it went. */
