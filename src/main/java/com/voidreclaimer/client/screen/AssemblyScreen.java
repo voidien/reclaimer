@@ -62,6 +62,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
     private static final int WORSE = 0xFFFF7060;
     private static final float START_PITCH = -18f;
 
+    private Button explode;
     private final AssemblyCamera camera = new AssemblyCamera(START_YAW, START_PITCH);
     private BodyPanel panel;
     private int viewLeft;
@@ -93,7 +94,7 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         panel = new BodyPanel(font, GUTTER, TOP, new BodyPanel.Layout(TREE_WIDTH, rows, rightX, DETAILS_WIDTH, height - GUTTER));
         addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.back"), b -> onClose())
                 .bounds(width - GUTTER - 50, 3, 50, 14).build());
-        addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.explode"), b -> camera.toggleExploded())
+        explode = addRenderableWidget(Button.builder(Component.translatable("assembly.void_reclaimer.explode"), b -> camera.toggleExploded())
                 .bounds(viewLeft + 3, viewTop + 3, 52, 13).build());
         BoneProbe.capture(true);
     }
@@ -160,6 +161,8 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         BodyRenderer.setShowWear(true);
         renderBody(graphics, player);
         BodyRenderer.setShowWear(false);
+        // Again over the model: a big body at close range would hide it.
+        explode.render(graphics, mouseX, mouseY, partialTick);
         BodyRenderer.setPreview(null, null, null);
         renderMarkers(graphics, player, mouseX, mouseY);
         if (preview != null) {
@@ -293,6 +296,9 @@ public final class AssemblyScreen extends Screen implements com.voidreclaimer.cl
         drawnScale = pixelsPerBlock(player);
         drawnPose.set(pose);
         drawnShift.set(translate);
+        // The panel behind the body wrote depth at z 0, which would cut off anything far behind the focus.
+        graphics.flush();
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         graphics.enableScissor(viewLeft, viewTop, viewRight, viewBottom);
         BodyRenderer.setExplode(camera.explode());
         InventoryScreen.renderEntityInInventory(graphics, (viewLeft + viewRight) / 2f, (viewTop + viewBottom) / 2f, drawnScale,
