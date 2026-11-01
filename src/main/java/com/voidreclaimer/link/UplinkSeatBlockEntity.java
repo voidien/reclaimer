@@ -1,10 +1,12 @@
 package com.voidreclaimer.link;
 
+import com.voidreclaimer.network.ShellListPayload;
 import com.voidreclaimer.registry.ModBlockEntities;
 import com.voidreclaimer.ship.ShipTickets;
 import com.voidreclaimer.ship.Ships;
 import com.voidreclaimer.tether.Tether;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * An Uplink Seat. Its id lasts as long as the block does, wherever a ship takes it, because a link has to find its seat again and a
@@ -114,15 +117,22 @@ public class UplinkSeatBlockEntity extends BlockEntity {
         return Signal.range(server.getServer(), new LinkState.Place(server.dimension(), ship == null ? here : ship.logicalPose().transformPosition(here), 0f, 0f));
     }
 
-    /** Takes {@code player} to the shell that stands ready, or tells them why not. Stands in for the picker. */
-    public void connect(ServerPlayer player) {
+    /** Opens the picker for {@code player}, or tells them why not. */
+    public void showPicker(ServerPlayer player) {
+        List<ShellRow> rows = Signal.rows(player);
         if (occupant().isPresent()) {
             player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.taken"), true);
-            return;
-        }
-        Optional<UUID> shell = Links.state(player).idleShell();
-        if (shell.isEmpty()) {
+        } else if (rows.isEmpty()) {
             player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.no_shell"), true);
+        } else {
+            PacketDistributor.sendToPlayer(player, new ShellListPayload(worldPosition, rows));
+        }
+    }
+
+    /** Takes {@code player} to {@code shell}, or tells them why not. */
+    public void connect(ServerPlayer player, UUID shell) {
+        if (occupant().isPresent()) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.taken"), true);
             return;
         }
         // Before the player leaves: nothing else is keeping the ship loaded once they have.
@@ -130,7 +140,7 @@ public class UplinkSeatBlockEntity extends BlockEntity {
         if (ship != null) {
             ShipTickets.hold(player.serverLevel(), ship, id);
         }
-        Links.requestLink(player, shell.get(), id, result -> {
+        Links.requestLink(player, shell, id, result -> {
             if (result != Links.Result.LINKED) {
                 player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.failed", result.name()), true);
             }

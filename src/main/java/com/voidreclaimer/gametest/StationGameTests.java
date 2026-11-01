@@ -292,7 +292,7 @@ public final class StationGameTests {
                         com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE), player.getUUID());
                 var id = shell.getUUID();
                 helper.runAfterDelay(5, () -> {
-                    seat.connect(player);
+                    seat.connect(player, id);
                     helper.runAfterDelay(10, () -> {
                         var state = com.voidreclaimer.link.Links.state(player);
                         helper.assertTrue(state.linked(), "the seat made no link");

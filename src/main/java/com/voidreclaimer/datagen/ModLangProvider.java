@@ -332,6 +332,13 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.link.signal_lost", "Signal lost. The shell stays where it is. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.uplink.no_shell", "No shell to link to");
+        add("screen.void_reclaimer.uplink.title", "Uplink");
+        add("screen.void_reclaimer.uplink.here", "Shell %s, %s blocks off");
+        add("screen.void_reclaimer.uplink.elsewhere", "Shell %s, in %s");
+        add("screen.void_reclaimer.uplink.signal", "%s%%");
+        add("screen.void_reclaimer.uplink.out_of_range", "out of range");
+        add("screen.void_reclaimer.uplink.wreck", "a wreck");
+        add("screen.void_reclaimer.uplink.next", "More");
         add("message.void_reclaimer.uplink.taken", "This seat is in use");
         add("message.void_reclaimer.uplink.failed", "The link failed: %s");
         add("message.void_reclaimer.wreck.left", "Salvaged %s stacks; %s more will not fit");

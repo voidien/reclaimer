@@ -46,6 +46,8 @@ public final class VoidReclaimerClient {
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
+        com.voidreclaimer.network.ShellListPayload.clientHandler = payload ->
+                Minecraft.getInstance().setScreen(new com.voidreclaimer.client.screen.ShellPickerScreen(payload));
     }
 
     /** Our fluids use vanilla water's textures, tinted. */

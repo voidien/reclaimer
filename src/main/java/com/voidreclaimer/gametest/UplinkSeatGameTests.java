@@ -10,7 +10,10 @@ import com.voidreclaimer.link.BodyHost;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
+import com.voidreclaimer.link.ShellRow;
+import com.voidreclaimer.link.Signal;
 import com.voidreclaimer.link.UplinkSeatBlockEntity;
+import com.voidreclaimer.network.PickShellPayload;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import java.util.List;
@@ -21,6 +24,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -63,7 +67,7 @@ public final class UplinkSeatGameTests {
             UplinkSeatBlockEntity seat = seat(level, pos);
             UUID id = shell(player).getUUID();
             helper.assertTrue(seat.occupant().isEmpty(), "a new seat is taken");
-            seat.connect(player);
+            seat.connect(player, id);
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(player).linked(), "the seat made no link"))
                     .thenExecute(() -> {
@@ -85,7 +89,7 @@ public final class UplinkSeatGameTests {
         NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
             ServerPlayer player = player(helper, pos);
             ServerLevel level = player.serverLevel();
-            seat(level, pos).connect(player);
+            seat(level, pos).showPicker(player);
             helper.runAfterDelay(5, () -> {
                 helper.assertFalse(Links.state(player).linked(), "linked to nothing");
                 finish(helper, player, level, pos);
@@ -103,10 +107,10 @@ public final class UplinkSeatGameTests {
             UplinkSeatBlockEntity seat = seat(level, pos);
             UUID firstShell = shell(first).getUUID();
             UUID secondShell = shell(second).getUUID();
-            seat.connect(first);
+            seat.connect(first, firstShell);
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(first).linked(), "the seat made no link"))
-                    .thenExecute(() -> seat.connect(second))
+                    .thenExecute(() -> seat.connect(second, secondShell))
                     .thenExecuteAfter(5, () -> {
                         helper.assertFalse(Links.state(second).linked(), "two players in one seat");
                         Links.wake(first);
@@ -132,7 +136,7 @@ public final class UplinkSeatGameTests {
             UplinkSeatBlockEntity seat = seat(level, pos);
             Object home = Bodies.chassis(level.registryAccess(), Bodies.data(player));
             UUID id = BodyHost.spawn(level, player.position().add(AWAY), HostRole.SHELL, Bodies.preset(BuiltinBodies.MECH), player.getUUID()).getUUID();
-            seat.connect(player);
+            seat.connect(player, id);
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).size() == 1, "no mirror on the seat"))
                     .thenExecute(() -> {
@@ -161,7 +165,7 @@ public final class UplinkSeatGameTests {
             ServerPlayer player = player(helper, pos);
             ServerLevel level = player.serverLevel();
             UUID id = shell(player).getUUID();
-            seat(level, pos).connect(player);
+            seat(level, pos).connect(player, id);
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).size() == 1, "no mirror on the seat"))
                     .thenExecute(() -> level.removeBlock(pos, false))
@@ -191,7 +195,7 @@ public final class UplinkSeatGameTests {
             UUID id = shell.getUUID();
             helper.runAfterDelay(25, () -> {
                 if (fromSeat) {
-                    seat.connect(player);
+                    seat.connect(player, id);
                 } else {
                     Links.link(player, shell);
                 }
@@ -225,6 +229,64 @@ public final class UplinkSeatGameTests {
     @GameTest(template = "empty", timeoutTicks = 300)
     public static void aLinkWithNoSeatChargesNothing(GameTestHelper helper) {
         chargeTest(helper, new BlockPos(147_400, 80, 200), false, false, 0.0);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void thePickerListsWhatIsLeftAndSaysWhatCanBeReached(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(149_400, 80, 0);
+        double beyond = Config.LINK_SEAT_RANGE.get() + 200.0;
+        LinkReachGameTests.farShell(helper, pos, new Vec3(pos.getX() + beyond, 80, 0.5), (player, far) -> {
+            ServerLevel level = player.serverLevel();
+            UUID near = shell(player).getUUID();
+            BodyHost wreck = shell(player);
+            wreck.hurt(level.damageSources().genericKill(), Float.MAX_VALUE);
+            BodyHost gone = shell(player);
+            gone.remove(Entity.RemovalReason.KILLED);
+            List<ShellRow> rows = Signal.rows(player);
+            helper.assertTrue(rows.size() == 3, "listed " + rows);
+            ShellRow first = rows.get(0);
+            helper.assertTrue(first.shell().equals(far) && first.number() == 1 && "out_of_range".equals(first.status()) && !first.ready(), "the far shell: " + first);
+            ShellRow second = rows.get(1);
+            helper.assertTrue(second.shell().equals(near) && second.ready() && second.strength() == 1f, "the near shell: " + second);
+            helper.assertTrue(Math.abs(second.distance() - AWAY.length()) < 1.0, "the near shell's distance: " + second);
+            ShellRow third = rows.get(2);
+            helper.assertTrue(third.shell().equals(wreck.getUUID()) && "wreck".equals(third.status()) && !third.ready(), "the wreck: " + third);
+            level.getEntity(near).discard();
+            wreck.discard();
+            finish(helper, player, level, pos);
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aPickRunsTheSeatsOwnChecks(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(149_600, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
+            ServerPlayer player = player(helper, pos);
+            ServerLevel level = player.serverLevel();
+            seat(level, pos);
+            UUID id = shell(player).getUUID();
+            UUID other = shell(player).getUUID();
+            PickShellPayload.apply(player, pos.above(40), id);
+            helper.runAfterDelay(5, () -> {
+                helper.assertFalse(Links.state(player).linked(), "a pick with no seat there made a link");
+                player.teleportTo(pos.getX() + 40.5, pos.getY(), pos.getZ() + 0.5);
+                PickShellPayload.apply(player, pos, id);
+                helper.runAfterDelay(5, () -> {
+                    helper.assertFalse(Links.state(player).linked(), "a pick from out of reach made a link");
+                    player.teleportTo(pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5);
+                    PickShellPayload.apply(player, pos, id);
+                    helper.startSequence()
+                            .thenWaitUntil(() -> helper.assertTrue(Links.state(player).linked(), "a good pick made no link"))
+                            .thenExecute(() -> {
+                                helper.assertTrue(Links.state(player).link().orElseThrow().shell().equals(id), "linked to the wrong shell");
+                                helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                                level.getEntity(id).discard();
+                                level.getEntity(other).discard();
+                                finish(helper, player, level, pos);
+                            });
+                });
+            });
+        });
     }
 
     /** A seat that lost its id would lose every link that names it. */
