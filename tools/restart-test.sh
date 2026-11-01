@@ -11,6 +11,15 @@ suite=${1:?main or aero}
 name=${2:?the test name, without BeforeRestart}
 log=build/gametest-$suite.log
 
+# Each run starts from a fresh world: what a failed run leaves behind, such as forced chunks and entities, would decide the next
+# one. Takes the test lock first, so a run in progress keeps its world.
+case "$suite" in
+  main) dir=run ;;
+  aero) dir=run-aero ;;
+  *) echo "unknown suite $suite (main or aero)" >&2; exit 2 ;;
+esac
+(flock 9; rm -rf "$dir/world") 9>/tmp/void-reclaimer-gametest.lock
+
 echo "== ${name}BeforeRestart"
 tools/gametest.sh "$suite" "${name}BeforeRestart"
 first=$?
