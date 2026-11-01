@@ -52,6 +52,8 @@ public final class ModRecipeProvider extends RecipeProvider {
         machineRecipe(output, "holo_projector", ModItems.HOLO_PROJECTOR.get(), DustCost.of(30, 40, 10, 20), "holoProjector");
         replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
                 ReplicatorCategories.TOOLS, Milestones.STARSHIP);
+        replicator(output, "planetary_grid", ModItems.PLANETARY_GRID.get(), 1, DustCost.of(10, 15, 5, 10), 10,
+                ReplicatorCategories.TOOLS, Milestones.EARTHFALL);
         replicator(output, "scaffold", ModItems.SCAFFOLD.get(), 8, DustCost.of(0, 8, 0, 0), 5,
                 ReplicatorCategories.BLOCKS, Milestones.AWAKENING);
         replicator(output, "salvage_tool", ModItems.SALVAGE_TOOL.get(), 1, DustCost.of(15, 5, 0, 0), 30,

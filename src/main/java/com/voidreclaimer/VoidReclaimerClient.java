@@ -101,6 +101,7 @@ public final class VoidReclaimerClient {
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("pilot"), com.voidreclaimer.client.hud.PilotHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("planetary_grid"), com.voidreclaimer.client.hud.PlanetaryGridLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("module"), ModuleHudLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("station_markers"), com.voidreclaimer.client.hud.StationMarkerLayer::render);

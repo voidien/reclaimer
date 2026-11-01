@@ -49,6 +49,8 @@ def item(group, iid, desc, notes='', phase='now'):
 # ---------- items: tools and modules ----------
 G = 'Tools & modules'
 item(G, 'dust_sensor', 'handheld brass sensor with a round cyan glass lens and small antenna')
+item(G, 'planetary_grid', 'handheld slate with a small 4 by 4 sector map, some cells green, the rest ash brown',
+     'Placeholder drawn by script until RD art.')
 item(G, 'portal_igniter', 'small brass igniter with a pale-blue crystal ring at the tip',
      'Lights an Atmospheric Portal frame; used up. Act III slice placeholder.', phase='11')
 item(G, 'nanite_swarm', 'swirling cloud of tiny silver-cyan nanite specks around a small emitter',

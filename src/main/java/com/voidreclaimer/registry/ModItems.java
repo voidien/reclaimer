@@ -192,6 +192,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));
+    public static final DeferredItem<com.voidreclaimer.earth.PlanetaryGridItem> PLANETARY_GRID = ITEMS.registerItem("planetary_grid",
+            com.voidreclaimer.earth.PlanetaryGridItem::new, new net.minecraft.world.item.Item.Properties());
     public static final DeferredItem<BlockItem> ASHEN_SLAG = ITEMS.registerSimpleBlockItem(ModBlocks.ASHEN_SLAG);
     public static final DeferredItem<BlockItem> ASTEROID_SILICATE =ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_SILICATE);
     public static final DeferredItem<BlockItem> ASTEROID_ICE = ITEMS.registerSimpleBlockItem(ModBlocks.ASTEROID_ICE);
