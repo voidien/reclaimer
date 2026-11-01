@@ -45,6 +45,7 @@ A projector's address is `"x,y,z"`. Only projectors within 16 blocks of the comp
 | `holo.source(addr, id)` | shows a readout (a bare id means ours) |
 | `holo.model(addr, id)` | shows a GeckoLib model (a bare id means ours) |
 | `holo.body(addr)` | shows each viewer their own body |
+| `holo.globe(addr, name)` | shows `"dyson"` or `"earth"`; false for another name |
 | `holo.get(addr)` | a map: `lines`, `mode`, `source`, `scale`, `height` |
 
 ## The thread rule
