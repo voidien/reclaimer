@@ -43,17 +43,8 @@ jobs:
           python3 tools/test_progress_fold.py
 
       - name: GameTests
-        # A healthy run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
-        run: |
-          flags="-PgametestHeap=10G -PgametestChunkSaves"
-          for attempt in 1 2 3; do
-            timeout 900 ./gradlew runGameTestServer $flags --stacktrace && exit 0
-            status=$?
-            if [ "$status" -ne 124 ]; then exit "$status"; fi
-            echo "runGameTestServer hung (attempt $attempt)"
-            ./gradlew --stop
-          done
-          exit 1
+        # A healthy run takes a few minutes. A hang is a new bug to read, so it fails the run after a thread dump.
+        run: tools/timed.sh 900 moddev/gameTest ./gradlew runGameTestServer -PgametestHeap=10G -PgametestChunkSaves --stacktrace
 
       - name: Datagen output is up to date
         # RenderClassesFirstMixin ended the start-up deadlock between Create and Veil (see HANDOFF.md), so a hang here is a new bug to
@@ -135,16 +126,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Aeronautics GameTests
-        run: |
-          flags="-PgametestHeap=10G -PgametestChunkSaves"
-          for attempt in 1 2 3; do
-            timeout 900 ./gradlew runGameTestAeronautics $flags --stacktrace && exit 0
-            status=$?
-            if [ "$status" -ne 124 ]; then exit "$status"; fi
-            echo "runGameTestAeronautics hung (attempt $attempt)"
-            ./gradlew --stop
-          done
-          exit 1
+        run: tools/timed.sh 900 moddev/gameTest ./gradlew runGameTestAeronautics -PgametestHeap=10G -PgametestChunkSaves --stacktrace
 
       - name: A held ship survives a restart
         run: tools/restart-test.sh aero aHeldShipLoadsItself
