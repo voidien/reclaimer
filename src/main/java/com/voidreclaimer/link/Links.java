@@ -2,6 +2,8 @@ package com.voidreclaimer.link;
 
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -125,6 +127,7 @@ public final class Links {
         }
         LinkState.Place from = place(player);
         ServerLevel here = player.serverLevel();
+        float homeDust = Bodies.stats(player).dustCapacity();
         BodySnapshot home = BodySnapshot.take(player);
         CompoundTag homeTag = saved(home, player);
         if (homeTag == null) {
@@ -143,6 +146,7 @@ public final class Links {
             }
             return Result.FAILED;
         }
+        setHomeDust(player, homeDust);
         shell.discard();
         settle(player);
         player.server.getPlayerList().saveAll();
@@ -192,9 +196,15 @@ public final class Links {
             return Result.FAILED;
         }
         player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink());
+        setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
         player.server.getPlayerList().saveAll();
         return Result.WOKEN;
+    }
+
+    private static void setHomeDust(ServerPlayer player, float capacity) {
+        player.setData(ModAttachments.HOME_DUST_CAPACITY, capacity);
+        player.syncData(ModAttachments.HOME_DUST_CAPACITY);
     }
 
     /** Whether there is still a living player here to move: a stale object or a corpse would take a body with it. */

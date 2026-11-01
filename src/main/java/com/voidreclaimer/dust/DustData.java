@@ -33,9 +33,17 @@ public record DustData(Map<ResourceLocation, Float> amounts) {
                 DustKinds.ICE, ice, DustKinds.CARBON, carbon));
     }
 
-    /** Storage per kind: the config base plus the body's storage parts. */
+    /** The value of {@code HOME_DUST_CAPACITY} when the player is in their main body. */
+    public static final float NOT_LINKED = -1f;
+
+    /**
+     * Storage per kind: the config base plus the storage parts of the main body. The AI streams its dust through the network, so
+     * a shell reaches the same reserve and its own storage parts do not count.
+     */
     public static float capacity(Player player) {
-        return Config.DUST_CAPACITY.get().floatValue() + com.voidreclaimer.body.Bodies.stats(player).dustCapacity();
+        float home = player.getData(com.voidreclaimer.registry.ModAttachments.HOME_DUST_CAPACITY);
+        float body = home >= 0f ? home : com.voidreclaimer.body.Bodies.stats(player).dustCapacity();
+        return Config.DUST_CAPACITY.get().floatValue() + body;
     }
 
     public float get(ResourceLocation kind) {
