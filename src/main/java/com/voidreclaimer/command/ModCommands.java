@@ -249,6 +249,7 @@ public final class ModCommands {
                                                 Arrays.stream(AsteroidBody.Size.values()).map(s -> s.name().toLowerCase(Locale.ROOT)), builder))
                                         .executes(ctx -> locateAsteroid(ctx.getSource(),
                                                 StringArgumentType.getString(ctx, "size").toUpperCase(Locale.ROOT))))))
+                .then(HoloCommand.node())
                 .then(Commands.literal("dyson")
                         .then(Commands.literal("get").executes(ctx -> getDyson(ctx.getSource())))
                         .then(Commands.literal("set")

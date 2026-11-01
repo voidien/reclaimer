@@ -147,6 +147,26 @@ What sneak-use and redstone do.
 | `dock()` | docks the ship touching the clamp's face; returns the status |
 | `release()` | lets the docked ship go; returns the status |
 
+## Holo Projector (`HoloPeripheral`)
+Lines count from 1. Writing text switches the projector to text and `setSource` to a readout: the last writer wins.
+
+| Function | Returns |
+|---|---|
+| `getLines()` | every line, as a list of strings |
+| `getLine(n)` | line `n`, or `""` past the last one |
+| `setLine(n, text[, color])` | writes one line (cut at 48 characters); `true`, or `false, "no_such_line"` |
+| `setLines({ ... })` | replaces all the text; long entries wrap on to the next lines |
+| `clear()` | removes all the text |
+| `setColor(color)` | colour of lines that have none of their own: `0xRRGGBB`, `"#RRGGBB"` or a dye name such as `"cyan"` |
+| `getScale()` / `setScale(x)` | size of the picture, 0.25 to 4 (held to that range) |
+| `getHeight()` / `setHeight(x)` | blocks above the projector, 0 to 4 (held to that range) |
+| `setBillboard(on)` | whether the picture turns to face the viewer |
+| `getMode()` | `"text"` or `"readout"` |
+| `getSource()` | the chosen readout kind's id |
+| `setSource(id)` | shows a readout from now on (a bare id means ours); `true`, or `false, "unknown_source"` |
+| `getSources()` | every readout kind's id, sorted |
+| `getSize()` | `8, 48`: how many lines and characters fit |
+
 ## Coming next
 Item upgrades: turtle and pocket computer upgrades for our tools (for example a Mechanical Drill turtle and a Dust Sensor
 pocket computer), as their own step.

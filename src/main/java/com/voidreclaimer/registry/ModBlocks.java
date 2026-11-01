@@ -74,6 +74,11 @@ public final class ModBlocks {
             com.voidreclaimer.station.DockingClampBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0f, 8.0f).sound(SoundType.COPPER));
 
+    /** Shows text from programs or a built-in readout in the air above itself. */
+    public static final DeferredBlock<com.voidreclaimer.display.HoloProjectorBlock> HOLO_PROJECTOR = BLOCKS.registerBlock("holo_projector",
+            com.voidreclaimer.display.HoloProjectorBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(2.0f, 6.0f).sound(SoundType.COPPER).lightLevel(state -> 5));
+
     /** Leash point and recall target for the AI. */
     public static final DeferredBlock<TetherAnchorBlock> TETHER_ANCHOR = BLOCKS.registerBlock("tether_anchor", TetherAnchorBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5f).sound(SoundType.COPPER).lightLevel(state -> 4));

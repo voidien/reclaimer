@@ -32,6 +32,10 @@ public final class GameTestPack {
     public static final ResourceKey<ToolModuleType> MARKER = ResourceKey.create(VoidReclaimerRegistries.TOOL_MODULE_TYPE,
             ResourceLocation.fromNamespaceAndPath(NAMESPACE, "marker"));
     static final Map<UUID, Integer> MARKER_USES = new ConcurrentHashMap<>();
+    /** A readout kind an addon might register: one line with the number a test put at the projector's position. */
+    public static final ResourceKey<com.voidreclaimer.api.holo.HoloReadout<?>> GAUGE = ResourceKey.create(VoidReclaimerRegistries.HOLO_READOUT,
+            ResourceLocation.fromNamespaceAndPath(NAMESPACE, "gauge"));
+    static final Map<net.minecraft.core.BlockPos, Integer> GAUGE_READINGS = new ConcurrentHashMap<>();
 
     private GameTestPack() {}
 
@@ -45,6 +49,8 @@ public final class GameTestPack {
                     return true;
                 }
             }));
+            event.register(VoidReclaimerRegistries.HOLO_READOUT, helper -> helper.register(GAUGE,
+                    new com.voidreclaimer.api.holo.HoloReadout<>((level, pos) -> GAUGE_READINGS.getOrDefault(pos, 0), reading -> java.util.List.of("gauge " + reading))));
         }
     }
 

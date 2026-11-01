@@ -1,9 +1,8 @@
-# Holo-displays: design plan (parked)
+# Holo-displays: design plan
 
-Status: **parked, not started.** The owner scoped this feature on 2026-10-31 and then chose to continue with the
-planned phases (stations, portal crossing, launch complex, helper drones) first. This file keeps the interview
-answers and the three design reports so the feature can be built later without re-deriving anything. Nothing in
-`src/` implements it yet.
+Status: **being built** (stage 3 of `docs/design/plans.md` "Next four stages"). This file keeps the interview answers and the
+facts checked against the jars; `docs/design/plans.md` "Holo-displays" says what exists. Corrections made while
+building are marked **Checked**.
 
 ## Owner's answers (2026-10-31)
 
@@ -52,6 +51,10 @@ syncing with the Backup Core's update-packet pattern only when something changed
 lines every `Config.HOLO_REFRESH_TICKS` (default 10) through pure `display/Readouts`; inflated
 `getRenderBoundingBox`). Registry and datagen like the Helm, placeholder `cubeBottomTop` textures. A program write
 switches the projector to TEXT: last writer wins.
+
+**Checked:** the renderer owns `getRenderBoundingBox` in NeoForge 21.1 (`IBlockEntityRendererExtension`), not the block
+entity. The source is a registry id, not the `HELM | MACHINE | PLAYER | DYSON` enum above, so addons can add kinds
+(`docs/design/extension-points.md`, rule 2). The CC peripheral comes with the block, not after the readouts, by the project's rule.
 
 **Readouts**: a code registry `ResourceLocation -> Readout(sampler(world) -> snapshot record, pure formatter)`.
 Kinds: helm, thruster, siphon, electrolyzer, spinner, mass_driver, dyson (needs no source block), spire,

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "void_reclaimer:block/holo_projector",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "void_reclaimer:block/holo_projector"
+    },
+    "facing=south": {
+      "model": "void_reclaimer:block/holo_projector",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "void_reclaimer:block/holo_projector",
+      "y": 270
+    }
+  }
+}
