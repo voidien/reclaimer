@@ -70,9 +70,18 @@ public final class ObtainabilityGameTests {
 
     /** The most dust of any kind the biggest body can store: every chassis with Mk II storage pods on all storage mounts. */
     private static float biggestCapacity(ServerPlayer player) {
+        return biggestCapacity(player, Integer.MAX_VALUE);
+    }
+
+    /** The same among the bodies of a size class below {@code rank}. */
+    private static float biggestCapacity(ServerPlayer player, int rank) {
         float best = 0;
         for (ResourceKey<Chassis> key : chassisKeys()) {
             BodyData body = Bodies.preset(key);
+            Bodies.store(player, body);
+            if (Bodies.stats(player).sizeRank() >= rank) {
+                continue;
+            }
             for (BodyData.Mount mount : List.copyOf(body.modules().keySet())) {
                 if (mount.kind() == ModuleKind.STORAGE) {
                     body = body.withModule(mount, new ItemStack(ModItems.STORAGE_MK2.get()));
@@ -82,6 +91,34 @@ public final class ObtainabilityGameTests {
             best = Math.max(best, DustData.capacity(player));
         }
         return best;
+    }
+
+    /**
+     * Dust is paid in full when a job starts, so a body can only buy what it can hold. Each size class's core has to be affordable in
+     * a smaller body, or nobody can get there. The smallest class is where a player starts, so it needs no such thing.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void everyCoreCanBeBoughtInASmallerBody(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        List<String> faults = new ArrayList<>();
+        for (ResourceKey<Chassis> key : chassisKeys()) {
+            BodyData body = Bodies.preset(key);
+            Bodies.store(player, body);
+            int rank = Bodies.stats(player).sizeRank();
+            float capacity = biggestCapacity(player, rank);
+            Item core = body.core().getItem();
+            Optional<RecipeHolder<ReplicatorRecipe>> recipe = recipeFor(player, core);
+            if (capacity <= 0f || recipe.isEmpty()) {
+                continue;
+            }
+            float price = recipe.get().value().cost().amounts().values().stream().max(Float::compare).orElse(0f);
+            if (price > capacity) {
+                faults.add(key.location().getPath() + " costs " + price + " of one dust, and a smaller body holds " + capacity);
+            }
+        }
+        TestPlayers.remove(player);
+        helper.assertTrue(faults.isEmpty(), String.join("; ", faults));
+        helper.succeed();
     }
 
     /** The recipe a player would use for {@code item}: the one with the fewest other parts, then the cheapest. */
