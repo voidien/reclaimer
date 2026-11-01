@@ -20,7 +20,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.network.chat.Component;
 
-/** {@code /void_reclaimer holo <pos> line|scale|source|billboard|model|body|globe|ship|clear}: writes to a Holo Projector without a computer, for checks. */
+/** {@code /void_reclaimer holo <pos> line|scale|source|billboard|model|body|globe|ship|map|clear}: writes to a Holo Projector without a computer, for checks. */
 final class HoloCommand {
     private static final SimpleCommandExceptionType NOT_A_PROJECTOR =
             new SimpleCommandExceptionType(Component.translatable("commands.void_reclaimer.holo.not_a_projector"));
@@ -61,6 +61,10 @@ final class HoloCommand {
                         .executes(ctx -> projector(ctx).setGlobe(StringArgumentType.getString(ctx, "globe")) ? Command.SINGLE_SUCCESS : 0)))
                 .then(Commands.literal("ship").executes(ctx -> {
                     projector(ctx).setShip();
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("map").executes(ctx -> {
+                    projector(ctx).setMap();
                     return Command.SINGLE_SUCCESS;
                 }))
                 .then(Commands.literal("clear").executes(ctx -> {

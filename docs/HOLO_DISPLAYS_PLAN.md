@@ -1,6 +1,6 @@
 # Holo-displays: design plan
 
-Status: **being built** (stage 3 of `docs/design/plans.md` "Next four stages"). This file keeps the interview answers and the
+Status: **built** (stage 3 of `docs/design/plans.md` "Next four stages"). This file keeps the interview answers and the
 facts checked against the jars; `docs/design/plans.md` "Holo-displays" says what exists. Corrections made while
 building are marked **Checked**.
 

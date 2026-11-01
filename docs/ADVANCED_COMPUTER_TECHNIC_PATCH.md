@@ -47,6 +47,7 @@ A projector's address is `"x,y,z"`. Only projectors within 16 blocks of the comp
 | `holo.body(addr)` | shows each viewer their own body |
 | `holo.globe(addr, name)` | shows `"dyson"` or `"earth"`; false for another name |
 | `holo.ship(addr)` | shows a miniature of a ship |
+| `holo.map(addr)` | shows a top-down map of the blocks around it |
 | `holo.get(addr)` | a map: `lines`, `mode`, `source`, `scale`, `height` |
 
 ## The thread rule
