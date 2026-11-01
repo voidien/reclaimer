@@ -123,12 +123,16 @@ public final class LinkOutboxGameTests {
         });
     }
 
+    /** A shell that dies is a wreck, which still needs its outbox. Only ending the wreck too leaves nothing to bring back. */
     @GameTest(template = "empty", timeoutTicks = 200)
-    public static void aKilledShellLeavesNoOutbox(GameTestHelper helper) {
+    public static void aWreckEndedByACommandLeavesNoOutbox(GameTestHelper helper) {
         woken(helper, new BlockPos(80_500, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
             level.getEntity(id).kill();
+            helper.assertTrue(Links.state(player).outbox(id).isPresent(), "the outbox went while the wreck is there");
+            // After the moment a hit leaves anything immune to the next.
             helper.startSequence()
+                    .thenExecuteAfter(25, () -> level.getEntity(id).kill())
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(player).outbox(id).isEmpty(), "the outbox would bring a killed shell back"))
                     .thenExecute(() -> finish(helper, player, level, id));
         });
