@@ -193,6 +193,7 @@ public final class ModItems {
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> DRONE_SHELL = remoteShell("drone_shell", com.voidreclaimer.body.BuiltinBodies.DRONE);
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> MECH_SHELL = remoteShell("mech_shell", com.voidreclaimer.body.BuiltinBodies.MECH);
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> SHIP_SHELL = remoteShell("ship_shell", com.voidreclaimer.body.BuiltinBodies.SHIP);
+    public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> SHUTTLE_SHELL = remoteShell("shuttle_shell", com.voidreclaimer.body.BuiltinBodies.SHUTTLE);
     public static final DeferredItem<BlockItem> PORTAL_FRAME = ITEMS.registerSimpleBlockItem(ModBlocks.PORTAL_FRAME);
     public static final DeferredItem<com.voidreclaimer.earth.PortalIgniterItem> PORTAL_IGNITER = ITEMS.registerItem("portal_igniter",
             com.voidreclaimer.earth.PortalIgniterItem::new, new net.minecraft.world.item.Item.Properties().stacksTo(16));

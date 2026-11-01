@@ -53,10 +53,10 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
         replicator(output, "uplink_seat", ModItems.UPLINK_SEAT.get(), 1, DustCost.of(40, 30, 20, 40), 60,
                 ReplicatorCategories.BLOCKS, Milestones.EXPANSION);
-        shell(output, ShellPrices.CHEAP, DustCost.of(30, 30, 20, 20), 60, DustCost.of(60, 60, 40, 40), 120, DustCost.of(200, 200, 100, 100), 300);
-        shell(output, ShellPrices.REDUCED, DustCost.of(85, 50, 0, 5), 90, DustCost.of(140, 95, 20, 40), 180, DustCost.of(715, 525, 285, 435), 585);
-        shell(output, ShellPrices.PARTS, DustCost.of(115, 65, 0, 5), 120, DustCost.of(190, 130, 30, 55), 240, DustCost.of(950, 700, 380, 585), 780);
-        shell(output, ShellPrices.PREMIUM, DustCost.of(140, 80, 0, 5), 150, DustCost.of(235, 160, 35, 65), 300, DustCost.of(1190, 875, 475, 730), 975);
+        shell(output, ShellPrices.CHEAP, DustCost.of(30, 30, 20, 20), 60, DustCost.of(60, 60, 40, 40), 120, DustCost.of(200, 200, 100, 100), 300, DustCost.of(100, 100, 50, 50), 150);
+        shell(output, ShellPrices.REDUCED, DustCost.of(85, 50, 0, 5), 90, DustCost.of(140, 95, 20, 40), 180, DustCost.of(715, 525, 285, 435), 585, DustCost.of(370, 275, 150, 210), 295);
+        shell(output, ShellPrices.PARTS, DustCost.of(115, 65, 0, 5), 120, DustCost.of(190, 130, 30, 55), 240, DustCost.of(950, 700, 380, 585), 780, DustCost.of(490, 365, 200, 280), 390);
+        shell(output, ShellPrices.PREMIUM, DustCost.of(140, 80, 0, 5), 150, DustCost.of(235, 160, 35, 65), 300, DustCost.of(1190, 875, 475, 730), 975, DustCost.of(615, 460, 250, 350), 490);
         machineRecipe(output, "holo_projector", ModItems.HOLO_PROJECTOR.get(), DustCost.of(30, 40, 10, 20), "holoProjector");
         replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
                 ReplicatorCategories.TOOLS, Milestones.STARSHIP);
@@ -190,13 +190,15 @@ public final class ModRecipeProvider extends RecipeProvider {
     private static final ResourceKey<Milestone> TITAN_UNLOCK = Milestones.DYSON_TIER_3;
 
     /** A multi-output recipe, titled {@code recipe.void_reclaimer.<name>}. */
-    /** The three shells at one setting of {@code link.shellPrices}: the config keeps exactly one set of these. */
-    private static void shell(RecipeOutput output, ShellPrices prices, DustCost drone, int droneSeconds, DustCost mech, int mechSeconds, DustCost ship, int shipSeconds) {
+    /** The shells at one setting of {@code link.shellPrices}: the config keeps exactly one set of these. */
+    private static void shell(RecipeOutput output, ShellPrices prices, DustCost drone, int droneSeconds, DustCost mech, int mechSeconds, DustCost ship, int shipSeconds,
+                              DustCost shuttle, int shuttleSeconds) {
         String setting = prices.name().toLowerCase(java.util.Locale.ROOT);
         RecipeOutput only = output.withConditions(new ConfigChoiceCondition("shellPrices", setting));
         replicator(only, "drone_shell_" + setting, ModItems.DRONE_SHELL.get(), 1, drone, droneSeconds, ReplicatorCategories.TOOLS, Milestones.EXPANSION);
         replicator(only, "mech_shell_" + setting, ModItems.MECH_SHELL.get(), 1, mech, mechSeconds, ReplicatorCategories.TOOLS, Milestones.EXPANSION);
         replicator(only, "ship_shell_" + setting, ModItems.SHIP_SHELL.get(), 1, ship, shipSeconds, ReplicatorCategories.TOOLS, Milestones.STARSHIP);
+        replicator(only, "shuttle_shell_" + setting, ModItems.SHUTTLE_SHELL.get(), 1, shuttle, shuttleSeconds, ReplicatorCategories.TOOLS, Milestones.STARSHIP);
     }
 
     private static void kit(RecipeOutput output, String name, List<ItemStack> results, DustCost cost, int seconds,

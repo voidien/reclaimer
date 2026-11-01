@@ -104,6 +104,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.DRONE_SHELL.get(), "Remote Shell: Drone");
         add(ModItems.MECH_SHELL.get(), "Remote Shell: Mech");
         add(ModItems.SHIP_SHELL.get(), "Remote Shell: Ship");
+        add(ModItems.SHUTTLE_SHELL.get(), "Remote Shell: Shuttle");
         add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
         add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
         add("message.void_reclaimer.ship_portal.blocked", "The far side of the portal is not clear for the ship.");
@@ -738,6 +739,10 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.ship_shell_reduced", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.ship_shell_parts", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.ship_shell_premium", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.shuttle_shell_cheap", "A Shuttle body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.shuttle_shell_reduced", "A Shuttle body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.shuttle_shell_parts", "A Shuttle body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.shuttle_shell_premium", "A Shuttle body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
         add("replicator.void_reclaimer.description.holo_projector", "Shows up to eight lines of text in the air above itself. Write to it from a computer or a Create Display Link, or sneak-use it with an empty hand to pick a built-in readout.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");
