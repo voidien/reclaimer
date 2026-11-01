@@ -1,6 +1,6 @@
 # Handoff notes
 
-How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules, the settled design decisions and the extension points. Then read `PROGRESS.md` for what is done, the decisions waiting on the owner and the known issues. This file covers everything else: where things stand, the owner's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
+How to pick up Void Reclaimer work in a new session. Read `CLAUDE.md` first: it holds the project rules and an index of `docs/design/`, where the settled design decisions and extension points live. Then read `PROGRESS.md` for what is done, the decisions waiting on the owner and the known issues. This file covers everything else: where things stand, the owner's standing instructions, what comes next, and the working tricks that aren't written down elsewhere.
 
 Last updated 2026-10-31, with the 3D assembly view finished.
 
