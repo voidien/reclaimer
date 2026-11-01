@@ -10,9 +10,14 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 
@@ -55,6 +60,17 @@ public final class Ships {
         SubLevel ship = plot == null ? null : plot.getSubLevel();
         // A removed ship's plot lingers for a while: its blocks are nowhere in the world any more.
         return ship instanceof ServerSubLevel server && server.isRemoved() ? null : ship;
+    }
+
+    /**
+     * Whether a ship's solid hull is straight above {@code from}. Sky light and heightmaps cannot tell, since a ship's blocks are in
+     * its plot, so only a ray finds them. A pane of glass lets the sun through, as it does in the world.
+     */
+    public static boolean hullOverhead(Level level, Vec3 from, Entity looker) {
+        Vec3 top = new Vec3(from.x, level.getMaxBuildHeight(), from.z);
+        BlockHitResult hit = level.clip(new ClipContext(from, top, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, looker));
+        return hit.getType() == HitResult.Type.BLOCK && shipAt(level, hit.getBlockPos()) != null
+                && level.getBlockState(hit.getBlockPos()).canOcclude();
     }
 
     /** Where the ship's block entities are, in its own coordinates: not its plain blocks, see {@code StationAssembly.blocksOf}. */
