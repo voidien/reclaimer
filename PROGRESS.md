@@ -23,6 +23,7 @@ Choices taken alone during unattended stretches, each the safest reversible defa
 - **Ships through the portal:** the 2-block clearance beyond the gate, the 5-second cooldown, half a block of fit slack ("Stations, part 3").
 - **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
 - **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
+- **Remote control signal:** seat 1024, relay 2048, the Dyson tiers +2048, +16,384, +262,144 and +20,000,000 on every node; the 0.25 static band and 0.1 at a station; the bonus also counting for the station's 1.5 times ("Remote control, part 6").
 - **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
 
 ## Setup (workflow step 1): done
@@ -1044,6 +1045,11 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Remote control, part 5: the saved link state: done
 - `link/LinkState`, in the player file: the shell the player is in with its epoch, the main body and where it was left, and an outbox for a shell put back in the world. Bodies are held as raw tags: an attachment that fails to read is dropped with a log line, and with it a main body, while a tag always reads and `BodySnapshot.load` then says whether it is whole.
 - Nothing uses it yet. Tests: `LinkStateTest`. Note on `.gitattributes`: `PROGRESS.md merge=union` works for local rebases, but GitHub's merge check ignores it, so a PR can still show a conflict until it is rebased. It saves the hand fixing, not the CI rerun.
+
+## Remote control, part 6: signal range: done
+- `link/SignalMath` is the pure half of signal: how far a seat or relay reaches at a Dyson tier, what a seat at a station gains (the owner's 1.5 times range and later static), and the strength at a distance. Nothing uses it yet.
+- Every tier's range goes to every node, not only the seat, so a relay chain gains from the Dyson Sphere too. The station's 1.5 times is on the whole seat range, bonus included. "Static starts later" holds across the seat's whole network, because the owner's reason was to make the network's edge usable for longer.
+- Tests: `SignalMathTest`, `theSignalRulesReadTheConfig`.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

@@ -47,6 +47,15 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue HELPER_OWNER_RANGE;
     public static final ModConfigSpec.IntValue STATION_REPLICATOR_SPEED;
     public static final ModConfigSpec.IntValue STATION_MAX_BLOCKS;
+    public static final ModConfigSpec.DoubleValue LINK_SEAT_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_RELAY_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_1_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_2_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_3_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_4_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_STATIC_BAND;
+    public static final ModConfigSpec.DoubleValue LINK_STATION_RANGE;
+    public static final ModConfigSpec.DoubleValue LINK_STATION_STATIC_BAND;
     public static final ModConfigSpec.DoubleValue CLOUD_SPEED_PENALTY;
     public static final ModConfigSpec.DoubleValue PULSE_ENERGY_COST;
     public static final ModConfigSpec.IntValue PULSE_COOLDOWN_SECONDS;
@@ -230,6 +239,20 @@ public final class Config {
                 .defineInRange("replicatorSpeed", 2, 1, 10);
         STATION_MAX_BLOCKS = BUILDER.comment("Most blocks a Station Core will assemble into one station.")
                 .defineInRange("maxBlocks", 50_000, 2, 1_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("Remote control: how far a link reaches. First guesses, all placeholders.").push("link");
+        LINK_SEAT_RANGE = BUILDER.comment("Blocks a seat reaches with no Dyson tier.").defineInRange("seatRange", 1024.0, 1.0, 100_000_000.0);
+        LINK_RELAY_RANGE = BUILDER.comment("Blocks a relay reaches with no Dyson tier.").defineInRange("relayRange", 2048.0, 1.0, 100_000_000.0);
+        LINK_DYSON_TIER_1_RANGE = BUILDER.comment("Blocks Dyson tier 1 adds to every seat and relay.").defineInRange("dysonTier1Range", 2048.0, 0.0, 100_000_000.0);
+        LINK_DYSON_TIER_2_RANGE = BUILDER.comment("Blocks Dyson tier 2 adds on top of tier 1.").defineInRange("dysonTier2Range", 16_384.0, 0.0, 100_000_000.0);
+        LINK_DYSON_TIER_3_RANGE = BUILDER.comment("Blocks Dyson tier 3 adds on top of tier 2.").defineInRange("dysonTier3Range", 262_144.0, 0.0, 100_000_000.0);
+        LINK_DYSON_TIER_4_RANGE = BUILDER.comment("Blocks Dyson tier 4 adds on top of tier 3: near the whole galaxy.").defineInRange("dysonTier4Range", 20_000_000.0, 0.0, 100_000_000.0);
+        LINK_STATIC_BAND = BUILDER.comment("The outer share of a range that carries static: strength falls from full to nothing across it.")
+                .defineInRange("staticBand", 0.25, 0.0, 1.0);
+        LINK_STATION_RANGE = BUILDER.comment("A seat at a station multiplies its range by this.").defineInRange("stationRange", 1.5, 1.0, 16.0);
+        LINK_STATION_STATIC_BAND = BUILDER.comment("staticBand for a seat at a station, across its whole network, so static starts later.")
+                .defineInRange("stationStaticBand", 0.1, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Ruined Earth.").push("earth");
