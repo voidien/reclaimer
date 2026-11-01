@@ -43,6 +43,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <li>{@code sheet name [distance]}: four views of the focus ({@link PhotoSheet}), {@code name_front} and so on; distance 0 or none
  * fits the body</li>
  * <li>{@code exit}: leave photo mode</li>
+ * <li>{@code reload}: reload the resource packs, as F3+T does</li>
  * </ul>
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
@@ -111,6 +112,11 @@ public final class PhotoScript {
                         .executes(c -> sheet(c, 0.0))
                         .then(Commands.argument("distance", DoubleArgumentType.doubleArg(0.0, PhotoState.MAX_RANGE))
                                 .executes(c -> sheet(c, DoubleArgumentType.getDouble(c, "distance"))))))
+                .then(Commands.literal("reload").executes(c -> {
+                    Minecraft mc = Minecraft.getInstance();
+                    mc.tell(mc::reloadResourcePacks);
+                    return 1;
+                }))
                 .then(Commands.literal("exit").executes(c -> {
                     Minecraft mc = Minecraft.getInstance();
                     mc.tell(() -> {

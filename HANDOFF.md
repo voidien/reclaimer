@@ -87,6 +87,7 @@ F8 (photo mode), then G: exact facts about whatever the camera looks at, read fr
 ```
 tools/client-test/quick.sh start        # Xvfb, client, world vrtest; returns when the world is on screen
 tools/client-test/quick.sh swap         # compile and replace the changed classes in the running game
+tools/client-test/quick.sh reload       # copy changed assets and lang in and reload them; GeckoLib models included
 tools/client-test/quick.sh shot NAME    # build/client-shots/NAME.png
 tools/client-test/quick.sh cmd "/gamemode survival"
 tools/client-test/quick.sh photo NAME   # four views joined into build/client-shots/NAME.png, with the facts
