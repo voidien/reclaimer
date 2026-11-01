@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * The fluids of the nebula chains. They live in Create tanks, pipes, basins and spouts; they have no block, so they can't
+ * The fluids of the nebula chains and of terraforming. They live in Create tanks, pipes, basins and spouts; they have no block, so they can't
  * be placed in the world, and each has a bucket. All use vanilla water's textures, tinted.
  */
 public final class ModFluids {
@@ -37,6 +37,7 @@ public final class ModFluids {
     public static final Entry NEBULITE_PROPELLANT = fluid("nebulite_propellant", "Nebulite Propellant", 0xFFFF9638, 900, 1500, 8);
     public static final Entry COOLANT_FLUID = fluid("coolant_fluid", "Coolant Fluid", 0xFF78DCE6, 1100, 1200, 0);
     public static final Entry LIQUID_SILICON = fluid("liquid_silicon", "Liquid Silicon", 0xFFD0D8EE, 2600, 4000, 10);
+    public static final Entry BIO_NUTRIENT_SLURRY = fluid("bio_nutrient_slurry", "Bio-Nutrient Slurry", 0xFF6FA83A, 1300, 2500, 0);
 
     private ModFluids() {}
 

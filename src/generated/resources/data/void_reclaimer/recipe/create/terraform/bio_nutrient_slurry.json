@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config",
+      "key": "bioSlurry"
+    }
+  ],
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "void_reclaimer:purified_water"
+    },
+    {
+      "item": "void_reclaimer:fine_carbon_powder"
+    },
+    {
+      "item": "void_reclaimer:ashen_slag"
+    }
+  ],
+  "results": [
+    {
+      "amount": 250,
+      "id": "void_reclaimer:bio_nutrient_slurry"
+    }
+  ]
+}

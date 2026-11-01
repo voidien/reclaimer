@@ -151,6 +151,7 @@ fluids = {
     'nebulite_propellant': ('glowing orange propellant', '#FF9638'),
     'coolant_fluid': ('cyan coolant', '#78DCE6'),
     'liquid_silicon': ('glowing silver-white molten silicon', '#D0D8EE'),
+    'bio_nutrient_slurry': ('thick green bio-nutrient slurry', '#6FA83A'),
 }
 for k, (d, c) in fluids.items():
     item(G, k + '_bucket', 'vanilla-style iron bucket filled with ' + d,
@@ -331,8 +332,6 @@ fut = [
      'pixel art 4x4 planetary sector map, dark screen with cyan grid lines', '256x256 GUI sprite.'),
     ('12', 'terraforming_spire_multiblock', 'animated multiblock', 'block/spire_*.png', 'RD 3D blocky + animate (GeckoLib)',
      'tall terraforming spire: heavy base, ribbed column, glowing green emitter top', 'Genesis Pulse animation on the emitter.'),
-    ('12', 'bio_nutrient_slurry', 'fluid + bucket', 'item/bio_nutrient_slurry_bucket.png', 'RD image',
-     'bucket of thick green bio-nutrient slurry', 'Fluid can reuse tinted water like the others.'),
     ('13', 'data_monolith', 'block model', 'block/data_monolith_*.png', 'RD 3D blocky',
      'tall black monolith with faint cyan circuit lines and an output drawer', 'Design not settled in the doc yet.'),
     ('14', 'restoration_hud', 'GUI', 'gui/restoration.png', 'RD image',
