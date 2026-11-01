@@ -58,6 +58,7 @@ public final class PhotoDebug {
     private static boolean on;
     private static boolean labels;
     private static boolean overlay;
+    private static Paint paint = Paint.ALL;
     private static volatile DebugShapes shapes = new DebugShapes();
     private static boolean timeChanged;
     private static boolean chunkBorders;
@@ -80,6 +81,28 @@ public final class PhotoDebug {
     public static void setLabels(boolean value) {
         labels = value;
         BoneProbe.capture(value);
+    }
+
+    /** Which of its two passes a body part is drawn with, to see which one a fault in the paint comes from. */
+    public enum Paint {
+        ALL, BASE, ACCENT;
+
+        Paint next() {
+            return values()[(ordinal() + 1) % values().length];
+        }
+    }
+
+    public static Paint paint() {
+        return paint;
+    }
+
+    /** K in photo mode: parts as they are, the base texture only, or the accent mask only. */
+    public static void setPaint(Paint value) {
+        paint = value;
+    }
+
+    public static void cyclePaint() {
+        paint = paint.next();
     }
 
     public static boolean overlay() {
