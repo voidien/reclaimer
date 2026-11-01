@@ -23,6 +23,7 @@ Choices taken alone during unattended stretches, each the safest reversible defa
 - **Ships through the portal:** the 2-block clearance beyond the gate, the 5-second cooldown, half a block of fit slack ("Stations, part 3").
 - **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
 - **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
+- **Bio-Nutrient Slurry:** the recipe's ingredients (Purified Water, Fine Carbon Powder, Ashen Slag: only nebula and Earth materials exist before the first pulse, so nothing grown), unheated, and 250 mB in and out ("Spire, part 1").
 - **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
 
 ## Setup (workflow step 1): done
@@ -1044,6 +1045,13 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 ## Remote control, part 5: the saved link state: done
 - `link/LinkState`, in the player file: the shell the player is in with its epoch, the main body and where it was left, and an outbox for a shell put back in the world. Bodies are held as raw tags: an attachment that fails to read is dropped with a log line, and with it a main body, while a tag always reads and `BodySnapshot.load` then says whether it is whole.
 - Nothing uses it yet. Tests: `LinkStateTest`. Note on `.gitattributes`: `PROGRESS.md merge=union` works for local rebases, but GitHub's merge check ignores it, so a PR can still show a conflict until it is rebased. It saves the hand fixing, not the CI rerun.
+
+## Spire, part 1: Bio-Nutrient Slurry: done
+- `ModFluids.BIO_NUTRIENT_SLURRY` (`bio_nutrient_slurry`, tint `#6FA83A`, thick, no glow), with its bucket. Create basin recipe `create/terraform/bio_nutrient_slurry`, unheated: 250 mB Purified Water, 1 Fine Carbon Powder and 1 Ashen Slag give 250 mB of slurry, under the new toggle `bioSlurry`.
+- Tests: `theBasinMixesBioNutrientSlurry` (the loaded recipe's inputs, heat and result), `theSlurryRecipeIsGatedByItsToggle` (the file's condition names the toggle), plus the recipe in `everyChainRecipeLoadsAsItsCreateType` and the walk of `CreateRecipeGameTests`. Mutation-checked: a recipe with dirt in place of slag fails the first, a recipe under another toggle fails the second.
+
+### Placeholder assets
+- `textures/item/bio_nutrient_slurry_bucket.png`: the Purified Water bucket recoloured green. The fluid uses tinted water like the others.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

@@ -294,6 +294,7 @@ public final class Config {
         toggle("rcsThruster", "The RCS Thruster recipe.");
         toggle("reactionWheel", "The Reaction Wheel Gyroscope recipe.");
         toggle("catalystCore", "The Atmospheric Catalyst Core recipe.");
+        toggle("bioSlurry", "The Bio-Nutrient Slurry recipe (mixed in a basin; the Terraforming Spire drinks it).");
         BUILDER.pop();
 
         BUILDER.comment("Custom Create machines. All amounts are placeholders until the design settles them.").push("machines");

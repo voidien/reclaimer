@@ -472,6 +472,9 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 
 **Dev tools approved (owner, 2026-10-31), to build before the link itself:** `PROGRESS.md merge=union` in `.gitattributes`; a two-run restart test helper; `/void_reclaimer link census`; `/void_reclaimer debug chunks`, plus a thread dump when CI's datagen hangs.
 
+**Finishing the Spire (stage 2 above, built unattended from 2026-10-31, one slice at a time)**
+- **Done, PR 1 (Bio-Nutrient Slurry):** `ModFluids.BIO_NUTRIENT_SLURRY` with its bucket; Create basin recipe `create/terraform/bio_nutrient_slurry` (250 mB Purified Water + Fine Carbon Powder + Ashen Slag, unheated, gives 250 mB), toggle `bioSlurry`.
+
 **Remote control (interview 2026-10-31, owner's answers; planned, not built; after the assembly view)**
 - **Idea:** sit at a base or station with the main body and run other bodies around the galaxy. The player is an AI consciousness; a body is only somewhere it runs.
 - **Take over:** built Remote Shells holding a full body (Drone, Mech or Ship), deployed in the world and inert until linked, and any Helper Drone you own. **Connect from:** an Uplink Seat block at any base or station, including a Station Core ship; the main body stays visible in it and the seat slowly charges it.
