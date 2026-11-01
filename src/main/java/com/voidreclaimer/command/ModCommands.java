@@ -58,6 +58,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /void_reclaimer sky era get|set <ruined|healing|restored>}: the ruined Earth sky era</li>
  *   <li>{@code /void_reclaimer dyson get}, {@code dyson set satellites|trusses <count>}: Dyson Sphere counters and tier</li>
  *   <li>{@code /void_reclaimer body get|reset <player>}: body summary, or back to the starter drone</li>
+ *   <li>{@code /void_reclaimer body remove <player> <socket> [<kind> <index>]}: takes a section or one module off, into the inventory</li>
  *   <li>{@code /void_reclaimer wear <player> <condition>}: sets every section's condition, 1 new and 0 spent</li>
  *   <li>{@code /void_reclaimer link shells <player>}: every shell the player has owned, where it was last seen and how it stands</li>
  *   <li>{@code /void_reclaimer link reach <player> <shell id>}: links to a shell on the player's list, loading its chunks first</li>
@@ -346,8 +347,18 @@ public final class ModCommands {
                         .then(Commands.literal("remove")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("socket", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                                        Bodies.data(EntityArgument.getPlayer(ctx, "player")).sections().keySet(), builder))
                                                 .executes(ctx -> removeSection(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
-                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "socket"))))))
+                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "socket")))
+                                                .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
+                                                        .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(
+                                                                modulesOn(EntityArgument.getPlayer(ctx, "player"), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "socket")), builder))
+                                                        .then(Commands.argument("index", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0))
+                                                                .executes(ctx -> removeModule(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
+                                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "socket"),
+                                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind"),
+                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "index"))))))))
                         .then(Commands.literal("get")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> getBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
@@ -506,6 +517,24 @@ public final class ModCommands {
         com.voidreclaimer.body.BodyRules.Check check = Bodies.removeSection(player, socket);
         source.sendSuccess(() -> Component.literal(socket + ": " + check), true);
         return check == com.voidreclaimer.body.BodyRules.Check.OK ? 1 : 0;
+    }
+
+    /** Takes one module off, to try the body without it: {@code kind} and {@code index} as in the mount's own name. */
+    private static int removeModule(CommandSourceStack source, ServerPlayer player, String socket, String kind, int index) {
+        var found = java.util.Arrays.stream(com.voidreclaimer.api.body.ModuleKind.values()).filter(k -> k.getSerializedName().equals(kind)).findFirst();
+        if (found.isEmpty()) {
+            source.sendFailure(Component.literal("no module kind " + kind));
+            return 0;
+        }
+        com.voidreclaimer.body.BodyRules.Check check = Bodies.removeModule(player, new com.voidreclaimer.body.BodyData.Mount(socket, found.get(), index));
+        source.sendSuccess(() -> Component.literal(socket + " " + kind + " " + index + ": " + check), true);
+        return check == com.voidreclaimer.body.BodyRules.Check.OK ? 1 : 0;
+    }
+
+    /** The module kinds fitted on a socket, for the command's suggestions. */
+    private static java.util.List<String> modulesOn(ServerPlayer player, String socket) {
+        return Bodies.data(player).modules().keySet().stream().filter(mount -> mount.socket().equals(socket))
+                .map(mount -> mount.kind().getSerializedName()).distinct().toList();
     }
 
     private static int getBody(CommandSourceStack source, ServerPlayer player) {

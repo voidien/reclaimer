@@ -2,7 +2,7 @@
 
 You are an expert Java developer and Minecraft modder specializing in NeoForge for Minecraft 1.21.1. "Void Reclaimer" is a singleplayer zero-gravity progression and factory-automation mod.
 
-**New session?** Read `HANDOFF.md` (current state, the user's standing instructions, next steps, test harness) and `PROGRESS.md` plus any `docs/progress/*.md` (what's done, known issues) before starting.
+**New session?** Read `HANDOFF.md` (current state, the user's standing instructions, next steps, test harness), `docs/debug-commands.md` (every debug command, key and script) and `PROGRESS.md` plus any `docs/progress/*.md` (what's done, known issues) before starting.
 
 ## Vision & lore
 The player is a nameless AI consciousness. There are no enemies and no combat. The danger is the environment and your own flying, on top of time, resource management, and patience (`docs/design/plans.md`, "Danger"). The AI starts as a tiny, helpless drone and grows its body freeform, from Drone to Mech to Ship. It builds floating automated space stations and finally returns to the Overworld, which the villagers wrecked through a climate disaster, to terraform and heal it.
@@ -86,7 +86,9 @@ Commands: `./gradlew build` (includes unit tests), `./gradlew runGameTestServer`
 - **CI:** `.github/workflows/build.yml` runs build + unit tests, GameTests, the restart tests and a datagen up-to-date check on every code push to `main`, and by hand with `gh workflow run build.yml --ref <branch>`.
 
 ## Debug tools
-Use these before guessing from pixels. If one is missing, say so (workflow rule 10).
+**Every debug command, key and script is listed in `docs/debug-commands.md` (the owner's rule, 2026-11-01). Read it before you click through a screen, write a throwaway test or suggest a new tool: what you want may already exist.** A new one goes there in the same PR, and `DebugCommandsListedTest` fails otherwise. Whoever spawns an agent passes this on.
+
+Use these before guessing from pixels. If one is missing, say so (workflow rule 10). The ones below take some explaining.
 - **Fast client:** `tools/client-test/quick.sh`: `start`, `swap` (a saved edit in the running game in about 3 s), `reload` (changed assets, models, animations and lang in about 15 s; F3+T after `./gradlew processResources` by hand), `shot`, `photo NAME` (four views and the facts in about 5 s), `compare A B`, `gui`, `cmd`, `test NAME` (a GameTest in the live client, slow, only when a log is not enough), `stop`. See `HANDOFF.md`.
 - **Debug layer (G in photo mode):** `client/camera/PhotoDebug` turns on hit boxes and chunk borders, draws a crosshair, an outline on what the camera looks at and a panel of facts from `debug/DebugReadout` (common code, read on the integrated server's thread, so it is the real state: the first block or entity along the view with its properties, block entity, Create rotation, inventory, tanks, FE and saved NBT; the place's dimension, light, dust cloud and sky era; the player's body and reserves). Leaving photo mode restores the hit-box and chunk-border settings. Every photo-mode screenshot also writes the full facts to `screenshots/<name>.txt`.
 - **Labels (L in photo mode):** `client/render/body/BoneProbe` reads each socket and mount from the render matrices in `BodyPartsLayer` (so animation and scale are included, and the rig and module positions cannot disagree), drawn as names over the model; sockets blue, mounts gold, dim when empty. The text file then lists them in blocks from the feet along the body's own axes (right, up, forward). In a GUI pass the same points are GUI pixels.
@@ -95,6 +97,7 @@ Use these before guessing from pixels. If one is missing, say so (workflow rule 
 - **Scripted (`client/camera/PhotoScript`, client command `/vrphoto`):** `at x y z yaw pitch [fov]`, `focus crosshair|body|<x y z>`, `orbit yaw pitch distance`, `debug true|false`, `labels true|false`, `reload`, `shot name`, `sheet name [distance]` (four views, `PhotoSheet`; no distance fits the body, `BodyBounds`), `exit`. Shots are taken a few frames after the camera moves, from the finished frame (`RenderFrameEvent.Post`). T in photo mode opens chat and returns to the free camera when it closes.
 - **Ship overlay (O in photo mode; `/vrphoto overlay true`):** `debug/ShipOverlay` draws each ship's box, centre of mass (magenta), velocity (blue) and an arrow per thruster, grey for what it could push and orange for what it pushes now, and adds the same facts to a shot's text file. `debug/LogisticsOverlay` adds each helper drone's route, heading, job and phase, and the Create rotation of nearby machines, red when overstressed. `debug/DebugShapes` (pure) carries lines and labels from the server to the client; new overlays add to it.
 - **Item census (`/void_reclaimer link census <player>`, `debug/ItemCensus`):** counts everything a body carries and the items lying near it, and says what changed since the last count: run it before and after anything that moves items.
+- **Parts (`/void_reclaimer body remove <player> <socket> [<kind> <index>]`, `body preset <player> <chassis> [full]`):** takes one section or module off into the inventory, with tab completion, or builds a whole body: the quick way to see a body with a part missing.
 - **Helm (`/void_reclaimer debug helm [player]`, `debug/HelmTrace`):** the last two seconds of a Helm's steering: the mouse, the turn it asked for, the ship's real spin, what its thrusters can do, and the lag from asking to turning. Use it before tuning `AimController`.
 - **Chunks (`/void_reclaimer debug chunks [x z]`, `debug/ChunkReadout`):** one chunk's ticket level, status and entity state, plus how many chunks are held, finished and waiting, and the state of the queue. Use it when a chunk will not tick: a long queue looks just like a stuck chunk.
 - **Paint (K in photo mode, `/vrphoto paint all|base|accent`):** draws a body's parts with the base texture only or the accent mask only, to see which pass a fault in the paint comes from. A whole-model rig's own body has no accent mask, so there it changes only the modules. Leaving photo mode restores it.
@@ -127,6 +130,7 @@ The mod must work alongside **Sodium, ModernFix, FerriteCore, and ImmediatelyFas
 | `docs/design/extension-points.md` | any registry, data component, tag or event; every new extension point goes here |
 | `docs/design/structure.md` | adding a package |
 | `docs/design/art.md` | art, textures, models, the Retro Diffusion tools |
+| `docs/debug-commands.md` | any check in the game, any throwaway test, any new debug tool |
 | `docs/design/original-phases.md` | history only |
 
 **Standing rule:** every new block or item with state or actions gets a CC: Tweaked peripheral in the same PR (`docs/design/ships-and-stations.md`, the `new-block` skill).
