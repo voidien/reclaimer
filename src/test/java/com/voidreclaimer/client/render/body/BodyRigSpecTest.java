@@ -164,8 +164,9 @@ class BodyRigSpecTest {
     }
 
     @Test
-    void theDroneIsASkinAndTheShuttleHidesPartsBySocket() throws IOException {
-        assertTrue(spec("drone").sockets().isEmpty() && spec("drone").socketParts().isEmpty(), "the probe skin shows no part by part");
+    void theDroneAndTheShuttleHidePartsBySocket() throws IOException {
+        assertEquals(java.util.Set.of("sensor_dome", "rotor_front_left", "rotor_front_right", "rotor_back_left", "rotor_back_right", "tool_claw"),
+                spec("drone").sockets().keySet());
         assertEquals(java.util.Set.of("nose", "windshield", "dome", "ridge", "aft", "strut_l", "strut_l2", "strut_r", "strut_r2", "nacelle_l", "nacelle_r"),
                 spec("shuttle").sockets().keySet());
         assertTrue(spec("drone").pitches() && spec("shuttle").pitches());
