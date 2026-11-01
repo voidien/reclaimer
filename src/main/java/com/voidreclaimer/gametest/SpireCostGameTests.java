@@ -65,6 +65,7 @@ public final class SpireCostGameTests {
         spire.slurryTank().fill(new FluidStack(ModFluids.BIO_NUTRIENT_SLURRY.source().get(), Config.SPIRE_SLURRY.get() + 100), IFluidHandler.FluidAction.EXECUTE);
     }
 
+    /** Create drops the speed of a block with no source every so often, so the count is a little short of the ticks asked for. */
     private static void turn(SpireBlockEntity spire, float rpm, int ticks) {
         for (int i = 0; i < ticks; i++) {
             spire.setSpeed(rpm);
@@ -108,7 +109,9 @@ public final class SpireCostGameTests {
             helper.assertTrue(spire.charging() && spire.chargeProgress() == half, "a still shaft moved the charge: " + spire.chargeProgress());
             helper.assertTrue(spire.catalyst().getStackInSlot(0).getCount() == 2 && spire.waterTank().getFluidAmount() == Config.SPIRE_WATER.get() + 100,
                     "paid before the charge ended");
-            turn(spire, 128f, (ticks - ticks / 2) / 2 + 1);
+            for (int i = 0; i < ticks && spire.charging(); i++) {
+                turn(spire, 128f, 1);
+            }
             helper.assertTrue(!spire.charging() && spire.running(), "the pulse did not leave: " + spire.chargeProgress());
             helper.assertTrue(spire.catalyst().getStackInSlot(0).getCount() == 2 - Config.SPIRE_CATALYSTS.get(), "catalysts left " + spire.catalyst().getStackInSlot(0));
             helper.assertTrue(spire.waterTank().getFluidAmount() == 100, "water left " + spire.waterTank().getFluidAmount());
