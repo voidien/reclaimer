@@ -2,6 +2,7 @@
 # Fast in-game checks: start the headless client once, then push code changes into the running game instead of restarting it.
 #
 #   tools/client-test/quick.sh start [world]   start Xvfb and the client (default world vrtest), return when the world has loaded
+#   tools/client-test/quick.sh window [world]  your own game in a real window, in this terminal; `swap` works on it from anywhere
 #   tools/client-test/quick.sh swap            compile, then replace the changed classes in the running game
 #   tools/client-test/quick.sh shot NAME       screenshot to build/client-shots/NAME.png
 #   tools/client-test/quick.sh cmd "/command"  run a chat command
@@ -27,6 +28,7 @@ ROOT=$PWD
 LOG=build/client-test.log
 STAMP=build/client-test.stamp
 SHOTS=build/client-shots
+OWN_DISPLAY=${DISPLAY:-:0}
 export DISPLAY=:99
 XT="python3 -I $ROOT/tools/client-test/xt.py"
 SCALE=3
@@ -76,6 +78,14 @@ start)
     SECONDS=0
     nohup ./gradlew runClient -PquickPlay="$world" -PclientSize=1280x720 -PhotSwap >> "$LOG" 2>&1 &
     wait_world && echo "in the world after ${SECONDS}s"
+    ;;
+window)
+    world=${2:-vrtest}
+    [ -z "$(pid)" ] || { echo "already running: $(pid)"; exit 0; }
+    mkdir -p build
+    ./gradlew classes -q || exit 1
+    hashes > "$STAMP"
+    DISPLAY=$OWN_DISPLAY exec ./gradlew runClient -PquickPlay="$world" -PhotSwap
     ;;
 swap)
     SECONDS=0
@@ -182,7 +192,7 @@ stop)
     [ -z "$p" ] || kill "$p"
     ;;
 *)
-    sed -n '2,22p' "$0" | sed 's/^# \?//'
+    sed -n '2,23p' "$0" | sed 's/^# \?//'
     exit 2
     ;;
 esac
