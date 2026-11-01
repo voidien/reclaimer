@@ -12,6 +12,7 @@
     "ChunkMapAccessor",
     "MinecraftServerStorageAccessor",
     "GameTestRegistryMixin",
+    "GameTestBatchChunkMixin",
     "GameTestChunkSaveMixin",
     "GameTestQuickExitMixin",
     "GameTestTimeMixin",
