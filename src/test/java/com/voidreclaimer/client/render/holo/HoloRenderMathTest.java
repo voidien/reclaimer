@@ -96,4 +96,26 @@ class HoloRenderMathTest {
             assertNotNull(getClass().getClassLoader().getResource("assets/" + texture.getNamespace() + "/" + texture.getPath()), texture.toString());
         }
     }
+
+    @Test
+    void aModelFitsByItsLongestSideAndCentres() {
+        HoloTransform.Fit fit = HoloTransform.fit(new float[] {-1, 0, 2, 3, 1, 3}, 2f);
+        assertEquals(0.5f, fit.scale(), EPSILON);
+        assertEquals(1f, fit.centerX(), EPSILON);
+        assertEquals(0.5f, fit.centerY(), EPSILON);
+        assertEquals(2.5f, fit.centerZ(), EPSILON);
+    }
+
+    @Test
+    void anEmptyModelIsLeftAlone() {
+        float none = Float.MAX_VALUE;
+        assertEquals(new HoloTransform.Fit(1f, 0f, 0f, 0f), HoloTransform.fit(new float[] {none, none, none, -none, -none, -none}, 2f));
+    }
+
+    @Test
+    void aModelKeepsTurning() {
+        assertEquals(0f, HoloTransform.spin(0f), EPSILON);
+        assertTrue(HoloTransform.spin(90f) > 0f);
+        assertTrue(HoloTransform.spin(100_000f) < 360f);
+    }
 }

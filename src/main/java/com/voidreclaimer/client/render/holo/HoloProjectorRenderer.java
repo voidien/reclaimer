@@ -3,10 +3,13 @@ package com.voidreclaimer.client.render.holo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import com.voidreclaimer.client.render.body.BodyRenderer;
 import com.voidreclaimer.display.HoloDisplay;
 import com.voidreclaimer.display.HoloProjectorBlock;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
+import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,9 +17,11 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
 
 /**
  * Draws what a Holo Projector shows, in the air above the block: a faint panel, the text on it and a soft beam down to the
@@ -42,12 +47,58 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
     @Override
     public void render(HoloProjectorBlockEntity projector, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
         HoloDisplay display = projector.display();
-        if (display.lines().isEmpty() || projector.getLevel() == null) {
+        if (projector.getLevel() == null) {
             return;
         }
-        HoloTextLayout layout = HoloCaches.layout(projector, entry -> HoloTextLayout.of(entry.display(), font::width));
         float time = projector.getLevel().getGameTime() + partialTick;
         float flicker = HoloStyle.flicker(time, projector.getBlockPos().asLong());
+        switch (display.mode()) {
+            case TEXT, READOUT -> {
+                if (!display.lines().isEmpty()) {
+                    drawText(projector, display, time, flicker, pose, buffers);
+                }
+            }
+            case MODEL -> drawModel(projector, display, time, flicker, partialTick, pose, buffers);
+            case BODY -> drawBody(display, time, flicker, partialTick, pose, buffers);
+        }
+    }
+
+    private void drawModel(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, float partialTick, PoseStack pose, MultiBufferSource buffers) {
+        ResourceLocation id = ResourceLocation.tryParse(display.subject());
+        BakedGeoModel baked = id == null ? null : HoloModels.baked(id);
+        if (baked == null) {
+            drawText(projector, display.withLines(List.of("NO MODEL", display.subject())), time, flicker, pose, buffers);
+            return;
+        }
+        float size = HoloTransform.MODEL_SIZE * display.scale();
+        pose.pushPose();
+        pose.translate(0.5, 1, 0.5);
+        beam(pose, buffers, display.height(), flicker);
+        pose.translate(0, display.height() + size / 2, 0);
+        pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
+        HoloModels.draw(pose, buffers, id, baked, size, HoloStyle.MODEL_ALPHA * flicker, partialTick);
+        pose.popPose();
+    }
+
+    private void drawBody(HoloDisplay display, float time, float flicker, float partialTick, PoseStack pose, MultiBufferSource buffers) {
+        LocalPlayer viewer = Minecraft.getInstance().player;
+        if (viewer == null) {
+            return;
+        }
+        float size = HoloTransform.MODEL_SIZE * display.scale();
+        pose.pushPose();
+        pose.translate(0.5, 1, 0.5);
+        beam(pose, buffers, display.height(), flicker);
+        pose.translate(0, display.height() + size / 2, 0);
+        pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
+        BodyRenderer.drawHologram(viewer, size, HoloStyle.MODEL_ALPHA * flicker, partialTick, pose, buffers);
+        pose.popPose();
+    }
+
+    private void drawText(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
+        HoloTextLayout layout = display == projector.display()
+                ? HoloCaches.layout(projector, entry -> HoloTextLayout.of(entry.display(), font::width))
+                : HoloTextLayout.of(display, font::width);
         float pixel = HoloTransform.PIXEL * display.scale();
         float halfHeight = HoloTransform.size(layout.height(), display.scale()) / 2;
 

@@ -43,6 +43,8 @@ A projector's address is `"x,y,z"`. Only projectors within 16 blocks of the comp
 | `holo.color(addr, color)` | colour of lines that have none: `0xRRGGBB` as a number, `"#RRGGBB"` or a dye name |
 | `holo.scale(addr, x)`, `holo.height(addr, x)` | as the CC functions, held to their ranges |
 | `holo.source(addr, id)` | shows a readout (a bare id means ours) |
+| `holo.model(addr, id)` | shows a GeckoLib model (a bare id means ours) |
+| `holo.body(addr)` | shows each viewer their own body |
 | `holo.get(addr)` | a map: `lines`, `mode`, `source`, `scale`, `height` |
 
 ## The thread rule
