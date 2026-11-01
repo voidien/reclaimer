@@ -333,6 +333,12 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.unknown", "No body called %s");
         add("commands.void_reclaimer.link.not_a_shell", "That is not a shell");
         add("commands.void_reclaimer.link.result", "Link: %s");
+        add("commands.void_reclaimer.link.shells.none", "No shells on record");
+        add("commands.void_reclaimer.link.shells.entry", "Shell %s, link %s, in %s at %s: %s");
+        add("commands.void_reclaimer.link.shells.idle", "idle");
+        add("commands.void_reclaimer.link.shells.in_use", "in use");
+        add("commands.void_reclaimer.link.shells.wrecked", "a wreck");
+        add("commands.void_reclaimer.link.shells.gone", "gone");
         add("commands.void_reclaimer.link.status.home", "In the main body");
         add("commands.void_reclaimer.link.status.linked", "In shell %s, link %s; main body in %s at %s");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");

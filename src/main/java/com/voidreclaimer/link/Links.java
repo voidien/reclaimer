@@ -20,12 +20,14 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -90,6 +92,22 @@ public final class Links {
     static void onServerTick(ServerTickEvent.Post event) {
         for (Move move = MOVES.poll(); move != null; move = MOVES.poll()) {
             move.then().accept(run(event.getServer(), move));
+        }
+    }
+
+    /**
+     * Two copies of a shell meet: a crash left one on disk from before a link, and both chunks have loaded. A level holds one entity
+     * per id and refuses the second with only a warning, and the chunk of a refused copy then saves without it. So the older copy
+     * has to give way here, whichever came first. An older arrival needs nothing: the level refuses it. This asks nothing of the
+     * owner, who may be away. Last in line, because a listener after this one could cancel the arrival with the older copy already
+     * gone. A copy in a chunk on its way out cannot be seen here; see {@link #replaced} for why that costs a rollback at worst.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    static void onEntityJoin(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof BodyHost arriving && event.getLevel() instanceof ServerLevel level
+                && level.getEntity(arriving.getUUID()) instanceof BodyHost held && held != arriving && arriving.epoch() > held.epoch()) {
+            LOGGER.info("Shell {}: the copy with link number {} gives way to the one with {}", held.getUUID(), held.epoch(), arriving.epoch());
+            held.discard();
         }
     }
 
@@ -161,7 +179,10 @@ public final class Links {
         if (!arrive(player, there, shell.position(), shell.getYRot(), shell.getXRot())) {
             return Result.CANNOT_REACH;
         }
-        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), shell.epoch() + 1, homeTag, from)));
+        // An old copy can be linked to when the outbox cannot be read, and the list must not go back with it.
+        long epoch = Math.max(shell.epoch(), state.known(shell.getUUID()).map(LinkState.KnownShell::epoch).orElse(0L)) + 1;
+        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from))
+                .withKnown(new LinkState.KnownShell(shell.getUUID(), epoch, place(shell), false, false)));
         if (!wear(player, body)) {
             boolean restored = wear(player, home);
             arrive(player, here, from.position(), from.yaw(), from.pitch());
@@ -169,7 +190,7 @@ public final class Links {
                 player.setData(ModAttachments.LINK, state);
             } else {
                 // The link stays, so the main body is not lost, and so does the shell: it must not count as a copy left from before it.
-                shell.setEpoch(shell.epoch() + 1);
+                shell.setEpoch(epoch);
             }
             return Result.FAILED;
         }
@@ -215,7 +236,7 @@ public final class Links {
         }
         LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at, false);
         player.setData(ModAttachments.LINK, state.withOutbox(outbox));
-        Optional<BodyHost> shell = BodyHost.restore(shellLevel, at, link.shell(), link.epoch(), body, player.getUUID());
+        Optional<BodyHost> shell = putBack(shellLevel, at, link, body, player);
         if (shell.isEmpty()) {
             LOGGER.warn("Shell {} could not be put back in the world yet: it stays in the outbox", link.shell());
         }
@@ -232,11 +253,24 @@ public final class Links {
                 Wrecks.make(host);
             }
         });
-        player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink());
+        // A lost shell that the level would not take comes back from the outbox as a shell, not a wreck.
+        boolean wrecked = lost && shell.isPresent();
+        player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink()
+                .withKnown(new LinkState.KnownShell(link.shell(), link.epoch(), at, wrecked, false)));
         setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
         saveNow(player.server);
         return Result.WOKEN;
+    }
+
+    /** A throw is an addon's. The outbox already holds the shell, so a wake goes on without it, as when the level will not take it. */
+    private static Optional<BodyHost> putBack(ServerLevel level, LinkState.Place at, LinkState.Link link, BodySnapshot body, ServerPlayer player) {
+        try {
+            return BodyHost.restore(level, at, link.shell(), link.epoch(), body, player.getUUID());
+        } catch (RuntimeException e) {
+            LOGGER.error("Shell {} could not be put back", link.shell(), e);
+            return Optional.empty();
+        }
     }
 
     private static void setHomeDust(ServerPlayer player, float capacity) {
@@ -245,7 +279,7 @@ public final class Links {
     }
 
     /** What ends a move: the player's state on disk, in both places a server reads it from. */
-    private static void saveNow(MinecraftServer server) {
+    static void saveNow(MinecraftServer server) {
         server.getPlayerList().saveAll();
         // Singleplayer loads its owner from level.dat, which only an autosave or a quit writes, not the player file.
         CompoundTag host = server.getPlayerList().getSingleplayerData();
@@ -254,12 +288,49 @@ public final class Links {
         }
     }
 
-    /** A shell destroyed for good: nothing is to bring it back. A shell in a wreck comes with the destroyed path. */
+    /** A shell destroyed for good: nothing is to bring it back. An old copy is not the shell, so its end changes nothing. */
     static void destroyed(BodyHost shell) {
         ServerPlayer owner = owner(shell);
-        if (owner != null) {
-            owner.setData(ModAttachments.LINK, state(owner).withoutOutbox(shell.getUUID()));
+        if (owner != null && !older(state(owner), shell)) {
+            LinkState state = state(owner);
+            LinkState.KnownShell known = state.known(shell.getUUID()).orElseGet(() -> seen(shell));
+            owner.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withKnown(known.destroyed()));
         }
+    }
+
+    /** Whether a newer link number than this copy's is on record: the link, the outbox or the list. */
+    private static boolean older(LinkState state, BodyHost shell) {
+        UUID id = shell.getUUID();
+        return state.link().filter(link -> link.shell().equals(id) && link.epoch() > shell.epoch()).isPresent()
+                || state.outbox(id).filter(outbox -> outbox.epoch() > shell.epoch()).isPresent()
+                || state.known(id).filter(known -> known.epoch() > shell.epoch()).isPresent();
+    }
+
+    /** {@code shell} as it stands now. */
+    static LinkState.KnownShell seen(BodyHost shell) {
+        return new LinkState.KnownShell(shell.getUUID(), shell.epoch(), place(shell), shell.role() == HostRole.WRECK, false);
+    }
+
+    /** Puts {@code shell} on its owner's list, or brings its entry up to date. An old copy says nothing, and neither does a shell that is gone. */
+    static void note(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        if (owner != null) {
+            LinkState state = state(owner);
+            LinkState after = noted(state, shell);
+            if (after != state) {
+                owner.setData(ModAttachments.LINK, after);
+            }
+        }
+    }
+
+    /** {@code state} with {@code shell} up to date, or {@code state} itself if that changes nothing. */
+    static LinkState noted(LinkState state, BodyHost shell) {
+        Optional<LinkState.KnownShell> known = state.known(shell.getUUID());
+        LinkState.KnownShell now = seen(shell);
+        if (known.filter(entry -> entry.gone() || entry.epoch() > shell.epoch() || entry.equals(now)).isPresent()) {
+            return state;
+        }
+        return state.withKnown(now);
     }
 
     @Nullable
@@ -268,8 +339,10 @@ public final class Links {
     }
 
     /**
-     * Whether this copy of a shell lost to a newer one: its owner is in it, or a newer copy that can be read waits in the outbox. Only
-     * a crash leaves such a copy, on disk from before the link. With its owner away nobody can tell, and nobody can use it either.
+     * Whether this copy of a shell is left over, so it takes no link and gives up nothing: {@link #replaced}, or the outbox has ended
+     * and the list says the shell is newer than this. Only a crash leaves such a copy, on disk from before the link. An outbox nobody
+     * can read decides alone, because this copy is then the only readable one. With its owner away nobody can tell, and nobody can
+     * use it either.
      */
     public static boolean stale(BodyHost shell) {
         ServerPlayer owner = owner(shell);
@@ -277,9 +350,32 @@ public final class Links {
             return false;
         }
         LinkState state = state(owner);
-        return state.link().filter(link -> link.shell().equals(shell.getUUID()) && link.epoch() > shell.epoch()).isPresent()
-                || state.outbox(shell.getUUID()).filter(outbox -> outbox.epoch() > shell.epoch()
-                        && BodySnapshot.load(outbox.body(), owner.registryAccess()).isPresent()).isPresent();
+        UUID id = shell.getUUID();
+        return replaced(owner, state, shell)
+                || state.outbox(id).isEmpty() && state.known(id).filter(known -> known.epoch() > shell.epoch()).isPresent();
+    }
+
+    /**
+     * Whether this copy may remove itself: the newer body is known to exist, or the shell is gone. A list that only says a newer
+     * number was seen does not prove that copy still exists: the level refuses a copy it cannot see beside one in an unloading chunk,
+     * and that copy is lost at its chunk's next save. So such a copy stays, refused, and gives way when the newer one turns up in its
+     * level ({@link #onEntityJoin}). The worst case is then a rollback, not an empty world.
+     */
+    public static boolean replaced(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        return owner != null && replaced(owner, state(owner), shell);
+    }
+
+    private static boolean replaced(ServerPlayer owner, LinkState state, BodyHost shell) {
+        UUID id = shell.getUUID();
+        if (state.link().filter(link -> link.shell().equals(id) && link.epoch() > shell.epoch()).isPresent()) {
+            return true;
+        }
+        Optional<LinkState.Outbox> outbox = state.outbox(id);
+        if (outbox.isPresent()) {
+            return outbox.get().epoch() > shell.epoch() && BodySnapshot.load(outbox.get().body(), owner.registryAccess()).isPresent();
+        }
+        return state.known(id).filter(LinkState.KnownShell::gone).isPresent();
     }
 
     /** Whether there is still a living player here to move: a stale object or a corpse would take a body with it. */
@@ -319,8 +415,8 @@ public final class Links {
         }
     }
 
-    private static LinkState.Place place(ServerPlayer player) {
-        return new LinkState.Place(player.level().dimension(), player.position(), player.getYRot(), player.getXRot());
+    private static LinkState.Place place(Entity entity) {
+        return new LinkState.Place(entity.level().dimension(), entity.position(), entity.getYRot(), entity.getXRot());
     }
 
     /**
