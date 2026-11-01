@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -21,9 +22,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
@@ -61,8 +64,8 @@ public final class Links {
         FAILED
     }
 
-    /** A waiting move. No shell means a wake. */
-    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, Consumer<Result> then) {}
+    /** A waiting move. No shell means a wake, and {@code lost} that the shell was destroyed around the player. */
+    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, boolean lost, Consumer<Result> then) {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
@@ -75,18 +78,38 @@ public final class Links {
 
     /** Asks for {@link #link} at the end of this tick; {@code then} hears how it went. */
     public static void requestLink(ServerPlayer player, BodyHost shell, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), then));
+        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), false, then));
     }
 
     /** Asks for {@link #wake} at the end of this tick; {@code then} hears how it went. */
     public static void requestWake(ServerPlayer player, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), null, null, then));
+        MOVES.add(new Move(player.getUUID(), null, null, false, then));
     }
 
     @SubscribeEvent
     static void onServerTick(ServerTickEvent.Post event) {
         for (Move move = MOVES.poll(); move != null; move = MOVES.poll()) {
             move.then().accept(run(event.getServer(), move));
+        }
+    }
+
+    /**
+     * A body dying around the player is not the player dying: the mind goes home, and the shell becomes a wreck. Cancelled before
+     * anything else hears of it, so no items fall, no death marker is set and no Backup Core charge is spent. The move waits for the
+     * end of the tick, as every move does, and the health keeps the body standing until then.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    static void onDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && state(player).linked()) {
+            event.setCanceled(true);
+            player.setHealth(1f);
+            MOVES.add(new Move(player.getUUID(), null, null, true, result -> {
+                if (result == Result.WOKEN) {
+                    player.displayClientMessage(Component.translatable("message.void_reclaimer.link.lost"), false);
+                } else if (result != Result.NOT_LINKED) {
+                    LOGGER.warn("{} lost a shell and could not wake: {}", player.getScoreboardName(), result);
+                }
+            }));
         }
     }
 
@@ -101,7 +124,7 @@ public final class Links {
             return Result.PLAYER_GONE;
         }
         if (move.shell() == null) {
-            return wake(player);
+            return wake(player, move.lost());
         }
         ServerLevel level = server.getLevel(move.shellLevel());
         return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell) : Result.NOT_A_SHELL;
@@ -159,6 +182,10 @@ public final class Links {
 
     /** Brings {@code player} back to the main body, and puts the shell back in the world where they were. */
     public static Result wake(ServerPlayer player) {
+        return wake(player, false);
+    }
+
+    private static Result wake(ServerPlayer player, boolean lost) {
         LinkState state = state(player);
         if (!present(player)) {
             return Result.PLAYER_GONE;
@@ -199,7 +226,12 @@ public final class Links {
             player.setData(ModAttachments.LINK, state);
             return Result.FAILED;
         }
-        shell.ifPresent(host -> Outboxes.settled(host.getUUID()));
+        shell.ifPresent(host -> {
+            Outboxes.settled(host.getUUID());
+            if (lost) {
+                Wrecks.make(host);
+            }
+        });
         player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink());
         setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
