@@ -5,7 +5,7 @@ You are an expert Java developer and Minecraft modder specializing in NeoForge f
 **New session?** Read `HANDOFF.md` (current state, the user's standing instructions, next steps, test harness) and `PROGRESS.md` plus any `docs/progress/*.md` (what's done, known issues) before starting.
 
 ## Vision & lore
-The player is a nameless AI consciousness. There are no enemies, no combat, and no hazards except time, resource management, and patience. The AI starts as a tiny, helpless drone and grows its body freeform, from Drone to Mech to Ship. It builds floating automated space stations and finally returns to the Overworld, which the villagers wrecked through a climate disaster, to terraform and heal it.
+The player is a nameless AI consciousness. There are no enemies and no combat. The danger is the environment and your own flying, on top of time, resource management, and patience (`docs/design/plans.md`, "Danger"). The AI starts as a tiny, helpless drone and grows its body freeform, from Drone to Mech to Ship. It builds floating automated space stations and finally returns to the Overworld, which the villagers wrecked through a climate disaster, to terraform and heal it.
 
 ## Core design
 1. **Spawn:** The player never spawns in the Overworld. New players and respawns always go to `void_reclaimer:deep_space`.

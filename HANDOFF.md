@@ -46,7 +46,7 @@ Verified on `main`: 228 GameTests in `runGameTestServer`, 36 Aeronautics GameTes
 
 **Waiting on the owner (do not decide alone):**
 - Everything under "Decisions pending (for the owner)" at the top of `PROGRESS.md`: the unattended defaults of hover flight, the Cloud Siphon's power numbers, the RCS block, the Helm, Earth's wind, the stations, the docking clamp, the portal crossing, the launch complex, the renderer and the helper drones.
-- Hazards across the whole game (the owner wants to discuss; fall damage on Earth is vanilla for now).
+- Hazards: the level of danger is settled (`docs/design/plans.md`, "Danger"), but each hazard needs its own interview before it is built.
 - The owner has no time to playtest: do not wait for feedback, but list what to look at.
 
 **Not seen in a real client yet (list these when the owner asks what to try):** the three-era sky's colours, hover flight beyond the HUD text and the Mech walking, the Helm HUD and the camera riding a ship, stations and docking, ships through the portal, the launch complex renderer (its orientation relative to the controller and the lean and kick), the helper drones' flight, the CC peripherals from a real computer, the cockpit offsets. No RD tool has run against the real service: that needs the owner's key in `$RD_API_KEY`; never ask for it, store it or print it.
