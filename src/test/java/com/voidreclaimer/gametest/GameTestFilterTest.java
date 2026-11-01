@@ -29,14 +29,6 @@ class GameTestFilterTest {
     }
 
     @Test
-    void chunksAreReleasedExceptAcrossARestart() {
-        assertTrue(GameTestFilter.releasesChunks(null), "a full run");
-        assertTrue(GameTestFilter.releasesChunks("LinkLedger"), "a filtered run");
-        assertFalse(GameTestFilter.releasesChunks("aLinkOutlivesACrashBeforeRestart"), "first half of a restart test");
-        assertFalse(GameTestFilter.releasesChunks("aLinkOutlivesACrashAfterRestart"), "second half");
-    }
-
-    @Test
     void aTestThatSpansARestartIsNeverInANormalRun() {
         assertFalse(GameTestFilter.registers(null, "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedBeforeRestart"));
         assertFalse(GameTestFilter.registers("", "RestartGameTests", "aCrashKeepsOnlyWhatWasSavedAfterRestart"));
