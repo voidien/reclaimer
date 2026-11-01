@@ -47,7 +47,7 @@ else
 fi
 if [ "${1:-}" = "all" ] || touches '^src/main/java/com/voidreclaimer/(datagen|registry)/|^src/generated/'; then
     run data timeout 300 ./gradlew runData
-    if ! git diff --quiet -- src/generated; then echo "NOTE  runData changed src/generated: commit it"; fi
+    if ! git diff --quiet -- src/generated; then echo "FAIL  runData changed src/generated: commit it"; failed=1; fi
 fi
 if [ "${1:-}" = "all" ] || touches '^tools/art/'; then
     run art bash -c 'python3 tools/art/test_rd_generate.py && python3 tools/art/test_rig_check.py && python3 tools/art/test_anim_slice.py'

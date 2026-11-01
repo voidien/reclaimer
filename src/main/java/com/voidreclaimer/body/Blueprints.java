@@ -67,6 +67,8 @@ public final class Blueprints {
             Optional<RecipeHolder<ReplicatorRecipe>> recipe = recipes.stream()
                     .filter(h -> h.value().count(entry.getKey()) > 0)
                     .filter(h -> Replicator.data(player).isUnlocked(h.value().milestone()))
+                    // A blueprint spends dust; it never takes a player's items for them.
+                    .filter(h -> h.value().inputs().isEmpty())
                     // Cheapest per wanted part, so a missing hull queues the hull, not a whole kit.
                     .min(Comparator.comparingDouble(h -> h.value().cost().total() / h.value().count(entry.getKey())));
             if (recipe.isEmpty()) {

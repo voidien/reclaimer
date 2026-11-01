@@ -236,6 +236,75 @@ public final class ReplicatorGameTests {
                 .thenSucceed();
     }
 
+    private static final net.minecraft.resources.ResourceLocation ITEMS_TOO =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("void_reclaimer_test", "replicator/items_too");
+
+    private static int held(ServerPlayer player, net.minecraft.world.item.Item item) {
+        return player.getInventory().countItem(item);
+    }
+
+    /** The extension point: a recipe's {@code inputs} are taken with the dust, by item or tag, and a cancel gives back the same items. */
+    @GameTest(template = "empty")
+    public static void aRecipeTakesItemsAndACancelGivesTheSameOnesBack(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 47_500.5, 80, 0.5);
+        try {
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.AWAKENING));
+            player.setData(ModAttachments.DUST, DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 2));
+            player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.NOT_ENOUGH_ITEMS, "queued with one ingot short");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 2, "a refused job took the ingots");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "a refused job took dust");
+
+            // The third ingot is in another slot, and it has a name that a cancel must not lose.
+            ItemStack named = new ItemStack(net.minecraft.world.item.Items.IRON_INGOT);
+            named.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Spare"));
+            player.getInventory().setItem(8, named);
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued with everything there");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 0, "the ingots stayed");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.OAK_PLANKS) == 0, "the tag did not take the planks");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 5f) < 1e-4, "the dust was not paid");
+
+            helper.assertTrue(Replicator.cancel(player, 0), "not cancelled");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 3, "the ingots did not come back");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.OAK_PLANKS) == 1, "the planks did not come back");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "the dust did not come back");
+            boolean nameKept = false;
+            for (ItemStack stack : player.getInventory().items) {
+                nameKept |= stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+            }
+            helper.assertTrue(nameKept, "a cancel gave back a plain ingot, not the same one");
+
+            // With no room, nothing is lost: it waits in the output.
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued the second time");
+            for (int slot = 0; slot < player.getInventory().items.size(); slot++) {
+                player.getInventory().setItem(slot, new ItemStack(net.minecraft.world.item.Items.DIRT, 64));
+            }
+            helper.assertTrue(Replicator.cancel(player, 0), "not cancelled with a full inventory");
+            int waiting = Replicator.data(player).buffer().stream().mapToInt(ItemStack::getCount).sum();
+            helper.assertTrue(waiting == 4, "with no room, " + waiting + " items of 4 wait in the output");
+
+            // A finished job keeps what it took.
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withBuffer(List.of()));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued the third time");
+            ReplicatorData data = Replicator.data(player);
+            ReplicatorJob job = data.jobs().get(0);
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.total() - 1, job.total()))));
+            player.doTick();
+            player.doTick();
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.DIAMOND) == 1, "no result");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 0, "a finished job gave the ingots back");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
     @GameTest(template = "empty")
     public static void kitsDeliverEveryPartAndKeepSalvagePrices(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 47_000.5, 80, 0.5);
@@ -247,7 +316,7 @@ public final class ReplicatorGameTests {
             // Skip to the last tick of the 80 s job.
             ReplicatorData data = Replicator.data(player);
             ReplicatorJob job = data.jobs().get(0);
-            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(),
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(),
                     job.total() - 1, job.total()))));
             player.doTick();
             player.doTick();

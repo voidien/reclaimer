@@ -30,9 +30,10 @@ public record ReplicatorData(List<ReplicatorJob> jobs, List<ItemStack> buffer, L
     public static final ReplicatorData EMPTY = new ReplicatorData(List.of(), List.of(), List.of(), 0, List.of(), List.of());
 
     public static final Codec<ReplicatorData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            // Lenient: a field that no longer parses (e.g. an item from a removed mod) resets instead of failing the load.
-            ReplicatorJob.CODEC.listOf().lenientOptionalFieldOf("jobs", List.of()).forGetter(ReplicatorData::jobs),
-            ItemStack.CODEC.listOf().lenientOptionalFieldOf("buffer", List.of()).forGetter(ReplicatorData::buffer),
+            // Lenient: a field that no longer parses (e.g. an item from a removed mod) resets instead of failing the load. Jobs and the
+            // buffer hold the player's own things, so one bad entry costs that entry and not the list.
+            ModCodecs.eachOnItsOwn(ReplicatorJob.CODEC, "a Replicator job").lenientOptionalFieldOf("jobs", List.of()).forGetter(ReplicatorData::jobs),
+            ModCodecs.eachOnItsOwn(ItemStack.CODEC, "an item in the Replicator's output").lenientOptionalFieldOf("buffer", List.of()).forGetter(ReplicatorData::buffer),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).listOf().lenientOptionalFieldOf("unlocked", List.of()).forGetter(ReplicatorData::unlocked),
             Codec.INT.lenientOptionalFieldOf("blocks_placed", 0).forGetter(ReplicatorData::blocksPlaced),
             ModCodecs.ID.listOf().lenientOptionalFieldOf("items_made", List.of()).forGetter(ReplicatorData::itemsMade),

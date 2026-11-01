@@ -11,12 +11,18 @@ import net.minecraft.world.item.ItemStack;
 public final class ReplicatorLogic {
     private ReplicatorLogic() {}
 
-    public enum QueueResult { QUEUED, LOCKED, QUEUE_FULL, NOT_ENOUGH_DUST, UNKNOWN_RECIPE }
+    public enum QueueResult { QUEUED, LOCKED, QUEUE_FULL, NOT_ENOUGH_DUST, UNKNOWN_RECIPE, NOT_ENOUGH_ITEMS }
 
     /** Outcome of queueing: the result code and, when queued, the new data and dust. */
     public record Queued(QueueResult result, ReplicatorData data, DustData dust) {}
 
-    public static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe) {
+    /** A job that takes no items: the rules alone, for tests. The game goes through the one below, which knows what the player holds. */
+    static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe) {
+        return queue(data, dust, id, recipe, List.of());
+    }
+
+    /** {@code items} are what the job takes from the inventory, or null when the player hasn't got them. */
+    public static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe, @Nullable List<ItemStack> items) {
         if (recipe == null) {
             return new Queued(QueueResult.UNKNOWN_RECIPE, data, dust);
         }
@@ -29,8 +35,11 @@ public final class ReplicatorLogic {
         if (!recipe.cost().canAfford(dust)) {
             return new Queued(QueueResult.NOT_ENOUGH_DUST, data, dust);
         }
+        if (items == null) {
+            return new Queued(QueueResult.NOT_ENOUGH_ITEMS, data, dust);
+        }
         List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
-        jobs.add(new ReplicatorJob(id, recipe.results(), recipe.cost(), 0, recipe.ticks()));
+        jobs.add(new ReplicatorJob(id, recipe.results(), recipe.cost(), items, 0, recipe.ticks()));
         return new Queued(QueueResult.QUEUED, data.withJobs(jobs), recipe.cost().takeFrom(dust));
     }
 

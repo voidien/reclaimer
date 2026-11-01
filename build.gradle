@@ -260,7 +260,7 @@ tasks.register('fastTest', Test) {
     classpath = sourceSets.test.runtimeClasspath.filter { !it.name.startsWith('junit-fml') } + fileTree(layout.buildDirectory.dir('create-libs')) { include '*.jar' }
     maxHeapSize = '1G'
     exclude '**/ConfigConditionTest.class', '**/ItemsMadeCriterionTest.class', '**/LinkStateTest.class',
-            '**/RecipeDescriptionTest.class', '**/ReplicatorLogicTest.class'
+            '**/RecipeDescriptionTest.class', '**/ReplicatorLogicTest.class', '**/RecipeInputsTest.class'
 }
 
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).

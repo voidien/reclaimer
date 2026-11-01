@@ -8,23 +8,24 @@ import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.replicator.ReplicatorCategory;
 import com.voidreclaimer.registry.ModCodecs;
 import com.voidreclaimer.registry.ModRecipeSerializers;
-import net.minecraft.resources.ResourceKey;
 import com.voidreclaimer.registry.ModRecipeTypes;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /**
  * A Replicator recipe: turns dust from the AI's reserve into items over time.
@@ -38,9 +39,10 @@ import net.minecraft.world.level.Level;
  * @param category  Replicator screen tab (an entry of {@code void_reclaimer:replicator_category})
  * @param milestone milestone that unlocks the recipe
  * @param title     name shown instead of the first result's (kits)
+ * @param inputs    items taken from the inventory when the job is queued (refunded if cancelled), as well as the dust
  */
 public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category,
-                               ResourceKey<Milestone> milestone, Optional<Component> title, Optional<Component> description) implements Recipe<ReplicatorInput> {
+                               ResourceKey<Milestone> milestone, Optional<Component> title, Optional<Component> description, List<SizedIngredient> inputs) implements Recipe<ReplicatorInput> {
 
     public static final MapCodec<ReplicatorRecipe> CODEC = RecordCodecBuilder.<ReplicatorRecipe>mapCodec(instance -> instance.group(
             ItemStack.STRICT_CODEC.optionalFieldOf("result").forGetter(r -> r.results.size() == 1 ? Optional.of(r.results.get(0)) : Optional.empty()),
@@ -50,9 +52,10 @@ public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks
             ModCodecs.key(VoidReclaimerRegistries.REPLICATOR_CATEGORY).fieldOf("category").forGetter(ReplicatorRecipe::category),
             ModCodecs.key(VoidReclaimerRegistries.MILESTONE).fieldOf("milestone").forGetter(ReplicatorRecipe::milestone),
             ComponentSerialization.CODEC.optionalFieldOf("title").forGetter(ReplicatorRecipe::title),
-            ComponentSerialization.CODEC.optionalFieldOf("description").forGetter(ReplicatorRecipe::description)
-    ).apply(instance, (single, list, cost, ticks, category, milestone, title, description) -> new ReplicatorRecipe(
-            list.orElseGet(() -> single.map(List::of).orElse(List.of())), cost, ticks, category, milestone, title, description)))
+            ComponentSerialization.CODEC.optionalFieldOf("description").forGetter(ReplicatorRecipe::description),
+            SizedIngredient.NESTED_CODEC.listOf().optionalFieldOf("inputs", List.of()).forGetter(ReplicatorRecipe::inputs)
+    ).apply(instance, (single, list, cost, ticks, category, milestone, title, description, inputs) -> new ReplicatorRecipe(
+            list.orElseGet(() -> single.map(List::of).orElse(List.of())), cost, ticks, category, milestone, title, description, inputs)))
             .validate(recipe -> recipe.results.isEmpty() ? DataResult.error(() -> "a Replicator recipe needs a result") : DataResult.success(recipe));
 
     private static final StreamCodec<RegistryFriendlyByteBuf, List<ItemStack>> RESULTS = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list());
@@ -62,6 +65,7 @@ public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks
             ResourceKey.streamCodec(VoidReclaimerRegistries.MILESTONE);
     private static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> TEXT =
             ByteBufCodecs.optional(ComponentSerialization.TRUSTED_STREAM_CODEC);
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> INPUTS = SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list());
 
     /** Written by hand: {@code StreamCodec.composite} stops at six fields. */
     public static final StreamCodec<RegistryFriendlyByteBuf, ReplicatorRecipe> STREAM_CODEC = StreamCodec.of(
@@ -73,21 +77,23 @@ public record ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks
                 MILESTONE.encode(buf, recipe.milestone);
                 TEXT.encode(buf, recipe.title);
                 TEXT.encode(buf, recipe.description);
+                INPUTS.encode(buf, recipe.inputs);
             },
             buf -> new ReplicatorRecipe(RESULTS.decode(buf), DustCost.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
-                    CATEGORY.decode(buf), MILESTONE.decode(buf), TEXT.decode(buf), TEXT.decode(buf)));
+                    CATEGORY.decode(buf), MILESTONE.decode(buf), TEXT.decode(buf), TEXT.decode(buf), INPUTS.decode(buf)));
 
     public ReplicatorRecipe {
         results = results.stream().map(ItemStack::copy).toList();
+        inputs = List.copyOf(inputs);
     }
 
     public ReplicatorRecipe(List<ItemStack> results, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category,
                             ResourceKey<Milestone> milestone, Optional<Component> title) {
-        this(results, cost, ticks, category, milestone, title, Optional.empty());
+        this(results, cost, ticks, category, milestone, title, Optional.empty(), List.of());
     }
 
     public ReplicatorRecipe(ItemStack result, DustCost cost, int ticks, ResourceKey<ReplicatorCategory> category, ResourceKey<Milestone> milestone) {
-        this(List.of(result), cost, ticks, category, milestone, Optional.empty(), Optional.empty());
+        this(List.of(result), cost, ticks, category, milestone, Optional.empty(), Optional.empty(), List.of());
     }
 
     /**

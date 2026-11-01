@@ -55,9 +55,13 @@ public final class Replicator {
     }
 
     public static ReplicatorLogic.QueueResult queue(ServerPlayer player, ResourceLocation id) {
+        ReplicatorRecipe recipe = recipe(player, id);
+        List<ItemStack> inventory = player.getInventory().items;
+        RecipeInputs.Plan plan = recipe == null ? RecipeInputs.NOTHING : RecipeInputs.plan(inventory, recipe.inputs());
         ReplicatorLogic.Queued queued = ReplicatorLogic.queue(
-                data(player), player.getData(ModAttachments.DUST), id, recipe(player, id));
+                data(player), player.getData(ModAttachments.DUST), id, recipe, plan == null ? null : plan.items());
         if (queued.result() == ReplicatorLogic.QueueResult.QUEUED) {
+            plan.take(inventory);
             store(player, queued.data());
             player.setData(ModAttachments.DUST, queued.dust());
             player.syncData(ModAttachments.DUST);
@@ -69,12 +73,19 @@ public final class Replicator {
     }
 
     public static boolean cancel(ServerPlayer player, int index) {
+        ReplicatorData before = data(player);
         ReplicatorLogic.Queued cancelled = ReplicatorLogic.cancel(
-                data(player), player.getData(ModAttachments.DUST), index, DustData.capacity(player));
+                before, player.getData(ModAttachments.DUST), index, DustData.capacity(player));
         if (cancelled.result() != ReplicatorLogic.QueueResult.QUEUED) {
             return false;
         }
-        store(player, cancelled.data());
+        ReplicatorData after = cancelled.data();
+        for (ItemStack paid : before.jobs().get(index).items()) {
+            ItemStack item = paid.copy();
+            player.getInventory().add(item); // shrinks it to whatever didn't fit, which waits in the output
+            after = ReplicatorLogic.toBuffer(after, item);
+        }
+        store(player, after);
         player.setData(ModAttachments.DUST, cancelled.dust());
         player.syncData(ModAttachments.DUST);
         return true;

@@ -1,10 +1,6 @@
 package com.voidreclaimer.link;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 /**
  * Where a player's mind is, saved in their player file. The player file is the one store of record while linked.
@@ -31,7 +26,6 @@ import org.slf4j.Logger;
 public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownShell> shells) {
     public static final LinkState NONE = new LinkState(Optional.empty(), List.of(), List.of());
 
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final Codec<ResourceKey<Level>> DIMENSION = Level.RESOURCE_KEY_CODEC;
 
     /** Where a body was left. */
@@ -154,31 +148,9 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
 
     public static final Codec<LinkState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Link.CODEC.optionalFieldOf("link").forGetter(LinkState::link),
-            eachOnItsOwn(Outbox.CODEC).lenientOptionalFieldOf("outboxes", List.of()).forGetter(LinkState::outboxes),
-            eachOnItsOwn(KnownShell.CODEC).lenientOptionalFieldOf("shells", List.of()).forGetter(LinkState::shells)
+            com.voidreclaimer.registry.ModCodecs.eachOnItsOwn(Outbox.CODEC, "a link outbox").lenientOptionalFieldOf("outboxes", List.of()).forGetter(LinkState::outboxes),
+            com.voidreclaimer.registry.ModCodecs.eachOnItsOwn(KnownShell.CODEC, "a known shell").lenientOptionalFieldOf("shells", List.of()).forGetter(LinkState::shells)
     ).apply(instance, LinkState::new));
-
-    /** A list where an entry that cannot be read costs that entry alone, and says so: the rest of it may be someone's only copy of a body. */
-    private static <T> Codec<List<T>> eachOnItsOwn(Codec<T> entry) {
-        Codec<List<T>> whole = entry.listOf();
-        return new Codec<>() {
-            @Override
-            public <O> DataResult<Pair<List<T>, O>> decode(DynamicOps<O> ops, O input) {
-                return ops.getStream(input).map(items -> {
-                    List<T> kept = new ArrayList<>();
-                    items.forEach(item -> entry.parse(ops, item)
-                            .resultOrPartial(error -> LOGGER.error("An entry of a link state cannot be read and is dropped: {}", error))
-                            .ifPresent(kept::add));
-                    return Pair.of(List.copyOf(kept), ops.empty());
-                });
-            }
-
-            @Override
-            public <O> DataResult<O> encode(List<T> input, DynamicOps<O> ops, O prefix) {
-                return whole.encode(input, ops, prefix);
-            }
-        };
-    }
 
     public boolean linked() {
         return link.isPresent();

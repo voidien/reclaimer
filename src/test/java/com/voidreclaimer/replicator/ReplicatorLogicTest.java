@@ -27,6 +27,15 @@ class ReplicatorLogicTest {
     private static final ReplicatorData UNLOCKED = ReplicatorData.EMPTY.withUnlocked(Milestones.AWAKENING);
     private static final DustData RICH = DustData.of(10, 10, 0, 0);
 
+    @Test
+    void missingItemsAreRefusedAfterDustAndChangeNothing() {
+        var refused = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE, null);
+        assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_ITEMS, refused.result());
+        assertEquals(UNLOCKED, refused.data());
+        assertEquals(RICH, refused.dust());
+        assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST, ReplicatorLogic.queue(UNLOCKED, DustData.of(0, 0, 0, 0), ID, RECIPE, null).result());
+    }
+
     private static ReplicatorData queueOf(String... names) {
         ReplicatorData data = UNLOCKED;
         DustData dust = DustData.of(100, 100, 0, 0);
