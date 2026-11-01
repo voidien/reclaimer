@@ -43,6 +43,8 @@ public final class OrbitState {
         oldPitch = pitch;
         if (held) {
             yaw = wrap(yaw + (float) dx * SENSITIVITY);
+            // Wrapping past 180 must not make the blend go the long way round.
+            oldYaw = nearTo(oldYaw, yaw);
             pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch + (float) dy * SENSITIVITY));
         } else {
             // Take the short way back round, and keep old and new on the same side so the blend never spins.
