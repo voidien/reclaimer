@@ -39,4 +39,5 @@ Every new extension point is added here in the same change.
 | `#void_reclaimer:dyson/satellite_payloads` | Item tag | Items the Mass Driver launches as one Dyson Swarm Satellite each |
 | `#void_reclaimer:dyson/truss_payloads` | Item tag | Items the Mass Driver launches as one Dyson Shell Truss Module each |
 | `#void_reclaimer:launch_frame` | Block tag | Blocks that may form the Launch Complex's ring (Scaffold, Portal Frame, Create's industrial iron block and andesite casing) |
+| `#void_reclaimer:spire_frame` | Block tag | Blocks that may form a Spire tower's frame; by default it includes `#void_reclaimer:launch_frame` |
 

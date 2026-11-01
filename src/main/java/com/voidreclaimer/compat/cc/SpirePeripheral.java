@@ -1,6 +1,7 @@
 package com.voidreclaimer.compat.cc;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.terraform.SpireAssembly;
 import com.voidreclaimer.terraform.SpireBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
@@ -9,8 +10,8 @@ import java.util.Locale;
 
 /**
  * Lua functions of the Terraforming Spire (CC: Tweaked generic peripheral). {@code pulse()} is the player's right-click
- * or a redstone pulse: the same {@link SpireBlockEntity#tryStart()}, so the same rules (ruined Earth only, one pulse at
- * a time).
+ * or a redstone pulse: the same {@link SpireBlockEntity#tryStart()}, so the same rules (ruined Earth only, a standing
+ * tower, one pulse at a time). {@code assemble()} and {@code disassemble()} are the player's sneak-use.
  */
 public final class SpirePeripheral implements GenericPeripheral {
     @Override
@@ -21,6 +22,30 @@ public final class SpirePeripheral implements GenericPeripheral {
     @LuaFunction(mainThread = true)
     public final boolean isRunning(SpireBlockEntity spire) {
         return spire.running();
+    }
+
+    /** Whether the frame is complete and the column filled. */
+    @LuaFunction(mainThread = true)
+    public final boolean isAssembled(SpireBlockEntity spire) {
+        return spire.assembled();
+    }
+
+    /** Assembles the tower: {@code assembled}, {@code already_assembled}, {@code frame_incomplete}, {@code blocked} or {@code failed}. */
+    @LuaFunction(mainThread = true)
+    public final String assemble(SpireBlockEntity spire) {
+        return SpireAssembly.assemble(spire).name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Sets the tower down: {@code disassembled}, {@code not_assembled} or {@code failed}. */
+    @LuaFunction(mainThread = true)
+    public final String disassemble(SpireBlockEntity spire) {
+        return SpireAssembly.disassemble(spire).name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Shaft speed in RPM. */
+    @LuaFunction(mainThread = true)
+    public final double getSpeed(SpireBlockEntity spire) {
+        return spire.getSpeed();
     }
 
     /** How far the running pulse has swept, 0 to 1 (0 when idle). */
@@ -43,7 +68,7 @@ public final class SpirePeripheral implements GenericPeripheral {
 
     /**
      * Fires the Genesis Pulse, as a right-click would. Returns {@code true}, or {@code false} and why:
-     * "busy", "wrong_world" (only on ruined Earth) or "no_profile".
+     * "busy", "wrong_world" (only on ruined Earth), "not_assembled" or "no_profile".
      */
     @LuaFunction(mainThread = true)
     public final MethodResult pulse(SpireBlockEntity spire) {
@@ -51,6 +76,6 @@ public final class SpirePeripheral implements GenericPeripheral {
         if (result == SpireBlockEntity.Start.STARTED) {
             return MethodResult.of(true);
         }
-        return MethodResult.of(false, result.name().toLowerCase(Locale.ROOT));
+        return MethodResult.of(false, result.key());
     }
 }

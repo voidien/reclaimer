@@ -1,16 +1,18 @@
 package com.voidreclaimer.terraform;
 
+import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
+import com.simibubi.create.foundation.block.IBE;
 import com.voidreclaimer.registry.ModBlockEntities;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -18,47 +20,72 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** Terraforming Spire: right-click, or give it a redstone pulse, to fire the Genesis Pulse (ruined Earth only). */
-public class SpireBlock extends Block implements EntityBlock {
+/**
+ * The Terraforming Spire: the controller of a tower ({@link SpireAssembly}). It faces the tower, which stands in front of
+ * it, and takes its shaft on the face behind it. Sneak-use assembles or sets down the tower; once assembled, a right-click
+ * or a redstone pulse fires the Genesis Pulse (ruined Earth only). A Spire placed before towers existed loads as this
+ * block facing north, with no tower yet.
+ */
+public class SpireBlock extends HorizontalKineticBlock implements IBE<SpireBlockEntity> {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public SpireBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(POWERED, false));
+        registerDefaultState(defaultBlockState().setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(POWERED);
     }
 
+    /** The tower stands in front of the player placing the Spire. */
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new SpireBlockEntity(pos, state);
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection());
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide() || type != ModBlockEntities.SPIRE.get()) {
-            return null;
+    public boolean hasShaftTowards(LevelReader level, BlockPos pos, BlockState state, Direction face) {
+        return face == state.getValue(HORIZONTAL_FACING).getOpposite();
+    }
+
+    @Override
+    public Direction.Axis getRotationAxis(BlockState state) {
+        return state.getValue(HORIZONTAL_FACING).getAxis();
+    }
+
+    @Override
+    public Class<SpireBlockEntity> getBlockEntityClass() {
+        return SpireBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends SpireBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.SPIRE.get();
+    }
+
+    /** A wrench must not turn the Spire away from a standing tower: the frame and column are found from its facing. */
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof SpireBlockEntity spire && spire.assembled()) {
+            return InteractionResult.PASS;
         }
-        return (BlockEntityTicker<T>) (BlockEntityTicker<SpireBlockEntity>) SpireBlockEntity::serverTick;
+        return super.onWrenched(state, context);
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof SpireBlockEntity spire) {
-            String result = switch (spire.tryStart()) {
-                case STARTED -> "started";
-                case BUSY -> "busy";
-                case WRONG_WORLD -> "wrong_world";
-                case NO_PROFILE -> "no_profile";
-            };
-            player.displayClientMessage(Component.translatable("message.void_reclaimer.spire." + result), true);
+        if (level.isClientSide() || !(level.getBlockEntity(pos) instanceof SpireBlockEntity spire)) {
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        if (player.isShiftKeyDown()) {
+            SpireAssembly.toggle(spire, player);
+        } else {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.spire." + spire.tryStart().key()), true);
+        }
+        return InteractionResult.sidedSuccess(false);
     }
 
     @Override
@@ -73,5 +100,13 @@ public class SpireBlock extends Block implements EntityBlock {
                 spire.tryStart();
             }
         }
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof SpireBlockEntity spire) {
+            SpireAssembly.disassemble(spire);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

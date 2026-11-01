@@ -1,7 +1,34 @@
 {
   "variants": {
-    "": {
+    "facing=east,powered=false": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 90
+    },
+    "facing=north,powered=false": {
       "model": "void_reclaimer:block/terraforming_spire"
+    },
+    "facing=north,powered=true": {
+      "model": "void_reclaimer:block/terraforming_spire"
+    },
+    "facing=south,powered=false": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 270
+    },
+    "facing=west,powered=true": {
+      "model": "void_reclaimer:block/terraforming_spire",
+      "y": 270
     }
   }
 }

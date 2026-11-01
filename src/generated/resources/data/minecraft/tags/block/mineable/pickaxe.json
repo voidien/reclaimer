@@ -17,6 +17,7 @@
     "void_reclaimer:magnetic_barrel_nozzle",
     "void_reclaimer:quantum_receiver",
     "void_reclaimer:launch_controller",
-    "void_reclaimer:launch_pad"
+    "void_reclaimer:launch_pad",
+    "void_reclaimer:spire_column"
   ]
 }
