@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -96,10 +97,34 @@ public final class HoloPeripheral implements GenericPeripheral {
         holo.setBillboard(billboard);
     }
 
-    /** What the projector shows now: {@code "text"} or {@code "readout"}. */
+    /** What the projector shows now: {@code "text"}, {@code "readout"}, {@code "model"} or {@code "body"}. */
     @LuaFunction(mainThread = true)
     public final String getMode(HoloProjectorBlockEntity holo) {
         return holo.display().mode().name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Shows a GeckoLib model, turning slowly: {@code "entity/mining_probe"} (a bare id means ours). {@code false} for a malformed id. */
+    @LuaFunction(mainThread = true)
+    public final boolean setModel(HoloProjectorBlockEntity holo, String model) {
+        ResourceLocation id = ResourceLocation.tryParse(model.indexOf(':') >= 0 ? model : VoidReclaimer.MOD_ID + ":" + model);
+        if (id == null) {
+            return false;
+        }
+        holo.setModel(id);
+        return true;
+    }
+
+    /** Shows each viewer their own body. */
+    @LuaFunction(mainThread = true)
+    public final void setBody(HoloProjectorBlockEntity holo) {
+        holo.setBody();
+    }
+
+    /** The model shown, or nil when it is showing something else. */
+    @Nullable
+    @LuaFunction(mainThread = true)
+    public final String getModel(HoloProjectorBlockEntity holo) {
+        return holo.display().mode() == HoloDisplay.Mode.MODEL ? holo.display().subject() : null;
     }
 
     /** The chosen readout kind's id. */
