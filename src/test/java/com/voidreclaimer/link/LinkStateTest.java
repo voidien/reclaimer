@@ -59,7 +59,7 @@ class LinkStateTest {
 
     @Test
     void anOldCopyOnTheListComesBackFromASave() {
-        LinkState state = LinkState.NONE.withKnown(new LinkState.KnownShell(SHELL, 3L, PLACE, false, false, Optional.of(PLACE)));
+        LinkState state = LinkState.NONE.withKnown(new LinkState.KnownShell(SHELL, 3L, PLACE, false, false, Optional.of(PLACE), true));
         assertEquals(state, throughASave(state));
     }
 

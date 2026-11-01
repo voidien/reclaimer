@@ -18,8 +18,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * Brings back an old copy of a shell whose newer copy is lost. Only a crash can leave that (see {@link Links#replaced}): the old copy
- * then stands refusing links, and the picker offers it. The newer copy's chunks load first, because a shell that is simply far away
- * must never be replaced by an older body. Only then does the old copy take a number above the list's, which makes it the shell.
+ * then stands refusing links, and the picker offers it once a link has found nothing where the list said. The newer copy's chunks
+ * load first, and a shell found there is left alone. Then the old copy takes a number above the list's, which makes it the shell.
+ *
+ * <p>A newer copy that had moved from where the list says cannot be found this way. If it loads later it loses to the recovered one
+ * and is gone: the owner's choice, and the picker's confirmation says so.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class ShellRecovery {
@@ -40,8 +43,13 @@ public final class ShellRecovery {
 
     /** {@code newestRead} is whether the newer copy's chunks have been looked through. */
     private record Waiting(UUID player, UUID shell, long epoch, LinkState.Place newest, LinkState.Place old, boolean newestRead, long until, Consumer<Result> then) {
-        Waiting read() {
-            return new Waiting(player, shell, epoch, newest, old, true, until, then);
+        ServerLevel newestLevel(MinecraftServer server) {
+            return server.getLevel(newest.dimension());
+        }
+
+        /** The second load gets its own time: a slow first one must not use it up. */
+        Waiting read(long tick) {
+            return new Waiting(player, shell, epoch, newest, old, true, tick + LIMIT_TICKS, then);
         }
     }
 
@@ -53,7 +61,7 @@ public final class ShellRecovery {
     /** Starts a recovery; {@code then} hears how it ended. Nothing changes unless it ends {@link Result#RECOVERED}. */
     public static void request(ServerPlayer player, UUID shell, Consumer<Result> then) {
         LinkState state = Links.state(player);
-        Optional<LinkState.KnownShell> known = state.known(shell).filter(entry -> !entry.gone() && entry.oldCopy().isPresent());
+        Optional<LinkState.KnownShell> known = state.known(shell).filter(LinkState.KnownShell::recoverable);
         boolean waiting = WAITING.stream().anyMatch(entry -> entry.player().equals(player.getUUID()));
         if (known.isEmpty() || state.linked() || state.outbox(shell).isPresent() || waiting) {
             then.accept(Result.REFUSED);
@@ -90,7 +98,7 @@ public final class ShellRecovery {
             if (waiting.newestRead()) {
                 forget(player, waiting, Result.NOT_FOUND);
             } else {
-                WAITING.set(WAITING.indexOf(waiting), waiting.read());
+                WAITING.set(WAITING.indexOf(waiting), waiting.read(server.getTickCount()));
             }
             return;
         }
@@ -106,15 +114,35 @@ public final class ShellRecovery {
         BodyHost found = level.getEntity(waiting.shell()) instanceof BodyHost host ? host : null;
         if (!waiting.newestRead()) {
             if (found != null && found.epoch() >= waiting.epoch()) {
+                discardOldCopy(server, waiting);
                 forget(player, waiting, Result.STILL_THERE);
             } else {
-                WAITING.set(WAITING.indexOf(waiting), waiting.read());
+                WAITING.set(WAITING.indexOf(waiting), waiting.read(server.getTickCount()));
             }
         } else if (found != null && found.epoch() < waiting.epoch()) {
-            Links.recover(player, found, waiting.epoch());
-            end(waiting, Result.RECOVERED);
+            if (stillSo(player, waiting)) {
+                Links.recover(player, found, waiting.epoch());
+                end(waiting, Result.RECOVERED);
+            } else {
+                end(waiting, Result.REFUSED);
+            }
         } else {
             forget(player, waiting, Result.NOT_FOUND);
+        }
+    }
+
+    /** The wait can run for seconds: a link, a wake or a destroyed shell in that time ends it, or two live bodies could share a number. */
+    private static boolean stillSo(ServerPlayer player, Waiting waiting) {
+        LinkState state = Links.state(player);
+        return !state.linked() && state.outbox(waiting.shell()).isEmpty()
+                && state.known(waiting.shell()).filter(known -> known.recoverable() && known.epoch() == waiting.epoch()).isPresent();
+    }
+
+    /** The newer body is proven to exist, so a loaded old copy in another level is only that. */
+    private static void discardOldCopy(MinecraftServer server, Waiting waiting) {
+        ServerLevel level = server.getLevel(waiting.old().dimension());
+        if (level != waiting.newestLevel(server) && level != null && level.getEntity(waiting.shell()) instanceof BodyHost old && old.epoch() < waiting.epoch()) {
+            old.discard();
         }
     }
 

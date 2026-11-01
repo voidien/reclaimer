@@ -445,9 +445,16 @@ public final class Links {
         }
     }
 
+    /** A link looked where the list said, and the shell was not there. Recovery is offered only after this, so a healthy shell stays pickable. */
+    static void noteMissing(ServerPlayer player, UUID shell) {
+        LinkState state = state(player);
+        state.known(shell).filter(known -> known.oldCopy().isPresent())
+                .ifPresent(known -> player.setData(ModAttachments.LINK, state.withKnown(known.withMissing(true))));
+    }
+
     static void forgetOldCopy(ServerPlayer player, UUID shell) {
         LinkState state = state(player);
-        state.known(shell).ifPresent(known -> player.setData(ModAttachments.LINK, state.withKnown(known.withOldCopy(Optional.empty()))));
+        state.known(shell).ifPresent(known -> player.setData(ModAttachments.LINK, state.withKnown(known.withOldCopy(Optional.empty()).withMissing(false))));
     }
 
     /** {@code copy} is the shell now. A number above {@code newest} makes it so, and a lost copy that ever turns up gives way to it. */

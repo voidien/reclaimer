@@ -20,7 +20,7 @@ public record ShellRow(UUID shell, int number, String dimension, double distance
     public static final String READY = "ready";
     public static final String OUT_OF_RANGE = "out_of_range";
     public static final String WRECK = "wreck";
-    /** An older copy stands refused, which only matters if the newer one is lost: see {@link ShellRecovery}. */
+    /** The shell was not where the list said, and an older copy stands refused: see {@link ShellRecovery}. */
     public static final String OLD_COPY = "old_copy";
     private static final int NOT_HERE = -1;
 
@@ -35,7 +35,7 @@ public record ShellRow(UUID shell, int number, String dimension, double distance
 
     static ShellRow of(LinkState.KnownShell known, int number, LinkState.Place here, RelayGraph.Reading reading) {
         boolean sameDimension = known.at().dimension() == here.dimension();
-        String status = known.wrecked() ? WRECK : known.oldCopy().isPresent() ? OLD_COPY : reading.reachable() ? READY : OUT_OF_RANGE;
+        String status = known.wrecked() ? WRECK : known.recoverable() ? OLD_COPY : reading.reachable() ? READY : OUT_OF_RANGE;
         return new ShellRow(known.shell(), number, known.at().dimension().location().toString(),
                 sameDimension ? known.at().position().distanceTo(here.position()) : NOT_HERE, status, (float) reading.strength());
     }

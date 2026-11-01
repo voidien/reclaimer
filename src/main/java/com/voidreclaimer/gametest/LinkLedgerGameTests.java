@@ -8,6 +8,7 @@ import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
+import com.voidreclaimer.link.ShellReach;
 import com.voidreclaimer.link.ShellRecovery;
 import com.voidreclaimer.registry.ModEntities;
 import com.voidreclaimer.registry.ModAttachments;
@@ -353,6 +354,11 @@ public final class LinkLedgerGameTests {
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(known(player, id).oldCopy().isPresent(), "the list did not hear of the old copy"))
                     .thenExecute(() -> {
+                        helper.assertFalse(com.voidreclaimer.link.Signal.rows(player).get(0).recoverable(), "offered before a link looked for the shell");
+                        ShellReach.request(player, id, 200, result -> helper.assertTrue(result == Links.Result.NOT_FOUND, "the pick ended " + result));
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(known(player, id).recoverable(), "the look found nothing, and the list did not hear"))
+                    .thenExecute(() -> {
                         helper.assertTrue(com.voidreclaimer.link.Signal.rows(player).get(0).recoverable(), "the picker does not offer it");
                         ShellRecovery.request(player, id, ended::set);
                     })
@@ -376,7 +382,7 @@ public final class LinkLedgerGameTests {
             noOutbox(player, id);
             LinkState.KnownShell entry = known(player, id);
             BodyHost shell = (BodyHost) level.getEntity(id);
-            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()), true)));
             AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
             ShellRecovery.request(player, id, ended::set);
             helper.startSequence()
@@ -390,6 +396,30 @@ public final class LinkLedgerGameTests {
         });
     }
 
+    /** The review's case: a link made during the wait must not leave two live bodies with one number. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aLinkDuringTheWaitEndsRecovery(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(266_200, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            noOutbox(player, id);
+            LinkState.KnownShell entry = known(player, id);
+            BodyHost old = (BodyHost) level.getEntity(id);
+            old.setEpoch(entry.epoch() - 1);
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()), true)));
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            ShellRecovery.request(player, id, ended::set);
+            // A destroyed shell during the wait does the same, and is the simplest way to change the list under it.
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, true, Optional.of(entry.at()), true)));
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(ended.get() == ShellRecovery.Result.REFUSED, "ended " + ended.get());
+                        helper.assertTrue(known(player, id).gone(), "recovery brought back a shell that is gone");
+                        LinkOutboxGameTests.finish(helper, player, level, id);
+                    });
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 900)
     public static void recoveryOfACopyThatHasGoneChangesNothing(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(265_800, 80, 0), (player, id) -> {
@@ -397,7 +427,7 @@ public final class LinkLedgerGameTests {
             noOutbox(player, id);
             LinkState.KnownShell entry = known(player, id);
             level.getEntity(id).discard();
-            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()), true)));
             AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
             ShellRecovery.request(player, id, ended::set);
             helper.startSequence()
@@ -416,7 +446,7 @@ public final class LinkLedgerGameTests {
         LinkOutboxGameTests.woken(helper, new BlockPos(266_000, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
             LinkState.KnownShell entry = known(player, id);
-            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()))));
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, false, Optional.of(entry.at()), true)));
             AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
             ShellRecovery.request(player, id, ended::set);
             helper.assertTrue(ended.get() == ShellRecovery.Result.REFUSED, "ran with an outbox: " + ended.get());

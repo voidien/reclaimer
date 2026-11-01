@@ -93,10 +93,11 @@ public final class ShellReach {
             end(waiting, Links.Result.PLAYER_GONE);
         } else if (level == null) {
             end(waiting, Links.Result.CANNOT_REACH);
-        } else if (level.getEntity(waiting.shell()) instanceof BodyHost shell) {
+        } else if (level.getEntity(waiting.shell()) instanceof BodyHost shell && !Links.stale(shell)) {
             WAITING.remove(waiting);
             Links.requestLink(player, shell, waiting.seat(), waiting.then());
         } else if (read(level, waiting.chunk())) {
+            Links.noteMissing(player, waiting.shell());
             end(waiting, Links.Result.NOT_FOUND);
         } else if (server.getTickCount() >= waiting.until()) {
             end(waiting, Links.Result.TIMED_OUT);
