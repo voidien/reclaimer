@@ -98,6 +98,7 @@ public final class VoidReclaimerClient {
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, EnergyBarLayer::render);
         event.replaceLayer(VanillaGuiLayers.PLAYER_HEALTH, com.voidreclaimer.client.hud.HealthBarLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("link_static"), com.voidreclaimer.client.hud.StaticLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("pilot"), com.voidreclaimer.client.hud.PilotHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
