@@ -3,9 +3,12 @@ package com.voidreclaimer.link;
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.space.ModDimensions;
+import com.voidreclaimer.space.SpawnHandler;
 import java.util.ArrayDeque;
 import java.util.Optional;
 import java.util.Queue;
@@ -245,10 +248,11 @@ public final class Links {
         if (home.isEmpty()) {
             return Result.HOME_UNREADABLE;
         }
-        ServerLevel target = player.server.getLevel(link.from().dimension());
-        if (target == null || !mayEnter(player, target)) {
+        LinkState.Place point = wakePoint(player, link);
+        if (point == null) {
             return Result.CANNOT_REACH;
         }
+        ServerLevel target = player.server.getLevel(point.dimension());
         LinkState.Place at = place(player);
         ServerLevel shellLevel = player.serverLevel();
         BodySnapshot body = BodySnapshot.take(player);
@@ -256,7 +260,7 @@ public final class Links {
         if (bodyTag == null) {
             return Result.FAILED;
         }
-        if (!arrive(player, target, link.from().position(), link.from().yaw(), link.from().pitch())) {
+        if (!arrive(player, target, point.position(), point.yaw(), point.pitch())) {
             return Result.CANNOT_REACH;
         }
         LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at, false);
@@ -286,6 +290,35 @@ public final class Links {
         settle(player);
         saveNow(player.server);
         return Result.WOKEN;
+    }
+
+    /**
+     * Where the main body wakes: where it was left, which a seat aboard a ship keeps current; else a listed Backup Core, with no
+     * charge spent, because this is not a death; else the spawn. Only a dimension that is gone or locked gets past the first.
+     */
+    @Nullable
+    private static LinkState.Place wakePoint(ServerPlayer player, LinkState.Link link) {
+        if (reachable(player, link.from())) {
+            return link.from();
+        }
+        for (LinkState.Place core : BackupCores.wakePlaces(player)) {
+            if (reachable(player, core)) {
+                return core;
+            }
+        }
+        LinkState.Place spawn = new LinkState.Place(ModDimensions.DEEP_SPACE, SpawnHandler.spawnPosition(), 0f, 0f);
+        return reachable(player, spawn) ? spawn : null;
+    }
+
+    private static boolean reachable(ServerPlayer player, LinkState.Place place) {
+        ServerLevel level = player.server.getLevel(place.dimension());
+        return level != null && mayEnter(player, level);
+    }
+
+    /** A seat aboard a ship has been carried along, and the main body with it. */
+    static void homeCarriedTo(ServerPlayer player, Vec3 position) {
+        LinkState state = state(player);
+        state.link().ifPresent(link -> player.setData(ModAttachments.LINK, state.withLink(link.carriedTo(position))));
     }
 
     /** A throw is an addon's. The outbox already holds the shell, so a wake goes on without it, as when the level will not take it. */

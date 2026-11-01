@@ -1,6 +1,10 @@
 package com.voidreclaimer.link;
 
 import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.ship.ShipTickets;
+import com.voidreclaimer.ship.Ships;
+import com.voidreclaimer.tether.Tether;
+import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -22,6 +26,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>While someone is linked from it the seat shows their main body, which is held in the player file and not in the world: a
  * mirror, rebuilt by the seat whenever it is missing and never saved, so there is never one on disk to go stale.
+ *
+ * <p>A seat aboard a ship holds the ship loaded while it is in use, and keeps the link's record of the main body's place current,
+ * so the player wakes where the ship has got to and never at a position in the ship's own coordinates.
  */
 public class UplinkSeatBlockEntity extends BlockEntity {
     private static final String ID = "seat_id";
@@ -50,8 +57,27 @@ public class UplinkSeatBlockEntity extends BlockEntity {
     }
 
     static void serverTick(Level level, BlockPos pos, BlockState state, UplinkSeatBlockEntity seat) {
-        if (level.getGameTime() % CHECK_TICKS == 0) {
-            seat.keepMirror((ServerLevel) level);
+        ServerLevel server = (ServerLevel) level;
+        ServerSubLevel ship = Ships.shipAt(server, pos);
+        boolean check = level.getGameTime() % CHECK_TICKS == 0;
+        if (ship != null) {
+            seat.keepShip(server, ship, check);
+        }
+        if (check) {
+            seat.keepMirror(server);
+        }
+    }
+
+    private void keepShip(ServerLevel level, ServerSubLevel ship, boolean check) {
+        Optional<ServerPlayer> player = occupant();
+        if (player.isPresent()) {
+            ShipTickets.hold(level, ship, id);
+            BlockPos spot = Tether.freeSpotNear(level, worldPosition);
+            if (spot != null) {
+                Links.homeCarriedTo(player.get(), ship.logicalPose().transformPosition(Vec3.atBottomCenterOf(spot)));
+            }
+        } else if (check) {
+            ShipTickets.release(level, ship, id);
         }
     }
 
@@ -90,6 +116,11 @@ public class UplinkSeatBlockEntity extends BlockEntity {
         if (shell.isEmpty()) {
             player.displayClientMessage(Component.translatable("message.void_reclaimer.uplink.no_shell"), true);
             return;
+        }
+        // Before the player leaves: nothing else is keeping the ship loaded once they have.
+        ServerSubLevel ship = Ships.shipAt(player.serverLevel(), worldPosition);
+        if (ship != null) {
+            ShipTickets.hold(player.serverLevel(), ship, id);
         }
         Links.requestLink(player, shell.get(), id, result -> {
             if (result != Links.Result.LINKED) {

@@ -65,6 +65,11 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
         public Link(UUID shell, long epoch, CompoundTag home, Place from) {
             this(shell, epoch, home, from, Optional.empty());
         }
+
+        /** The same link, with the main body carried to {@code position}. */
+        Link carriedTo(Vec3 position) {
+            return new Link(shell, epoch, home, new Place(from.dimension(), position, from.yaw(), from.pitch()), seat);
+        }
     }
 
     /**

@@ -261,6 +261,72 @@ public final class StationGameTests {
     }
 
     /**
+     * A seat aboard a ship keeps the ship loaded while it is in use, so a shell run from a station does not cost the station, and a
+     * wake lands by the ship in the world, not at the seat's position in the ship's own coordinates. The ship lets go after a wake.
+     */
+    @GameTest(template = "empty", timeoutTicks = 1500)
+    public static void aSeatAboardAShipHoldsItAndWakesYouByIt(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(105_400, 200, 3_000);
+        String name = "vr_test_" + pos.getX();
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        int chunkX = pos.getX() >> 4, chunkZ = pos.getZ() >> 4;
+        space.setChunkForced(chunkX, chunkZ, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + pos.getX() + " " + pos.getY() + " " + (pos.getZ() + 2) + " minecraft:iron_block");
+            command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            helper.runAfterDelay(2, () -> {
+                AeronauticsGameTests.nameShip(server, space, pos.south());
+                var ship = shipNamed(space, name);
+                helper.assertTrue(ship != null, "the ship was not built");
+                BlockPos seatPos = StationAssembly.blocksOf(space, ship).get(0).above();
+                var player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5);
+                // The shell is far off, so that the player's own presence cannot be what keeps the ship loaded.
+                var far = new Vec3(pos.getX() + 2_000.5, pos.getY(), pos.getZ() + 2_000.5);
+                int farX = (int) far.x >> 4, farZ = (int) far.z >> 4;
+                space.setChunkForced(farX, farZ, true);
+                space.setBlock(seatPos, ModBlocks.UPLINK_SEAT.get().defaultBlockState(), 3);
+                var seat = (com.voidreclaimer.link.UplinkSeatBlockEntity) space.getBlockEntity(seatPos);
+                var shell = com.voidreclaimer.link.BodyHost.spawn(space, far, com.voidreclaimer.link.HostRole.SHELL,
+                        com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE), player.getUUID());
+                var id = shell.getUUID();
+                helper.runAfterDelay(5, () -> {
+                    seat.connect(player);
+                    helper.runAfterDelay(10, () -> {
+                        var state = com.voidreclaimer.link.Links.state(player);
+                        helper.assertTrue(state.linked(), "the seat made no link");
+                        // The ship has not moved, so this stands in for it having moved: the seat must put the place right.
+                        var link = state.link().orElseThrow();
+                        var wrong = new com.voidreclaimer.link.LinkState.Place(link.from().dimension(), far, 0f, 0f);
+                        player.setData(com.voidreclaimer.registry.ModAttachments.LINK, state.withLink(
+                                new com.voidreclaimer.link.LinkState.Link(link.shell(), link.epoch(), link.home(), wrong, link.seat())));
+                        space.setChunkForced(chunkX, chunkZ, false);
+                        helper.runAfterDelay(100, () -> {
+                            helper.assertTrue(shipNamed(space, name) != null, "the seat did not hold its ship");
+                            helper.assertTrue(com.voidreclaimer.link.Links.wake(player) == com.voidreclaimer.link.Links.Result.WOKEN, "no wake");
+                            Vec3 woke = player.position();
+                            space.getEntity(id).discard();
+                            space.setChunkForced(farX, farZ, false);
+                            helper.assertTrue(woke.distanceTo(Vec3.atCenterOf(pos)) < 16.0, "woke away from the ship: " + woke);
+                            // A player beside a ship keeps it loaded, so only with them gone does this show the seat let go.
+                            player.teleportTo(far.x, far.y, far.z);
+                            whenShip(helper, space, name, false, 100, () -> {
+                                TestPlayers.remove(player);
+                                space.setChunkForced(chunkX, chunkZ, true);
+                                whenShip(helper, space, name, true, 80, () -> {
+                                    remove(server, space, pos, name);
+                                    helper.succeed();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    /**
      * A Backup Core aboard a station is listed by the ship's own coordinates. While the ship is unloaded nothing can be read
      * there, which says nothing about the core: it stays on the list, and works again when the ship comes back.
      */
