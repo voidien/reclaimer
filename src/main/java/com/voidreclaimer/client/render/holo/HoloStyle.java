@@ -6,12 +6,17 @@ import net.minecraft.resources.ResourceLocation;
 /** The placeholder hologram look, until the owner's art: one cyan, a slow flicker, a scrolling scanline texture (pure). */
 public final class HoloStyle {
     public static final int CYAN = 0x66E6FF;
+    /** Multiplies a model's own texture, so its shapes still read through the tint. */
+    public static final int MODEL_TINT = 0xB0F0FF;
     public static final ResourceLocation PANEL = VoidReclaimer.id("textures/holo/panel.png");
     public static final ResourceLocation GLOW = VoidReclaimer.id("textures/holo/glow.png");
     /** Strength of the panel behind the text, and of the text showing through what stands in front of it. */
     public static final float PANEL_ALPHA = 0.35f;
     public static final float SEE_THROUGH_ALPHA = 0.12f;
     public static final float GLOW_ALPHA = 0.3f;
+    public static final float MODEL_ALPHA = 0.7f;
+    /** A second pass in plain cyan over a model, so that a dark texture still reads as light. */
+    public static final float WASH_ALPHA = 0.35f;
     /** The panel's texture repeats every this many font pixels. */
     public static final float SCANLINE_PIXELS = 16f;
     private static final float SCROLL_PER_TICK = 0.01f;

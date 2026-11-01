@@ -393,4 +393,26 @@ public final class HoloGameTests {
             helper.fail("the addon's installApi moved: " + e);
         }
     }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aModelSavesAndTheTickerLeavesItAlone(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_500, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            projector.setSource(HoloDisplay.DEFAULT_SOURCE);
+            projector.setModel(VoidReclaimer.id("entity/mining_probe"));
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.MODEL, "mode " + projector.display().mode());
+                helper.assertTrue(projector.display().lines().isEmpty(), "readout lines came back: " + projector.display().texts());
+                HolderLookup.Provider registries = level.registryAccess();
+                CompoundTag saved = projector.saveWithFullMetadata(registries);
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                HoloProjectorBlockEntity restored = place(level, pos);
+                restored.loadWithComponents(saved, registries);
+                helper.assertTrue("void_reclaimer:entity/mining_probe".equals(restored.display().subject()), "subject " + restored.display().subject());
+                helper.succeed();
+            });
+        });
+    }
 }

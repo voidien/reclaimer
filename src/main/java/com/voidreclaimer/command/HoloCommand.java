@@ -1,6 +1,7 @@
 package com.voidreclaimer.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -18,7 +19,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.network.chat.Component;
 
-/** {@code /void_reclaimer holo <pos> line|scale|source|clear}: writes to a Holo Projector without a computer, for checks. */
+/** {@code /void_reclaimer holo <pos> line|scale|source|billboard|model|body|clear}: writes to a Holo Projector without a computer, for checks. */
 final class HoloCommand {
     private static final SimpleCommandExceptionType NOT_A_PROJECTOR =
             new SimpleCommandExceptionType(Component.translatable("commands.void_reclaimer.holo.not_a_projector"));
@@ -42,6 +43,18 @@ final class HoloCommand {
                             projector(ctx).setSource(ResourceLocationArgument.getId(ctx, "source"));
                             return Command.SINGLE_SUCCESS;
                         })))
+                .then(Commands.literal("billboard").then(Commands.argument("on", BoolArgumentType.bool()).executes(ctx -> {
+                    projector(ctx).setBillboard(BoolArgumentType.getBool(ctx, "on"));
+                    return Command.SINGLE_SUCCESS;
+                })))
+                .then(Commands.literal("model").then(Commands.argument("id", ResourceLocationArgument.id()).executes(ctx -> {
+                    projector(ctx).setModel(ResourceLocationArgument.getId(ctx, "id"));
+                    return Command.SINGLE_SUCCESS;
+                })))
+                .then(Commands.literal("body").executes(ctx -> {
+                    projector(ctx).setBody();
+                    return Command.SINGLE_SUCCESS;
+                }))
                 .then(Commands.literal("clear").executes(ctx -> {
                     projector(ctx).clearLines();
                     return Command.SINGLE_SUCCESS;

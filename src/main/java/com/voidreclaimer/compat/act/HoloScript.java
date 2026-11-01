@@ -94,11 +94,16 @@ public final class HoloScript {
                     return true;
                 }))
                 .fn("source", write(computer, main, (projector, args) -> {
-                    ResourceLocation id = ResourceLocation.tryParse(args.string(1).indexOf(':') >= 0 ? args.string(1) : VoidReclaimer.MOD_ID + ":" + args.string(1));
-                    if (id == null) {
-                        throw args.error("not an id: " + args.string(1));
-                    }
-                    projector.setSource(id);
+                    projector.setSource(id(args));
+                    return true;
+                }))
+                .fn("model", write(computer, main, (projector, args) -> {
+                    ResourceLocation id = id(args);
+                    projector.setModel(id);
+                    return true;
+                }))
+                .fn("body", write(computer, main, (projector, args) -> {
+                    projector.setBody();
                     return true;
                 }))
                 .fn("get", write(computer, main, (projector, args) -> {
@@ -110,6 +115,16 @@ public final class HoloScript {
                             .with("scale", (double) display.scale())
                             .with("height", (double) display.height());
                 }));
+    }
+
+    /** The id in the second argument; a bare one means ours. */
+    private static ResourceLocation id(ScriptCallable.Args args) {
+        String text = args.string(1);
+        ResourceLocation id = ResourceLocation.tryParse(text.indexOf(':') >= 0 ? text : VoidReclaimer.MOD_ID + ":" + text);
+        if (id == null) {
+            throw args.error("not an id: " + text);
+        }
+        return id;
     }
 
     private interface Write {

@@ -10,6 +10,7 @@ import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.Cosmetics;
 import com.voidreclaimer.body.Parts;
+import com.voidreclaimer.client.render.holo.HoloStyle;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +18,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -26,6 +29,7 @@ import software.bernie.geckolib.cache.GeckoLibCache;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
+import software.bernie.geckolib.util.Color;
 
 /**
  * Draws anything that wears a body: the chassis rig, with every installed section and module plugged into its bones
@@ -51,6 +55,10 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     private static BodyData.Mount ghostMount;
     private final Map<String, org.joml.Vector3f> spread = new HashMap<>();
     private static float drawnBodyScale = 1f;
+    /** While true every draw is a hologram: see {@link #drawHologram}. */
+    private static boolean hologram;
+    private static boolean hologramWash;
+    private static int hologramColor = -1;
     private static float drawnPartScale = 1f;
 
     /**
@@ -123,11 +131,58 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     }
 
     static boolean isGhost(String socket) {
-        return previewView != null && ghostMount == null && socket.equals(ghostSocket);
+        return hologram || previewView != null && ghostMount == null && socket.equals(ghostSocket);
     }
 
     static boolean isGhost(BodyData.Mount mount) {
-        return previewView != null && mount.equals(ghostMount);
+        return hologram || previewView != null && mount.equals(ghostMount);
+    }
+
+    /**
+     * Draws an entity's body as a hologram of about {@code size} blocks, centred on the pose: see-through, upright, whatever
+     * way the entity faces. Used by the Holo Projector.
+     */
+    public static void drawHologram(LivingEntity entity, float size, float alpha, float partialTick, PoseStack pose, MultiBufferSource buffers) {
+        float fit = size / (2f * BodyBounds.radius(Bodies.view(entity)) * entity.getScale());
+        pose.pushPose();
+        pose.scale(fit, fit, fit);
+        pose.translate(0f, -entity.getBbHeight() / 2f, 0f);
+        hologram = true;
+        try {
+            hologramColor = HoloStyle.argb(HoloStyle.MODEL_TINT, alpha);
+            get().render(entity, 0f, partialTick, pose, buffers, LightTexture.FULL_BRIGHT);
+            hologramColor = HoloStyle.argb(HoloStyle.CYAN, HoloStyle.WASH_ALPHA * alpha);
+            hologramWash = true;
+            get().render(entity, 0f, partialTick, pose, buffers, LightTexture.FULL_BRIGHT);
+        } finally {
+            hologram = false;
+            hologramWash = false;
+            pose.popPose();
+        }
+    }
+
+    @Override
+    public RenderType getRenderType(BodyAnimatable animatable, ResourceLocation texture, @Nullable MultiBufferSource buffers, float partialTick) {
+        return hologram ? hologramType(texture) : super.getRenderType(animatable, texture, buffers, partialTick);
+    }
+
+    @Override
+    public Color getRenderColor(BodyAnimatable animatable, float partialTick, int packedLight) {
+        return hologram ? new Color(hologramColor) : super.getRenderColor(animatable, partialTick, packedLight);
+    }
+
+    /** The see-through look of a part in a preview or a hologram. */
+    static RenderType ghostType(ResourceLocation texture) {
+        return hologram ? hologramType(texture) : RenderType.entityTranslucent(texture);
+    }
+
+    /** How a ghost part is coloured when {@code preview} is what an assembly preview would use. */
+    static int ghostColor(int preview) {
+        return hologram ? hologramColor : preview;
+    }
+
+    private static RenderType hologramType(ResourceLocation texture) {
+        return RenderType.entityTranslucentEmissive(hologramWash ? HoloStyle.PANEL : texture, false);
     }
 
     /** Spreads the body's sections apart for the draws until this is set back to 0. */
@@ -249,7 +304,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
             } else {
                 hideFilledCaps(rigModel, view);
             }
-            boolean probed = entity == Minecraft.getInstance().player;
+            boolean probed = entity == Minecraft.getInstance().player && !hologram;
             if (probed) {
                 BoneProbe.begin();
             }
@@ -311,11 +366,17 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
             // GeoReplacedEntityRenderer applies the entity's scale and turn on every pass, re-renders included, but a part drawn at a
             // bone is already in the body's space: undo the scale and skip the turn, or parts come out scale cubed and spinning.
             poseStack.scale(1f / nativeScale, 1f / nativeScale, 1f / nativeScale);
-            drawnPartScale = matrixScale(poseStack);
+            if (!hologram) {
+                drawnPartScale = matrixScale(poseStack);
+            }
+            return;
+        }
+        LivingEntity entity = getCurrentEntity();
+        if (hologram) {
+            poseStack.mulPose(Axis.YP.rotationDegrees(180f + (frame == null || frame.spec() == null ? 0f : frame.spec().yaw())));
             return;
         }
         drawnBodyScale = matrixScale(poseStack);
-        LivingEntity entity = getCurrentEntity();
         Frame current = frame;
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
         BodyRigSpec spec = current == null ? null : current.spec();

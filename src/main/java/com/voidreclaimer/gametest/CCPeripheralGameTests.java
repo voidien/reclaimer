@@ -436,7 +436,7 @@ public final class CCPeripheralGameTests {
             HoloPeripheral lua = new HoloPeripheral();
             HoloProjectorBlockEntity holo = HoloGameTests.place(level, pos);
             requireMethods(helper, Lookup.of(level, pos), "Holo Projector", "getLines", "getLine", "setLine", "setLines", "clear", "setColor",
-                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "getMode", "getSource", "setSource", "getSources", "getSize");
+                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
             try {
                 Object[] written = lua.setLine(holo, new ObjectArguments(2.0, "two", "red")).getResult();
                 helper.assertTrue(Boolean.TRUE.equals(written[0]), "setLine refused");
@@ -456,6 +456,13 @@ public final class CCPeripheralGameTests {
             } catch (LuaException e) {
                 throw new IllegalStateException(e);
             }
+            helper.assertTrue(lua.setModel(holo, "entity/mining_probe"), "setModel refused a good id");
+            helper.assertTrue("void_reclaimer:entity/mining_probe".equals(lua.getModel(holo)), "a bare model id is ours: " + lua.getModel(holo));
+            helper.assertTrue("model".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
+            helper.assertTrue(!lua.setModel(holo, "Not An Id"), "setModel took a malformed id");
+            lua.setBody(holo);
+            helper.assertTrue("body".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
+            helper.assertTrue(lua.getModel(holo) == null, "a body has no model id");
             lua.setLines(holo, Map.of(1.0, "a", 2.0, "b"));
             helper.assertTrue(lua.getLines(holo).equals(List.of("a", "b")), "setLines " + lua.getLines(holo));
             lua.clear(holo);
