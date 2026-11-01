@@ -140,7 +140,9 @@ public final class ReadoutKinds {
 
     public static final Supplier<HoloReadout<Readouts.Cloud>> CLOUD = KINDS.register("cloud",
             () -> new HoloReadout<>((level, pos) -> {
-                DustField.Sample sample = DustField.of(level).sample(Vec3.atCenterOf(pos));
+                // There is no field outside deep space.
+                DustField field = DustField.of(level);
+                DustField.Sample sample = field == null ? DustField.Sample.NONE : field.sample(Vec3.atCenterOf(pos));
                 return sample.inCloud() ? new Readouts.Cloud(sample.cloud().kind().getPath(), sample.density()) : new Readouts.Cloud("", 0);
             }, Readouts::cloud));
 

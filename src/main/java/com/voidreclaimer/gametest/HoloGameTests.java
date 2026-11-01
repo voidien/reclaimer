@@ -15,6 +15,7 @@ import com.voidreclaimer.display.HoloDisplay;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
 import com.voidreclaimer.dyson.Dyson;
 import com.voidreclaimer.dyson.DysonSphereData;
+import com.voidreclaimer.earth.RuinedEarth;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModRegistries;
 import de.nightstudio.light_bulb_addon_create_crafts_and__addions.blockentity.ComputerBlockEntity;
@@ -392,6 +393,19 @@ public final class HoloGameTests {
         } catch (ReflectiveOperationException e) {
             helper.fail("the addon's installApi moved: " + e);
         }
+    }
+
+    /** A sampler that assumes deep space would stop the server on Earth: the ticker calls it twice a second. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void everyReadoutKindReadsOnRuinedEarth(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(RuinedEarth.DIMENSION);
+        helper.assertTrue(earth != null, "no ruined Earth");
+        for (var kind : ModRegistries.HOLO_READOUTS) {
+            kind.lines(earth, BlockPos.ZERO);
+        }
+        List<String> cloud = ModRegistries.HOLO_READOUTS.get(VoidReclaimer.id("cloud")).lines(earth, BlockPos.ZERO);
+        helper.assertTrue(cloud.equals(List.of("DUST CLOUD", "Clear space")), "lines " + cloud);
+        helper.succeed();
     }
 
     @GameTest(template = "empty", timeoutTicks = 300)
