@@ -344,6 +344,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.uplink.next", "More");
         add("message.void_reclaimer.uplink.taken", "This seat is in use");
         add("message.void_reclaimer.uplink.failed", "The link failed: %s");
+        add("message.void_reclaimer.shell.not_yours", "This shell belongs to someone else");
+        add("message.void_reclaimer.shell.scrapped", "Shell scrapped. Its contents stay in the wreck.");
         add("message.void_reclaimer.wreck.left", "Salvaged %s stacks; %s more will not fit");
         add("message.void_reclaimer.wreck.empty", "Salvaged %s stacks: the wreck is empty");
         add("commands.void_reclaimer.link.unknown", "No body called %s");
