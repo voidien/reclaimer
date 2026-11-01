@@ -469,7 +469,7 @@ public final class CCPeripheralGameTests {
             HoloPeripheral lua = new HoloPeripheral();
             HoloProjectorBlockEntity holo = HoloGameTests.place(level, pos);
             requireMethods(helper, Lookup.of(level, pos), "Holo Projector", "getLines", "getLine", "setLine", "setLines", "clear", "setColor",
-                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
+                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "setGlobe", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
             try {
                 Object[] written = lua.setLine(holo, new ObjectArguments(2.0, "two", "red")).getResult();
                 helper.assertTrue(Boolean.TRUE.equals(written[0]), "setLine refused");
@@ -493,6 +493,10 @@ public final class CCPeripheralGameTests {
             helper.assertTrue("void_reclaimer:entity/mining_probe".equals(lua.getModel(holo)), "a bare model id is ours: " + lua.getModel(holo));
             helper.assertTrue("model".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             helper.assertTrue(!lua.setModel(holo, "Not An Id"), "setModel took a malformed id");
+            helper.assertTrue(Boolean.TRUE.equals(lua.setGlobe(holo, "earth").getResult()[0]), "setGlobe refused earth");
+            Object[] mars = lua.setGlobe(holo, "mars").getResult();
+            helper.assertTrue(Boolean.FALSE.equals(mars[0]) && "unknown_globe".equals(mars[1]), "setGlobe " + Arrays.toString(mars));
+            helper.assertTrue("globe".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             lua.setBody(holo);
             helper.assertTrue("body".equals(lua.getMode(holo)), "getMode " + lua.getMode(holo));
             helper.assertTrue(lua.getModel(holo) == null, "a body has no model id");
