@@ -91,7 +91,7 @@
   "body.void_reclaimer.kind.tool": "Tool",
   "body.void_reclaimer.missing": "%s sections missing",
   "body.void_reclaimer.no_parts": "Nothing matching in your inventory.",
-  "body.void_reclaimer.overloaded": "Over the mass budget: slower and hungrier.",
+  "body.void_reclaimer.overloaded": "Too heavy: slower, hungrier",
   "body.void_reclaimer.paint": "Casing: %s",
   "body.void_reclaimer.paint.default": "Body default",
   "body.void_reclaimer.pair_hint": "Shift-click: both sides",

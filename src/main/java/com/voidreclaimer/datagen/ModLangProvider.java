@@ -656,7 +656,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.stat.dust", "Dust %s · intake ×%s");
         add("body.void_reclaimer.stat.inventory", "Inventory %s/36");
         add("body.void_reclaimer.stat.tier", "Core tier %s");
-        add("body.void_reclaimer.overloaded", "Over the mass budget: slower and hungrier.");
+        add("body.void_reclaimer.overloaded", "Too heavy: slower, hungrier");
         add("body.void_reclaimer.empty_socket", "No section installed");
         add("body.void_reclaimer.empty_mount", "%s: empty");
         add("body.void_reclaimer.remove", "[Remove]");

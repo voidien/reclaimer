@@ -303,7 +303,11 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
                 }
             } else {
                 graphics.drawString(font, "???", x + 11 - font.width("???") / 2, rowY + 7, DIM, false);
-                graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), x + 24, rowY + 7, DIM, false);
+                // Two lines at most, where a name and its cost go; a longer hint is read in full in the box under the list.
+                List<net.minecraft.util.FormattedCharSequence> hint = font.split(Milestones.hint(minecraft.level.registryAccess(), recipe.milestone()), LIST_WIDTH - 28);
+                for (int line = 0; line < Math.min(hint.size(), 2); line++) {
+                    graphics.drawString(font, hint.get(line), x + 24, (hint.size() > 1 ? rowY + 2 : rowY + 7) + line * 10, DIM, false);
+                }
             }
         }
         renderDetail(graphics);
@@ -338,7 +342,10 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         }
         ReplicatorData data = minecraft.player.getData(ModAttachments.REPLICATOR);
         if (!data.isUnlocked(selected.value().milestone())) {
-            graphics.drawString(font, Milestones.hint(minecraft.level.registryAccess(), selected.value().milestone()), x, y, DIM, false);
+            List<net.minecraft.util.FormattedCharSequence> hint = font.split(Milestones.hint(minecraft.level.registryAccess(), selected.value().milestone()), LIST_WIDTH - 12);
+            for (int i = 0; i < Math.min(hint.size(), DETAIL_LINES); i++) {
+                graphics.drawString(font, hint.get(i), x, y + i * 9, DIM, false);
+            }
             return;
         }
         Component text = description(selected);
