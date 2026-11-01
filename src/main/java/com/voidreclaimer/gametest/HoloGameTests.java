@@ -335,6 +335,8 @@ public final class HoloGameTests {
             helper.assertTrue(script.globals().get("seen") instanceof Map<?, ?> seen && "text".equals(seen.get("mode")), "holo.get: " + script.globals().get("seen"));
             script.run("holo.globe(addr, \"earth\")");
             helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.GLOBE && HoloGlobes.EARTH.equals(projector.display().subject()), "holo.globe did not take");
+            script.run("holo.ship(addr)");
+            helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.SHIP, "holo.ship did not take");
             script.run("holo.source(\"" + address + "\", \"clock\")");
             helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.READOUT, "the source did not take");
             // Out of reach is a script error, not a write.
@@ -468,6 +470,26 @@ public final class HoloGameTests {
                 Dyson.set(server, saved);
                 EarthRestoration.set(earth, savedMap);
             }
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aShipMiniatureIsSavedAndTheLastWriterWins(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_700, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            projector.setShip();
+            helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.SHIP, "mode " + projector.display().mode());
+            HolderLookup.Provider registries = level.registryAccess();
+            CompoundTag saved = projector.saveWithFullMetadata(registries);
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            HoloProjectorBlockEntity restored = place(level, pos);
+            restored.loadWithComponents(saved, registries);
+            helper.assertTrue(restored.display().mode() == HoloDisplay.Mode.SHIP, "mode after a load " + restored.display().mode());
+            restored.setLine(0, "text", HoloDisplay.NO_COLOR);
+            helper.assertTrue(restored.display().mode() == HoloDisplay.Mode.TEXT, "text did not replace the ship");
+            helper.succeed();
         });
     }
 }

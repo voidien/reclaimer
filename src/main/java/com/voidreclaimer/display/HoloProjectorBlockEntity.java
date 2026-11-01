@@ -107,6 +107,10 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         apply(display.withBody());
     }
 
+    public void setShip() {
+        apply(display.withShip());
+    }
+
     /** Shows a globe and fills in its progress at once; false for a name that is not one. */
     public boolean setGlobe(String globe) {
         if (!HoloGlobes.NAMES.contains(globe)) {

@@ -188,7 +188,8 @@ Lines count from 1. Writing text switches the projector to text and `setSource` 
 | `setBody()` | shows each viewer their own body |
 | `getModel()` | the model shown, or nil |
 | `setGlobe(name)` | shows `"dyson"` or `"earth"` with its live progress; `true`, or `false, "unknown_globe"` |
-| `getMode()` | `"text"`, `"readout"`, `"model"`, `"body"` or `"globe"` |
+| `setShip()` | shows a miniature of the ship the projector stands on, or else the nearest within 64 blocks |
+| `getMode()` | `"text"`, `"readout"`, `"model"`, `"body"`, `"globe"` or `"ship"` |
 | `getSource()` | the chosen readout kind's id |
 | `setSource(id)` | shows a readout from now on (a bare id means ours); `true`, or `false, "unknown_source"` |
 | `getSources()` | every readout kind's id, sorted |

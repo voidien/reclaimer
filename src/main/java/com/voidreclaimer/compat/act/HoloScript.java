@@ -107,6 +107,10 @@ public final class HoloScript {
                     return true;
                 }))
                 .fn("globe", write(computer, main, (projector, args) -> projector.setGlobe(args.string(1))))
+                .fn("ship", write(computer, main, (projector, args) -> {
+                    projector.setShip();
+                    return true;
+                }))
                 .fn("get", write(computer, main, (projector, args) -> {
                     HoloDisplay display = projector.display();
                     return new ScriptMap()
