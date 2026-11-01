@@ -177,7 +177,8 @@ Lines count from 1. Writing text switches the projector to text and `setSource` 
 | `setModel(id)` | shows a GeckoLib model, turning slowly: `"entity/mining_probe"` means `geo/entity/mining_probe.geo.json` (a bare id means ours); `false` for a malformed id. A client without that model shows "NO MODEL" |
 | `setBody()` | shows each viewer their own body |
 | `getModel()` | the model shown, or nil |
-| `getMode()` | `"text"`, `"readout"`, `"model"` or `"body"` |
+| `setGlobe(name)` | shows `"dyson"` or `"earth"` with its live progress; `true`, or `false, "unknown_globe"` |
+| `getMode()` | `"text"`, `"readout"`, `"model"`, `"body"` or `"globe"` |
 | `getSource()` | the chosen readout kind's id |
 | `setSource(id)` | shows a readout from now on (a bare id means ours); `true`, or `false, "unknown_source"` |
 | `getSources()` | every readout kind's id, sorted |
