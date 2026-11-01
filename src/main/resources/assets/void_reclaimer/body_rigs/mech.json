@@ -66,8 +66,8 @@
     },
     "mount_storage_1": {"bone": "backpack", "offset": [-2.8, -0.5, -2.5], "yaw": 180},
     "mount_storage_2": {"bone": "backpack", "offset": [2.8, -0.5, -2.5], "yaw": 180},
-    "head__mount_sensor_1": {"bone": "chest", "offset": [-5.2, 5.5, 0.4], "yaw": 180},
-    "head__mount_sensor_2": {"bone": "chest", "offset": [5.2, 5.5, 0.4], "yaw": 180},
+    "head__mount_sensor_1": {"bone": "head", "offset": [-1.4, 3.1, 0.0], "yaw": 180, "scale": 0.5},
+    "head__mount_sensor_2": {"bone": "head", "offset": [1.4, 3.1, 0.0], "yaw": 180, "scale": 0.5},
     "back__mount_thruster_1": {
       "bone": "backpack",
       "offset": [

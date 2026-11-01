@@ -52,11 +52,12 @@ public record BodyRigSpec(ResourceLocation model, ResourceLocation texture, Reso
      * A module position on a rig: the bone it follows, an offset from that bone's pivot in pixels (the same axes as the
      * pivots in the {@code .geo.json}), and a turn about the vertical axis in degrees.
      */
-    public record Mount(String bone, List<Double> offset, float yaw) {
+    public record Mount(String bone, List<Double> offset, float yaw, float scale) {
         public static final Codec<Mount> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("bone").forGetter(Mount::bone),
                 Codec.DOUBLE.listOf().optionalFieldOf("offset", List.of(0.0, 0.0, 0.0)).forGetter(Mount::offset),
-                Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(Mount::yaw)
+                Codec.FLOAT.optionalFieldOf("yaw", 0f).forGetter(Mount::yaw),
+                Codec.FLOAT.optionalFieldOf("scale", 1f).forGetter(Mount::scale)
         ).apply(instance, Mount::new));
 
         public Mount {

@@ -93,6 +93,7 @@ public final class BodyPartsLayer extends GeoRenderLayer<BodyAnimatable> {
             // Offsets use the axes of the pivots in the .geo.json file, where x is mirrored against the rendered model.
             poseStack.translate(-place.x() / 16f, place.y() / 16f, place.z() / 16f);
             poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(place.yaw()));
+            poseStack.scale(place.scale(), place.scale(), place.scale());
             drawPart("module", module, entry.mount().socket(), BodyRenderer.isGhost(entry.mount()), frame, poseStack, bufferSource, animatable, partialTick, light, overlay);
             poseStack.popPose();
         }
