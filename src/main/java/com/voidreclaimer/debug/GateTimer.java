@@ -1,5 +1,7 @@
 package com.voidreclaimer.debug;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.phys.Vec3;
@@ -29,14 +31,15 @@ public final class GateTimer {
     public record Event(Kind kind, int gate, int gates, double seconds, double speed, double best) {}
 
     private static final double TICKS_PER_SECOND = 20.0;
+    /** Speed is read over this many ticks: a client's moves reach the server unevenly, so one tick can hold two of them. */
+    private static final int SPEED_TICKS = 5;
 
     private final List<Gate> gates;
     /** The next gate to fly through; 0 before a run. */
     private int next;
     private double started;
     private double best = Double.POSITIVE_INFINITY;
-    @Nullable
-    private Vec3 last;
+    private final Deque<Vec3> recent = new ArrayDeque<>();
 
     public GateTimer(List<Gate> gates) {
         this.gates = List.copyOf(gates);
@@ -50,12 +53,15 @@ public final class GateTimer {
     /** Takes the body's position this tick; returns what happened, or null. */
     @Nullable
     public Event update(long tick, Vec3 position) {
-        Vec3 from = last;
-        last = position;
+        Vec3 from = recent.peekLast();
+        recent.addLast(position);
+        if (recent.size() > SPEED_TICKS + 1) {
+            recent.removeFirst();
+        }
         if (from == null || gates.isEmpty()) {
             return null;
         }
-        double speed = from.distanceTo(position) * TICKS_PER_SECOND;
+        double speed = recent.peekFirst().distanceTo(position) * TICKS_PER_SECOND / (recent.size() - 1);
         double start = gates.get(0).crossing(from, position);
         if (start >= 0 && gates.get(0).holds(from.lerp(position, start))) {
             started = tick - 1 + start;

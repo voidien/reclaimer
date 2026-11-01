@@ -47,6 +47,17 @@ class GateTimerTest {
     }
 
     @Test
+    void oneUnevenTickDoesNotDoubleTheSpeed() {
+        GateTimer timer = new GateTimer(List.of(new GateTimer.Gate(0, 0, 10, 4)));
+        double[] places = {4, 5, 6, 7, 8, 9, 11};
+        GateTimer.Event event = null;
+        for (int i = 0; i < places.length; i++) {
+            event = timer.update(i, new Vec3(0, 0, places[i]));
+        }
+        assertEquals(24.0, event.speed(), 1e-9, "6 blocks over 5 ticks, though the last tick moved 2");
+    }
+
+    @Test
     void goingRoundTheGateEndsTheRun() {
         GateTimer timer = new GateTimer(COURSE);
         fly(timer, 0, 8, 12);
