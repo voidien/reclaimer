@@ -58,6 +58,12 @@ class LinkStateTest {
     }
 
     @Test
+    void anOldCopyOnTheListComesBackFromASave() {
+        LinkState state = LinkState.NONE.withKnown(new LinkState.KnownShell(SHELL, 3L, PLACE, false, false, Optional.of(PLACE), true));
+        assertEquals(state, throughASave(state));
+    }
+
+    @Test
     void oneBadEntryCostsOnlyThatEntry() {
         LinkState.KnownShell good = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
         CompoundTag saved = (CompoundTag) LinkState.CODEC.encodeStart(NbtOps.INSTANCE, LinkState.NONE.withKnown(good)).getOrThrow();

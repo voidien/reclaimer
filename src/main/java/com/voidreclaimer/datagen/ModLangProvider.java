@@ -342,6 +342,14 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.uplink.signal", "%s%%");
         add("screen.void_reclaimer.uplink.out_of_range", "out of range");
         add("screen.void_reclaimer.uplink.wreck", "a wreck");
+        add("screen.void_reclaimer.uplink.old_copy", "old copy, recover?");
+        add("screen.void_reclaimer.uplink.confirm_recover", "Click again: anything newer is lost");
+        add("message.void_reclaimer.recover.recovered", "Old copy recovered. It is the shell now.");
+        add("message.void_reclaimer.recover.still_there", "The shell is still there: nothing changed");
+        add("message.void_reclaimer.recover.not_found", "No old copy stands there any more");
+        add("message.void_reclaimer.recover.timed_out", "Its chunks did not load in time: try again");
+        add("message.void_reclaimer.recover.refused", "That shell cannot be recovered now");
+        add("message.void_reclaimer.recover.player_gone", "");
         add("screen.void_reclaimer.uplink.next", "More");
         add("message.void_reclaimer.uplink.taken", "This seat is in use");
         add("message.void_reclaimer.uplink.failed", "The link failed: %s");

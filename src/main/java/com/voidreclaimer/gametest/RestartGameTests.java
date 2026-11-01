@@ -8,8 +8,11 @@ import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
+import com.voidreclaimer.link.ShellReach;
+import com.voidreclaimer.link.ShellRecovery;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -182,6 +185,56 @@ public final class RestartGameTests {
                     force(space, CLASH_NEW, false);
                     helper.succeed();
                 });
+    }
+
+    private static final UUID RECOVERY_PLAYER = new UUID(0x7E57L, 0xB0B4L);
+    private static final UUID RECOVERY_SHELL = new UUID(0x7E57L, 0xC1A6L);
+    private static final BlockPos RECOVERY_SPOT = new BlockPos(262_800, 80, 0);
+    private static final BlockPos RECOVERY_NEWER = new BlockPos(263_200, 80, 0);
+
+    /** What a crash leaves, on disk for real: a copy with link number 4, and a list that says 5 at a place where nothing stands. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyIsRecoveredBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, RECOVERY_SPOT, 1, () -> {
+            ServerPlayer player = TestPlayers.joinAs(helper, RECOVERY_PLAYER);
+            BodyHost pattern = BodyHost.spawn(space, Vec3.atCenterOf(RECOVERY_SPOT), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), null);
+            BodySnapshot body = BodySnapshot.of(pattern);
+            pattern.discard();
+            BodyHost.restore(space, place(space, RECOVERY_SPOT), RECOVERY_SHELL, 4L, body, player.getUUID()).orElseThrow();
+            player.setData(ModAttachments.LINK, LinkState.NONE.withKnown(new LinkState.KnownShell(RECOVERY_SHELL, 5L, place(space, RECOVERY_NEWER), false, false)));
+            space.save(null, true, false);
+            player.server.getPlayerList().saveAll();
+            RestartTests.crash();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyIsRecoveredAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerPlayer player = TestPlayers.joinAs(helper, RECOVERY_PLAYER);
+        NaniteGameTests.inEntityTickingArea(helper, RECOVERY_SPOT, 1, () -> {
+            AtomicReference<ShellRecovery.Result> ended = new AtomicReference<>();
+            AtomicReference<Links.Result> picked = new AtomicReference<>();
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(Links.state(player).known(RECOVERY_SHELL).orElseThrow().oldCopy().isPresent(), "the old copy did not report in"))
+                    .thenExecute(() -> ShellReach.request(player, RECOVERY_SHELL, 200, picked::set))
+                    .thenWaitUntil(() -> helper.assertTrue(picked.get() != null, "the pick did not end"))
+                    .thenExecute(() -> helper.assertTrue(picked.get() == Links.Result.NOT_FOUND, "the pick ended " + picked.get()))
+                    .thenWaitUntil(() -> helper.assertTrue(Links.state(player).known(RECOVERY_SHELL).orElseThrow().recoverable(), "the picker would not offer it"))
+                    .thenExecute(() -> ShellRecovery.request(player, RECOVERY_SHELL, ended::set))
+                    .thenWaitUntil(() -> helper.assertTrue(ended.get() != null, "no answer"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(ended.get() == ShellRecovery.Result.RECOVERED, "ended " + ended.get());
+                        helper.assertTrue(space.getEntity(RECOVERY_SHELL) instanceof BodyHost shell && shell.epoch() == 6L, "the copy is not the shell");
+                        helper.assertTrue(Links.link(player, (BodyHost) space.getEntity(RECOVERY_SHELL)) == Links.Result.LINKED, "no link to the recovered shell");
+                        helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                        space.getEntity(RECOVERY_SHELL).discard();
+                        player.setData(ModAttachments.LINK, LinkState.NONE);
+                        TestPlayers.remove(player);
+                        helper.succeed();
+                    });
+        });
     }
 
     private static final UUID STALE_PLAYER = new UUID(0x7E57L, 0xB0B3L);

@@ -103,6 +103,7 @@ jobs:
           - aWokenShellOutlivesACrash
           - anOldShellGoesAfterACrash
           - aNewerShellWinsAClash
+          - anOldCopyIsRecovered
     steps:
       - uses: actions/checkout@v7
 

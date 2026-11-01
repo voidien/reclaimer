@@ -116,14 +116,36 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
      * @param wrecked whether it is a wreck
      * @param gone    whether it has been destroyed for good
      */
-    public record KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone) {
+    public record KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone, Optional<Place> oldCopy, boolean missing) {
+        public KnownShell(UUID shell, long epoch, Place at, boolean wrecked, boolean gone) {
+            this(shell, epoch, at, wrecked, gone, Optional.empty(), false);
+        }
+
         static final Codec<KnownShell> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("shell").forGetter(KnownShell::shell),
                 Codec.LONG.fieldOf("epoch").forGetter(KnownShell::epoch),
                 Place.CODEC.fieldOf("at").forGetter(KnownShell::at),
                 Codec.BOOL.optionalFieldOf("wrecked", false).forGetter(KnownShell::wrecked),
-                Codec.BOOL.optionalFieldOf("gone", false).forGetter(KnownShell::gone)
+                Codec.BOOL.optionalFieldOf("gone", false).forGetter(KnownShell::gone),
+                // Lenient: this is a hint, and a bad one must not cost the entry.
+                Place.CODEC.lenientOptionalFieldOf("old_copy").forGetter(KnownShell::oldCopy),
+                Codec.BOOL.optionalFieldOf("missing", false).forGetter(KnownShell::missing)
         ).apply(instance, KnownShell::new));
+
+        /** With an older copy seen standing at {@code place}, or none. */
+        KnownShell withOldCopy(Optional<Place> place) {
+            return new KnownShell(shell, epoch, at, wrecked, gone, place, missing);
+        }
+
+        /** With a link's look for the shell, where the list said, having found {@code value}: nothing there. */
+        KnownShell withMissing(boolean value) {
+            return new KnownShell(shell, epoch, at, wrecked, gone, oldCopy, value);
+        }
+
+        /** Whether the picker offers the old copy: only once a link has looked for the shell and it was not there. */
+        public boolean recoverable() {
+            return !wrecked && !gone && missing && oldCopy.isPresent();
+        }
 
         KnownShell destroyed() {
             return new KnownShell(shell, epoch, at, wrecked, true);

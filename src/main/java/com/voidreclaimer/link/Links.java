@@ -434,6 +434,36 @@ public final class Links {
         }
     }
 
+    /** {@code copy} stands refused, so its owner's list says where: if the newer copy is lost, the picker can offer this one. */
+    static void noteOldCopy(BodyHost copy) {
+        ServerPlayer owner = owner(copy);
+        if (owner != null) {
+            LinkState state = state(owner);
+            Optional<LinkState.Place> here = Optional.of(place(copy));
+            state.known(copy.getUUID()).filter(known -> !here.equals(known.oldCopy()))
+                    .ifPresent(known -> owner.setData(ModAttachments.LINK, state.withKnown(known.withOldCopy(here))));
+        }
+    }
+
+    /** A link looked where the list said, and the shell was not there. Recovery is offered only after this, so a healthy shell stays pickable. */
+    static void noteMissing(ServerPlayer player, UUID shell) {
+        LinkState state = state(player);
+        state.known(shell).filter(known -> known.oldCopy().isPresent())
+                .ifPresent(known -> player.setData(ModAttachments.LINK, state.withKnown(known.withMissing(true))));
+    }
+
+    static void forgetOldCopy(ServerPlayer player, UUID shell) {
+        LinkState state = state(player);
+        state.known(shell).ifPresent(known -> player.setData(ModAttachments.LINK, state.withKnown(known.withOldCopy(Optional.empty()).withMissing(false))));
+    }
+
+    /** {@code copy} is the shell now. A number above {@code newest} makes it so, and a lost copy that ever turns up gives way to it. */
+    static void recover(ServerPlayer player, BodyHost copy, long newest) {
+        copy.setEpoch(newest + 1);
+        player.setData(ModAttachments.LINK, state(player).withKnown(seen(copy)));
+        saveNow(player.server);
+    }
+
     /** {@code state} with {@code shell} up to date, or {@code state} itself if that changes nothing. */
     static LinkState noted(LinkState state, BodyHost shell) {
         Optional<LinkState.KnownShell> known = state.known(shell.getUUID());

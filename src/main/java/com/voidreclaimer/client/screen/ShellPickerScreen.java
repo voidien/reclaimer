@@ -2,8 +2,10 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.link.ShellRow;
 import com.voidreclaimer.network.PickShellPayload;
+import com.voidreclaimer.network.RecoverShellPayload;
 import com.voidreclaimer.network.ShellListPayload;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,6 +28,8 @@ public final class ShellPickerScreen extends Screen {
     private final BlockPos seat;
     private final List<ShellRow> rows;
     private int page;
+    /** The shell whose recovery is waiting for a second click. */
+    private UUID confirming;
     private int left;
     private int top;
     private int panelHeight;
@@ -46,7 +50,7 @@ public final class ShellPickerScreen extends Screen {
         for (int i = 0; i < count; i++) {
             ShellRow row = rows.get(page * ROWS_ON_A_PAGE + i);
             Button button = Button.builder(label(row), b -> pick(row)).bounds(left + 10, top + TOP_MARGIN + i * ROW_HEIGHT, WIDTH - 20, 20).build();
-            button.active = row.ready();
+            button.active = row.ready() || row.recoverable();
             addRenderableWidget(button);
         }
         int bottom = top + panelHeight - BOTTOM_MARGIN + 4;
@@ -57,10 +61,13 @@ public final class ShellPickerScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose()).bounds(left + WIDTH - 70, bottom, 60, 20).build());
     }
 
-    private static Component label(ShellRow row) {
+    private Component label(ShellRow row) {
         Component where = row.sameDimension()
                 ? Component.translatable("screen.void_reclaimer.uplink.here", row.number(), Math.round(row.distance()))
                 : Component.translatable("screen.void_reclaimer.uplink.elsewhere", row.number(), row.dimension());
+        if (row.shell().equals(confirming)) {
+            return Component.translatable("screen.void_reclaimer.uplink.confirm_recover");
+        }
         Component how = row.ready()
                 ? Component.translatable("screen.void_reclaimer.uplink.signal", Math.round(row.strength() * 100f))
                 : Component.translatable("screen.void_reclaimer.uplink." + row.status());
@@ -68,7 +75,12 @@ public final class ShellPickerScreen extends Screen {
     }
 
     private void pick(ShellRow row) {
-        PacketDistributor.sendToServer(new PickShellPayload(seat, row.shell()));
+        if (row.recoverable() && !row.shell().equals(confirming)) {
+            confirming = row.shell();
+            init();
+            return;
+        }
+        PacketDistributor.sendToServer(row.recoverable() ? new RecoverShellPayload(seat, row.shell()) : new PickShellPayload(seat, row.shell()));
         onClose();
     }
 
