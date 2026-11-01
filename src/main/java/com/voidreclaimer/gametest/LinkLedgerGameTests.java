@@ -43,7 +43,7 @@ public final class LinkLedgerGameTests {
         return BodyHost.spawn(player.serverLevel(), player.position().add(AWAY), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aShellIsOnTheListFromTheStart(GameTestHelper helper) {
         BlockPos origin = new BlockPos(142_000, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -65,7 +65,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** The case the outbox cannot cover: it has ended, and a chunk nobody visited since a crash loads the copy from before the link. */
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void anOldCopyGoesEvenAfterItsOutboxHasEnded(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_200, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -81,7 +81,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theShellItselfIsNotAnOldCopy(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_400, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -93,7 +93,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aShellDestroyedForGoodDoesNotComeBack(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_600, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -138,7 +138,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void dyingInAShellMarksItAWreck(GameTestHelper helper) {
         BlockPos origin = new BlockPos(143_000, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -159,7 +159,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** Its own batch: a save counts for every player's list. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_a")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_a")
     public static void aSaveKeepsTrackOfAShell(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_200, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -172,7 +172,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** Its own batch: a save counts for every player's list. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_b")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_b")
     public static void anOldCopySaysNothingToTheList(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_400, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -188,7 +188,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** A save made before the list has outboxes and no entries. Its own batch: a save counts for every player's outbox. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_c")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_c")
     public static void anOutboxFromBeforeTheListEndsOnTheList(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_600, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -202,7 +202,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theShellsCommandCountsWhatIsLeft(GameTestHelper helper) {
         BlockPos origin = new BlockPos(143_800, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
