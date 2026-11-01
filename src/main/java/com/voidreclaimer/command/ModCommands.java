@@ -87,6 +87,33 @@ public final class ModCommands {
     }
 
     /** Builds a test scene in deep space and puts the player where it can be seen. */
+    private static int linkStatus(CommandSourceStack source, ServerPlayer player) {
+        var state = com.voidreclaimer.link.Links.state(player);
+        source.sendSuccess(() -> state.link().map(link -> Component.translatable("commands.void_reclaimer.link.status.linked",
+                link.shell().toString(), link.epoch(), link.from().dimension().location().toString(), link.from().position().toString()))
+                .orElse(Component.translatable("commands.void_reclaimer.link.status.home")), false);
+        return state.linked() ? 1 : 0;
+    }
+
+    /** Debug: a link with no seat or signal. The move runs at the end of the tick, so a command's result only says it was asked for. */
+    private static int linkForce(CommandSourceStack source, ServerPlayer player, net.minecraft.world.entity.Entity target) {
+        if (!(target instanceof com.voidreclaimer.link.BodyHost shell)) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.link.not_a_shell"));
+            return 0;
+        }
+        com.voidreclaimer.link.Links.requestLink(player, shell, result -> reportLink(source, result));
+        return 1;
+    }
+
+    private static int linkWake(CommandSourceStack source, ServerPlayer player) {
+        com.voidreclaimer.link.Links.requestWake(player, result -> reportLink(source, result));
+        return 1;
+    }
+
+    private static void reportLink(CommandSourceStack source, com.voidreclaimer.link.Links.Result result) {
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.link.result", result.name()), false);
+    }
+
     private static final java.util.List<net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis>> SHELL_BODIES = java.util.List.of(
             com.voidreclaimer.body.BuiltinBodies.DRONE, com.voidreclaimer.body.BuiltinBodies.MECH, com.voidreclaimer.body.BuiltinBodies.SHIP,
             com.voidreclaimer.body.BuiltinBodies.SHUTTLE, com.voidreclaimer.body.BuiltinBodies.TITAN);
@@ -170,7 +197,17 @@ public final class ModCommands {
                                                 SHELL_BODIES.stream().map(key -> key.location().getPath()), builder))
                                         .executes(ctx -> spawnShell(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "body"), false))
                                         .then(Commands.literal("full")
-                                                .executes(ctx -> spawnShell(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "body"), true))))))
+                                                .executes(ctx -> spawnShell(ctx.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "body"), true)))))
+                        .then(Commands.literal("status")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> linkStatus(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
+                        .then(Commands.literal("force")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("shell", EntityArgument.entity())
+                                                .executes(ctx -> linkForce(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), EntityArgument.getEntity(ctx, "shell"))))))
+                        .then(Commands.literal("wake")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> linkWake(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
                 .then(Commands.literal("scene")
                         .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
                                 .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(

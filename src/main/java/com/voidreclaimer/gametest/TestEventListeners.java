@@ -70,6 +70,16 @@ public final class TestEventListeners {
         }
     }
 
+    /** The next body change on a test player with this tag throws, as a broken addon's listener would. */
+    public static final String THROW_ON_BODY_CHANGE = "vr_test_throw_on_body_change";
+
+    @SubscribeEvent
+    static void onBodyChangedThrow(com.voidreclaimer.api.event.BodyChangedEvent event) {
+        if (event.getEntity().removeTag(THROW_ON_BODY_CHANGE)) {
+            throw new IllegalStateException("a listener failed, as a test asked");
+        }
+    }
+
     @SubscribeEvent
     static void onBodyStats(BodyStatsEvent event) {
         if (event.getEntity().getTags().contains(TOUGH)) {

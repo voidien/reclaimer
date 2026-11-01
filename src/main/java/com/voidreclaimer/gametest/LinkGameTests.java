@@ -187,7 +187,7 @@ public final class LinkGameTests {
      * The player with a body and something of everything a snapshot carries, different for each call so a part that fails to move
      * shows. The winch is left running: it must not carry over.
      */
-    private static void kit(ServerPlayer player, BodyData body, Item item, int slot, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, BlockPos anchor) {
+    static void kit(ServerPlayer player, BodyData body, Item item, int slot, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, BlockPos anchor) {
         Bodies.store(player, body);
         Inventory inventory = player.getInventory();
         inventory.clearContent();
@@ -204,7 +204,7 @@ public final class LinkGameTests {
         player.setHealth(player.getMaxHealth() - DAMAGE);
     }
 
-    private static void kitOne(ServerPlayer player, BodyData body) {
+    static void kitOne(ServerPlayer player, BodyData body) {
         kit(player, body, Items.DIAMOND, 5, MobEffects.GLOWING, new BlockPos(1, 80, 2));
     }
 
@@ -332,6 +332,7 @@ public final class LinkGameTests {
             ItemCensus before = ItemCensus.of(player);
             BodySnapshot snapshot = BodySnapshot.take(player);
             helper.assertTrue(snapshot.body().pending().size() == 1, "not in the body's pending items: " + snapshot.body().pending());
+            helper.assertTrue(Bodies.data(player).pending().size() == 1, "kept only in the snapshot, so a refused move would lose it");
             helper.assertTrue(ItemCensus.of(snapshot, player.registryAccess()).equals(before), "before " + before);
             helper.succeed();
         } finally {
