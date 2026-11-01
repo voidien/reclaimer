@@ -68,7 +68,7 @@ public final class RemoteShellGameTests {
     @GameTest(template = "empty")
     public static void theSeatAndTheShellsCanBeMade(GameTestHelper helper) {
         var recipes = helper.getLevel().getServer().getRecipeManager();
-        for (String name : List.of("uplink_seat", "drone_shell_parts", "mech_shell_parts", "ship_shell_parts")) {
+        for (String name : List.of("uplink_seat", "drone_shell_parts", "mech_shell_parts", "ship_shell_parts", "shuttle_shell_parts")) {
             helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/" + name)).isPresent(), "no recipe for " + name);
         }
         helper.succeed();
@@ -80,6 +80,7 @@ public final class RemoteShellGameTests {
         var recipes = helper.getLevel().getServer().getRecipeManager();
         for (String setting : List.of("cheap", "reduced", "premium")) {
             helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/ship_shell_" + setting)).isEmpty(), "a second price for the ship shell: " + setting);
+            helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/shuttle_shell_" + setting)).isEmpty(), "a second price for the shuttle shell: " + setting);
         }
         helper.assertTrue(new ConfigChoiceCondition("shellPrices", "parts").test(null), "the default did not pass");
         helper.assertFalse(new ConfigChoiceCondition("shellPrices", "cheap").test(null), "another setting passed");
