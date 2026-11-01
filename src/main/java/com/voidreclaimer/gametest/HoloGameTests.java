@@ -12,10 +12,13 @@ import com.voidreclaimer.compat.act.HoloScript;
 import com.voidreclaimer.compat.create.HoloDisplaySetup;
 import com.voidreclaimer.core.BackupCoreBlockEntity;
 import com.voidreclaimer.display.HoloDisplay;
+import com.voidreclaimer.display.HoloGlobes;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
 import com.voidreclaimer.dyson.Dyson;
 import com.voidreclaimer.dyson.DysonSphereData;
+import com.voidreclaimer.earth.EarthRestoration;
 import com.voidreclaimer.earth.RuinedEarth;
+import com.voidreclaimer.earth.SectorMap;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.registry.ModRegistries;
 import de.nightstudio.light_bulb_addon_create_crafts_and__addions.blockentity.ComputerBlockEntity;
@@ -37,6 +40,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -329,6 +333,8 @@ public final class HoloGameTests {
             helper.assertTrue(projector.display().scale() == 2f, "scale " + projector.display().scale());
             script.run("seen = holo.get(addr)");
             helper.assertTrue(script.globals().get("seen") instanceof Map<?, ?> seen && "text".equals(seen.get("mode")), "holo.get: " + script.globals().get("seen"));
+            script.run("holo.globe(addr, \"earth\")");
+            helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.GLOBE && HoloGlobes.EARTH.equals(projector.display().subject()), "holo.globe did not take");
             script.run("holo.source(\"" + address + "\", \"clock\")");
             helper.assertTrue(projector.display().mode() == HoloDisplay.Mode.READOUT, "the source did not take");
             // Out of reach is a script error, not a write.
@@ -427,6 +433,41 @@ public final class HoloGameTests {
                 helper.assertTrue("void_reclaimer:entity/mining_probe".equals(restored.display().subject()), "subject " + restored.display().subject());
                 helper.succeed();
             });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aGlobeFollowsTheSphereAndOnlyResyncsOnAChange(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(131_600, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            MinecraftServer server = level.getServer();
+            ServerLevel earth = server.getLevel(RuinedEarth.DIMENSION);
+            HoloProjectorBlockEntity projector = place(level, pos);
+            helper.assertTrue(!projector.setGlobe("mars"), "a globe that is not one was taken");
+            DysonSphereData saved = DysonSphereData.of(level);
+            SectorMap savedMap = SectorMap.of(earth);
+            try {
+                Dyson.set(server, new DysonSphereData(123, 4, 0, 0));
+                EarthRestoration.set(earth, SectorMap.NONE.with(5).with(9));
+                helper.assertTrue(projector.setGlobe(HoloGlobes.EARTH), "earth refused");
+                HoloGlobes.Progress progress = projector.display().progress();
+                helper.assertTrue(progress.satellites() == 123 && progress.trusses() == 4, "counters " + progress);
+                helper.assertTrue(progress.isRestored(5) && progress.isRestored(9) && progress.restoredCount() == 2, "sectors " + progress);
+                int syncs = projector.syncs();
+                projector.refresh();
+                helper.assertTrue(projector.syncs() == syncs, "unchanged progress was sent again");
+                Dyson.set(server, new DysonSphereData(124, 4, 0, 0));
+                EarthRestoration.set(earth, SectorMap.NONE.with(5).with(9).with(10));
+                projector.refresh();
+                helper.assertTrue(projector.display().progress().satellites() == 124, "a launch did not show");
+                helper.assertTrue(projector.display().progress().restoredCount() == 3, "a restored sector did not show");
+                helper.assertTrue(projector.syncs() == syncs + 1, "changed progress was sent " + (projector.syncs() - syncs) + " times");
+                helper.succeed();
+            } finally {
+                Dyson.set(server, saved);
+                EarthRestoration.set(earth, savedMap);
+            }
         });
     }
 }
