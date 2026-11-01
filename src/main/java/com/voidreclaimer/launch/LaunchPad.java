@@ -16,8 +16,10 @@ public final class LaunchPad {
     /** The pad's width and depth in blocks (the model's pad is 15.25 blocks across). */
     public static final int SIZE = 15;
     public static final int HALF = SIZE / 2;
-    /** The muzzle's height above the pad: the gun tower's top in the model. */
-    public static final double MUZZLE_HEIGHT = 14.3;
+    /** How far up the gun's mouth is at full wind-up, when it fires. {@code LaunchPadTest} reads this from the model. */
+    public static final double MUZZLE_HEIGHT = 10.95;
+    /** How far past the pad's centre the gun's mouth is: the barrel leans away from the controller. */
+    public static final double MUZZLE_FORWARD = 7.39;
 
     private LaunchPad() {}
 
@@ -33,9 +35,10 @@ public final class LaunchPad {
         return cell(controller, facing, 0, HALF);
     }
 
-    /** Where payloads leave: above the pad's centre, at the top of the gun tower. */
+    /** Where payloads leave: the mouth of the gun, leaning out over the far side of the pad. */
     public static Vec3 muzzle(BlockPos controller, Direction facing) {
-        return Vec3.atBottomCenterOf(centre(controller, facing)).add(0, MUZZLE_HEIGHT, 0);
+        return Vec3.atBottomCenterOf(centre(controller, facing))
+                .add(facing.getStepX() * MUZZLE_FORWARD, MUZZLE_HEIGHT, facing.getStepZ() * MUZZLE_FORWARD);
     }
 
     /** The pad's outer row of cells, without the controller's own cell: these must be frame blocks. */

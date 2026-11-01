@@ -1,6 +1,7 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.Config;
 import com.voidreclaimer.debug.TestScenes;
 import com.voidreclaimer.helper.HelperDrone;
 import com.voidreclaimer.launch.LaunchControllerBlockEntity;
@@ -43,7 +44,8 @@ public final class TestScenesGameTests {
             TestScenes.build(space, TestScenes.Scene.LAUNCH, null);
             helper.assertTrue(space.getBlockEntity(origin) instanceof LaunchControllerBlockEntity controller && controller.assembled(),
                     "the complex is not assembled");
-            helper.succeed();
+            helper.succeedWhen(() -> helper.assertTrue(space.getBlockEntity(origin) instanceof LaunchControllerBlockEntity controller
+                    && Math.abs(controller.getSpeed()) >= Config.MASS_DRIVER_MIN_RPM.get(), "the motor is too slow to wind the driver up"));
         });
     }
 

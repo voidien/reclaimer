@@ -2,6 +2,7 @@ package com.voidreclaimer.debug;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
+import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 import com.voidreclaimer.helper.HelperDrone;
 import com.voidreclaimer.helper.HelperLinks;
 import com.voidreclaimer.launch.LaunchComplex;
@@ -47,6 +48,8 @@ public final class TestScenes {
     private static final int STRIPE = 16;
     private static final int LAMP = 8;
     private static final String STATION_NAME = "Test Station";
+    /** The launch motor's speed: a creative motor starts at 16, and the driver needs 64 to wind up. */
+    private static final int LAUNCH_RPM = 128;
 
     /** The scenes, by name in the command. */
     public enum Scene {
@@ -118,8 +121,12 @@ public final class TestScenes {
         for (BlockPos cell : LaunchPad.ring(pos, PAD_FACING)) {
             level.setBlock(cell, ModBlocks.SCAFFOLD.get().defaultBlockState(), Block.UPDATE_ALL);
         }
-        level.setBlock(pos.relative(PAD_FACING.getOpposite()), AllBlocks.CREATIVE_MOTOR.get().defaultBlockState()
+        BlockPos motorPos = pos.relative(PAD_FACING.getOpposite());
+        level.setBlock(motorPos, AllBlocks.CREATIVE_MOTOR.get().defaultBlockState()
                 .setValue(DirectionalKineticBlock.FACING, PAD_FACING), Block.UPDATE_ALL);
+        if (level.getBlockEntity(motorPos) instanceof CreativeMotorBlockEntity motor) {
+            motor.generatedSpeed.setValue(LAUNCH_RPM);
+        }
         if (level.getBlockEntity(pos) instanceof LaunchControllerBlockEntity controller) {
             LaunchComplex.assemble(controller);
             var slots = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null);
