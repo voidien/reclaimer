@@ -169,6 +169,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.spire.busy", "A Genesis Pulse is already sweeping out from this Spire.");
         add("message.void_reclaimer.spire.wrong_world", "The Spire needs ruined ground to work on. Take it through the Atmospheric Portal.");
         add("message.void_reclaimer.spire.no_profile", "No terraform profile is loaded; is the datapack disabled?");
+        add("message.void_reclaimer.spire.off_planet", "The tower stands outside the planet's sectors: there is no ground here to restore.");
+        add("message.void_reclaimer.spire.sector_restored", "This sector is already restored. Raise a tower in another one.");
         add("message.void_reclaimer.spire.not_assembled", "The tower is not assembled. Sneak-use the Spire once its frame stands.");
         add("message.void_reclaimer.spire.assembled", "Spire tower assembled.");
         add("message.void_reclaimer.spire.disassembled", "Spire tower set down.");
@@ -275,6 +277,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");
         add("commands.void_reclaimer.sky.era.set", "Ruined Earth sky era set to %s");
         add("commands.void_reclaimer.sky.era.unknown", "Unknown sky era '%s' (ruined, healing or restored)");
+        add("commands.void_reclaimer.sky.sectors", "Ruined Earth: %s of 16 sectors restored");
         add("commands.void_reclaimer.sky.era.no_dimension", "The ruined_earth dimension is not loaded");
         add("commands.void_reclaimer.dyson.get", "Dyson Sphere: %s satellites, %s truss modules (shell complete at %s), skybox tier %s");
         add("commands.void_reclaimer.dyson.set", "Dyson Sphere: %s satellites, %s truss modules, skybox tier %s");

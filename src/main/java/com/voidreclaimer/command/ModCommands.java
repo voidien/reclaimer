@@ -266,7 +266,11 @@ public final class ModCommands {
                                         .then(Commands.argument("era", StringArgumentType.word())
                                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
                                                         Arrays.stream(com.voidreclaimer.earth.SkyEra.values()).map(com.voidreclaimer.earth.SkyEra::getSerializedName), builder))
-                                                .executes(ctx -> setSkyEra(ctx.getSource(), StringArgumentType.getString(ctx, "era")))))))
+                                                .executes(ctx -> setSkyEra(ctx.getSource(), StringArgumentType.getString(ctx, "era"))))))
+                        .then(Commands.literal("sectors")
+                                .executes(ctx -> getSectors(ctx.getSource()))
+                                .then(Commands.argument("count", IntegerArgumentType.integer(0, com.voidreclaimer.earth.Sectors.COUNT))
+                                        .executes(ctx -> setSectors(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "count"))))))
                 .then(Commands.literal("starship")
                         .then(Commands.literal("spawn").executes(ctx -> spawnStarship(ctx.getSource()))))
                 .then(Commands.literal("milestone")
@@ -380,6 +384,24 @@ public final class ModCommands {
         com.voidreclaimer.earth.SkyEra era = com.voidreclaimer.earth.EarthSky.get(source.getServer());
         source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.sky.era.get", era.getSerializedName()), false);
         return era.ordinal();
+    }
+
+    private static int getSectors(CommandSourceStack source) {
+        int count = com.voidreclaimer.earth.EarthRestoration.map(source.getServer()).count();
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.sky.sectors", count), false);
+        return count;
+    }
+
+    /** Marks the first {@code count} sectors restored and no others; the ground does not change. */
+    private static int setSectors(CommandSourceStack source, int count) {
+        net.minecraft.server.level.ServerLevel earth = source.getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        if (earth == null) {
+            source.sendFailure(Component.translatable("commands.void_reclaimer.sky.era.no_dimension"));
+            return 0;
+        }
+        com.voidreclaimer.earth.EarthRestoration.set(earth, new com.voidreclaimer.earth.SectorMap((1 << count) - 1));
+        source.sendSuccess(() -> Component.translatable("commands.void_reclaimer.sky.sectors", count), true);
+        return count + 1;
     }
 
     private static int setSkyEra(CommandSourceStack source, String name) {

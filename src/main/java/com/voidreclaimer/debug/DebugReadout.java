@@ -159,7 +159,7 @@ public final class DebugReadout {
             lines.add(sample.cloud() == null ? "  no dust cloud" : "  cloud " + sample.cloud().kind() + ", density " + two(sample.density()));
         }
         if (level.dimension().equals(RuinedEarth.DIMENSION)) {
-            lines.add("  sky era " + EarthSky.get(level.getServer()));
+            lines.add("  sky era " + EarthSky.get(level.getServer()) + ", " + com.voidreclaimer.earth.EarthRestoration.map(level.getServer()).count() + " of 16 sectors restored");
         }
         return lines;
     }

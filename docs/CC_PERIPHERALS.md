@@ -74,8 +74,11 @@ print(("tier %d, shell %.0f%%"):format(s.tier, s.shellProgress * 100))
 | `isRunning()` | whether a Genesis Pulse is sweeping out from this Spire's tower |
 | `getProgress()` | how far the running pulse has swept, 0 to 1 (0 when idle) |
 | `getPulses()` | pulses finished at this Spire |
-| `getRadius()` | blocks from the tower's centre to the edge of its square area |
-| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"not_assembled"`, `"no_profile"` |
+| `getRadius()` | blocks from the tower's centre to the far edge of its sector (0 off the planet) |
+| `getSector()` | this tower's sector: `column` and `row` (1 to 4 from the north-west) and `restored`; nil off the planet or in another dimension |
+| `getSectors()` | 16 booleans, row by row from the north-west: which sectors are restored, read from any dimension |
+| `getRestoredCount()` | how many sectors are restored, 0 to 16 |
+| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"not_assembled"`, `"off_planet"`, `"sector_restored"`, `"no_profile"` |
 
 ```lua
 local spire = peripheral.find("void_reclaimer:terraforming_spire")

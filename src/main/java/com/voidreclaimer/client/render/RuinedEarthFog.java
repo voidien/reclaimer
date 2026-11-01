@@ -3,7 +3,6 @@ package com.voidreclaimer.client.render;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.earth.RuinedEarth;
-import com.voidreclaimer.earth.SkyEra;
 import com.voidreclaimer.earth.SkyLook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
@@ -14,14 +13,14 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
-/** Smog: terrain fog color and distance follow the sky era on ruined Earth. */
+/** Smog: terrain fog color and distance follow the sky on ruined Earth, so every restored sector thins it. */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class RuinedEarthFog {
     private RuinedEarthFog() {}
 
     private static SkyLook look() {
         ClientLevel level = Minecraft.getInstance().level;
-        return level != null && RuinedEarth.is(level) ? SkyLook.of(SkyEra.of(level)) : null;
+        return level != null && RuinedEarth.is(level) ? SkyLook.in(level) : null;
     }
 
     @SubscribeEvent

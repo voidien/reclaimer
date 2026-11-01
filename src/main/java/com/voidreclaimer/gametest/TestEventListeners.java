@@ -49,6 +49,9 @@ public final class TestEventListeners {
     /** Mass Drivers whose base stands at this X launch nothing (the event is cancelled). */
     public static final int CANCELLED_DRIVER_X = 89_288;
 
+    /** Sectors restored, in order. */
+    static final List<Integer> SECTORS_RESTORED = new java.util.concurrent.CopyOnWriteArrayList<>();
+
     private TestEventListeners() {}
 
     @SubscribeEvent
@@ -59,6 +62,11 @@ public final class TestEventListeners {
         } else if (event.getDriverPos().getX() == CANCELLED_DRIVER_X) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    static void onSectorRestored(com.voidreclaimer.api.event.SectorRestoredEvent event) {
+        SECTORS_RESTORED.add(event.getSector());
     }
 
     @SubscribeEvent
