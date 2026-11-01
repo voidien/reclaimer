@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.dust.DustData;
+import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -115,7 +116,7 @@ public final class Links {
         if (state.linked()) {
             return Result.ALREADY_LINKED;
         }
-        if (shell.isRemoved() || shell.isDeadOrDying() || shell.role() != HostRole.SHELL) {
+        if (shell.isRemoved() || shell.isDeadOrDying() || shell.role() != HostRole.SHELL || stale(shell)) {
             return Result.NOT_A_SHELL;
         }
         if (!player.getUUID().equals(shell.owner())) {
@@ -143,13 +144,16 @@ public final class Links {
             arrive(player, here, from.position(), from.yaw(), from.pitch());
             if (restored) {
                 player.setData(ModAttachments.LINK, state);
+            } else {
+                // The link stays, so the main body is not lost, and so does the shell: it must not count as a copy left from before it.
+                shell.setEpoch(shell.epoch() + 1);
             }
             return Result.FAILED;
         }
         setHomeDust(player, homeDust);
         shell.discard();
         settle(player);
-        player.server.getPlayerList().saveAll();
+        saveNow(player.server);
         return Result.LINKED;
     }
 
@@ -182,7 +186,7 @@ public final class Links {
         if (!arrive(player, target, link.from().position(), link.from().yaw(), link.from().pitch())) {
             return Result.CANNOT_REACH;
         }
-        LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at);
+        LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at, false);
         player.setData(ModAttachments.LINK, state.withOutbox(outbox));
         Optional<BodyHost> shell = BodyHost.restore(shellLevel, at, link.shell(), link.epoch(), body, player.getUUID());
         if (shell.isEmpty()) {
@@ -195,16 +199,55 @@ public final class Links {
             player.setData(ModAttachments.LINK, state);
             return Result.FAILED;
         }
+        shell.ifPresent(host -> Outboxes.settled(host.getUUID()));
         player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink());
         setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
-        player.server.getPlayerList().saveAll();
+        saveNow(player.server);
         return Result.WOKEN;
     }
 
     private static void setHomeDust(ServerPlayer player, float capacity) {
         player.setData(ModAttachments.HOME_DUST_CAPACITY, capacity);
         player.syncData(ModAttachments.HOME_DUST_CAPACITY);
+    }
+
+    /** What ends a move: the player's state on disk, in both places a server reads it from. */
+    private static void saveNow(MinecraftServer server) {
+        server.getPlayerList().saveAll();
+        // Singleplayer loads its owner from level.dat, which only an autosave or a quit writes, not the player file.
+        CompoundTag host = server.getPlayerList().getSingleplayerData();
+        if (host != null) {
+            ((MinecraftServerStorageAccessor) server).void_reclaimer$storageSource().saveDataTag(server.registryAccess(), server.getWorldData(), host);
+        }
+    }
+
+    /** A shell destroyed for good: nothing is to bring it back. A shell in a wreck comes with the destroyed path. */
+    static void destroyed(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        if (owner != null) {
+            owner.setData(ModAttachments.LINK, state(owner).withoutOutbox(shell.getUUID()));
+        }
+    }
+
+    @Nullable
+    private static ServerPlayer owner(BodyHost shell) {
+        return shell.owner() == null ? null : shell.level().getServer().getPlayerList().getPlayer(shell.owner());
+    }
+
+    /**
+     * Whether this copy of a shell lost to a newer one: its owner is in it, or a newer copy that can be read waits in the outbox. Only
+     * a crash leaves such a copy, on disk from before the link. With its owner away nobody can tell, and nobody can use it either.
+     */
+    public static boolean stale(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        if (owner == null) {
+            return false;
+        }
+        LinkState state = state(owner);
+        return state.link().filter(link -> link.shell().equals(shell.getUUID()) && link.epoch() > shell.epoch()).isPresent()
+                || state.outbox(shell.getUUID()).filter(outbox -> outbox.epoch() > shell.epoch()
+                        && BodySnapshot.load(outbox.body(), owner.registryAccess()).isPresent()).isPresent();
     }
 
     /** Whether there is still a living player here to move: a stale object or a corpse would take a body with it. */

@@ -63,14 +63,21 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes) {
      * @param epoch the shell's epoch
      * @param body  the shell's body, as a tag
      * @param at    where the shell was put
+     * @param saved whether the shell has been through a save of its level already, see {@link Outboxes}
      */
-    public record Outbox(UUID shell, long epoch, CompoundTag body, Place at) {
+    public record Outbox(UUID shell, long epoch, CompoundTag body, Place at, boolean saved) {
         static final Codec<Outbox> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("shell").forGetter(Outbox::shell),
                 Codec.LONG.fieldOf("epoch").forGetter(Outbox::epoch),
                 CompoundTag.CODEC.fieldOf("body").forGetter(Outbox::body),
-                Place.CODEC.fieldOf("at").forGetter(Outbox::at)
+                Place.CODEC.fieldOf("at").forGetter(Outbox::at),
+                Codec.BOOL.optionalFieldOf("saved", false).forGetter(Outbox::saved)
         ).apply(instance, Outbox::new));
+
+        /** Through one save, and {@code position} is where the shell was then. */
+        Outbox seenInASave(Vec3 position) {
+            return new Outbox(shell, epoch, body, new Place(at.dimension(), position, at.yaw(), at.pitch()), true);
+        }
     }
 
     public static final Codec<LinkState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
