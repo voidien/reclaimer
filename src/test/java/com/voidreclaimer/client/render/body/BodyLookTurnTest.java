@@ -19,6 +19,16 @@ class BodyLookTurnTest {
     }
 
     @Test
+    void aBoneHiddenAloneKeepsItsChildren() {
+        software.bernie.geckolib.cache.object.GeoBone bone = new software.bernie.geckolib.cache.object.GeoBone(null, "root", false, null, false, null);
+        BodyLook.hideAlone(bone, true);
+        assertEquals(true, bone.isHidden(), "the bone's own cubes stay");
+        assertEquals(false, bone.isHidingChildren(), "a Mech with no pelvis would lose its chest");
+        BodyLook.hideAlone(bone, false);
+        assertEquals(false, bone.isHidden());
+    }
+
+    @Test
     void levelBodiesFaceWhereTheyLookWhicheverWayTheRigWasBuilt() {
         for (float rigYaw : new float[] {0f, 180f}) {
             assertNose(0f, 0f, 1f, nose(0f, 0f, rigYaw));

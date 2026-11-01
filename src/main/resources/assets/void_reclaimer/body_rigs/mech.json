@@ -54,6 +54,11 @@
       "foot_r"
     ]
   },
+  "socket_parts": {
+    "pelvis": [
+      "root"
+    ]
+  },
   "mounts": {
     "mount_core_1": {
       "bone": "chest",

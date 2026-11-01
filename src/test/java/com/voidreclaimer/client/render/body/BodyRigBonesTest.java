@@ -30,18 +30,18 @@ class BodyRigBonesTest {
             "shuttle", Set.of("body"),
             "titan", Set.of("saucer"));
     /**
-     * Found by this audit and not fixed yet. Each should have an owner: the Mech's {@code root} is its pelvis, the Titan's {@code root}
-     * its drive hull, the Drone's arms its tool claw. A fix must take its entry out, and a new bone with no owner fails.
+     * Found by this audit and not fixed yet: the Drone's arms are its tool claw, and wait on its new model. A fix must take its entry
+     * out, and a new bone with no owner fails.
      */
     private static final Map<String, Set<String>> KNOWN_LOOSE_BONES = Map.of(
             "drone", Set.of("arm_r", "elbow_r", "arm_r_x", "elbow_r_x"),
-            "mech", Set.of("root"),
+            "mech", Set.of(),
             "shuttle", Set.of(),
-            "titan", Set.of("root"));
+            "titan", Set.of());
     /** Found by this audit: sections that can come off with nothing changing on the model. The same rule as above. */
     private static final Map<String, Set<String>> KNOWN_EMPTY_SOCKETS = Map.of(
             "drone", Set.of("sensor_dome", "rotor_front_left", "rotor_front_right", "rotor_back_left", "rotor_back_right", "tool_claw"),
-            "mech", Set.of("pelvis"),
+            "mech", Set.of(),
             "shuttle", Set.of(),
             "titan", Set.of());
 

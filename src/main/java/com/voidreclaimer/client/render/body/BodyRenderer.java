@@ -358,7 +358,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         spec.socketParts().forEach((socket, bones) -> {
             boolean empty = view.data().section(socket).isEmpty();
             for (String name : bones) {
-                rigModel.getBone(name).ifPresent(bone -> bone.setHidden(empty));
+                rigModel.getBone(name).ifPresent(bone -> BodyLook.hideAlone(bone, empty));
             }
         });
     }

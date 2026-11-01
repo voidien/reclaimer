@@ -34,7 +34,8 @@
   },
   "socket_parts": {
     "neck": [
-      "neck"
+      "neck",
+      "root"
     ]
   },
   "mounts": {
