@@ -77,7 +77,7 @@ public final class LinkLedgerGameTests {
 
     /** The case the outbox cannot cover: it has ended, and a chunk nobody visited since a crash loads the copy from before the link. */
     @GameTest(template = "empty", timeoutTicks = 900)
-    public static void anOldCopyGoesEvenAfterItsOutboxHasEnded(GameTestHelper helper) {
+    public static void anOldCopyIsRefusedAfterItsOutboxHasEndedAndGoesWithTheShell(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_200, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
             long epoch = known(player, id).epoch();
@@ -86,9 +86,15 @@ public final class LinkLedgerGameTests {
             old.setEpoch(epoch - 1);
             helper.assertTrue(Links.stale(old), "an older copy passed for the shell");
             helper.assertTrue(Links.link(player, old) == Links.Result.NOT_A_SHELL, "linked to an old copy");
-            helper.startSequence()
-                    .thenWaitUntil(() -> helper.assertTrue(old.isRemoved(), "the old copy is still there"))
-                    .thenExecute(() -> LinkOutboxGameTests.finish(helper, player, level, id));
+            // The newer copy may have been lost, so this one stays until something proves it is not needed.
+            helper.runAfterDelay(40, () -> {
+                helper.assertFalse(old.isRemoved(), "an old copy went on the list's word alone");
+                LinkState.KnownShell entry = known(player, id);
+                player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, true)));
+                helper.startSequence()
+                        .thenWaitUntil(() -> helper.assertTrue(old.isRemoved(), "a copy of a shell that is gone is still there"))
+                        .thenExecute(() -> LinkOutboxGameTests.finish(helper, player, level, id));
+            });
         });
     }
 

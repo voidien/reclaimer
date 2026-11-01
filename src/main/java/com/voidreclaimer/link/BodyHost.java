@@ -119,7 +119,7 @@ public class BodyHost extends LivingEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() != HostRole.MIRROR && Links.stale(this)) {
+        if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() != HostRole.MIRROR && Links.replaced(this)) {
             LOGGER.info("Shell {} was an old copy and has been removed", getUUID());
             Outboxes.lookAgain(getUUID());
             discard();
