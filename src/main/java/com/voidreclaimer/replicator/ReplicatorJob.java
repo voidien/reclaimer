@@ -2,6 +2,7 @@ package com.voidreclaimer.replicator;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.voidreclaimer.registry.ModCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -25,10 +26,11 @@ public record ReplicatorJob(ResourceLocation recipe, List<ItemStack> results, Du
     public static final Codec<ReplicatorJob> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("recipe").forGetter(ReplicatorJob::recipe),
             // Jobs saved before multi-output recipes have a single "result".
-            ItemStack.CODEC.optionalFieldOf("result").forGetter(job -> Optional.empty()),
-            ItemStack.CODEC.listOf().optionalFieldOf("results", List.of()).forGetter(ReplicatorJob::results),
+            ItemStack.CODEC.lenientOptionalFieldOf("result").forGetter(job -> Optional.empty()),
+            // A job with a result that has gone stays in the queue, so a cancel can still give back what it took.
+            ModCodecs.eachOnItsOwn(ItemStack.CODEC, "a Replicator job's result").optionalFieldOf("results", List.of()).forGetter(ReplicatorJob::results),
             DustCost.CODEC.optionalFieldOf("paid", DustCost.NONE).forGetter(ReplicatorJob::paid),
-            ItemStack.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(ReplicatorJob::items),
+            ModCodecs.eachOnItsOwn(ItemStack.CODEC, "an item a Replicator job took").optionalFieldOf("items", List.of()).forGetter(ReplicatorJob::items),
             Codec.INT.optionalFieldOf("progress", 0).forGetter(ReplicatorJob::progress),
             Codec.INT.optionalFieldOf("total", 1).forGetter(ReplicatorJob::total)
     ).apply(instance, (recipe, single, results, paid, items, progress, total) -> new ReplicatorJob(recipe,

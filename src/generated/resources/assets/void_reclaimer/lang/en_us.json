@@ -554,6 +554,7 @@
   "message.void_reclaimer.replicator.done": "Replicated: %s",
   "message.void_reclaimer.replicator.locked": "That design is still locked.",
   "message.void_reclaimer.replicator.not_enough_dust": "Not enough dust.",
+  "message.void_reclaimer.replicator.not_enough_items": "You're missing the items this needs.",
   "message.void_reclaimer.replicator.queue_full": "Replicator queue is full.",
   "message.void_reclaimer.replicator.unknown_recipe": "Unknown design.",
   "message.void_reclaimer.scanner_off": "Cloud scanner: OFF",
