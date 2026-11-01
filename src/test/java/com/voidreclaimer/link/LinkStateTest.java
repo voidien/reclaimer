@@ -43,6 +43,14 @@ class LinkStateTest {
     }
 
     @Test
+    void oneBadEntryCostsOnlyThatEntry() {
+        LinkState.KnownShell good = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
+        CompoundTag saved = (CompoundTag) LinkState.CODEC.encodeStart(NbtOps.INSTANCE, LinkState.NONE.withKnown(good)).getOrThrow();
+        saved.getList("shells", Tag.TAG_COMPOUND).add(0, new CompoundTag());
+        assertEquals(java.util.List.of(good), LinkState.CODEC.parse(NbtOps.INSTANCE, saved).getOrThrow().shells());
+    }
+
+    @Test
     void theShellListComesBackFromASave() {
         LinkState.KnownShell idle = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
         LinkState.KnownShell wreck = new LinkState.KnownShell(new UUID(3L, 4L), 1L, PLACE, true, true);
