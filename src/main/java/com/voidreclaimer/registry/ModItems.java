@@ -100,7 +100,7 @@ public final class ModItems {
     /** The Ship's core section; was the Ship frame. */
     public static final DeferredItem<SectionItem> SHIP_KEEL = section("ship_keel", BuiltinBodies.SHIP_KEEL, 3,
             s -> s.mass(2f).budget(11f).health(14f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.COSMETIC, 1)
-                    .chassis(BuiltinBodies.SHIP));
+                    .mount(ModuleKind.STORAGE, 1).chassis(BuiltinBodies.SHIP));
     public static final DeferredItem<SectionItem> SHIP_BOW = section("ship_bow", BuiltinBodies.BOW, 3,
             s -> s.mass(0.5f).budget(1f).health(2f).intake(0.5f));
     public static final DeferredItem<SectionItem> SHIP_BRIDGE = section("ship_bridge", BuiltinBodies.BRIDGE, 3,

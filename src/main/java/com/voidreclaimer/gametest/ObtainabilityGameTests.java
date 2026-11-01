@@ -111,7 +111,8 @@ public final class ObtainabilityGameTests {
 
     /**
      * Dust is paid in full when a job starts, so a body can only buy what it can hold. Each size class's core has to be affordable in
-     * a smaller body, or nobody can get there. The smallest class is where a player starts, so it needs no such thing.
+     * a smaller body, or nobody can get there, and so does a kit with the core in it. The smallest class is where a player starts, so
+     * it needs no such thing.
      */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void everyCoreCanBeBoughtInASmallerBody(GameTestHelper helper) {
@@ -123,13 +124,14 @@ public final class ObtainabilityGameTests {
             int rank = Bodies.stats(player).sizeRank();
             float capacity = biggestCapacity(player, rank);
             Item core = body.core().getItem();
-            Optional<RecipeHolder<ReplicatorRecipe>> recipe = recipeFor(player, core);
-            if (capacity <= 0f || recipe.isEmpty()) {
+            if (capacity <= 0f) {
                 continue;
             }
-            float price = recipe.get().value().cost().amounts().values().stream().max(Float::compare).orElse(0f);
-            if (price > capacity) {
-                faults.add(key.location().getPath() + " costs " + price + " of one dust, and a smaller body holds " + capacity);
+            for (RecipeHolder<ReplicatorRecipe> recipe : player.server.getRecipeManager().getAllRecipesFor(ModRecipeTypes.REPLICATOR.get())) {
+                float price = recipe.value().cost().amounts().values().stream().max(Float::compare).orElse(0f);
+                if (recipe.value().count(core) > 0 && price > capacity) {
+                    faults.add(recipe.id().getPath() + " costs " + price + " of one dust, and a smaller body holds " + capacity);
+                }
             }
         }
         TestPlayers.remove(player);
