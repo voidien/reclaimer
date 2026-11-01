@@ -34,6 +34,7 @@ public final class VoidReclaimer {
         ModRegistries.register(modBus);
         ModAttachments.ATTACHMENT_TYPES.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
+        com.voidreclaimer.registry.ModParticles.PARTICLE_TYPES.register(modBus);
         ConfigCondition.CONDITIONS.register(modBus);
         com.voidreclaimer.machine.MachineSetup.FAN_TYPES.register(modBus);
         com.voidreclaimer.compat.create.HoloDisplaySetup.TARGETS.register(modBus);

@@ -241,6 +241,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.nanite.range", "Nanite build distance: %s");
         add("subtitles.void_reclaimer.nanite_build", "Nanites assemble");
         add("subtitles.void_reclaimer.mass_driver_launch", "Mass Driver fires");
+        add("subtitles.void_reclaimer.acid_drizzle", "Acid Drizzle falls");
 
         add(ModBlocks.TETHER_ANCHOR.get(), "Tether Anchor");
         add("key.void_reclaimer.recall", "Tether Recall (hold)");
