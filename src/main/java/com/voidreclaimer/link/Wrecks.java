@@ -31,6 +31,7 @@ public final class Wrecks {
         shell.setRole(HostRole.WRECK);
         shell.setHealth(shell.getMaxHealth());
         shell.setDeltaMovement(Vec3.ZERO);
+        Links.note(shell);
     }
 
     private static void add(ListTag contents, ItemStack stack, HolderLookup.Provider registries) {
