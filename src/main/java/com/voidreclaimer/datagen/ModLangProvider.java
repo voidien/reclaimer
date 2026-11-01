@@ -326,6 +326,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.census.changed", "Changed since the last count: %s");
         add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
+        add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.wreck.left", "Salvaged %s stacks; %s more will not fit");
         add("message.void_reclaimer.wreck.empty", "Salvaged %s stacks: the wreck is empty");
         add("commands.void_reclaimer.link.unknown", "No body called %s");
