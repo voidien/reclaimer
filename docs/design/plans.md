@@ -31,6 +31,13 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 3. **Holo-displays** from `docs/HOLO_DISPLAYS_PLAN.md`, with its defaults. The Dyson and Earth globes show **live progress** (satellites and trusses launched; restored sectors, which also makes the globe the sector map).
 4. **Airship kit.** Our own envelope, gondola and propeller blocks on Aeronautics' lift and thrust code, with recipes, placeholder art until the owner's; plus a stronger late, Earth-only engine that runs on Purified Water or Bio-Nutrient Slurry, tying airships to terraforming. Airships stay Create-flown; no Helm adapter.
 
+**Danger (owner, 2026-11-01; replaces "no hazards except time"):** environmental only, with still no enemies or combat. Comes after remote control. Nothing below is built yet, and each item gets its own interview and file list.
+- **Shells:** cannot be hurt while parked; can be hurt while the player is linked in.
+- **Main body destroyed:** it stays as a wreck where it died, holding the items, and the player flies back to salvage it. Reuses the shell wreck code. Replaces today's respawn rules for what is carried.
+- **Crashes:** a hard ship crash breaks blocks near the impact, more at higher speed, with a safe speed below that. Bodies take collision damage too. Fall damage on Earth stays.
+- **Hazards chosen:** debris storms (fast rock showers that chip bodies and stations), Earth's toxic air (hurts bodies until sectors heal), ion storms (scramble sensors and the HUD and weaken remote links), solar flares (a warning, then take cover behind rock or a station), fracturing asteroids (too much drilling splits a rock and sends pieces drifting), and a debris belt around Earth (a dangerous crossing that clears as the planet heals).
+- **Not chosen:** radiation near stars, running out of power, dust squalls, quakes and sinkholes.
+
 **The old Mass Driver blocks (owner, 2026-10-31; not built, each needs its own interview and go-ahead):** the owner wants all four ideas: a **probe launcher** firing Remote Shells or relays to far spots, a **cargo railgun** firing crates between stations, an **asteroid tug** that brings rock to a base, and **derelict relics** found in space and salvaged. Queued after the airship kit unless the owner moves them.
 
 **Dev tools approved (owner, 2026-10-31), to build before the link itself:** `PROGRESS.md merge=union` in `.gitattributes`; a two-run restart test helper; `/void_reclaimer link census`; `/void_reclaimer debug chunks`, plus a thread dump when CI's datagen hangs.
