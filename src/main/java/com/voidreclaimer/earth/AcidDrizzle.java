@@ -7,7 +7,11 @@ import com.voidreclaimer.body.Wear;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -44,8 +48,17 @@ public final class AcidDrizzle {
         }
     }
 
-    /** Nothing solid over the top of the body. A heightmap, so a roof counts the moment it is placed. */
+    /**
+     * Nothing solid over the top of the body. A heightmap, so a roof counts the moment it is placed, and then a look straight up,
+     * because a ship's blocks are in its plot and no heightmap sees them: the owner's rule is that a hull is a roof.
+     */
     public static boolean underOpenSky(ServerPlayer player) {
-        return player.level().getHeight(Heightmap.Types.MOTION_BLOCKING, player.getBlockX(), player.getBlockZ()) <= Mth.ceil(player.getEyeY());
+        Level level = player.level();
+        if (level.getHeight(Heightmap.Types.MOTION_BLOCKING, player.getBlockX(), player.getBlockZ()) > Mth.ceil(player.getEyeY())) {
+            return false;
+        }
+        Vec3 eyes = player.getEyePosition();
+        Vec3 top = new Vec3(eyes.x, level.getMaxBuildHeight(), eyes.z);
+        return level.clip(new ClipContext(eyes, top, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getType() == HitResult.Type.MISS;
     }
 }
