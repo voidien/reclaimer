@@ -72,6 +72,8 @@ public final class Links {
         TIMED_OUT,
         /** A link is on its way already. */
         WAITING,
+        /** The seat's signal does not reach the shell. */
+        OUT_OF_RANGE,
         /** Something threw part way, and the move was undone. */
         FAILED
     }
@@ -316,10 +318,14 @@ public final class Links {
         if (link.seat().isEmpty()) {
             return home;
         }
-        ServerLevel level = player.server.getLevel(link.from().dimension());
-        boolean atStation = level != null && level.getData(ModAttachments.STATIONS).nearest(link.from().position(), Config.STATION_RANGE.get()).isPresent();
-        double perSecond = Config.LINK_SEAT_CHARGE.get() * (atStation ? Config.LINK_STATION_CHARGE.get() : 1.0);
+        double perSecond = Config.LINK_SEAT_CHARGE.get() * (atStation(player.server, link.from()) ? Config.LINK_STATION_CHARGE.get() : 1.0);
         return home.withEnergy(SeatCharge.after(home.energy(), player.server.overworld().getGameTime() - link.since(), perSecond));
+    }
+
+    /** Whether a seat at {@code place} has a station's perks. */
+    static boolean atStation(MinecraftServer server, LinkState.Place place) {
+        ServerLevel level = server.getLevel(place.dimension());
+        return level != null && level.getData(ModAttachments.STATIONS).nearest(place.position(), Config.STATION_RANGE.get()).isPresent();
     }
 
     private static boolean reachable(ServerPlayer player, LinkState.Place place) {
@@ -485,7 +491,7 @@ public final class Links {
         }
     }
 
-    private static LinkState.Place place(Entity entity) {
+    static LinkState.Place place(Entity entity) {
         return new LinkState.Place(entity.level().dimension(), entity.position(), entity.getYRot(), entity.getXRot());
     }
 

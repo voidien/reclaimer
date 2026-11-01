@@ -419,7 +419,8 @@ public final class CCPeripheralGameTests {
             ServerLevel level = TestPlayers.deepSpace(helper);
             var lua = new com.voidreclaimer.compat.cc.UplinkSeatPeripheral();
             var seat = place(level, pos, ModBlocks.UPLINK_SEAT.get(), com.voidreclaimer.link.UplinkSeatBlockEntity.class);
-            requireMethods(helper, Lookup.of(level, pos), "Uplink Seat", "getSeatId", "isOccupied", "getOccupant");
+            requireMethods(helper, Lookup.of(level, pos), "Uplink Seat", "getSeatId", "getRange", "isOccupied", "getOccupant");
+            helper.assertTrue(lua.getRange(seat) >= com.voidreclaimer.Config.LINK_SEAT_RANGE.get(), "the seat reaches " + lua.getRange(seat));
             helper.assertTrue(seat.id().toString().equals(lua.getSeatId(seat)), "the seat's id");
             helper.assertTrue(!lua.isOccupied(seat) && "".equals(lua.getOccupant(seat)), "a fresh seat reads as taken");
             level.removeBlock(pos, false);

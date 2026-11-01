@@ -166,6 +166,7 @@ Read-only: a link needs a player to take it.
 | Function | Returns |
 |---|---|
 | `getSeatId()` | the seat's id, which it keeps for good |
+| `getRange()` | how far the seat reaches now, in blocks |
 | `isOccupied()` | whether a player is linked from this seat |
 | `getOccupant()` | that player's name, or `""` |
 

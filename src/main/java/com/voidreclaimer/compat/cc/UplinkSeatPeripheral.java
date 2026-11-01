@@ -18,6 +18,12 @@ public final class UplinkSeatPeripheral implements GenericPeripheral {
         return seat.id().toString();
     }
 
+    /** How far the seat reaches now, in blocks. */
+    @LuaFunction(mainThread = true)
+    public final double getRange(UplinkSeatBlockEntity seat) {
+        return seat.range();
+    }
+
     /** Whether a player is linked from this seat. */
     @LuaFunction(mainThread = true)
     public final boolean isOccupied(UplinkSeatBlockEntity seat) {

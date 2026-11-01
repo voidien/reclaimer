@@ -48,7 +48,7 @@ public final class LinkReachGameTests {
     }
 
     /** A player, and a shell of theirs at {@code far} that has been left there and unloaded. */
-    private static void farShell(GameTestHelper helper, BlockPos origin, Vec3 far, BiConsumer<ServerPlayer, UUID> test) {
+    static void farShell(GameTestHelper helper, BlockPos origin, Vec3 far, BiConsumer<ServerPlayer, UUID> test) {
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
             ServerPlayer player = player(helper, origin);
             ServerLevel level = player.serverLevel();

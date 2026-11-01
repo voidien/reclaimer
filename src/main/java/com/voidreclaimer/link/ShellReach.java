@@ -64,6 +64,8 @@ public final class ShellReach {
             then.accept(Links.Result.NOT_A_SHELL);
         } else if (WAITING.stream().anyMatch(waiting -> waiting.player().equals(player.getUUID()))) {
             then.accept(Links.Result.WAITING);
+        } else if (seat != null && !Signal.read(player.server, Links.place(player), known.get().at()).reachable()) {
+            then.accept(Links.Result.OUT_OF_RANGE);
         } else {
             LinkState.Place at = known.get().at();
             ChunkPos chunk = new ChunkPos(BlockPos.containing(at.position()));

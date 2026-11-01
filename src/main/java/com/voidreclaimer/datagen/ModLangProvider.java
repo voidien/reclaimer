@@ -329,6 +329,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
         add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
+        add("message.void_reclaimer.link.signal_lost", "Signal lost. The shell stays where it is. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.uplink.no_shell", "No shell to link to");
         add("message.void_reclaimer.uplink.taken", "This seat is in use");
         add("message.void_reclaimer.uplink.failed", "The link failed: %s");
