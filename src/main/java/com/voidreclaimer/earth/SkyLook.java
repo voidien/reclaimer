@@ -1,5 +1,8 @@
 package com.voidreclaimer.earth;
 
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+
 /**
  * What one {@link SkyEra} looks like: pure data so it can be tested and tuned in one place. Colors are 0xRRGGBB.
  *
@@ -23,6 +26,34 @@ public record SkyLook(int zenith, int horizon, int fog, float fogFar, float sunH
             case HEALING -> HEALING;
             case RESTORED -> RESTORED;
         };
+    }
+
+    /**
+     * The look of a planet {@code restored} of the way healed, 0 to 1: ruined at 0, healing at one half, restored at 1,
+     * and a straight line between them, so every restored sector moves the sky and thins the smog.
+     */
+    public static SkyLook blend(float restored) {
+        float t = Mth.clamp(restored, 0f, 1f) * 2f;
+        return t <= 1f ? between(RUINED, HEALING, t) : between(HEALING, RESTORED, t - 1f);
+    }
+
+    /** What {@code level} shows: the blend for its sectors, or an era a debug command set by hand. */
+    public static SkyLook in(Level level) {
+        SkyEra era = SkyEra.of(level);
+        SectorMap map = SectorMap.of(level);
+        return era == SkyEra.forSectors(map.count()) ? blend(map.fraction()) : of(era);
+    }
+
+    private static SkyLook between(SkyLook from, SkyLook to, float t) {
+        if (t <= 0f) {
+            return from;
+        }
+        if (t >= 1f) {
+            return to;
+        }
+        return new SkyLook(mix(from.zenith, to.zenith, t), mix(from.horizon, to.horizon, t), mix(from.fog, to.fog, t),
+                Mth.lerp(t, from.fogFar, to.fogFar), Mth.lerp(t, from.sunHalfSize, to.sunHalfSize), mix(from.sunColor, to.sunColor, t),
+                Mth.lerp(t, from.sunAlpha, to.sunAlpha), t < 0.5f ? from.clouds : to.clouds);
     }
 
     /** Linear blend of two colors, {@code t} 0 for {@code from} and 1 for {@code to}. */

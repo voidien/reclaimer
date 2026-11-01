@@ -25,11 +25,11 @@ public final class SpireGameTests {
     private static final int RADIUS = 20;
     private static final int PULSE_TICKS = 40;
     /** The platform reaches this far, past the pulse, so the edge of the area can be told apart. */
-    private static final int PLATFORM = 24;
+    static final int PLATFORM = 24;
 
     private SpireGameTests() {}
 
-    private static ServerLevel earth(GameTestHelper helper) {
+    static ServerLevel earth(GameTestHelper helper) {
         ServerLevel level = helper.getLevel().getServer().getLevel(RuinedEarth.DIMENSION);
         if (level == null) {
             throw new AssertionError("ruined_earth is not loaded");
@@ -37,7 +37,7 @@ public final class SpireGameTests {
         return level;
     }
 
-    private static void forceChunks(ServerLevel level, BlockPos center, int reach, boolean forced) {
+    static void forceChunks(ServerLevel level, BlockPos center, int reach, boolean forced) {
         for (int x = (center.getX() - reach) >> 4; x <= (center.getX() + reach) >> 4; x++) {
             for (int z = (center.getZ() - reach) >> 4; z <= (center.getZ() + reach) >> 4; z++) {
                 level.setChunkForced(x, z, forced);
@@ -49,7 +49,7 @@ public final class SpireGameTests {
      * Puts the ruined biome back over the test area. Deliberately not {@code Terraforming.rewriteBiomes}: the persistent
      * GameTest world keeps the plains of earlier runs, and the reset must not depend on the code under test.
      */
-    private static void resetBiomes(ServerLevel level, BlockPos center, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> ruined) {
+    static void resetBiomes(ServerLevel level, BlockPos center, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> ruined) {
         for (int x = (center.getX() - PLATFORM - 8) >> 4; x <= (center.getX() + PLATFORM + 8) >> 4; x++) {
             for (int z = (center.getZ() - PLATFORM - 8) >> 4; z <= (center.getZ() + PLATFORM + 8) >> 4; z++) {
                 var chunk = level.getChunk(x, z);
@@ -60,7 +60,7 @@ public final class SpireGameTests {
     }
 
     /** A floating patch of ruined ground: three layers of slag on three of stone, with the Spire on top. */
-    private static void buildPlatform(ServerLevel level, BlockPos center) {
+    static void buildPlatform(ServerLevel level, BlockPos center) {
         for (int dx = -PLATFORM; dx <= PLATFORM; dx++) {
             for (int dz = -PLATFORM; dz <= PLATFORM; dz++) {
                 for (int dy = -3; dy <= 2; dy++) {
@@ -72,7 +72,7 @@ public final class SpireGameTests {
         }
     }
 
-    private static void clearPlatform(ServerLevel level, BlockPos center) {
+    static void clearPlatform(ServerLevel level, BlockPos center) {
         for (int dx = -PLATFORM; dx <= PLATFORM; dx++) {
             for (int dz = -PLATFORM; dz <= PLATFORM; dz++) {
                 for (int dy = -3; dy <= 3; dy++) {
@@ -84,7 +84,7 @@ public final class SpireGameTests {
 
 
     /** Checks once per tick until {@code done}, then runs {@code then}; fails the test (after {@code onTimeout}) when the budget runs out. */
-    private static void until(GameTestHelper helper, int budget, BooleanSupplier done, Runnable then, Runnable onTimeout) {
+    static void until(GameTestHelper helper, int budget, BooleanSupplier done, Runnable then, Runnable onTimeout) {
         if (done.getAsBoolean()) {
             then.run();
         } else if (budget <= 0) {

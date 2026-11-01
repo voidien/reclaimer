@@ -47,14 +47,10 @@ public final class Terraforming {
     }
 
     /**
-     * Sets the biome of every cell whose center lies within {@code radius} blocks (square) of {@code center}, in every
-     * chunk the area touches, then resends those chunks. Returns how many chunks were resent.
+     * Sets the biome of every cell whose center lies in the given block square, in every chunk the area touches, then
+     * resends those chunks. Returns how many chunks were resent.
      */
-    public static int rewriteBiomes(ServerLevel level, BlockPos center, int radius, Holder<net.minecraft.world.level.biome.Biome> biome) {
-        int minX = center.getX() - radius;
-        int maxX = center.getX() + radius;
-        int minZ = center.getZ() - radius;
-        int maxZ = center.getZ() + radius;
+    public static int rewriteBiomes(ServerLevel level, int minX, int maxX, int minZ, int maxZ, Holder<net.minecraft.world.level.biome.Biome> biome) {
         List<ChunkAccess> chunks = new ArrayList<>();
         for (int chunkX = Mth.floorDiv(minX, 16); chunkX <= Mth.floorDiv(maxX, 16); chunkX++) {
             for (int chunkZ = Mth.floorDiv(minZ, 16); chunkZ <= Mth.floorDiv(maxZ, 16); chunkZ++) {
