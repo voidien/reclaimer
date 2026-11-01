@@ -1,0 +1,1 @@
+[["src/main/java/com/voidreclaimer/link/Links.java", "        if (link.seat().isEmpty()) {\n            return home;\n        }\n", ""], ["src/main/java/com/voidreclaimer/link/Links.java", "(atStation ? Config.LINK_STATION_CHARGE.get() : 1.0)", "1.0"]]

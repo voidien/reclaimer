@@ -1,0 +1,1 @@
+[["src/main/java/com/voidreclaimer/link/Links.java", "        for (LinkState.Place core : BackupCores.wakePlaces(player)) {\n            if (reachable(player, core)) {\n                return core;\n            }\n        }\n", ""]]

@@ -1,0 +1,1 @@
+[["src/main/java/com/voidreclaimer/link/Signal.java", "Links.state(player).link().filter(found -> found.seat().isPresent())", "Links.state(player).link()"]]

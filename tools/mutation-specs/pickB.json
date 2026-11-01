@@ -1,0 +1,1 @@
+[["src/main/java/com/voidreclaimer/link/Signal.java", "            if (!known.gone()) {\n                rows.add(ShellRow.of(known, number, here, read(player.server, here, known.at())));\n            }\n", "            rows.add(ShellRow.of(known, number, here, read(player.server, here, known.at())));\n"]]

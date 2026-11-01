@@ -1,0 +1,1 @@
+[["src/main/java/com/voidreclaimer/link/UplinkSeatBlockEntity.java", "            ShipTickets.hold(level, ship, id);\n            BlockPos spot", "            BlockPos spot"], ["src/main/java/com/voidreclaimer/link/UplinkSeatBlockEntity.java", "            ShipTickets.hold(player.serverLevel(), ship, id);\n", ""]]
