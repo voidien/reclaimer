@@ -98,6 +98,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.STATION_CORE.get(), "Station Core");
         add(ModItems.HOLO_PROJECTOR.get(), "Holo Projector");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
+        add(ModItems.UPLINK_SEAT.get(), "Uplink Seat");
         add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
         add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
         add("message.void_reclaimer.ship_portal.blocked", "The far side of the portal is not clear for the ship.");
@@ -327,6 +328,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
         add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
+        add("message.void_reclaimer.uplink.no_shell", "No shell to link to");
+        add("message.void_reclaimer.uplink.taken", "This seat is in use");
+        add("message.void_reclaimer.uplink.failed", "The link failed: %s");
         add("message.void_reclaimer.wreck.left", "Salvaged %s stacks; %s more will not fit");
         add("message.void_reclaimer.wreck.empty", "Salvaged %s stacks: the wreck is empty");
         add("commands.void_reclaimer.link.unknown", "No body called %s");

@@ -81,6 +81,11 @@ public final class ModBlocks {
             com.voidreclaimer.station.DockingClampBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0f, 8.0f).sound(SoundType.COPPER));
 
+    /** Where a player leaves the main body to run a shell. */
+    public static final DeferredBlock<com.voidreclaimer.link.UplinkSeatBlock> UPLINK_SEAT = BLOCKS.registerBlock("uplink_seat",
+            com.voidreclaimer.link.UplinkSeatBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 8.0f).sound(SoundType.COPPER).noOcclusion());
+
     /** Shows text from programs or a built-in readout in the air above itself. */
     public static final DeferredBlock<com.voidreclaimer.display.HoloProjectorBlock> HOLO_PROJECTOR = BLOCKS.registerBlock("holo_projector",
             com.voidreclaimer.display.HoloProjectorBlock::new,

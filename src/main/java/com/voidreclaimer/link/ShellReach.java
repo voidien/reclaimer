@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -34,7 +35,7 @@ public final class ShellReach {
     /** Three chunks by three: a shell can sit on a chunk's edge, and the list only knows where it was at the last save. */
     private static final int RADIUS = 1;
 
-    private record Waiting(UUID player, UUID shell, ResourceKey<Level> dimension, ChunkPos chunk, long until, Consumer<Links.Result> then) {}
+    private record Waiting(UUID player, UUID shell, @Nullable UUID seat, ResourceKey<Level> dimension, ChunkPos chunk, long until, Consumer<Links.Result> then) {}
 
     /** At most one for each player. Lives on the server thread. */
     private static final List<Waiting> WAITING = new ArrayList<>();
@@ -42,11 +43,19 @@ public final class ShellReach {
     private ShellReach() {}
 
     static void request(ServerPlayer player, UUID shell, Consumer<Links.Result> then) {
-        request(player, shell, LIMIT_TICKS, then);
+        request(player, shell, null, LIMIT_TICKS, then);
+    }
+
+    static void request(ServerPlayer player, UUID shell, UUID seat, Consumer<Links.Result> then) {
+        request(player, shell, seat, LIMIT_TICKS, then);
     }
 
     /** {@link #request} with a limit of a test's choosing. */
     public static void request(ServerPlayer player, UUID shell, int limitTicks, Consumer<Links.Result> then) {
+        request(player, shell, null, limitTicks, then);
+    }
+
+    private static void request(ServerPlayer player, UUID shell, @Nullable UUID seat, int limitTicks, Consumer<Links.Result> then) {
         LinkState state = Links.state(player);
         Optional<LinkState.KnownShell> known = state.known(shell).filter(entry -> !entry.gone() && !entry.wrecked());
         if (state.linked()) {
@@ -58,7 +67,7 @@ public final class ShellReach {
         } else {
             LinkState.Place at = known.get().at();
             ChunkPos chunk = new ChunkPos(BlockPos.containing(at.position()));
-            WAITING.add(new Waiting(player.getUUID(), shell, at.dimension(), chunk, player.server.getTickCount() + (long) limitTicks, then));
+            WAITING.add(new Waiting(player.getUUID(), shell, seat, at.dimension(), chunk, player.server.getTickCount() + (long) limitTicks, then));
         }
     }
 
@@ -84,7 +93,7 @@ public final class ShellReach {
             end(waiting, Links.Result.CANNOT_REACH);
         } else if (level.getEntity(waiting.shell()) instanceof BodyHost shell) {
             WAITING.remove(waiting);
-            Links.requestLink(player, shell, waiting.then());
+            Links.requestLink(player, shell, waiting.seat(), waiting.then());
         } else if (read(level, waiting.chunk())) {
             end(waiting, Links.Result.NOT_FOUND);
         } else if (server.getTickCount() >= waiting.until()) {
