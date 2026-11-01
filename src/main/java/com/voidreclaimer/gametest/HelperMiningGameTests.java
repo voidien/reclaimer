@@ -52,7 +52,7 @@ public final class HelperMiningGameTests {
         level.getEntitiesOfClass(ItemEntity.class, new AABB(around).inflate(40)).forEach(ItemEntity::discard);
     }
 
-    @GameTest(template = "empty", timeoutTicks = 1200)
+    @GameTest(template = "empty", timeoutTicks = 700)
     public static void aDroneMinesTheRocksNearItsMinePointIntoItsChest(GameTestHelper helper) {
         BlockPos pos = new BlockPos(90_400, Y, 0);
         NaniteGameTests.inEntityTickingArea(helper, pos, 8, () -> {
@@ -70,19 +70,24 @@ public final class HelperMiningGameTests {
             HelperDrone drone = HelperDrone.spawn(level, Vec3.atCenterOf(pos).add(0, 2, 0),
                     new HelperLinks(Optional.empty(), Optional.of(chestPos), Optional.of(mine)), null);
             helper.assertTrue(drone.links().mining(), "a drone with a mine point does not mine");
-            // Three rocks at 40 dig ticks each plus short flights: well under 600 ticks.
-            helper.runAfterDelay(600, () -> {
-                int mined = count(level, chestPos, ModBlocks.ASTEROID_SILICATE.get().asItem());
-                helper.assertTrue(mined == 3, "rocks delivered: " + mined + ", drone " + drone.minePhase() + " carrying " + drone.carried());
-                for (BlockPos rock : rocks) {
-                    helper.assertTrue(level.getBlockState(rock).isAir(), "rock left at " + rock);
-                }
-                helper.assertTrue(level.getBlockState(stone).is(Blocks.STONE), "the drone took a stone that is not asteroid rock");
-                helper.assertTrue(drone.minePhase() == Mining.Phase.WAITING, "with no rock left the drone should wait: " + drone.minePhase());
-                level.setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
-                removeDrones(level, pos);
-                helper.succeed();
-            });
+            // Three rocks at 40 dig ticks each plus short flights: well under 600 ticks. A batch lasts as long as its slowest
+            // test, so this goes on as soon as they are in. The wait after that is two of the drone's scans and a dig: a drone
+            // that wrongly wanted the stone would have started on it by then.
+            helper.startSequence()
+                    .thenWaitUntil(() -> {
+                        int mined = count(level, chestPos, ModBlocks.ASTEROID_SILICATE.get().asItem());
+                        helper.assertTrue(mined == 3, "rocks delivered: " + mined + ", drone " + drone.minePhase() + " carrying " + drone.carried());
+                        for (BlockPos rock : rocks) {
+                            helper.assertTrue(level.getBlockState(rock).isAir(), "rock left at " + rock);
+                        }
+                    })
+                    .thenExecuteAfter(120, () -> {
+                        helper.assertTrue(level.getBlockState(stone).is(Blocks.STONE), "the drone took a stone that is not asteroid rock");
+                        helper.assertTrue(drone.minePhase() == Mining.Phase.WAITING, "with no rock left the drone should wait: " + drone.minePhase());
+                        level.setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
+                        removeDrones(level, pos);
+                    })
+                    .thenSucceed();
         });
     }
 

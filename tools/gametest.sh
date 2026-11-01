@@ -39,6 +39,8 @@ for _ in $(seq 1 450); do
 done
 sleep 2
 grep -aE "required tests|failed at|error:|What went wrong" "$log" | grep -v "DEBUG\|WARN" | cut -c1-"$width" | head -12
+# The slowest tests: a batch lasts as long as its slowest test.
+grep -a "VR_TEST_TIME" "$log" | sed 's/.*VR_TEST_TIME //' | sort -rn | head -5
 # CI has no killer: the server must exit by itself after the summary (GameTestStopMixin bounds the stop loop). Give it
 # 40 s and say so when it does not, so a shutdown hang is seen here and not first on CI.
 for _ in $(seq 1 20); do kill -0 $gradle 2>/dev/null || break; sleep 2; done
