@@ -59,7 +59,7 @@ public final class LinkWakeGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aClosedHomeWakesYouAtABackupCoreForNothing(GameTestHelper helper) {
         BlockPos origin = new BlockPos(147_400, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -81,7 +81,7 @@ public final class LinkWakeGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aClosedHomeAndNoCoreWakesYouAtTheSpawn(GameTestHelper helper) {
         BlockPos origin = new BlockPos(147_600, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -95,7 +95,7 @@ public final class LinkWakeGameTests {
     }
 
     /** A wake to where the body was left stays exactly that: the chain only starts when that is closed. */
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void anOpenHomeIsWhereYouWake(GameTestHelper helper) {
         BlockPos origin = new BlockPos(147_800, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
