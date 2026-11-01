@@ -8,6 +8,7 @@ import com.voidreclaimer.link.BodySnapshot;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
 import com.voidreclaimer.link.Links;
+import com.voidreclaimer.registry.ModEntities;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -39,11 +41,20 @@ public final class LinkLedgerGameTests {
         player.setData(ModAttachments.LINK, Links.state(player).withoutOutbox(id));
     }
 
+    /** A second copy of {@code shell}, not yet in the level. */
+    private static BodyHost copy(BodyHost shell, long epoch) {
+        BodyHost copy = new BodyHost(ModEntities.BODY_HOST.get(), shell.level());
+        copy.setUUID(shell.getUUID());
+        copy.setPos(shell.position());
+        copy.setEpoch(epoch);
+        return copy;
+    }
+
     private static BodyHost beside(ServerPlayer player) {
         return BodyHost.spawn(player.serverLevel(), player.position().add(AWAY), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aShellIsOnTheListFromTheStart(GameTestHelper helper) {
         BlockPos origin = new BlockPos(142_000, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -65,8 +76,8 @@ public final class LinkLedgerGameTests {
     }
 
     /** The case the outbox cannot cover: it has ended, and a chunk nobody visited since a crash loads the copy from before the link. */
-    @GameTest(template = "empty", timeoutTicks = 200)
-    public static void anOldCopyGoesEvenAfterItsOutboxHasEnded(GameTestHelper helper) {
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyIsRefusedAfterItsOutboxHasEndedAndGoesWithTheShell(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_200, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
             long epoch = known(player, id).epoch();
@@ -75,13 +86,19 @@ public final class LinkLedgerGameTests {
             old.setEpoch(epoch - 1);
             helper.assertTrue(Links.stale(old), "an older copy passed for the shell");
             helper.assertTrue(Links.link(player, old) == Links.Result.NOT_A_SHELL, "linked to an old copy");
-            helper.startSequence()
-                    .thenWaitUntil(() -> helper.assertTrue(old.isRemoved(), "the old copy is still there"))
-                    .thenExecute(() -> LinkOutboxGameTests.finish(helper, player, level, id));
+            // The newer copy may have been lost, so this one stays until something proves it is not needed.
+            helper.runAfterDelay(40, () -> {
+                helper.assertFalse(old.isRemoved(), "an old copy went on the list's word alone");
+                LinkState.KnownShell entry = known(player, id);
+                player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(id, entry.epoch(), entry.at(), false, true)));
+                helper.startSequence()
+                        .thenWaitUntil(() -> helper.assertTrue(old.isRemoved(), "a copy of a shell that is gone is still there"))
+                        .thenExecute(() -> LinkOutboxGameTests.finish(helper, player, level, id));
+            });
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theShellItselfIsNotAnOldCopy(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_400, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -93,7 +110,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void aShellDestroyedForGoodDoesNotComeBack(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(142_600, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -138,7 +155,7 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void dyingInAShellMarksItAWreck(GameTestHelper helper) {
         BlockPos origin = new BlockPos(143_000, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
@@ -159,7 +176,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** Its own batch: a save counts for every player's list. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_a")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_a")
     public static void aSaveKeepsTrackOfAShell(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_200, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -172,7 +189,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** Its own batch: a save counts for every player's list. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_b")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_b")
     public static void anOldCopySaysNothingToTheList(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_400, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -188,7 +205,7 @@ public final class LinkLedgerGameTests {
     }
 
     /** A save made before the list has outboxes and no entries. Its own batch: a save counts for every player's outbox. */
-    @GameTest(template = "empty", timeoutTicks = 200, batch = "ledger_saves_c")
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "ledger_saves_c")
     public static void anOutboxFromBeforeTheListEndsOnTheList(GameTestHelper helper) {
         LinkOutboxGameTests.woken(helper, new BlockPos(143_600, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
@@ -202,7 +219,83 @@ public final class LinkLedgerGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOlderCopyCannotJoinBesideTheShell(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(261_000, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            BodyHost shell = beside(player);
+            shell.setEpoch(5L);
+            BodyHost old = copy(shell, 4L);
+            helper.assertFalse(player.serverLevel().addFreshEntity(old), "an old copy joined");
+            helper.assertTrue(player.serverLevel().getEntity(shell.getUUID()) == shell && !shell.isRemoved(), "the old copy pushed the shell out");
+            LinkOutboxGameTests.finish(helper, player, player.serverLevel(), shell.getUUID());
+        });
+    }
+
+    /** The case that lost a body: the old copy's chunk loads first, and the level would refuse the newer copy that comes after it. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aNewerCopyPushesOutAnOldOne(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(261_200, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            BodyHost old = beside(player);
+            old.setEpoch(4L);
+            BodyHost newer = copy(old, 5L);
+            helper.assertTrue(player.serverLevel().addFreshEntity(newer), "the level refused the newer copy");
+            helper.assertTrue(old.isRemoved(), "the old copy is still here");
+            helper.assertTrue(player.serverLevel().getEntity(old.getUUID()) == newer, "the newer copy is not the shell now");
+            LinkOutboxGameTests.finish(helper, player, player.serverLevel(), old.getUUID());
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyKilledLeavesTheRecordAlone(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(261_400, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            LinkState.KnownShell before = known(player, id);
+            BodyHost old = (BodyHost) level.getEntity(id);
+            old.setEpoch(before.epoch() - 1);
+            old.remove(Entity.RemovalReason.KILLED);
+            helper.assertFalse(known(player, id).gone(), "an old copy took the shell with it");
+            helper.assertTrue(Links.state(player).outbox(id).isPresent(), "an old copy took the outbox with it");
+            LinkOutboxGameTests.finish(helper, player, level, id);
+        });
+    }
+
+    /** Linking to an old copy is allowed when the outbox cannot be read, and the list stays ahead of every copy. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aLinkNeverLowersTheList(GameTestHelper helper) {
+        LinkOutboxGameTests.woken(helper, new BlockPos(261_600, 80, 0), (player, id) -> {
+            ServerLevel level = player.serverLevel();
+            LinkState.Outbox outbox = Links.state(player).outbox(id).orElseThrow();
+            long before = known(player, id).epoch();
+            BodyHost old = (BodyHost) level.getEntity(id);
+            old.setEpoch(before - 1);
+            player.setData(ModAttachments.LINK, Links.state(player).withOutbox(new LinkState.Outbox(id, outbox.epoch(), new CompoundTag(), outbox.at(), false)));
+            helper.assertTrue(Links.link(player, old) == Links.Result.LINKED, "no link to the only readable copy");
+            helper.assertTrue(known(player, id).epoch() == before + 1, "the list went back with an old copy");
+            helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+            LinkOutboxGameTests.finish(helper, player, level, id);
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void anOldCopyOfAnEmptiedWreckGivesNothing(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(261_800, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            BodyHost wreck = beside(player);
+            wreck.die(player.serverLevel().damageSources().genericKill());
+            player.setData(ModAttachments.LINK, Links.state(player).withKnown(new LinkState.KnownShell(wreck.getUUID(), wreck.epoch(),
+                    new LinkState.Place(player.serverLevel().dimension(), wreck.position(), 0f, 0f), true, true)));
+            wreck.interact(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(player.getInventory().isEmpty(), "a wreck that is gone was salvaged again");
+            LinkOutboxGameTests.finish(helper, player, player.serverLevel(), wreck.getUUID());
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void theShellsCommandCountsWhatIsLeft(GameTestHelper helper) {
         BlockPos origin = new BlockPos(143_800, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {

@@ -508,6 +508,7 @@
   "message.void_reclaimer.helper.not_a_container": "That block holds no items and is not asteroid rock.",
   "message.void_reclaimer.helper.picked_up": "Helper Drone taken back.",
   "message.void_reclaimer.helper.source_set": "Source set: %s %s %s. Sneak-use the destination next.",
+  "message.void_reclaimer.helper.status.blocked": "Blocked: no way to its target. It will look again. Carrying %s.",
   "message.void_reclaimer.helper.status.digging": "Digging. Carrying %s.",
   "message.void_reclaimer.helper.status.gathering": "Gathering dust. Holding %s.",
   "message.void_reclaimer.helper.status.idle": "Idle: set both links and release it again. Carrying %s.",

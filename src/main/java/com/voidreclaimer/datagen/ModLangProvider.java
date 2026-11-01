@@ -228,6 +228,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.helper.status.to_source", "Flying to the source. Carrying %s.");
         add("message.void_reclaimer.helper.status.to_destination", "Flying to the destination. Carrying %s.");
         add("message.void_reclaimer.helper.status.waiting", "Waiting: nothing to take or no room to give. Carrying %s.");
+        add("message.void_reclaimer.helper.status.blocked", "Blocked: no way to its target. It will look again. Carrying %s.");
         add(com.voidreclaimer.registry.ModBlocks.LAUNCH_PAD.get(), "Launch Pad");
         add(ModItems.QUANTUM_RECEIVER.get(), "Sub-Light Quantum Receiver");
         for (var material : com.voidreclaimer.registry.ModMaterials.ALL) {

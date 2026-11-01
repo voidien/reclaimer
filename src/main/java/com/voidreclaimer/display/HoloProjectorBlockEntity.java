@@ -107,6 +107,16 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         apply(display.withBody());
     }
 
+    /** Shows a globe and fills in its progress at once; false for a name that is not one. */
+    public boolean setGlobe(String globe) {
+        if (!HoloGlobes.NAMES.contains(globe)) {
+            return false;
+        }
+        apply(display.withGlobe(globe));
+        refresh();
+        return true;
+    }
+
     public void setScale(float scale) {
         apply(display.withScale(scale));
     }
@@ -119,10 +129,12 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         apply(display.withBillboard(billboard));
     }
 
-    /** Composes the readout's lines now; a projector showing text keeps them. */
+    /** Composes a readout's lines or a globe's progress now; a projector showing anything else keeps what it has. */
     public void refresh() {
         if (display.mode() == HoloDisplay.Mode.READOUT) {
             apply(display.withReadoutLines(compose(display)));
+        } else if (display.mode() == HoloDisplay.Mode.GLOBE && level != null && level.getServer() != null) {
+            apply(display.withProgress(HoloGlobes.sample(level.getServer())));
         }
     }
 
