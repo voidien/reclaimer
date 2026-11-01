@@ -145,6 +145,7 @@ The table of extension points is in `docs/design/extension-points.md`.
 ### Fixed sets (enums by design)
 - `HostRole` (`link`): what a `BodyHost` is for (shell, wreck, mirror). Each is a rule of remote control, not content; an unknown saved role reads as a shell, so a body is never lost.
 - `ShellLinkEvent.Reason` (`api.event`): why a link ended (left, signal lost, body lost). Each is a rule of remote control, not content.
+- `ShellPrices` (`link`): the settings of the `link.shellPrices` config choice. Each is a preset of recipes, and new prices come from datapack recipes.
 - `ModuleKind` (`api.body`): the mount kinds sections offer (core, thruster, storage, sensor, tool, cosmetic). Each has its own rule in `BodyStats`; new behaviour comes from new modules of these kinds (tools: `ToolModuleType`). Sections themselves are open (socket types are free ids).
 
 ## Conventions

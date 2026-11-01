@@ -1,6 +1,7 @@
 package com.voidreclaimer.gametest;
 
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.machine.ConfigChoiceCondition;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.link.BodyHost;
@@ -67,9 +68,22 @@ public final class RemoteShellGameTests {
     @GameTest(template = "empty")
     public static void theSeatAndTheShellsCanBeMade(GameTestHelper helper) {
         var recipes = helper.getLevel().getServer().getRecipeManager();
-        for (String name : List.of("uplink_seat", "drone_shell", "mech_shell", "ship_shell")) {
+        for (String name : List.of("uplink_seat", "drone_shell_parts", "mech_shell_parts", "ship_shell_parts")) {
             helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/" + name)).isPresent(), "no recipe for " + name);
         }
+        helper.succeed();
+    }
+
+    /** The extension point: one setting of a config choice keeps one set of recipes. */
+    @GameTest(template = "empty")
+    public static void theConfigKeepsOneSetOfShellPrices(GameTestHelper helper) {
+        var recipes = helper.getLevel().getServer().getRecipeManager();
+        for (String setting : List.of("cheap", "reduced", "premium")) {
+            helper.assertTrue(recipes.byKey(VoidReclaimer.id("replicator/ship_shell_" + setting)).isEmpty(), "a second price for the ship shell: " + setting);
+        }
+        helper.assertTrue(new ConfigChoiceCondition("shellPrices", "parts").test(null), "the default did not pass");
+        helper.assertFalse(new ConfigChoiceCondition("shellPrices", "cheap").test(null), "another setting passed");
+        helper.assertFalse(new ConfigChoiceCondition("noSuchChoice", "parts").test(null), "an unknown choice passed");
         helper.succeed();
     }
 }
