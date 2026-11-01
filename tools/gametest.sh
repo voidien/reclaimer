@@ -14,16 +14,16 @@ suite=${1:-main}
 filter=${2:-}
 width=${3:-300}
 case "$suite" in
-  main) task=runGameTestServer ;;
-  aero) task=runGameTestAeronautics ;;
+  main) task=runGameTestServer; run=gameTestServer ;;
+  aero) task=runGameTestAeronautics; run=gameTestAeronautics ;;
   *) echo "unknown suite $suite (main or aero)" >&2; exit 2 ;;
 esac
 log=build/gametest-$suite.log
 mkdir -p build
 
 # The JVM and nothing else: a pattern like `grep gameTest` also matches the shell running this script.
-# Only this checkout's: another worktree may be running its own suite at the same time.
-killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/gameTest" '$2 ~ /\/bin\/java$/ && index($0, root) {print $1}' | xargs -r kill; }
+# Only this checkout's and this suite's: another worktree or the other suite may be running at the same time.
+killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/$run" '$2 ~ /\/bin\/java$/ && index($0, root) {print $1}' | xargs -r kill; }
 
 killjvm
 : > "$log"
