@@ -296,6 +296,8 @@ public final class StationGameTests {
                     helper.runAfterDelay(10, () -> {
                         var state = com.voidreclaimer.link.Links.state(player);
                         helper.assertTrue(state.linked(), "the seat made no link");
+                        // A real client's reply tells the chunk map a player has moved. A test player's does not, so it still holds the ship.
+                        space.getChunkSource().move(player);
                         // The ship has not moved, so this stands in for it having moved: the seat must put the place right.
                         var link = state.link().orElseThrow();
                         var wrong = new com.voidreclaimer.link.LinkState.Place(link.from().dimension(), far, 0f, 0f);
@@ -311,6 +313,7 @@ public final class StationGameTests {
                             helper.assertTrue(woke.distanceTo(Vec3.atCenterOf(pos)) < 16.0, "woke away from the ship: " + woke);
                             // A player beside a ship keeps it loaded, so only with them gone does this show the seat let go.
                             player.teleportTo(far.x, far.y, far.z);
+                            space.getChunkSource().move(player);
                             whenShip(helper, space, name, false, 100, () -> {
                                 TestPlayers.remove(player);
                                 space.setChunkForced(chunkX, chunkZ, true);
