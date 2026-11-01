@@ -152,10 +152,9 @@ public final class SectorGameTests {
                 helper.assertFalse(spire.running(), "running over a restored sector");
 
                 forget(earth, sector);
-                helper.assertTrue(spire.tryStart() == SpireBlockEntity.Start.STARTED, "did not start over an unrestored sector");
+                helper.assertTrue(spire.tryStart() == SpireBlockEntity.Start.NO_CATALYST, "over an unrestored sector it only wants its cost");
                 int reach = Sectors.reach(sector, spirePos.getX(), spirePos.getZ() + SpireTower.HALF);
                 helper.assertTrue(spire.radius() == reach, "radius " + spire.radius() + ", the sector's far edge is " + reach);
-                // The block goes in the same tick, before the wave touches the persistent world.
                 helper.succeed();
             } finally {
                 SpireTowerGameTests.clear(earth, spirePos);

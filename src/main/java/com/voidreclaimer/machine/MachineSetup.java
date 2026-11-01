@@ -30,6 +30,7 @@ public final class MachineSetup {
             BlockStressValues.IMPACTS.register(ModBlocks.CHEMICAL_THRUSTER.get(), () -> Config.THRUSTER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.KINETIC_DRIVE_BASE.get(), () -> Config.MASS_DRIVER_STRESS.get());
             BlockStressValues.IMPACTS.register(ModBlocks.LAUNCH_CONTROLLER.get(), () -> Config.MASS_DRIVER_STRESS.get());
+            BlockStressValues.IMPACTS.register(ModBlocks.TERRAFORMING_SPIRE.get(), () -> Config.SPIRE_STRESS.get());
             // Per RPM, for tooltips; the Receiver's real output scales with the trusses launched (QuantumReceiverBlockEntity).
             BlockStressValues.CAPACITIES.register(ModBlocks.QUANTUM_RECEIVER.get(), () -> Config.RECEIVER_MAX_STRESS.get() / Config.RECEIVER_RPM.get());
             BlockSpoutingBehaviour.BY_BLOCK.register(AllBlocks.DEPOT.get(), new SpoutCasting());
@@ -37,6 +38,10 @@ public final class MachineSetup {
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.SPIRE.get(),
+                (entity, side) -> entity.fluids());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.SPIRE.get(),
+                (entity, side) -> entity.items());
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.ELECTROLYZER.get(),
                 (entity, side) -> entity.fluids());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.SPINNER.get(),

@@ -1,5 +1,6 @@
 package com.voidreclaimer.compat.cc;
 
+import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.earth.EarthRestoration;
 import com.voidreclaimer.earth.SectorMap;
@@ -72,6 +73,31 @@ public final class SpirePeripheral implements GenericPeripheral {
         return spire.radius();
     }
 
+    /** Whether the tower is charging for a pulse. */
+    @LuaFunction(mainThread = true)
+    public final boolean isCharging(SpireBlockEntity spire) {
+        return spire.charging();
+    }
+
+    /** How far the charge has come, 0 to 1 (0 when none is under way). */
+    @LuaFunction(mainThread = true)
+    public final double getCharge(SpireBlockEntity spire) {
+        return spire.chargeProgress();
+    }
+
+    /** What one pulse burns: {@code catalysts}, and {@code water} and {@code slurry} in millibuckets. */
+    @LuaFunction(mainThread = true)
+    public final Map<String, Integer> getCost(SpireBlockEntity spire) {
+        return Map.of("catalysts", Config.SPIRE_CATALYSTS.get(), "water", Config.SPIRE_WATER.get(), "slurry", Config.SPIRE_SLURRY.get());
+    }
+
+    /** What is loaded: {@code catalysts}, and {@code water} and {@code slurry} in millibuckets. */
+    @LuaFunction(mainThread = true)
+    public final Map<String, Integer> getStock(SpireBlockEntity spire) {
+        return Map.of("catalysts", spire.catalyst().getStackInSlot(0).getCount(), "water", spire.waterTank().getFluidAmount(),
+                "slurry", spire.slurryTank().getFluidAmount());
+    }
+
     /** The sector this tower stands in as a table of {@code column}, {@code row} (1 to 4) and {@code restored}; nil off the planet. */
     @LuaFunction(mainThread = true)
     @Nullable
@@ -102,8 +128,9 @@ public final class SpirePeripheral implements GenericPeripheral {
     }
 
     /**
-     * Fires the Genesis Pulse, as a right-click would. Returns {@code true}, or {@code false} and why:
-     * "busy", "wrong_world" (only on ruined Earth), "not_assembled" or "no_profile".
+     * Charges and fires the Genesis Pulse, as a right-click would. Returns {@code true}, or {@code false} and why:
+     * "busy", "wrong_world" (only on ruined Earth), "not_assembled", "off_planet", "sector_restored", "no_profile",
+     * "no_catalyst", "no_water", "no_slurry" or "no_rotation".
      */
     @LuaFunction(mainThread = true)
     public final MethodResult pulse(SpireBlockEntity spire) {

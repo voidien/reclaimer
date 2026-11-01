@@ -71,6 +71,10 @@ print(("tier %d, shell %.0f%%"):format(s.tier, s.shellProgress * 100))
 | `assemble()` | assembles the tower, like a sneak-use: `assembled`, `already_assembled`, `frame_incomplete`, `blocked` or `failed` |
 | `disassemble()` | sets it down: `disassembled`, `not_assembled` or `failed` |
 | `getSpeed()` | shaft speed in RPM |
+| `isCharging()` | whether the tower is charging for a pulse |
+| `getCharge()` | how far the charge has come, 0 to 1 (0 when none is under way) |
+| `getCost()` | what one pulse burns: `catalysts`, and `water` and `slurry` in mB |
+| `getStock()` | what is loaded: `catalysts`, and `water` and `slurry` in mB |
 | `isRunning()` | whether a Genesis Pulse is sweeping out from this Spire's tower |
 | `getProgress()` | how far the running pulse has swept, 0 to 1 (0 when idle) |
 | `getPulses()` | pulses finished at this Spire |
@@ -78,13 +82,14 @@ print(("tier %d, shell %.0f%%"):format(s.tier, s.shellProgress * 100))
 | `getSector()` | this tower's sector: `column` and `row` (1 to 4 from the north-west) and `restored`; nil off the planet or in another dimension |
 | `getSectors()` | 16 booleans, row by row from the north-west: which sectors are restored, read from any dimension |
 | `getRestoredCount()` | how many sectors are restored, 0 to 16 |
-| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"not_assembled"`, `"off_planet"`, `"sector_restored"`, `"no_profile"` |
+| `pulse()` | charges and fires the Genesis Pulse like a right-click or redstone pulse: `true` when the charge starts, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"not_assembled"`, `"off_planet"`, `"sector_restored"`, `"no_profile"`, `"no_catalyst"`, `"no_water"`, `"no_slurry"`, `"no_rotation"` |
 
 ```lua
 local spire = peripheral.find("void_reclaimer:terraforming_spire")
 if not spire.isAssembled() then print(spire.assemble()) end
 local ok, why = spire.pulse()
 if not ok then print("no pulse: " .. why) end
+while spire.isCharging() do sleep(1) end
 while spire.isRunning() do print(("%.0f%%"):format(spire.getProgress() * 100)) sleep(1) end
 ```
 
