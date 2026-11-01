@@ -587,6 +587,27 @@ public final class AeronauticsGameTests {
         }));
     }
 
+    /** On a ship a Helm's block position is in the ship's plot, millions of blocks away: a pilot leaves the chair where the ship is. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aPilotLeavingAHelmStaysAtTheShip(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(99_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        helmShip(helper, pos, log -> helper.runAfterDelay(1, () -> {
+            nameShip(server, space, pos);
+            ServerPlayer player = pilot(helper, space, pos, com.voidreclaimer.ship.PilotInput.NONE);
+            player.stopRiding();
+            Vec3 at = player.position();
+            TestPlayers.remove(player);
+            removeShip(server, space, pos);
+            if (at.distanceTo(Vec3.atCenterOf(pos)) > 16.0) {
+                helper.fail("the pilot was thrown to " + at);
+            } else {
+                helper.succeed();
+            }
+        }));
+    }
+
     /** The fuel of the thruster at {@code pos} as the level sees it, or -1 when the level sees no thruster there. */
     private static int fuelAt(ServerLevel space, BlockPos pos) {
         return space.getBlockEntity(pos) instanceof com.voidreclaimer.ship.ChemicalThrusterBlockEntity thruster ? thruster.tank().getFluidAmount() : -1;
