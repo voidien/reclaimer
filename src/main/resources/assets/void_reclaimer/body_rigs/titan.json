@@ -42,6 +42,10 @@
     "mount_core_1": {"bone": "saucer", "offset": [0, 5, -14], "yaw": 0},
     "mount_storage_1": {"bone": "saucer", "offset": [-14, 3, 6], "yaw": 0},
     "mount_storage_2": {"bone": "saucer", "offset": [14, 3, 6], "yaw": 0},
+    "mount_tool_1": {"bone": "saucer", "offset": [-14, -9, 10], "yaw": 180},
+    "mount_tool_2": {"bone": "saucer", "offset": [14, -9, 10], "yaw": 180},
+    "neck__mount_tool_1": {"bone": "root", "offset": [-8, -10, 10], "yaw": 180},
+    "neck__mount_tool_2": {"bone": "root", "offset": [8, -10, 10], "yaw": 180},
     "bridge__mount_sensor_1": {
       "bone": "bridge",
       "offset": [
