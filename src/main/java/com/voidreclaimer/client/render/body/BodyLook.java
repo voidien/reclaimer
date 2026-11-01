@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
+import org.joml.Quaternionf;
 
 /**
  * Pure rules of how a body is drawn, kept free of rendering classes so they can be unit-tested: which art rig a chassis uses,
@@ -200,5 +201,16 @@ public final class BodyLook {
             }
         }
         return out;
+    }
+
+    /**
+     * The model's turn: to where the body looks, and down by {@code pitch}. The rig's own {@code rigYaw} comes first, so its nose is at
+     * local -Z when the pitch is applied, whichever way the model was built. Positive pitch looks down, as vanilla's does.
+     */
+    public static Quaternionf turn(float yaw, float pitch, float rigYaw) {
+        return new Quaternionf()
+                .rotationY((float) Math.toRadians(180f - yaw))
+                .rotateX((float) Math.toRadians(-pitch))
+                .rotateY((float) Math.toRadians(rigYaw));
     }
 }

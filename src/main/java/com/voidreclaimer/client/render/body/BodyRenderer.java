@@ -382,10 +382,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         BodyRigSpec spec = current == null ? null : current.spec();
         boolean pitches = spec != null ? spec.pitches() : BodyLook.pitches(rig);
         float yaw = pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180f - yaw + (spec == null ? 0f : spec.yaw())));
-        if (pitches) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(-entity.getViewXRot(partialTick)));
-        }
+        poseStack.mulPose(BodyLook.turn(yaw, pitches ? entity.getViewXRot(partialTick) : 0f, spec == null ? 0f : spec.yaw()));
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
             applyLean(poseStack, entity, lean, pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot), partialTick, nativeScale);
