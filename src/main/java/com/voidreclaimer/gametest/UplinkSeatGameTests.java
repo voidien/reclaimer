@@ -10,6 +10,7 @@ import com.voidreclaimer.link.Links;
 import com.voidreclaimer.link.UplinkSeatBlockEntity;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -17,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -110,6 +112,62 @@ public final class UplinkSeatGameTests {
                         second.setData(ModAttachments.LINK, LinkState.NONE);
                         TestPlayers.remove(second);
                         finish(helper, first, level, pos);
+                    });
+        });
+    }
+
+    private static List<BodyHost> mirrors(ServerLevel level, BlockPos pos) {
+        return level.getEntitiesOfClass(BodyHost.class, new AABB(pos).inflate(3.0), host -> host.role() == HostRole.MIRROR);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aSeatShowsTheMainBodyWhileLinked(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(146_800, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
+            ServerPlayer player = player(helper, pos);
+            ServerLevel level = player.serverLevel();
+            UplinkSeatBlockEntity seat = seat(level, pos);
+            Object home = Bodies.chassis(level.registryAccess(), Bodies.data(player));
+            UUID id = BodyHost.spawn(level, player.position().add(AWAY), HostRole.SHELL, Bodies.preset(BuiltinBodies.MECH), player.getUUID()).getUUID();
+            seat.connect(player);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).size() == 1, "no mirror on the seat"))
+                    .thenExecute(() -> {
+                        BodyHost mirror = mirrors(level, pos).get(0);
+                        Object worn = Bodies.chassis(level.registryAccess(), Bodies.data(mirror));
+                        helper.assertTrue(worn.equals(home), "the mirror wears " + worn + ", not " + home);
+                        helper.assertFalse(worn.equals(Bodies.chassis(level.registryAccess(), Bodies.data(player))), "the test needs two different bodies");
+                        helper.assertFalse(mirror.shouldBeSaved(), "a mirror would be saved");
+                        helper.assertFalse(mirror.hurt(level.damageSources().generic(), 5f), "a mirror was hurt");
+                        mirror.discard();
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).size() == 1, "the seat did not build a new mirror"))
+                    .thenExecute(() -> helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake"))
+                    .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).isEmpty(), "the mirror outstayed the link"))
+                    .thenExecute(() -> {
+                        level.getEntity(id).discard();
+                        finish(helper, player, level, pos);
+                    });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aBrokenSeatTakesItsMirrorAndLeavesTheLink(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(147_000, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, pos, 1, () -> {
+            ServerPlayer player = player(helper, pos);
+            ServerLevel level = player.serverLevel();
+            UUID id = shell(player).getUUID();
+            seat(level, pos).connect(player);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).size() == 1, "no mirror on the seat"))
+                    .thenExecute(() -> level.removeBlock(pos, false))
+                    .thenWaitUntil(() -> helper.assertTrue(mirrors(level, pos).isEmpty(), "a mirror with no seat"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(Links.state(player).linked(), "a broken seat ended the link");
+                        helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                        level.getEntity(id).discard();
+                        finish(helper, player, level, pos);
                     });
         });
     }
