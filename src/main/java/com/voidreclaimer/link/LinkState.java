@@ -158,17 +158,6 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
         return new LinkState(link, outboxes.stream().filter(outbox -> !outbox.shell().equals(shell)).toList(), shells);
     }
 
-    /** The shell a seat takes the player to until there is a picker: the newest on the list that stands ready. */
-    public Optional<UUID> idleShell() {
-        for (int i = shells.size() - 1; i >= 0; i--) {
-            KnownShell known = shells.get(i);
-            if (!known.gone() && !known.wrecked()) {
-                return Optional.of(known.shell());
-            }
-        }
-        return Optional.empty();
-    }
-
     /** What is known of {@code shell}, if anything. */
     public Optional<KnownShell> known(UUID shell) {
         return shells.stream().filter(known -> known.shell().equals(shell)).findFirst();

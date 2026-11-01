@@ -65,7 +65,7 @@ public final class LinkSignalGameTests {
         LinkReachGameTests.farShell(helper, pos, new Vec3(pos.getX() + beyond, 80, 0.5), (player, id) -> {
             ServerLevel level = player.serverLevel();
             UplinkSeatBlockEntity seat = seat(level, pos);
-            seat.connect(player);
+            seat.connect(player, id);
             helper.runAfterDelay(60, () -> {
                 helper.assertFalse(Links.state(player).linked(), "linked out of range");
                 finish(helper, player, level, pos, id);
@@ -81,7 +81,7 @@ public final class LinkSignalGameTests {
             ChunkPos far = new ChunkPos(BlockPos.containing(pos.getX() + distance, pos.getY(), pos.getZ()));
             level.setChunkForced(far.x, far.z, true);
             UUID id = shell(player);
-            seat(level, pos).connect(player);
+            seat(level, pos).connect(player, id);
             helper.startSequence()
                     .thenWaitUntil(() -> helper.assertTrue(Links.state(player).linked(), "the seat made no link"))
                     .thenExecute(() -> test.accept(player, id));

@@ -49,7 +49,7 @@ public class UplinkSeatBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof UplinkSeatBlockEntity seat) {
-            seat.connect(server);
+            seat.showPicker(server);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

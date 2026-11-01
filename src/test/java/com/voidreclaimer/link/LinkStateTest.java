@@ -58,20 +58,6 @@ class LinkStateTest {
     }
 
     @Test
-    void aSeatTakesTheNewestShellThatStandsReady() {
-        UUID older = new UUID(3L, 4L);
-        UUID wreck = new UUID(5L, 6L);
-        UUID gone = new UUID(9L, 9L);
-        assertTrue(LinkState.NONE.idleShell().isEmpty());
-        LinkState state = LinkState.NONE
-                .withKnown(new LinkState.KnownShell(SHELL, 1L, PLACE, false, false))
-                .withKnown(new LinkState.KnownShell(older, 1L, PLACE, false, false))
-                .withKnown(new LinkState.KnownShell(wreck, 1L, PLACE, true, false))
-                .withKnown(new LinkState.KnownShell(gone, 1L, PLACE, false, true));
-        assertEquals(Optional.of(older), state.idleShell());
-    }
-
-    @Test
     void theShellListComesBackFromASave() {
         LinkState.KnownShell idle = new LinkState.KnownShell(SHELL, 3L, PLACE, false, false);
         LinkState.KnownShell wreck = new LinkState.KnownShell(new UUID(3L, 4L), 1L, PLACE, true, true);

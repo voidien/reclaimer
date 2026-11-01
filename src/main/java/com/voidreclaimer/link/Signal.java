@@ -3,6 +3,7 @@ package com.voidreclaimer.link;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.registry.ModAttachments;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
@@ -35,6 +36,20 @@ public final class Signal {
         RelayGraph.Node node = new RelayGraph.Node(new RelayGraph.Place(seat.dimension(), seat.position()), range(server, seat));
         double band = SignalMath.fromConfig().staticBand(Links.atStation(server, seat));
         return new RelayGraph(List.of(), List.of()).signal(node, new RelayGraph.Place(target.dimension(), target.position()), band);
+    }
+
+    /** What a player at a seat can see of their shells: everything on their list that has not gone. */
+    public static List<ShellRow> rows(ServerPlayer player) {
+        LinkState.Place here = Links.place(player);
+        List<ShellRow> rows = new ArrayList<>();
+        int number = 0;
+        for (LinkState.KnownShell known : Links.state(player).shells()) {
+            number++;
+            if (!known.gone()) {
+                rows.add(ShellRow.of(known, number, here, read(player.server, here, known.at())));
+            }
+        }
+        return rows;
     }
 
     @SubscribeEvent
