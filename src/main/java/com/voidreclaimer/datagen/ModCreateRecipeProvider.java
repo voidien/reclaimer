@@ -30,6 +30,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
     private static final String GYRO = "reactionWheel";
     private static final String CATALYST = "catalystCore";
     private static final String RECEIVER = "quantumReceiver";
+    private static final String SLURRY = "bioSlurry";
 
     private static final int BUCKET_QUARTER = 250;
 
@@ -53,6 +54,7 @@ public final class ModCreateRecipeProvider implements DataProvider {
         solarSail();
         frameAndMachinery();
         quantumReceiver();
+        terraforming();
         return CompletableFuture.allOf(pending.toArray(CompletableFuture[]::new));
     }
 
@@ -184,6 +186,13 @@ public final class ModCreateRecipeProvider implements DataProvider {
         assembly("receiver/quantum_receiver", RECEIVER, item("micro_alloy_sheet"), "quantum_receiver", 1,
                 deploy(item("high_efficiency_solar_cell")), deploy(item("carbon_composite_plate")),
                 deploy(vanillaItem("create:precision_mechanism")), spout("void_reclaimer:coolant_fluid"));
+    }
+
+    /** Purified Water + Fine Carbon Powder + Ashen Slag (ruined Earth's own minerals) -> Basin -> Bio-Nutrient Slurry. */
+    private void terraforming() {
+        save("terraform/bio_nutrient_slurry", SLURRY, processing("create:mixing", 0, null,
+                List.of(fluid("void_reclaimer:purified_water", BUCKET_QUARTER), item("fine_carbon_powder"), item("ashen_slag")),
+                List.of(fluidResult("void_reclaimer:bio_nutrient_slurry", BUCKET_QUARTER))));
     }
 
     // ---- Sequenced Assembly -------------------------------------------------------------------------------

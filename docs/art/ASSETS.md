@@ -190,7 +190,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | incomplete_atmospheric_catalyst_core | `item/incomplete_atmospheric_catalyst_core.png` | 16x16 | no | RD art (promoted) | half-built glowing green-blue crystal core inside a metal cage, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
 | incomplete_high_output_solar_sail | `item/incomplete_high_output_solar_sail.png` | 16x16 | no | RD art (promoted) | half-built folded gold-and-blue solar sail panel, parts missing, exposed frame | Create convention: the finished icon with pieces missing. Generate from the finished icon (img2img) to keep them matched. |
 
-### Fluid buckets (6)
+### Fluid buckets (7)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
@@ -200,6 +200,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | nebulite_propellant_bucket | `item/nebulite_propellant_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with glowing orange propellant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #FF9638. |
 | coolant_fluid_bucket | `item/coolant_fluid_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with cyan coolant | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #78DCE6. |
 | liquid_silicon_bucket | `item/liquid_silicon_bucket.png` | 16x16 | no | RD art (promoted) | vanilla-style iron bucket filled with glowing silver-white molten silicon | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #D0D8EE. |
+| bio_nutrient_slurry_bucket | `item/bio_nutrient_slurry_bucket.png` | 16x16 | no | placeholder | vanilla-style iron bucket filled with thick green bio-nutrient slurry | Keep the vanilla bucket shape; only the contents change. Fluid tint in code: #6FA83A. |
 
 ### Blocks (15)
 
@@ -324,7 +325,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate a model with RD 3D, its base texture comes with it. The `_accent` masks are painted by hand in Blockbench (white where the accent color shows). Sizes: 128x128 for the Ship rig and ship parts, 64x64 for the rest. Full list in `assets.csv`.
 
-### Future phases (19)
+### Future phases (18)
 
 | Phase | Asset | What | Method | Prompt idea | Notes |
 |---|---|---|---|---|---|
@@ -341,7 +342,6 @@ All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate
 | 11 | industrial_mech | body or entity | RD 3D blocky + animate (GeckoLib) | heavy industrial mech, copper and andesite, hazard stripes | Defined in the design doc; if it is a body chassis it follows the socket contract. |
 | 11 | planetary_grid_hud | GUI | RD image | pixel art 4x4 planetary sector map, dark screen with cyan grid lines | 256x256 GUI sprite. |
 | 12 | terraforming_spire_multiblock | animated multiblock | RD 3D blocky + animate (GeckoLib) | tall terraforming spire: heavy base, ribbed column, glowing green emitter top | Genesis Pulse animation on the emitter. |
-| 12 | bio_nutrient_slurry | fluid + bucket | RD image | bucket of thick green bio-nutrient slurry | Fluid can reuse tinted water like the others. |
 | 13 | data_monolith | block model | RD 3D blocky | tall black monolith with faint cyan circuit lines and an output drawer | Design not settled in the doc yet. |
 | 14 | restoration_hud | GUI | RD image | pixel art planet restoration progress panel, green and blue | 256x256 GUI sprite. |
 | later | helper_drone | animated entity | RD 3D blocky + animate (GeckoLib) | small cargo drone with a claw and rotors, Create style | Animations: fly, pick up, drop off. |

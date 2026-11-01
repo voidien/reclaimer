@@ -57,6 +57,7 @@ public final class MaterialsGameTests {
         CHAIN_RECIPES.put("create/metallic/refined_metal_nodule", "minecraft:blasting");
         CHAIN_RECIPES.put("create/metallic/micro_alloy_sheet", pressing);
         CHAIN_RECIPES.put("create/sail/high_output_solar_sail", "create:sequenced_assembly");
+        CHAIN_RECIPES.put("create/terraform/bio_nutrient_slurry", mixing);
     }
 
     @GameTest(template = "empty")
@@ -142,7 +143,7 @@ public final class MaterialsGameTests {
 
     @GameTest(template = "empty")
     public static void fluidsAndBucketsAreRegistered(GameTestHelper helper) {
-        helper.assertTrue(ModFluids.ALL.size() == 6, "expected the six chain fluids, got " + ModFluids.ALL.size());
+        helper.assertTrue(ModFluids.ALL.size() == 7, "expected the seven fluids, got " + ModFluids.ALL.size());
         for (ModFluids.Entry fluid : ModFluids.ALL) {
             ResourceLocation id = VoidReclaimer.id(fluid.id());
             helper.assertTrue(BuiltInRegistries.FLUID.containsKey(id), "no source fluid " + id);
@@ -154,11 +155,44 @@ public final class MaterialsGameTests {
         helper.succeed();
     }
 
+    /** The basin takes Purified Water, Fine Carbon Powder and Ashen Slag, unheated, and gives the slurry. */
+    @GameTest(template = "empty")
+    public static void theBasinMixesBioNutrientSlurry(GameTestHelper helper) {
+        RecipeHolder<?> holder = helper.getLevel().getServer().getRecipeManager()
+                .byKey(VoidReclaimer.id("create/terraform/bio_nutrient_slurry")).orElseThrow();
+        var recipe = (com.simibubi.create.content.processing.basin.BasinRecipe) holder.value();
+        helper.assertTrue(recipe.getRequiredHeat() == com.simibubi.create.content.processing.recipe.HeatCondition.NONE, "heat " + recipe.getRequiredHeat());
+        var water = recipe.getFluidIngredients();
+        helper.assertTrue(water.size() == 1 && water.get(0).test(new net.neoforged.neoforge.fluids.FluidStack(ModFluids.PURIFIED_WATER.source().get(), 250)),
+                "fluid input " + water);
+        var items = recipe.getIngredients();
+        helper.assertTrue(items.size() == 2, "item inputs " + items.size());
+        helper.assertTrue(items.get(0).test(new net.minecraft.world.item.ItemStack(ModMaterials.FINE_CARBON_POWDER.get())), "no carbon powder");
+        helper.assertTrue(items.get(1).test(new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.ASHEN_SLAG.get())), "no slag");
+        var out = recipe.getFluidResults();
+        helper.assertTrue(out.size() == 1 && out.get(0).is(ModFluids.BIO_NUTRIENT_SLURRY.source().get()) && out.get(0).getAmount() == 250, "result " + out);
+        helper.succeed();
+    }
+
+    /** The recipe file itself carries the toggle: the condition is what keeps it out when the toggle is off. */
+    @GameTest(template = "empty")
+    public static void theSlurryRecipeIsGatedByItsToggle(GameTestHelper helper) throws java.io.IOException {
+        try (var in = VoidReclaimer.class.getResourceAsStream("/data/void_reclaimer/recipe/create/terraform/bio_nutrient_slurry.json")) {
+            helper.assertTrue(in != null, "no recipe file");
+            var json = com.google.gson.JsonParser.parseString(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            var condition = json.getAsJsonArray("neoforge:conditions").get(0).getAsJsonObject();
+            helper.assertTrue("void_reclaimer:config".equals(condition.get("type").getAsString()) && "bioSlurry".equals(condition.get("key").getAsString()),
+                    "condition " + condition);
+        }
+        helper.assertTrue(Config.TOGGLES.containsKey("bioSlurry"), "the recipe names a toggle that does not exist");
+        helper.succeed();
+    }
+
     @GameTest(template = "empty")
     public static void togglesGateTheirRecipes(GameTestHelper helper) {
         helper.assertTrue(Config.TOGGLES.keySet().containsAll(java.util.List.of(
                 "replicatorRawItems", "iceChain", "carbonChain", "siliconChain", "metallicChain", "solarSail",
-                "frame", "dysonPayloads", "rcsThruster", "reactionWheel", "catalystCore")), "toggles: " + Config.TOGGLES.keySet());
+                "frame", "dysonPayloads", "rcsThruster", "reactionWheel", "catalystCore", "bioSlurry")), "toggles: " + Config.TOGGLES.keySet());
         var iceChain = Config.TOGGLES.get("iceChain");
         try {
             ICondition condition = new ConfigCondition("iceChain");
