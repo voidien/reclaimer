@@ -93,6 +93,22 @@ public final class ObtainabilityGameTests {
         return best;
     }
 
+    /** A body built from its basic parts flies at full speed: going over budget is what better parts cost, not the starting point. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aBasicBodyFitsItsMassBudget(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        List<String> over = new ArrayList<>();
+        for (ResourceKey<Chassis> key : chassisKeys()) {
+            Bodies.store(player, Bodies.preset(key));
+            if (Bodies.stats(player).overloaded()) {
+                over.add(key.location().getPath() + " " + Bodies.stats(player).mass() + " of " + Bodies.stats(player).massBudget());
+            }
+        }
+        TestPlayers.remove(player);
+        helper.assertTrue(over.isEmpty(), "over budget: " + String.join(", ", over));
+        helper.succeed();
+    }
+
     /**
      * Dust is paid in full when a job starts, so a body can only buy what it can hold. Each size class's core has to be affordable in
      * a smaller body, or nobody can get there. The smallest class is where a player starts, so it needs no such thing.

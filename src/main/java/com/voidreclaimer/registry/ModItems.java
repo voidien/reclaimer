@@ -57,7 +57,7 @@ public final class ModItems {
 
     /** The Drone's core section; was the Drone frame. Its sections weigh 0.5 in all, like the old frame. */
     public static final DeferredItem<SectionItem> DRONE_HULL = section("drone_hull", BuiltinBodies.DRONE_HULL, 1,
-            s -> s.mass(0.2f).budget(1.6f).health(12f).intake(1f).rows(1).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 1)
+            s -> s.mass(0.2f).budget(2.2f).health(12f).intake(1f).rows(1).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 1)
                     .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.DRONE));
     public static final DeferredItem<SectionItem> SENSOR_DOME = section("sensor_dome", BuiltinBodies.SENSOR_DOME, 1,
             s -> s.mass(0.05f).mount(ModuleKind.SENSOR, 1));
