@@ -61,6 +61,47 @@ class FlightPhysicsTest {
     }
 
     @Test
+    void holdingAKeyBrakesTheDriftOffTheNose() {
+        assertVec(new Vec3(0.36, 0, 0.03), FlightPhysics.step(new Vec3(0.4, 0, 0), FORWARD, true, true, STARTER));
+    }
+
+    @Test
+    void velocitySwingsOntoTheNose() {
+        Vec3 v = new Vec3(0.5, 0, 0);
+        for (int i = 0; i < 40; i++) {
+            v = FlightPhysics.step(v, FORWARD, true, true, STARTER);
+        }
+        assertVec(new Vec3(0, 0, 0.5), v);
+    }
+
+    @Test
+    void theAxisBeingThrustAlongIsLeftToTheThrust() {
+        assertEquals(0.33, FlightPhysics.step(new Vec3(0, 0, 0.3), FORWARD, true, true, STARTER).z, EPS);
+        assertEquals(-0.27, FlightPhysics.step(new Vec3(0, 0, -0.3), FORWARD, true, true, STARTER).z, EPS);
+    }
+
+    @Test
+    void aSmallDriftTrimsToExactlyNothing() {
+        assertEquals(0.0, FlightPhysics.step(new Vec3(0.01, 0, 0), FORWARD, true, true, STARTER).x);
+    }
+
+    @Test
+    void theTrimFollowsAKeyPairOnADiagonal() {
+        Vec3 heading = new Vec3(1, 0, 1).normalize();
+        Vec3 side = new Vec3(1, 0, -1).normalize();
+        Vec3 v = FlightPhysics.step(heading.scale(0.2).add(side.scale(0.3)), new Vec3(1, 0, 1), true, true, STARTER);
+        assertEquals(0.23, v.dot(heading), EPS);
+        assertEquals(0.26, v.dot(side), EPS);
+    }
+
+    @Test
+    void withTheDampenerOffOrNoPowerTheDriftStays() {
+        Vec3 drift = new Vec3(0.4, 0, 0);
+        assertVec(new Vec3(0.4, 0, 0.03), FlightPhysics.step(drift, FORWARD, true, false, STARTER));
+        assertVec(drift, FlightPhysics.step(drift, FORWARD, false, true, STARTER));
+    }
+
+    @Test
     void lowPowerDisablesThrustAndDampener() {
         Vec3 drift = new Vec3(0.1, 0, 0);
         assertEquals(drift, FlightPhysics.step(drift, FORWARD, false, true, STARTER));
@@ -192,6 +233,13 @@ class FlightPhysicsTest {
         assertTrue(coasting.y > -WEIGHT, "partial lift slows the fall");
         Vec3 steering = run(Vec3.ZERO, FORWARD, true, true, WEAK, 20);
         assertEquals(0.0, steering.z, EPS, "no thrust is left to steer");
+    }
+
+    @Test
+    void aFallIsDriftTooWhileAKeyIsHeld() {
+        Vec3 v = FlightPhysics.step(new Vec3(0, -0.2, 0), FORWARD, true, true, STRONG, FlightPhysics.CloudDrag.NONE, WEIGHT);
+        assertEquals(-0.16, v.y, EPS);
+        assertEquals(0.075 - WEIGHT, v.z, EPS);
     }
 
     @Test

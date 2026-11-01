@@ -3,7 +3,9 @@ package com.voidreclaimer.gametest;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.flight.FlightInput;
+import com.voidreclaimer.flight.FlightSettings;
 import com.voidreclaimer.flight.FlightStats;
+import com.voidreclaimer.flight.ThrusterFlight;
 import com.voidreclaimer.registry.ModAttachments;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -11,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -97,6 +100,29 @@ public final class FlightGameTests {
             tick(player, 2);
             EnergyData data = player.getData(ModAttachments.ENERGY);
             helper.assertTrue(data.lowPower(), "thrusting to zero did not enter low power: " + data);
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
+    }
+
+    /** Through a real body: with a key held the dampener takes the drift off the nose, and with it off the drift stays. */
+    @GameTest(template = "empty")
+    public static void aHeldKeyBrakesTheDriftOffTheNose(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 23_500.5, 80, 0.5);
+        try {
+            setEnergy(player, 50f);
+            player.setYRot(0f);
+            player.setXRot(0f);
+            FlightInput forward = FlightInput.of(true, false, false, false, false, false);
+            FlightStats stats = FlightStats.of(player);
+            Vec3 drift = new Vec3(stats.maxSpeed() / 2.0, 0.0, 0.0);
+            Vec3 trimmed = ThrusterFlight.step(player, drift, forward);
+            FlightSettings settings = player.getData(ModAttachments.FLIGHT_SETTINGS);
+            player.setData(ModAttachments.FLIGHT_SETTINGS, settings.withDampener(false));
+            Vec3 free = ThrusterFlight.step(player, drift, forward);
+            helper.assertTrue(free.x - trimmed.x > stats.brakeDeceleration() / 2.0, "the drift was not braked: " + trimmed + " and " + free);
+            helper.assertTrue(trimmed.z > 0.0 && free.z > 0.0, "the thrust went: " + trimmed + " and " + free);
             helper.succeed();
         } finally {
             TestPlayers.remove(player);

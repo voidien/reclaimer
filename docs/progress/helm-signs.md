@@ -1,0 +1,2 @@
+## Fix: the Helm's pitch and roll keys were reversed
+- `ThrustAllocator` asked for the opposite torque on two axes, so arrow up lowered the nose and Q and E were swapped; yaw was right. The test accepted either direction. The HUD's coverage and spin readout carried the same flip, and both are fixed. Tests name the jets that must open, `pitchAndRollOpenTheJetsThatTurnTheShipThatWay` and `theHudSaysTheTurnsTheShipCanReallyMake`.

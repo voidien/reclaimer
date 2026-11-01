@@ -32,9 +32,9 @@ public final class ThrustAllocator {
     /** The throttles (0 to 1) for {@code thrusters}, in order, that best give the pilot's keys in {@code frame}. */
     public static double[] throttles(List<Thruster> thrusters, Frame frame, PilotInput input) {
         Vector3d force = wanted(frame, input.surge(), input.sway(), input.heave());
-        // Rotation about an axis follows the right-hand rule: roll right is a torque about -forward, nose up about -right,
-        // yaw left about +up.
-        Vector3d torque = wanted(frame, -input.roll(), -input.pitch(), input.yaw());
+        // Rotation about an axis follows the right-hand rule: with the nose along forward, roll right is a torque about +forward,
+        // nose up about +right, yaw left about +up.
+        Vector3d torque = wanted(frame, input.roll(), input.pitch(), input.yaw());
         return throttles(thrusters, frame, force, torque);
     }
 
@@ -86,7 +86,7 @@ public final class ThrustAllocator {
 
     /** Which of the six turns the ship can make: {roll right, roll left, nose up, nose down, yaw left, yaw right}. */
     public static double[] rotationCoverage(List<Thruster> thrusters, Frame frame) {
-        Vector3dc[] axes = {new Vector3d(frame.forward()).negate(), frame.forward(), new Vector3d(frame.right()).negate(), frame.right(),
+        Vector3dc[] axes = {frame.forward(), new Vector3d(frame.forward()).negate(), frame.right(), new Vector3d(frame.right()).negate(),
                 frame.up(), new Vector3d(frame.up()).negate()};
         double[] out = new double[6];
         for (int a = 0; a < 6; a++) {

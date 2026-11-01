@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config_choice",
+      "key": "shellPrices",
+      "value": "premium"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:carbon": 5.0,
+    "void_reclaimer:metallic": 140.0,
+    "void_reclaimer:silicate": 80.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:drone_shell"
+  },
+  "ticks": 3000
+}

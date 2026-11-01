@@ -245,8 +245,8 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         }
         ThrustAllocator.Frame frame = frame(ship);
         double[] velocity = {velocityShipFrame.dot(frame.forward()), velocityShipFrame.dot(frame.right()), velocityShipFrame.dot(frame.up())};
-        // Spin follows the right-hand rule about each axis; the pilot's names are the other way round (see ThrustAllocator).
-        double[] spin = {-Math.toDegrees(spinShipFrame.dot(frame.forward())), -Math.toDegrees(spinShipFrame.dot(frame.right())),
+        // As the pilot names them: roll right, nose up, yaw right. Spin about +up is a turn left, so that one is the other way round.
+        double[] spin = {Math.toDegrees(spinShipFrame.dot(frame.forward())), Math.toDegrees(spinShipFrame.dot(frame.right())),
                 -Math.toDegrees(spinShipFrame.dot(frame.up()))};
         return new Readout(true, thrusters.size(), ThrustAllocator.translationCoverage(model, frame),
                 ThrustAllocator.rotationCoverage(model, frame), fuel, fuelCapacity, energy, energyCapacity, velocity, spin,

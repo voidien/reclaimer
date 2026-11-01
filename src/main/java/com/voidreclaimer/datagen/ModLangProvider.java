@@ -721,9 +721,18 @@ public final class ModLangProvider extends LanguageProvider {
     /** One short gameplay hint per built-in Replicator recipe (not lore); a recipe's own {@code description} overrides it. */
     private void addReplicatorDescriptions() {
         add("replicator.void_reclaimer.description.uplink_seat", "Leave the main body here and run a Remote Shell from afar. The body stays on the seat and slowly charges.");
-        add("replicator.void_reclaimer.description.drone_shell", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
-        add("replicator.void_reclaimer.description.mech_shell", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
-        add("replicator.void_reclaimer.description.ship_shell", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.drone_shell_cheap", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.drone_shell_reduced", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.drone_shell_parts", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.drone_shell_premium", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.mech_shell_cheap", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.mech_shell_reduced", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.mech_shell_parts", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.mech_shell_premium", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.ship_shell_cheap", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.ship_shell_reduced", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.ship_shell_parts", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.ship_shell_premium", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
         add("replicator.void_reclaimer.description.holo_projector", "Shows up to eight lines of text in the air above itself. Write to it from a computer or a Create Display Link, or sneak-use it with an empty hand to pick a built-in readout.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");

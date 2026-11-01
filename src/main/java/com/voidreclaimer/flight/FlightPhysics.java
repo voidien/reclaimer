@@ -63,9 +63,13 @@ public final class FlightPhysics {
         double support = weightSupport(stats, weight, dampener, powered);
         if (powered) {
             if (thrust.lengthSqr() > 1.0E-6) {
+                Vec3 heading = thrust.normalize();
+                if (dampener) {
+                    velocity = trimDrift(velocity, heading, stats.brakeDeceleration());
+                }
                 double steering = stats.acceleration() - support;
                 if (steering > 0.0) {
-                    velocity = velocity.add(thrust.normalize().scale(steering));
+                    velocity = velocity.add(heading.scale(steering));
                 }
             } else if (dampener) {
                 velocity = brake(velocity, stats.brakeDeceleration());
@@ -148,6 +152,15 @@ public final class FlightPhysics {
         float cosPitch = Mth.cos(pitch);
         float sinPitch = Mth.sin(pitch);
         return new Vec3(sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch);
+    }
+
+    /**
+     * Brakes only the part of {@code velocity} off {@code heading}, a unit vector: a dampener works axis by axis and leaves the axis
+     * being thrust along to the thrust, so a body turning with a key held swings its velocity onto its nose.
+     */
+    public static Vec3 trimDrift(Vec3 velocity, Vec3 heading, double deceleration) {
+        Vec3 along = heading.scale(velocity.dot(heading));
+        return along.add(brake(velocity.subtract(along), deceleration));
     }
 
     public static Vec3 brake(Vec3 velocity, double deceleration) {
