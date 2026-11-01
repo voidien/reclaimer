@@ -12,6 +12,7 @@ import com.voidreclaimer.flight.FlightInput;
 import com.voidreclaimer.flight.FlightPhysics;
 import com.voidreclaimer.flight.ThrusterFlight;
 import com.voidreclaimer.registry.ModAttachments;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
@@ -57,7 +58,10 @@ public final class ClientBodyController {
         Cosmetics cosmetics = Bodies.data(player).cosmetics();
         FlightInput input = player.getData(ModAttachments.FLIGHT_INPUT);
         Trail trail = OrderedRegistry.get(player.registryAccess(), VoidReclaimerRegistries.TRAIL, cosmetics.trail());
-        if (trail == null || !trail.particles() || !input.isThrusting() || !ThrusterFlight.isActive(player)) {
+        boolean thrusting = trail != null && trail.particles() && input.isThrusting() && ThrusterFlight.isActive(player)
+                && com.voidreclaimer.client.render.body.ThrusterExhaust.installed(Bodies.data(player).modules().keySet());
+        com.voidreclaimer.client.render.body.BoneProbe.want(thrusting);
+        if (!thrusting) {
             return;
         }
         Vec3 thrust = FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input);
@@ -68,10 +72,19 @@ public final class ClientBodyController {
         Vector3f color = new Vector3f((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f);
         Vec3 exhaust = thrust.normalize().scale(-1);
         double scale = player.getScale();
-        Vec3 origin = player.getBoundingBox().getCenter().add(exhaust.scale(0.6 * scale));
         Vec3 velocity = player.getDeltaMovement().add(exhaust.scale(0.15));
-        player.level().addParticle(new DustParticleOptions(color, TRAIL_SIZE * (float) Math.max(0.5, scale)),
-                origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z);
+        // The mounts are only known while the body is drawn in the world: not in first person, and not behind a screen, which
+        // draws it in GUI pixels.
+        Minecraft mc = Minecraft.getInstance();
+        List<Vec3> origins = mc.screen != null || mc.options.getCameraType().isFirstPerson() ? List.of()
+                : com.voidreclaimer.client.render.body.ThrusterExhaust.origins(com.voidreclaimer.client.render.body.BoneProbe.latest(), mc.gameRenderer.getMainCamera().getPosition());
+        if (origins.isEmpty()) {
+            origins = List.of(player.getBoundingBox().getCenter().add(exhaust.scale(0.6 * scale)));
+        }
+        for (Vec3 origin : origins) {
+            player.level().addParticle(new DustParticleOptions(color, TRAIL_SIZE * (float) Math.max(0.5, scale)),
+                    origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z);
+        }
     }
 
     @SubscribeEvent
