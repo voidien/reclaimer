@@ -351,6 +351,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.recover.refused", "That shell cannot be recovered now");
         add("message.void_reclaimer.recover.player_gone", "");
         add("screen.void_reclaimer.uplink.next", "More");
+        add("message.void_reclaimer.link.leave_confirm", "Press again to leave the shell");
         add("message.void_reclaimer.uplink.taken", "This seat is in use");
         add("message.void_reclaimer.uplink.failed", "The link failed: %s");
         add("message.void_reclaimer.shell.not_yours", "This shell belongs to someone else");
