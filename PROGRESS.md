@@ -1041,6 +1041,10 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - When a `runData` on CI is about to be cut off, the step prints a thread dump of it. The start-up deadlock is an upstream one, and the classes in it are what a workaround needs. It fired on its own first run, and showed the cycle: see "Fix: the start-up deadlock".
 - Tests: `theChunkReadoutTellsATickingChunkFromAnUnloadedOne`, `ChunkReadoutTest`.
 
+## Remote control, part 5: the saved link state: done
+- `link/LinkState`, in the player file: the shell the player is in with its epoch, the main body and where it was left, and an outbox for a shell put back in the world. Bodies are held as raw tags: an attachment that fails to read is dropped with a log line, and with it a main body, while a tag always reads and `BodySnapshot.load` then says whether it is whole.
+- Nothing uses it yet. Tests: `LinkStateTest`. Note on `.gitattributes`: `PROGRESS.md merge=union` works for local rebases, but GitHub's merge check ignores it, so a PR can still show a conflict until it is rebased. It saves the hand fixing, not the CI rerun.
+
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):
 - [x] 1. Deep Space & Spawn

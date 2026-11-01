@@ -1,2 +1,3 @@
 # Every PR adds its entry to PROGRESS.md in the same place: keep both sides instead of conflicting.
+# GitHub's merge check ignores this and can still show a conflict: rebase the branch, which then needs no hand fixing.
 PROGRESS.md merge=union
