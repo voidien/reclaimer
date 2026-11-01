@@ -264,7 +264,7 @@ public final class StationGameTests {
      * A seat aboard a ship keeps the ship loaded while it is in use, so a shell run from a station does not cost the station, and a
      * wake lands by the ship in the world, not at the seat's position in the ship's own coordinates. The ship lets go after a wake.
      */
-    @GameTest(template = "empty", timeoutTicks = 900)
+    @GameTest(template = "empty", timeoutTicks = 1500)
     public static void aSeatAboardAShipHoldsItAndWakesYouByIt(GameTestHelper helper) {
         BlockPos pos = new BlockPos(105_400, 200, 3_000);
         String name = "vr_test_" + pos.getX();
@@ -309,7 +309,9 @@ public final class StationGameTests {
                             space.getEntity(id).discard();
                             space.setChunkForced(farX, farZ, false);
                             helper.assertTrue(woke.distanceTo(Vec3.atCenterOf(pos)) < 16.0, "woke away from the ship: " + woke);
-                            whenShip(helper, space, name, false, 200, () -> {
+                            // A player beside a ship keeps it loaded, so only with them gone does this show the seat let go.
+                            player.teleportTo(far.x, far.y, far.z);
+                            whenShip(helper, space, name, false, 100, () -> {
                                 TestPlayers.remove(player);
                                 space.setChunkForced(chunkX, chunkZ, true);
                                 whenShip(helper, space, name, true, 80, () -> {

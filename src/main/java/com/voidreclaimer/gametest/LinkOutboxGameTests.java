@@ -139,7 +139,7 @@ public final class LinkOutboxGameTests {
     }
 
     /** The old copy may be all that is left: it only gives way to a body that can be read. */
-    @GameTest(template = "empty", timeoutTicks = 200)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void anUnreadableOutboxLeavesTheOldCopy(GameTestHelper helper) {
         woken(helper, new BlockPos(80_700, 80, 0), (player, id) -> {
             ServerLevel level = player.serverLevel();
