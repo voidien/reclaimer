@@ -1,0 +1,2 @@
+## Fix: the thruster trail came from thin air
+- The trail started at a fixed spot behind the body. It now comes from each installed thruster, read from where the model really draws it (`ThrusterExhaust`), so a removed part takes its trail with it and a body with no thruster makes none. In first person and behind a screen the mounts are not known, so it falls back on the old spot. From the owner's playtest notes. Test: `ThrusterExhaustTest`.

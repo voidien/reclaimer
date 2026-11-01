@@ -25,6 +25,8 @@ public final class BoneProbe {
     public record Point(String name, Kind kind, boolean filled, Vector3f at, String socket, @Nullable BodyData.Mount mount) {}
 
     private static boolean capturing;
+    /** The exhaust wants the mounts too, without a debug view keeping what it reads alive. */
+    private static boolean wanted;
     private static boolean recording;
     private static List<Point> building = new ArrayList<>();
     private static List<Point> latest = List.of();
@@ -39,8 +41,16 @@ public final class BoneProbe {
         }
     }
 
+    /** Keeps the points coming for the exhaust while the body thrusts; off forgets them, so the next burst starts from fresh ones. */
+    public static void want(boolean on) {
+        wanted = on;
+        if (!on && !capturing) {
+            latest = List.of();
+        }
+    }
+
     static void begin() {
-        recording = capturing;
+        recording = capturing || wanted;
         if (recording) {
             building = new ArrayList<>();
         }
