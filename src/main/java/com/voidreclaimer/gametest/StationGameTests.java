@@ -282,8 +282,8 @@ public final class StationGameTests {
                 helper.assertTrue(ship != null, "the ship was not built");
                 BlockPos seatPos = StationAssembly.blocksOf(space, ship).get(0).above();
                 var player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5);
-                // The shell is far off, so that the player's own presence cannot be what keeps the ship loaded.
-                var far = new Vec3(pos.getX() + 2_000.5, pos.getY(), pos.getZ() + 2_000.5);
+                // The shell is far off, so that the player's own presence cannot be what keeps the ship loaded, and within the seat's range.
+                var far = new Vec3(pos.getX() + 500.5, pos.getY(), pos.getZ() + 500.5);
                 int farX = (int) far.x >> 4, farZ = (int) far.z >> 4;
                 space.setChunkForced(farX, farZ, true);
                 space.setBlock(seatPos, ModBlocks.UPLINK_SEAT.get().defaultBlockState(), 3);
