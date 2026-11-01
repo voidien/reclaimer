@@ -90,7 +90,7 @@ public final class BuiltinBodies {
     public static final ResourceKey<Chassis> MECH = chassisKey("mech");
     public static final ResourceKey<Chassis> SHIP = chassisKey("ship");
     public static final ResourceKey<Chassis> TITAN = chassisKey("titan");
-    /** A second layout of the Ship size class: a shuttle, 25 blocks long at scale 3. */
+    /** A smaller, faster layout with its own size class: a shuttle, about 17 blocks long at scale 2. */
     public static final ResourceKey<Chassis> SHUTTLE = chassisKey("shuttle");
 
     public static final Map<ResourceKey<Chassis>, Chassis> CHASSIS = chassis();

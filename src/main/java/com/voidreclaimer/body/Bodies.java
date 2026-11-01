@@ -173,7 +173,7 @@ public final class Bodies {
     }
 
     /** A body that is not on anyone. Its stats are not passed through {@code BodyStatsEvent}: there is no entity to pass. */
-    private static BodyView preview(BodyData body, RegistryAccess access) {
+    public static BodyView preview(BodyData body, RegistryAccess access) {
         return new BodyView(body, chassis(access, body), compute(body, access), sizes(access), layouts(access));
     }
 
