@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import org.joml.Quaternionf;
+import software.bernie.geckolib.cache.object.GeoBone;
 
 /**
  * Pure rules of how a body is drawn, kept free of rendering classes so they can be unit-tested: which art rig a chassis uses,
@@ -201,6 +202,15 @@ public final class BodyLook {
             }
         }
         return out;
+    }
+
+    /**
+     * Hides a bone's own cubes and leaves its children drawn: a Mech's {@code root} is its pelvis and also carries its chest. GeckoLib's
+     * {@code setHidden} hides the children too, so the second call is what makes this work.
+     */
+    public static void hideAlone(GeoBone bone, boolean hidden) {
+        bone.setHidden(hidden);
+        bone.setChildrenHidden(false);
     }
 
     /**
