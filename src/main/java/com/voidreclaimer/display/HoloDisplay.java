@@ -39,7 +39,7 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
 
     /** What the projector is showing. Saved by name, so new modes keep old saves readable. */
     public enum Mode implements StringRepresentable {
-        TEXT, READOUT, MODEL, BODY, GLOBE;
+        TEXT, READOUT, MODEL, BODY, GLOBE, SHIP;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
@@ -149,6 +149,11 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
     /** Showing the viewer's own body from now on. */
     public HoloDisplay withBody() {
         return new HoloDisplay(List.of(), color, Mode.BODY, source, scale, height, billboard, "", progress);
+    }
+
+    /** Showing a miniature of a ship from now on: the one the projector stands on, or the nearest. */
+    public HoloDisplay withShip() {
+        return new HoloDisplay(List.of(), color, Mode.SHIP, source, scale, height, billboard, "", progress);
     }
 
     /** Showing one of {@link HoloGlobes#NAMES} from now on. */

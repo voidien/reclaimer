@@ -8,6 +8,7 @@ import com.voidreclaimer.display.HoloDisplay;
 import com.voidreclaimer.display.HoloGlobes;
 import com.voidreclaimer.display.HoloProjectorBlock;
 import com.voidreclaimer.display.HoloProjectorBlockEntity;
+import dev.ryanhcode.sable.sublevel.SubLevel;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -18,6 +19,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
@@ -64,6 +66,7 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
             case MODEL -> drawModel(projector, display, time, flicker, partialTick, pose, buffers);
             case BODY -> drawBody(display, time, flicker, partialTick, pose, buffers);
             case GLOBE -> drawGlobe(projector, display, time, flicker, pose, buffers);
+            case SHIP -> drawShip(projector, display, time, flicker, pose, buffers);
         }
     }
 
@@ -96,6 +99,30 @@ public final class HoloProjectorRenderer implements BlockEntityRenderer<HoloProj
         pose.translate(0, display.height() + size / 2, 0);
         pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
         BodyRenderer.drawHologram(viewer, size, HoloStyle.MODEL_ALPHA * flicker, partialTick, pose, buffers);
+        pose.popPose();
+    }
+
+    private void drawShip(HoloProjectorBlockEntity projector, HoloDisplay display, float time, float flicker, PoseStack pose, MultiBufferSource buffers) {
+        SubLevel ship = HoloShips.shipFor(projector.getLevel(), projector.getBlockPos());
+        if (ship == null) {
+            drawText(projector, display.withLines(List.of("NO SHIP")), time, flicker, pose, buffers);
+            return;
+        }
+        HoloMesh mesh = HoloShips.mesh(ship, projector.getLevel().getGameTime());
+        if (mesh == null || mesh.vertices() == 0) {
+            return;
+        }
+        float size = HoloTransform.MODEL_SIZE * display.scale();
+        HoloTransform.Fit fit = HoloTransform.fit(mesh.box(), size);
+        pose.pushPose();
+        pose.translate(0.5, 1, 0.5);
+        beam(pose, buffers, display.height(), flicker);
+        pose.translate(0, display.height() + size / 2, 0);
+        pose.mulPose(Axis.YP.rotationDegrees(HoloTransform.spin(time)));
+        pose.scale(fit.scale(), fit.scale(), fit.scale());
+        pose.translate(-fit.centerX(), -fit.centerY(), -fit.centerZ());
+        mesh.replay(pose.last(), buffers.getBuffer(RenderType.entityTranslucentEmissive(TextureAtlas.LOCATION_BLOCKS, false)),
+                HoloStyle.argb(HoloStyle.MODEL_TINT, HoloStyle.MODEL_ALPHA * flicker));
         pose.popPose();
     }
 

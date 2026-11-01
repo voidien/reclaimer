@@ -97,7 +97,7 @@ public final class HoloPeripheral implements GenericPeripheral {
         holo.setBillboard(billboard);
     }
 
-    /** What the projector shows now: {@code "text"}, {@code "readout"}, {@code "model"}, {@code "body"} or {@code "globe"}. */
+    /** What the projector shows now: {@code "text"}, {@code "readout"}, {@code "model"}, {@code "body"}, {@code "globe"} or {@code "ship"}. */
     @LuaFunction(mainThread = true)
     public final String getMode(HoloProjectorBlockEntity holo) {
         return holo.display().mode().name().toLowerCase(Locale.ROOT);
@@ -124,6 +124,12 @@ public final class HoloPeripheral implements GenericPeripheral {
     @LuaFunction(mainThread = true)
     public final MethodResult setGlobe(HoloProjectorBlockEntity holo, String globe) {
         return holo.setGlobe(globe) ? MethodResult.of(true) : MethodResult.of(false, "unknown_globe");
+    }
+
+    /** Shows a miniature of the ship the projector stands on, or else the nearest ship. */
+    @LuaFunction(mainThread = true)
+    public final void setShip(HoloProjectorBlockEntity holo) {
+        holo.setShip();
     }
 
     /** The model shown, or nil when it is showing something else. */
