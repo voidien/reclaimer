@@ -195,6 +195,12 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** How clean the link is, 1 with no static. For the HUD, and not saved: it is worked out again every second. */
+    public static final Supplier<AttachmentType<Float>> LINK_SIGNAL = ATTACHMENT_TYPES.register("link_signal",
+            () -> AttachmentType.builder(() -> 1f)
+                    .sync((holder, to) -> holder == to, net.minecraft.network.codec.ByteBufCodecs.FLOAT)
+                    .build());
+
     /** While in a shell, the main body's dust storage: the mind's dust stays with it, and the HUD needs this too. Negative when not linked. */
     public static final Supplier<AttachmentType<Float>> HOME_DUST_CAPACITY = ATTACHMENT_TYPES.register("home_dust_capacity",
             () -> AttachmentType.builder(() -> com.voidreclaimer.dust.DustData.NOT_LINKED)

@@ -10,6 +10,20 @@ Debug tools and recommendations noted during unattended stretches (`CLAUDE.md` r
 - **Warn before signal loss:** a Drone's few unlocked rows make "inventory full" normal, so a forced swap hits the edge cases. A short HUD warning would also give the player time to put down a stack.
 - **Don't carry forced chunks between local test runs:** clearing `chunks.dat` at GameTest start would make local runs behave like CI and stop the backlog growing. Or load them all before the first batch: about 35 ticks of backlog is longer than a short test's wait.
 - **Raise `tools/gametest.sh`'s 40 s exit limit:** shutting down takes about 33 s, close to it, which likely explains part of the "did not exit" warning.
+- **Chunk saves in deep space:** one save costs about 5 ms on the server thread, because vanilla packs all 254 sections, nearly all empty. A player flying fast through deep space pays for that. It may be worth measuring in a real world and, if it shows up, skipping empty sections with a small mixin.
+- **A lighter deep space:** each section of an empty chunk costs about 600 bytes, and with 254 of them a chunk costs about 150 KB before anything is in it. Tests pay this, and so does a player: a smaller height for deep space would cut both memory and saves, though it changes the dimension, so it is your call.
+- **Decide what can destroy a shell before PR 10:** today a shell takes melee, drowning and suffocation, while the vision says there are no hazards but time. "Only deliberate actions" or "invulnerable while parked" would be simpler.
+- **A repeatable singleplayer crash test:** a `tools/client-test` script doing what was done by hand here (link, `kill -9`, reload), because no GameTest can reach `level.dat`.
+- **`/void_reclaimer link outboxes`:** each outbox's shell, epoch, saved flag and chunk state, so this logic can be seen working.
+- **`gametest.sh` and a stopped wrapper:** a JVM whose wrapper is stopped keeps running outside the test lock, and one in OutOfMemoryError never ends: it costs 9 cores until someone kills it. A watchdog on the JVM itself would end it.
+- **`land.sh` misreports a merge conflict** as "has no checks, but changes code".
+- **`verify.sh` could say when it is waiting for the lock,** and report exit 134 as "crashed, retry".
+- **An event just before a pulse is paid,** so addons can change or cancel its cost, and a sector that reserves itself when a charge starts, which closes the two-tower gap.
+- **Events on links:** nothing tells an addon that a link began, ended or was lost, and rule 4 of Extensibility would want one.
+- **Pin a readout to a block,** and art for the globes (from the holo-displays work).
+- **Tell Sable about the plot lookup bug.**
+- **Hazards:** Sable already hurts a living entity a ship strikes at about 13 blocks a second or more, so a player's body and a shell can be hurt today. Whether that stays is part of the hazards discussion; see "Collision damage on Sable" in `docs/design/ships-and-stations.md`.
+- **Run memtest.** Five JVM crashes in five minutes on 2026-11-01, in the garbage collector and in compiled code, with a saved key read as `Namg` for `Name`, one flipped bit. It may also explain Claude Code exiting, but that is a guess.
 
 ## Decisions pending (for the owner)
 Choices taken alone during unattended stretches, each the safest reversible default. The section named after each item has the details; the owner can overrule any of them.
@@ -24,6 +38,26 @@ Choices taken alone during unattended stretches, each the safest reversible defa
 - **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
 - **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
 - **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
+- **Helper steering:** a search looks at up to 2048 cells (`helper.searchNodes`) and a drone with no way looks again every 100 ticks (`helper.blockedRetry`); a block with every face closed counts as out of reach; a drone does not work through a wall ("Helper drones, part 4").
+- **Holo-displays:** the refresh every 10 ticks, the caps of 8 lines of 48 characters, last writer wins; lines blanked when text replaces a readout; the price 30/40/10/20 and the Diversified milestone ("Holo-displays, part 1").
+- **Holo readouts:** the 8-block source range (`holo.sourceRange`); the nearest block wins, with no way to pin one; `device` checks only the six neighbours; `launch_complex` replaces the plan's `mass_driver`, because the old driver is inert; the lines are English from the server, not translated.
+- **Display Link:** a link only writes its own lines and leaves the others, so a projector can show two links at once.
+- **CogScript:** the 16-block range, addresses as `"x,y,z"`, and that the inject uses `require = 0` so an addon update costs programs the module, not the game its start.
+- **Holo models:** the body shown is the viewer's, not the owner's (each person sees their own); models turn at 1 degree per tick whatever the billboard setting; a model gets its texture by the `textures/<path>.png` rule, or the plain glow; a model plays no animation.
+- **Globes:** one dot per satellite up to 200, the lattice shown from tier 3, a caption always on.
+- **Lost shell:** a chat line, placeholder text, tells the player. If the crash window after a loss rebuilds the shell from the outbox it comes back as a shell, not a wreck: nothing is lost, only the destruction.
+- **Outbox:** it ends after two saves of the shell's level. On pause those can be seconds apart, so "two saves" is not a fixed time.
+- **Known gaps, rare, left for the shell list in PR 10:** a stale copy in a chunk that stays unloaded until after its outbox has ended is not recognised, and a shell killed while its owner is offline comes back. A small permanent record of each shell's latest epoch would close both.
+- **Wrecks:** anyone can salvage one, not only its owner; it keeps the shell's look with no wreck model; it cannot be hurt, so it never goes away by accident. A shell can still be killed by anything that hurts a living thing.
+- **Pulse cost:** 8 buckets of water and 4 of slurry, 20 s of charge at 64 RPM from 32 RPM up, 32 SU per RPM, all placeholders; the cost is paid when the charge ends, so a charge that stops loses nothing but time; tanks are lost when the Spire breaks, catalysts drop ("Spire, part 4").
+- **Acid Drizzle:** it falls all the time rather than in spells; 0.003 condition a minute at full strength, a quarter of thrust wear, so about 5.5 hours outdoors takes a new section to 0; it stops at once over restored sectors and thins with every sector elsewhere; only players' bodies wear, not remote shells or helper drones; a ship's hull over a pilot does not count as a roof when Sable has it in its plot, only world blocks do ("Spire, part 5").
+- **Planetary Grid:** a map at the right edge while held rather than a screen or a vanilla map in hand; the item stores the sectors, so a Grid in a chest stays stale until someone carries it; the recipe sits behind Earthfall, so the first one is made after landing ("Spire, part 6").
+- **Sectors:** a pulse rewrites exactly the sector the tower stands in, wherever in it, rather than a 128-block square around the tower; so the wave is lopsided from an off-centre tower, a pulse lasts the same whatever the reach, and `spireRadius` is gone. Sky and fog blend across the whole planet with the fraction restored, not per place. Ruined at 0, healing from 1 to 15, restored only at 16 ("Spire, part 3").
+- **Sector numbers:** row and column from the north-west; the landing area at the origin is the corner of four sectors.
+- **Design for Acid Drizzle (Spire, part 5, unbuilt when written):** `earth/EarthAtmosphere` (pure): drizzle strength at a column is 0 in a restored sector, otherwise `1 - fraction restored`, so it fades with every sector and stops outright over healed ground. It always falls (no weather cycle). `earth/AcidDrizzle` (server, once a second per player on Earth, when the sky is open above the head): wear on every section through `Wear.add`, scaled by the strength, default 0.003 condition per minute (a quarter of thrust wear), under the config switch `earth.acidDrizzle`; `Wear` keeps its own switch, creative exemption and the rule that nothing breaks. Client: falling yellow-green drops as a particle of our own, around the player, thinner as the strength falls, and a quiet rain loop behind our own sound event. Remote shells do not wear until remote control asks for it.
+- **Design for the Planetary Grid (Spire, part 6, unbuilt when written):** a plain item, one to a stack, Replicator recipe in Tools behind Earthfall. Level attachments only reach clients in that level, so the item carries the map: `inventoryTick` copies `EarthRestoration.map` into a data component when it differs, which works in deep space too with no new packet. Held in either hand, a GUI layer (`GuiGraphics.fill` only) draws the 4 x 4 map at the right edge with north up, restored cells green and the rest ash, the player's own sector outlined when on Earth, and "n of 16" under it; the tooltip gives the count. No CC peripheral: it is an item with no block, and the Spire already reads the planet.
+- **Bio-Nutrient Slurry:** the recipe's ingredients (Purified Water, Fine Carbon Powder, Ashen Slag: only nebula and Earth materials exist before the first pulse, so nothing grown), unheated, and 250 mB in and out ("Spire, part 1").
+- **Spire tower:** the old block becomes the controller rather than an inert leftover (old Spires face north, so a player may need to rebuild around or re-place one); the 5 x 5 x 9 shape with four pillars and no top ring; the default frame set (the launch frame's); the 256-block view distance ("Spire, part 2").
 
 ## Setup (workflow step 1): done
 - `CLAUDE.md` with plan, rules, toolchain versions, package layout, and settled decisions.
@@ -1059,6 +1093,186 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 - **The bug:** the game could hang for good while starting, about one start in six on CI, and any player's game could too. It was recorded as an upstream deadlock of unknown shape until the CI thread dump caught one. Mods are constructed in parallel: Create, through Registrate's `addLayer`, starts initializing `RenderStateShard`, which needs its nested `OutputStateShard`; Veil, in `VeilRenderSystem`, starts initializing `OutputStateShard`, which needs its parent. If both start at once, each waits for the other for good.
 - **The fix:** `RenderClassesFirstMixin` initializes the render classes on the main thread before mods are constructed, so there is nothing to race for. Nothing in them needs a GL context: the deadlocked threads had none either. A client-side mixin, so no GameTest reaches it.
 - **Evidence:** the dump shows the cycle, and the fix removes it by construction. 30 data starts on 4 cores each way on a quiet machine, with a thread dump of any timeout: with the fix 29 fine and none deadlocked, without it 28 fine and 1 deadlocked on the same classes. One start each way ended in some other way, not examined. One in 30 is too few to prove the rate: the proof is the cycle being gone, and CI will show if a hang returns.
+
+## Dev audit finished
+- `DEV_AUDIT.md` has the final status of all 16 findings and the post-fix baseline. Full CI went from 7.8 to 3.5 minutes. F7 was dropped as no longer needed, and F14 is open because it needs a JDK installed.
+
+## Tool: GameTest times
+- `GameTestTimeMixin` logs each test's milliseconds and ticks, and `tools/gametest.sh` prints the five slowest. A batch lasts as long as its slowest test.
+- `aDroneMinesTheRocksNearItsMinePointIntoItsChest` no longer sits out a fixed 600 ticks: it goes on when the rocks are in, then waits long enough for a drone that wrongly wanted the stone to take it. Mutation-checked. Its batch went from 35 s to 22 s.
+
+## Tool: GameTests write no chunks
+- Stack samples showed the server thread packing chunks for saving: about 10,700 deep space saves in 74 s of tests, each of 254 sections. GameTest runs now write no chunk (`GameTestChunkSaveMixin`) and end after the summary (`GameTestQuickExitMixin`), with the same exit code a stop gives.
+- **First try, dropped:** keeping every chunk in memory passed locally and ran out of memory on CI's fresh world. Local runs read an old world; a fresh one generates a ring of half-made chunks round each test area, about 27,000 chunks by the third batch. Run on a fresh world before trusting a memory change: `rm -rf run/world`.
+- **What it needs:** a fresh world passes 246 and 37 tests three times each at 6 GB; 4 GB stalls. CI's fast runs get 10 GB of its 16.
+- **Where the checks moved:** real chunk saves, reloads and a real stop now run on every push to `main` (`-PgametestChunkSaves`) and in the restart tests, not on PRs or local runs.
+- `darknessDrainsAndThrustCostsEnergy` built its box in a chunk with no ticket, and only survived an unload through the save. It forces the chunk now. Any test must hold a ticket on a chunk it needs.
+
+## Tool: restart tests in their own CI job
+- The two restart tests that took 80 s of the build job run beside it now. The same steps run on the same events.
+
+## Tool: assets reach the running game
+- `tools/client-test/quick.sh reload` (`/vrphoto reload`) runs `processResources` and reloads the resource packs, in about 15 s against about 50 s for a restart. Tested with a GeckoLib model: every cube of the probe grown fourfold showed up on the body, and restoring the file brought it back. `quick.sh` used to say assets needed a restart.
+- **Still needs a restart:** mixins, registry additions, and new methods or fields. Data files need `/reload` in chat.
+
+## Tool: CLAUDE.md is short again
+- `CLAUDE.md` went from 139 KB to 23 KB, under Claude Code's advice for a file loaded into every session. The design decisions, extension points, art notes and package tree moved word for word into `docs/design/`, with an index in `CLAUDE.md` saying which file to read before touching which area. A line-by-line check found only the five old headings missing.
+- Parked worktrees still edit the old `CLAUDE.md`: their notes go in the matching `docs/design/` file when they land.
+
+## Remote control: the dust cap
+- While linked, dust capacity reads the main body: the AI streams its dust through the network, so a shell reaches the same reserve, and its own storage parts neither add to it nor cut it down. Everything already read capacity through `DustData.capacity`, the HUD included, so a small synced value (`HOME_DUST_CAPACITY`, set by `Links`) is all it took. Flavour only: dust still never gives energy.
+- Test: `aShellReadsTheMainBodysDustStorage`, including through a relog and back at home.
+
+## Tool: unit tests without booting the game
+- `./gradlew fastTest` runs 336 of the 369 unit tests, in 62 of 67 classes, without the FML launcher. `test` is unchanged, in `build` and on CI; five classes that need the game are excluded from `fastTest` only.
+
+## GameTest servers end on running out of memory
+- `-XX:+ExitOnOutOfMemoryError` on both GameTest runs. A server out of memory used to stay alive in full collections: one held 9 of 16 threads and 7 GB for six hours after its wrapper was stopped. Now it exits and the run fails at once. Checked with `-PgametestHeap=300m`: see the PR.
+
+## Helper drones, part 4: steering round blocks: done
+- Drones no longer fly through blocks. Each tick a drone looks only at the cells its next step enters; when one is solid, a bounded search gives it a way round, straightened into a few waypoints. A long way that does not fit one search is walked in stages, each ending closer to the target. With no way, the drone holds still, its status says "Blocked" and it looks again every 100 ticks; opening a way sets it going, with its cargo and phase intact.
+- A drone hovers on a block's first free side (top, four sides, under), so a chest under a roof or the underside of a rock is reachable. A drone only counts as there with a clear line to that spot. Miners choose only rock with an open face. A drone with a block set on it leaves straight towards its target.
+- Photo mode's overlay draws the detour and says "blocked".
+- Nothing new is saved: the route is worked out again after a load, so a drone from an older save loads as it was.
+- **Tests:** `HelperSteeringTest` (unit, 20); `HelperSteeringGameTests` (6: round a wall, no way then a way opens, a block set on a drone, a chest under a roof, solid cells and unloaded chunks, a buried rock skipped).
+- **Known limits:** drones do not see Sable ships, whose blocks live in their plots; a drone is a point to the steering, so its model can graze a corner (not seen in a client); a wall much wider than a search's reach with the target right behind it counts as no way (raise `helper.searchNodes`).
+
+### Not seen in a client yet
+Drones flying a detour, and the overlay's detour lines.
+
+## Holo Projector: the cloud readout on Earth: fixed
+The `cloud` readout read the dust field without checking that there is one, and there is only one in deep space, so a projector showing it on ruined Earth threw on the server thread at every refresh, which stops the server. `everyReadoutKindReadsOnRuinedEarth` now runs every kind there.
+
+## Holo-displays, part 1: the projector and its text: done
+The block, its saved content, the readout refresh, the CC peripheral and the drawing of text; plan in `docs/HOLO_DISPLAYS_PLAN.md`, facts in `docs/design/plans.md` "Holo-displays". `HoloTextTest`, `HoloContentTest`, `ReadoutsTest`, `HoloRenderMathTest`; `HoloGameTests`; `theHoloProjectorIsAPeripheral`.
+
+**Placeholders:** `textures/block/holo_projector_top/side/bottom.png`, `textures/holo/panel.png` (white scanlines), `textures/holo/glow.png`, the cyan and flicker constants in `HoloStyle`, the price 30/40/10/20 dust.
+
+## Holo-displays, part 2: the readouts: done
+Twelve new readout kinds on the registry from part 1: the helm, thrusters, the siphon, electrolyzer and spinner, the launch complex, the Dyson Sphere, the Spire, the Backup Core, the nearest body, the dust cloud and any tank or energy store beside the projector. `ReadoutsTest` checks the lines and that the biggest numbers still fit 48 characters; `HoloGameTests` checks finding the nearest source, moving on when it is removed, and the kinds that need no block.
+
+## Holo-displays, part 3: the Create Display Link: done
+A Display Link can write to a Holo Projector. `HoloGameTests`: `aCreateDisplayLinkDeliversText` (a Nixie Tube through a real link) and `aDirectAcceptTextKeepsOtherLines`.
+
+## Holo-displays, part 4: CogScript: done
+CogScript programs get a `holo` module that writes to projectors within 16 blocks, through a small mixin into Advanced Electricity's `ComputerOS`; the patch and how to find it again are in `docs/ADVANCED_COMPUTER_TECHNIC_PATCH.md`. Tests: `cogScriptWritesToTheProjector`, `theCogScriptMixinInstallsTheModule`, `aProgramOnItsOwnThreadReachesTheProjector` (a program on its own thread, through the `onMainCall` hop). **Not seen in a client:** no program was typed into a computer's screen.
+
+## Holo-displays, part 5: models and the body: done
+A projector can show any GeckoLib model by id or the viewer's own body, turning slowly, from CC (`setModel`, `setBody`), CogScript (`holo.model`, `holo.body`) and `/void_reclaimer holo <pos> model|body|billboard`. Seen in the client with the mining probe, the Drone body and a missing id. Text, the billboard and the fixed picture (north and east) were checked by eye in the same session; a billboard on a turning ship has not been.
+
+**Placeholders:** the tint and strength of the cyan wash (`HoloStyle.MODEL_TINT`, `MODEL_ALPHA`, `WASH_ALPHA`).
+
+## Holo-displays, part 6: the Dyson and Earth globes: done
+`/void_reclaimer holo <pos> globe dyson|earth`, CC `setGlobe`, CogScript `holo.globe`. The globes show live progress, through `HoloGlobes.Progress` in the block's packet. Tests: `GlobeTest`, `HoloGlobesTest`, `aGlobeFollowsTheSphereAndOnlyResyncsOnAChange`.
+
+**The test that "never finished":** it was not the test. `aGlobeFollowsTheSphereAndOnlyResyncsOnAChange` takes 484 ms and 5 ticks alone on a fresh world and passes in the full suite. The stuck JVM was a full run out of heap on a fresh world, the known ring of half-made chunks (a live histogram: 14.5 million `PalettedContainer`s, about 28,500 deep space chunks, 5.3 of the 6 GB), and a checkout with no globe code ran out the same way after 74 tests. So the suite stopped before reaching the test.
+
+**Seen in a client:** both globes on the arena scene, with 150 satellites, 900 trusses and 7 of 16 sectors: the star, the shell and lattice, the green and ruined sectors and the captions, which moved up after the first look showed the Earth's air over them.
+
+**Placeholders:** the globe colours in `GlobeLook`, with no `globe_*.png` textures: the sphere is plain coloured scanlines.
+
+## Remote control: death in a shell
+- A player whose shell dies around them wakes in the main body with nothing lost: no items fall, no death marker, no Backup Core charge, and the shell is left as a wreck. Test: `dyingInAShellWakesYouAtHomeAndLeavesAWreck`, mutation-checked.
+
+## Remote control: stale shells, the outbox reader, and a link that survives singleplayer
+- After a crash, a copy of a shell left from before the link removes itself, and a shell that never reached the disk is rebuilt from the player file. See "Remote control" in `docs/design/plans.md`.
+- **Found in review, and worse than anything here:** singleplayer loads the player from `level.dat`, which `saveAll` does not write, so a link was only as safe as the last autosave and a crash could lose a whole shell. Every move now writes `level.dat` too. Checked in a real client with `kill -9`: the link survives with the fix, and the world comes back "In the main body" without it. No player could reach this yet.
+- The review also led to: one look per session (no duplicate of a moved shell, no destroyed shell coming back, no chunks reloading every few seconds), a killed shell clearing its outbox, an old copy giving way only to a body that can be read, and a rebuild that throws no longer taking the server down.
+- Tests: `LinkOutboxGameTests` (8), two restart tests that really crash, each behaviour mutation-checked.
+
+## Remote control: wrecks
+- A shell that dies leaves a wreck holding everything it carried and was built from. Right-click takes out what fits. See "Remote control" in `docs/design/plans.md`.
+- Tests: `LinkWreckGameTests` (4).
+
+## Tool: a checklist skill for new blocks
+- `.claude/skills/new-block/` lists every file a real block touched, so a CC peripheral, a lang line or a loot table is not found missing by CI.
+
+## Spire, part 4: what a pulse costs: done
+- Right-click, redstone or CC `pulse()` checks the cost and starts a charge; `Start.STARTED` now means charging. The charge counts ticks at 64 RPM (`MachineMath.progressPerTick`), waits while the shaft is below `minRpm`, and ends a fallen tower's charge. When it ends the cost is taken, all or nothing, and the wave leaves.
+- Cost (config group `terraform`): `catalysts` 1 from `#void_reclaimer:spire/catalysts`, `water` 8000 mB from the fluid tag `spire/water`, `slurry` 4000 mB from `spire/slurry`; two tanks of `tank` 16000 mB; `chargeTicks` 400 (20 s at 64 RPM); `minRpm` 32; `stress` 32 SU per RPM.
+- Automation only puts things in; a right-click with a catalyst or a fluid container loads it by hand. Catalysts drop when the Spire breaks; the tanks are lost. The new `ModFluidTagsProvider` writes the fluid tags.
+- CC: `isCharging`, `getCharge`, `getCost`, `getStock`; `pulse()` can answer `"no_catalyst"`, `"no_water"`, `"no_slurry"`, `"no_rotation"`.
+- Tests: `SpireCostGameTests` (8: every part of the cost, the charge and when it pays, a fallen tower, automation, the tags through the GameTest pack, hand loading, a reload and the stress value, drops), the CC test. Mutation-checked: a charge that ignores the shaft, a charge that outlives its tower, automation that can take out, no drop, an unpaid tank, tanks that take anything and no rotation check each fail a test.
+
+### Not seen in a client yet
+The charge's sparks at the top of the tower, loading the Spire by hand.
+
+## Spire, part 5: Acid Drizzle: done
+- `earth/EarthAtmosphere` (pure) and `earth/AcidDrizzle`: once a second, a body under the open sky on ruined Earth outside a restored sector wears every section through `Wear.add`, scaled by what is left of the planet. Config `earth.acidDrizzle` (on) and `earth.acidWearPerMinute` (0.003). Smog came with part 3: it is the sky's fog.
+- Client: `client/render/AcidDrizzleClient` and `AcidDropParticle`, a yellow-green falling drop (`registry/ModParticles`, `particles/acid_drop.json` over vanilla's splash sprites), thinner with strength and with the game's particle setting; sound event `acid_drizzle`, vanilla rain as a stand-in.
+- Tests: `EarthAtmosphereTest`, `AcidDrizzleGameTests` (5: every section wears and none breaks, a roof, restored ground, the config, deep space). Mutation-checked: dropping the sky, config or dimension check, drizzle over restored ground and wearing only one section each fail a test.
+
+### Placeholder assets
+- The `acid_drop` particle uses vanilla's splash sprites, tinted. The `acid_drizzle` sound is vanilla rain.
+
+### Not seen in a client yet
+The drops, their density, the sound.
+
+## Spire, part 6: the Planetary Grid: done
+- `earth/PlanetaryGridItem`, component `planet_sectors`, `client/hud/PlanetaryGridLayer` and `PlanetaryGridLayout` (pure). The item keeps its own copy of the planet's map, so it reads the same from deep space.
+- Replicator recipe `planetary_grid`: Tools tab, Earthfall, 10/15/5/10 dust (placeholder).
+- No CC peripheral: it is an item with no block, and the Spire's `getSectors` already reads the planet from any dimension.
+- Tests: `PlanetaryGridLayoutTest`, `PlanetaryGridGameTests` (2), and `RecipeDescriptionTest` for the line in the Replicator. Mutation-checked: a refresh every tick and a component that is not saved each fail a test.
+
+### Placeholder assets
+- `textures/item/planetary_grid.png`: a small drawn grid. The map itself is plain `GuiGraphics.fill`; the `gui/planetary_grid.png` row in the asset list stays future.
+
+### Not seen in a client yet
+The map's place on screen, beside the rest of the HUD at small GUI scales.
+
+## Spire, part 3: sectors and the sky: done
+- `earth/Sectors`, `earth/SectorMap` (saved, synced attachment `earth_sectors` on the Earth level), `earth/EarthRestoration` (the one writer; moves the sky era on and posts the new `SectorRestoredEvent`).
+- A tower's pulse sweeps out from the tower, stays inside the sector holding the tower's centre, and marks it when it ends, so the pulse covers the whole sector exactly wherever in it the tower stands. `Sectors.reach` sets the radius; the config `spireRadius` is gone. The biome rewrite takes a square now. `tryStart` refuses with `OFF_PLANET` and `SECTOR_RESTORED`. A pulse from `start(radius, duration)`, as an old save's, names no sector: not clipped, restores nothing.
+- `SkyLook.in(level)` is what the client draws: `blend(fraction)`, a straight line through ruined (0), healing (0.5), restored (1), so every sector moves the sky and thins the fog. Clouds appear halfway to healing. An era set by the debug command differs from `SkyEra.forSectors(count)`, so it shows as it is until the next restored sector.
+- `/void_reclaimer sky sectors [count]`; the debug readout shows the count.
+- CC: `getSector`, `getSectors`, `getRestoredCount`; `getRadius` is now the reach to the far edge; `pulse()` can answer `"off_planet"` and `"sector_restored"`.
+- Tests: `SectorsTest`, `SectorMapTest`, `SkyLookBlendTest`, `SectorGameTests` (5). Mutation-checked: no clip of the wave, no clip of the biome, no check for a restored sector, no check for the planet, no restoring at the end, an era that does not follow, a sky that ignores the blend each fail a test.
+
+### Not seen in a client yet
+The in-between skies and fog.
+
+## Spire, part 1: Bio-Nutrient Slurry: done
+- `ModFluids.BIO_NUTRIENT_SLURRY` (`bio_nutrient_slurry`, tint `#6FA83A`, thick, no glow), with its bucket. Create basin recipe `create/terraform/bio_nutrient_slurry`, unheated: 250 mB Purified Water, 1 Fine Carbon Powder and 1 Ashen Slag give 250 mB of slurry, under the new toggle `bioSlurry`.
+- Tests: `theBasinMixesBioNutrientSlurry` (the loaded recipe's inputs, heat and result), `theSlurryRecipeIsGatedByItsToggle` (the file's condition names the toggle), plus the recipe in `everyChainRecipeLoadsAsItsCreateType` and the walk of `CreateRecipeGameTests`. Mutation-checked: a recipe with dirt in place of slag fails the first, a recipe under another toggle fails the second.
+
+### Placeholder assets
+- `textures/item/bio_nutrient_slurry_bucket.png`: the Purified Water bucket recoloured green. The fluid uses tinted water like the others.
+
+## Spire, part 2: the tower: done
+- **The old block grew up, it was not replaced.** `terraforming_spire` keeps its id, item, recipe, block entity id and CC type, and is now the tower's controller: `SpireBlock` is a `HorizontalKineticBlock` that faces its tower, with a shaft on its back. A world with an old Spire loses nothing: the block loads facing north with no tower, keeps its pulse count, and a pulse caught mid-sweep runs out from the block itself (`pulseCentre` is absent in the old save, so it stays the block). It only stops firing until a tower stands around it.
+- `SpireTower` (pure): a 5 x 5 base in front of the Spire, which sits in the middle of the near edge; the frame is the base's outer row without the Spire plus four corner pillars 9 tall, 47 blocks; the column is the 3 x 3 inside, 9 tall. Cells are (across, forward, up).
+- `SpireAssembly`, like `LaunchComplex`: sneak-use (or CC `assemble()`) needs every frame cell in the new tag `#void_reclaimer:spire_frame` (by default everything in `#void_reclaimer:launch_frame`) and a free column, fills the column with invisible solid `spire_column` blocks (no item, no drop); setting down removes them. Every 20 ticks a broken frame sets the tower down and a missing column block grows back. A pulse already running finishes whatever happens to the tower.
+- The pulse now sweeps out from the tower's centre; `tryStart` refuses with `NOT_ASSEMBLED`.
+- `client/render/SpireTowerRenderer`: a global GeckoLib block entity renderer, drawn while assembled, seen up to 256 blocks away. A wrench does nothing to an assembled Spire: the frame is found from its facing.
+- CC: `isAssembled`, `assemble`, `disassemble`, `getSpeed`; `pulse()` gained `"not_assembled"`.
+- Tests: `SpireTowerTest` (3), `SpireTowerGameTests` (11: assembling, gaps and obstacles, the tag from the GameTest pack, a broken frame, breaking the Spire, sneak-use, the wrench, the client packet and save, refusing without a tower, an old save with a pulse mid-sweep), `aTowersPulseSweepsOutFromItsCentre`, `theSpireIsAPeripheralAndPulsesUnderThePlayersRules`. Mutation-checked: a frame check that takes any block, a column that does not grow back and a wrench that ignores the tower each fail a test.
+
+### Placeholder assets
+- `geo/entity/spire_tower.geo.json`, `textures/entity/spire_tower.png`, `animations/entity/spire_tower.animation.json` (empty): stacked boxes about 24 blocks tall, flat colours. Replace with `--promote-as entity/spire_tower`.
+- The Spire block still wears `textures/block/terraforming_spire.png` on all faces, so its shaft face does not show.
+
+### Not seen in a client yet
+The tower model's place and height over the frame.
+
+## Remote control and tooling, the last stretch before the move
+- Merged: dying in a shell (#215), helper drones steering (#216), globes (#217), and `-XX:+ExitOnOutOfMemoryError` on GameTest servers (#218). Built and pushed, not merged: the stack listed in `HANDOFF.md`. `main` is now protected by a GitHub ruleset: pull requests only, no force pushes, no deletion.
+
+## Known issues
+- **Two towers in one sector** can each spend a full pulse cost: the second pays and restores nothing new (from the Spire work).
+- **GameTests that wait for fresh chunks can run out of ticks next to other runs:** a GameTest tick does not wait, so 200 ticks can pass before chunks are ready on a loaded machine. This shows as "Didn't succeed or fail", not as a failure. The new link tests have 900 ticks; older tests still have 200.
+- **A fresh world does not fit in 6 GB with ParallelGC:** it fills the heap and stalls in full collections. Local runs are not on a fresh world, so this only shows on a fresh `run/`.
+
+- **A ship that hits crops or leaves can hang the server, from Sable itself:** issue #1603 is open, and `FragileBlockCallback` in our 2.0.6 still breaks the block from inside the physics step. It needs a block state with no cached collider, so it may be rare, and it has not been seen here. It could reach airships on Earth. The `sable-rapier-deadlock-fix` mod patches it; not tried here.
+
+## Tool: one test server at a time
+- `tools/gametest.sh` takes a machine-wide lock, so checkouts wait for each other instead of running 6 GB JVMs side by side. `tools/verify.sh` refuses a second run in one checkout, which is how two overlapping runs garbled a log and let a wrong unit test reach CI, and says when a failure was a JVM crash.
+
+## Tool: one command before a push
+- `tools/verify.sh` picks the build, GameTests, datagen and tool tests from what the branch changed, by the same rules as CI's `changes` job, one suite at a time, one line per check. `tools/verify.sh all` runs everything. The `verify` skill (`.claude/skills/verify/`) replaces Claude Code's bundled one.
+- **Where the check moved:** a client, test, tool or docs branch skips GameTests before the push. CI already skipped them on such PRs, so they run on `main` after the merge.
+
+## Tool: hot swap in your own window
+- `tools/client-test/quick.sh window [world]` starts the client in a real window, joined to the world, with the debug port open. `quick.sh swap`, from any terminal or from Claude Code, then replaces changed method bodies in it in about 3 s. In the window, `./gradlew processResources` then F3+T brings in assets.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

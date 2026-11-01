@@ -160,6 +160,16 @@ What sneak-use and redstone do.
 | `dock()` | docks the ship touching the clamp's face; returns the status |
 | `release()` | lets the docked ship go; returns the status |
 
+## Uplink Seat (`UplinkSeatPeripheral`)
+Read-only: a link needs a player to take it.
+
+| Function | Returns |
+|---|---|
+| `getSeatId()` | the seat's id, which it keeps for good |
+| `getRange()` | how far the seat reaches now, in blocks |
+| `isOccupied()` | whether a player is linked from this seat |
+| `getOccupant()` | that player's name, or `""` |
+
 ## Holo Projector (`HoloPeripheral`)
 Lines count from 1. Writing text switches the projector to text and `setSource` to a readout: the last writer wins.
 

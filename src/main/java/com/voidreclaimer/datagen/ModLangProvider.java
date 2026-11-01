@@ -57,6 +57,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("key.void_reclaimer.photo_mode", "Photo Mode (drag look, WASD/Space/Shift move, scroll FOV, Q/E roll, G debug, L labels, O overlay, P freeze, period step, comma slow, T chat, Enter shot)");
         add("screen.void_reclaimer.photo_mode", "Photo mode");
         add("key.void_reclaimer.cloud_scanner", "Toggle Cloud Scanner");
+        add("key.void_reclaimer.unlink", "Leave Shell");
         add("message.void_reclaimer.scanner_on", "Cloud scanner: ON");
         add("message.void_reclaimer.scanner_off", "Cloud scanner: OFF");
         add("hud.void_reclaimer.sensor.cloud", "%s cloud: %s%% density");
@@ -98,6 +99,10 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.STATION_CORE.get(), "Station Core");
         add(ModItems.HOLO_PROJECTOR.get(), "Holo Projector");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
+        add(ModItems.UPLINK_SEAT.get(), "Uplink Seat");
+        add(ModItems.DRONE_SHELL.get(), "Remote Shell: Drone");
+        add(ModItems.MECH_SHELL.get(), "Remote Shell: Mech");
+        add(ModItems.SHIP_SHELL.get(), "Remote Shell: Ship");
         add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
         add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
         add("message.void_reclaimer.ship_portal.blocked", "The far side of the portal is not clear for the ship.");
@@ -328,11 +333,28 @@ public final class ModLangProvider extends LanguageProvider {
         add("commands.void_reclaimer.link.census.same", "Nothing changed since the last count.");
         add("commands.void_reclaimer.link.spawned", "Spawned a %s shell");
         add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
+        add("message.void_reclaimer.link.signal_lost", "Signal lost. The shell stays where it is. [Placeholder, lore text pending.]");
+        add("message.void_reclaimer.uplink.no_shell", "No shell to link to");
+        add("screen.void_reclaimer.uplink.title", "Uplink");
+        add("screen.void_reclaimer.uplink.here", "Shell %s, %s blocks off");
+        add("screen.void_reclaimer.uplink.elsewhere", "Shell %s, in %s");
+        add("screen.void_reclaimer.uplink.signal", "%s%%");
+        add("screen.void_reclaimer.uplink.out_of_range", "out of range");
+        add("screen.void_reclaimer.uplink.wreck", "a wreck");
+        add("screen.void_reclaimer.uplink.next", "More");
+        add("message.void_reclaimer.uplink.taken", "This seat is in use");
+        add("message.void_reclaimer.uplink.failed", "The link failed: %s");
         add("message.void_reclaimer.wreck.left", "Salvaged %s stacks; %s more will not fit");
         add("message.void_reclaimer.wreck.empty", "Salvaged %s stacks: the wreck is empty");
         add("commands.void_reclaimer.link.unknown", "No body called %s");
         add("commands.void_reclaimer.link.not_a_shell", "That is not a shell");
         add("commands.void_reclaimer.link.result", "Link: %s");
+        add("commands.void_reclaimer.link.shells.none", "No shells on record");
+        add("commands.void_reclaimer.link.shells.entry", "Shell %s, link %s, in %s at %s: %s");
+        add("commands.void_reclaimer.link.shells.idle", "idle");
+        add("commands.void_reclaimer.link.shells.in_use", "in use");
+        add("commands.void_reclaimer.link.shells.wrecked", "a wreck");
+        add("commands.void_reclaimer.link.shells.gone", "gone");
         add("commands.void_reclaimer.link.status.home", "In the main body");
         add("commands.void_reclaimer.link.status.linked", "In shell %s, link %s; main body in %s at %s");
         add("commands.void_reclaimer.scene.built", "Built test scene %s");
@@ -686,6 +708,10 @@ public final class ModLangProvider extends LanguageProvider {
 
     /** One short gameplay hint per built-in Replicator recipe (not lore); a recipe's own {@code description} overrides it. */
     private void addReplicatorDescriptions() {
+        add("replicator.void_reclaimer.description.uplink_seat", "Leave the main body here and run a Remote Shell from afar. The body stays on the seat and slowly charges.");
+        add("replicator.void_reclaimer.description.drone_shell", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.mech_shell", "A Mech body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
+        add("replicator.void_reclaimer.description.ship_shell", "A Ship body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.portal_frame", "Frame blocks for an Atmospheric Portal. Build a flat rectangle at least 3 by 3 inside (the Ship needs about 12 by 6), then light it with a Portal Igniter.");
         add("replicator.void_reclaimer.description.holo_projector", "Shows up to eight lines of text in the air above itself. Write to it from a computer or a Create Display Link, or sneak-use it with an empty hand to pick a built-in readout.");
         add("replicator.void_reclaimer.description.portal_igniter", "Right-click a built Atmospheric Portal frame to light it. Used up when it works.");

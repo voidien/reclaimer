@@ -59,6 +59,10 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.HELM.get());
                 output.accept(ModItems.STATION_CORE.get());
                 output.accept(ModItems.DOCKING_CLAMP.get());
+                output.accept(ModItems.UPLINK_SEAT.get());
+                output.accept(ModItems.DRONE_SHELL.get());
+                output.accept(ModItems.MECH_SHELL.get());
+                output.accept(ModItems.SHIP_SHELL.get());
                 output.accept(ModItems.HOLO_PROJECTOR.get());
                 output.accept(ModItems.ASTEROID_CARBON.get());
                 output.accept(ModItems.ASTEROID_METALLIC.get());

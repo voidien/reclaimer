@@ -1,12 +1,9 @@
 name: Build
 
 on:
-  # Pushes to a PR branch would run the same commit twice (push and pull_request), so push runs only on main.
+  # Pull requests merge on tools/verify.sh, run locally. This is the check after the merge, on a clean machine, with real saves.
   push:
     branches: [main]
-  pull_request:
-    # A PR that only touches docs or art sources has nothing to build. Marking a draft ready runs the full checks.
-    types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -21,40 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changes:
-    # Decides how much of CI a pull request needs. Pushes to main and manual runs always run everything.
-    #   full: GameTests, datagen check and the Aeronautics job run (not for drafts, which only build and run unit tests).
-    #   code: some changed file can affect server behaviour or generated data. Client-only code (client/), unit tests,
-    #         tools, docs and hand-written assets cannot, so those PRs skip the slow jobs.
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      full: ${{ steps.decide.outputs.full }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
-
-      - id: decide
-        env:
-          EVENT: ${{ github.event_name }}
-          DRAFT: ${{ github.event.pull_request.draft }}
-        run: |
-          full=true
-          if [ "$EVENT" = "pull_request" ]; then
-            if [ "$DRAFT" = "true" ]; then
-              full=false
-            else
-              # The checkout is the PR's merge commit, so its first parent is the base: this diff is exactly the PR.
-              code=$(git diff --name-only HEAD^1 HEAD | grep -Ev '^(src/test/|tools/|docs/|art/|src/main/java/com/voidreclaimer/client/|src/main/resources/assets/|.*\.md$)' || true)
-              if [ -z "$code" ]; then full=false; fi
-              echo "Files that need the full run:"; echo "$code"
-            fi
-          fi
-          echo "full=$full" >> "$GITHUB_OUTPUT"
-
   build:
-    needs: changes
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -66,9 +30,6 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
-        with:
-          # Only main saves the Gradle cache; PR runs read it. Saving it on every PR run costs a minute for little gain.
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Build and unit tests
         run: ./gradlew build --stacktrace
@@ -81,14 +42,10 @@ jobs:
           python3 tools/test_progress_fold.py
 
       - name: GameTests
-        if: needs.changes.outputs.full == 'true'
         # The upstream Aeronautics/Simulated/Veil start-up hang (see the datagen step) can also stall the GameTest server. A healthy
         # run takes a few minutes, so a run that exceeds the timeout (exit 124) is retried; a test failure is not.
         run: |
-          # Pull requests write no chunks and skip the final save; main runs real saves and a real stop. With no saves a fresh world
-          # keeps more chunks in memory at once, and CI's world is always fresh.
-          flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          flags="-PgametestHeap=10G -PgametestChunkSaves"
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestServer $flags --stacktrace && exit 0
             status=$?
@@ -99,7 +56,6 @@ jobs:
           exit 1
 
       - name: Datagen output is up to date
-        if: needs.changes.outputs.full == 'true'
         # Create Aeronautics/Simulated/Veil sometimes deadlock while the client-dist data run starts (upstream, see
         # HANDOFF.md). A healthy run takes under a minute, so cut a hung one off and try again.
         run: |
@@ -133,11 +89,19 @@ jobs:
           if-no-files-found: ignore
 
   restart:
-    # Tests that span a restart, in a job of their own: they start the server four times and hold up nothing else.
-    needs: changes
-    if: needs.changes.outputs.full == 'true'
+    # Tests that span a restart, each on its own machine: in a row they took over four minutes, the longest job of a pull request.
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
+    strategy:
+      # One failure must not cancel the others: they are separate tests, and a fix should see them all.
+      fail-fast: false
+      matrix:
+        test:
+          - aCrashKeepsOnlyWhatWasSaved
+          - aLinkOutlivesACrash
+          - aWokenShellOutlivesACrash
+          - anOldShellGoesAfterACrash
+          - aNewerShellWinsAClash
     steps:
       - uses: actions/checkout@v7
 
@@ -147,28 +111,20 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      - name: A crash costs what was not saved
-        run: |
-          tools/restart-test.sh main aCrashKeepsOnlyWhatWasSaved
-          tools/restart-test.sh main aLinkOutlivesACrash
-          tools/restart-test.sh main aWokenShellOutlivesACrash
-          tools/restart-test.sh main anOldShellGoesAfterACrash
+      - name: ${{ matrix.test }}
+        run: tools/restart-test.sh main ${{ matrix.test }}
 
       - name: Upload run logs
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: restart-logs
+          name: restart-logs-${{ matrix.test }}
           path: run/logs/
           if-no-files-found: ignore
 
   aeronautics:
     # Create Aeronautics / Sable inside deep space. Its own job, so an upstream problem doesn't hide the main results.
-    needs: changes
-    if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -180,14 +136,10 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
-        with:
-          # Only main saves the Gradle cache; PR runs read it. Saving it on every PR run costs a minute for little gain.
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Aeronautics GameTests
         run: |
-          flags=-PgametestHeap=10G
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then flags=-PgametestChunkSaves; fi
+          flags="-PgametestHeap=10G -PgametestChunkSaves"
           for attempt in 1 2 3; do
             timeout 900 ./gradlew runGameTestAeronautics $flags --stacktrace && exit 0
             status=$?

@@ -59,5 +59,8 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<com.voidreclaimer.station.DockingClampBlockEntity>> DOCKING_CLAMP = BLOCK_ENTITIES.register("docking_clamp",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.station.DockingClampBlockEntity::new, ModBlocks.DOCKING_CLAMP.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.voidreclaimer.link.UplinkSeatBlockEntity>> UPLINK_SEAT = BLOCK_ENTITIES.register("uplink_seat",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.link.UplinkSeatBlockEntity::new, ModBlocks.UPLINK_SEAT.get()).build(null));
+
     private ModBlockEntities() {}
 }

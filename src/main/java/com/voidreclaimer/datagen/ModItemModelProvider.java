@@ -19,6 +19,9 @@ public final class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.SALVAGE_TOOL.get());
         basicItem(ModItems.NANITE_SWARM.get());
         basicItem(ModItems.BODY_BLUEPRINT.get());
+        for (var shell : java.util.List.of(ModItems.DRONE_SHELL, ModItems.MECH_SHELL, ModItems.SHIP_SHELL)) {
+            withExistingParent(shell.getId().getPath(), "item/generated").texture("layer0", modLoc("item/body_blueprint"));
+        }
         basicItem(ModItems.PORTAL_IGNITER.get());
         basicItem(ModItems.PLANETARY_GRID.get());
         withExistingParent("test_starship", mcLoc("item/template_spawn_egg"));

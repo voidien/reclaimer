@@ -49,6 +49,14 @@ public final class ModRecipeProvider extends RecipeProvider {
                 ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
         replicator(output, "docking_clamp", ModItems.DOCKING_CLAMP.get(), 1, DustCost.of(40, 30, 10, 60), 60,
                 ReplicatorCategories.BLOCKS, Milestones.STARSHIP);
+        replicator(output, "uplink_seat", ModItems.UPLINK_SEAT.get(), 1, DustCost.of(40, 30, 20, 40), 60,
+                ReplicatorCategories.BLOCKS, Milestones.EXPANSION);
+        replicator(output, "drone_shell", ModItems.DRONE_SHELL.get(), 1, DustCost.of(30, 30, 20, 20), 60,
+                ReplicatorCategories.TOOLS, Milestones.EXPANSION);
+        replicator(output, "mech_shell", ModItems.MECH_SHELL.get(), 1, DustCost.of(60, 60, 40, 40), 120,
+                ReplicatorCategories.TOOLS, Milestones.EXPANSION);
+        replicator(output, "ship_shell", ModItems.SHIP_SHELL.get(), 1, DustCost.of(200, 200, 100, 100), 300,
+                ReplicatorCategories.TOOLS, Milestones.STARSHIP);
         machineRecipe(output, "holo_projector", ModItems.HOLO_PROJECTOR.get(), DustCost.of(30, 40, 10, 20), "holoProjector");
         replicator(output, "portal_igniter", ModItems.PORTAL_IGNITER.get(), 1, DustCost.of(12, 10, 8, 12), 15,
                 ReplicatorCategories.TOOLS, Milestones.STARSHIP);

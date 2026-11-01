@@ -46,6 +46,8 @@ public final class VoidReclaimerClient {
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
+        com.voidreclaimer.network.ShellListPayload.clientHandler = payload ->
+                Minecraft.getInstance().setScreen(new com.voidreclaimer.client.screen.ShellPickerScreen(payload));
     }
 
     /** Our fluids use vanilla water's textures, tinted. */
@@ -98,6 +100,7 @@ public final class VoidReclaimerClient {
     private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, EnergyBarLayer::render);
         event.replaceLayer(VanillaGuiLayers.PLAYER_HEALTH, com.voidreclaimer.client.hud.HealthBarLayer::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("link_static"), com.voidreclaimer.client.hud.StaticLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("flight"), FlightHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("pilot"), com.voidreclaimer.client.hud.PilotHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);

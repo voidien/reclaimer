@@ -1,11 +1,15 @@
 package com.voidreclaimer.link;
 
 import com.mojang.logging.LogUtils;
+import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
+import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.space.ModDimensions;
+import com.voidreclaimer.space.SpawnHandler;
 import java.util.ArrayDeque;
 import java.util.Optional;
 import java.util.Queue;
@@ -20,12 +24,14 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -60,12 +66,20 @@ public final class Links {
         HOME_UNREADABLE,
         /** The player logged out or died before the move ran. */
         PLAYER_GONE,
+        /** Its chunks were read, and it is not where the list says. */
+        NOT_FOUND,
+        /** Its chunks took too long to load. */
+        TIMED_OUT,
+        /** A link is on its way already. */
+        WAITING,
+        /** The seat's signal does not reach the shell. */
+        OUT_OF_RANGE,
         /** Something threw part way, and the move was undone. */
         FAILED
     }
 
     /** A waiting move. No shell means a wake, and {@code lost} that the shell was destroyed around the player. */
-    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, boolean lost, Consumer<Result> then) {}
+    private record Move(UUID player, @Nullable ResourceKey<Level> shellLevel, @Nullable UUID shell, @Nullable UUID seat, boolean lost, Consumer<Result> then) {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
@@ -78,18 +92,49 @@ public final class Links {
 
     /** Asks for {@link #link} at the end of this tick; {@code then} hears how it went. */
     public static void requestLink(ServerPlayer player, BodyHost shell, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), false, then));
+        requestLink(player, shell, null, then);
+    }
+
+    /** {@link #requestLink(ServerPlayer, BodyHost, Consumer)} from the Uplink Seat with id {@code seat}, if any. */
+    static void requestLink(ServerPlayer player, BodyHost shell, @Nullable UUID seat, Consumer<Result> then) {
+        MOVES.add(new Move(player.getUUID(), shell.level().dimension(), shell.getUUID(), seat, false, then));
+    }
+
+    /** Asks for {@link #link} to a shell anywhere, by the player's list of shells: see {@link ShellReach}. */
+    public static void requestLink(ServerPlayer player, UUID shell, Consumer<Result> then) {
+        ShellReach.request(player, shell, then);
+    }
+
+    /** {@link #requestLink(ServerPlayer, UUID, Consumer)} from the Uplink Seat with id {@code seat}. */
+    static void requestLink(ServerPlayer player, UUID shell, UUID seat, Consumer<Result> then) {
+        ShellReach.request(player, shell, seat, then);
     }
 
     /** Asks for {@link #wake} at the end of this tick; {@code then} hears how it went. */
     public static void requestWake(ServerPlayer player, Consumer<Result> then) {
-        MOVES.add(new Move(player.getUUID(), null, null, false, then));
+        MOVES.add(new Move(player.getUUID(), null, null, null, false, then));
     }
 
     @SubscribeEvent
     static void onServerTick(ServerTickEvent.Post event) {
         for (Move move = MOVES.poll(); move != null; move = MOVES.poll()) {
             move.then().accept(run(event.getServer(), move));
+        }
+    }
+
+    /**
+     * Two copies of a shell meet: a crash left one on disk from before a link, and both chunks have loaded. A level holds one entity
+     * per id and refuses the second with only a warning, and the chunk of a refused copy then saves without it. So the older copy
+     * has to give way here, whichever came first. An older arrival needs nothing: the level refuses it. This asks nothing of the
+     * owner, who may be away. Last in line, because a listener after this one could cancel the arrival with the older copy already
+     * gone. A copy in a chunk on its way out cannot be seen here; see {@link #replaced} for why that costs a rollback at worst.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    static void onEntityJoin(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof BodyHost arriving && event.getLevel() instanceof ServerLevel level
+                && level.getEntity(arriving.getUUID()) instanceof BodyHost held && held != arriving && arriving.epoch() > held.epoch()) {
+            LOGGER.info("Shell {}: the copy with link number {} gives way to the one with {}", held.getUUID(), held.epoch(), arriving.epoch());
+            held.discard();
         }
     }
 
@@ -103,7 +148,7 @@ public final class Links {
         if (event.getEntity() instanceof ServerPlayer player && state(player).linked()) {
             event.setCanceled(true);
             player.setHealth(1f);
-            MOVES.add(new Move(player.getUUID(), null, null, true, result -> {
+            MOVES.add(new Move(player.getUUID(), null, null, null, true, result -> {
                 if (result == Result.WOKEN) {
                     player.displayClientMessage(Component.translatable("message.void_reclaimer.link.lost"), false);
                 } else if (result != Result.NOT_LINKED) {
@@ -127,11 +172,15 @@ public final class Links {
             return wake(player, move.lost());
         }
         ServerLevel level = server.getLevel(move.shellLevel());
-        return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell) : Result.NOT_A_SHELL;
+        return level != null && level.getEntity(move.shell()) instanceof BodyHost shell ? link(player, shell, move.seat()) : Result.NOT_A_SHELL;
     }
 
     /** Puts {@code player} in {@code shell}. The main body goes into the player file and the shell leaves the world. */
     public static Result link(ServerPlayer player, BodyHost shell) {
+        return link(player, shell, null);
+    }
+
+    private static Result link(ServerPlayer player, BodyHost shell, @Nullable UUID seat) {
         LinkState state = state(player);
         if (!present(player)) {
             return Result.PLAYER_GONE;
@@ -161,7 +210,10 @@ public final class Links {
         if (!arrive(player, there, shell.position(), shell.getYRot(), shell.getXRot())) {
             return Result.CANNOT_REACH;
         }
-        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), shell.epoch() + 1, homeTag, from)));
+        // An old copy can be linked to when the outbox cannot be read, and the list must not go back with it.
+        long epoch = Math.max(shell.epoch(), state.known(shell.getUUID()).map(LinkState.KnownShell::epoch).orElse(0L)) + 1;
+        player.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withLink(new LinkState.Link(shell.getUUID(), epoch, homeTag, from, Optional.ofNullable(seat), player.server.overworld().getGameTime()))
+                .withKnown(new LinkState.KnownShell(shell.getUUID(), epoch, place(shell), false, false)));
         if (!wear(player, body)) {
             boolean restored = wear(player, home);
             arrive(player, here, from.position(), from.yaw(), from.pitch());
@@ -169,7 +221,7 @@ public final class Links {
                 player.setData(ModAttachments.LINK, state);
             } else {
                 // The link stays, so the main body is not lost, and so does the shell: it must not count as a copy left from before it.
-                shell.setEpoch(shell.epoch() + 1);
+                shell.setEpoch(epoch);
             }
             return Result.FAILED;
         }
@@ -199,10 +251,11 @@ public final class Links {
         if (home.isEmpty()) {
             return Result.HOME_UNREADABLE;
         }
-        ServerLevel target = player.server.getLevel(link.from().dimension());
-        if (target == null || !mayEnter(player, target)) {
+        LinkState.Place point = wakePoint(player, link);
+        if (point == null) {
             return Result.CANNOT_REACH;
         }
+        ServerLevel target = player.server.getLevel(point.dimension());
         LinkState.Place at = place(player);
         ServerLevel shellLevel = player.serverLevel();
         BodySnapshot body = BodySnapshot.take(player);
@@ -210,16 +263,16 @@ public final class Links {
         if (bodyTag == null) {
             return Result.FAILED;
         }
-        if (!arrive(player, target, link.from().position(), link.from().yaw(), link.from().pitch())) {
+        if (!arrive(player, target, point.position(), point.yaw(), point.pitch())) {
             return Result.CANNOT_REACH;
         }
         LinkState.Outbox outbox = new LinkState.Outbox(link.shell(), link.epoch(), bodyTag, at, false);
         player.setData(ModAttachments.LINK, state.withOutbox(outbox));
-        Optional<BodyHost> shell = BodyHost.restore(shellLevel, at, link.shell(), link.epoch(), body, player.getUUID());
+        Optional<BodyHost> shell = putBack(shellLevel, at, link, body, player);
         if (shell.isEmpty()) {
             LOGGER.warn("Shell {} could not be put back in the world yet: it stays in the outbox", link.shell());
         }
-        if (!wear(player, home.get())) {
+        if (!wear(player, charged(player, home.get(), link))) {
             shell.ifPresent(BodyHost::discard);
             wear(player, body);
             arrive(player, shellLevel, at.position(), at.yaw(), at.pitch());
@@ -232,11 +285,68 @@ public final class Links {
                 Wrecks.make(host);
             }
         });
-        player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink());
+        // A lost shell that the level would not take comes back from the outbox as a shell, not a wreck.
+        boolean wrecked = lost && shell.isPresent();
+        player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink()
+                .withKnown(new LinkState.KnownShell(link.shell(), link.epoch(), at, wrecked, false)));
         setHomeDust(player, DustData.NOT_LINKED);
         settle(player);
         saveNow(player.server);
         return Result.WOKEN;
+    }
+
+    /**
+     * Where the main body wakes: where it was left, which a seat aboard a ship keeps current; else a listed Backup Core, with no
+     * charge spent, because this is not a death; else the spawn. Only a dimension that is gone or locked gets past the first.
+     */
+    @Nullable
+    private static LinkState.Place wakePoint(ServerPlayer player, LinkState.Link link) {
+        if (reachable(player, link.from())) {
+            return link.from();
+        }
+        for (LinkState.Place core : BackupCores.wakePlaces(player)) {
+            if (reachable(player, core)) {
+                return core;
+            }
+        }
+        LinkState.Place spawn = new LinkState.Place(ModDimensions.DEEP_SPACE, SpawnHandler.spawnPosition(), 0f, 0f);
+        return reachable(player, spawn) ? spawn : null;
+    }
+
+    /** The main body after its time in a seat. It is not in the world to tick, so this is worked out from the time it took. */
+    private static BodySnapshot charged(ServerPlayer player, BodySnapshot home, LinkState.Link link) {
+        if (link.seat().isEmpty()) {
+            return home;
+        }
+        double perSecond = Config.LINK_SEAT_CHARGE.get() * (atStation(player.server, link.from()) ? Config.LINK_STATION_CHARGE.get() : 1.0);
+        return home.withEnergy(SeatCharge.after(home.energy(), player.server.overworld().getGameTime() - link.since(), perSecond));
+    }
+
+    /** Whether a seat at {@code place} has a station's perks. */
+    static boolean atStation(MinecraftServer server, LinkState.Place place) {
+        ServerLevel level = server.getLevel(place.dimension());
+        return level != null && level.getData(ModAttachments.STATIONS).nearest(place.position(), Config.STATION_RANGE.get()).isPresent();
+    }
+
+    private static boolean reachable(ServerPlayer player, LinkState.Place place) {
+        ServerLevel level = player.server.getLevel(place.dimension());
+        return level != null && mayEnter(player, level);
+    }
+
+    /** A seat aboard a ship has been carried along, and the main body with it. */
+    static void homeCarriedTo(ServerPlayer player, Vec3 position) {
+        LinkState state = state(player);
+        state.link().ifPresent(link -> player.setData(ModAttachments.LINK, state.withLink(link.carriedTo(position))));
+    }
+
+    /** A throw is an addon's. The outbox already holds the shell, so a wake goes on without it, as when the level will not take it. */
+    private static Optional<BodyHost> putBack(ServerLevel level, LinkState.Place at, LinkState.Link link, BodySnapshot body, ServerPlayer player) {
+        try {
+            return BodyHost.restore(level, at, link.shell(), link.epoch(), body, player.getUUID());
+        } catch (RuntimeException e) {
+            LOGGER.error("Shell {} could not be put back", link.shell(), e);
+            return Optional.empty();
+        }
     }
 
     private static void setHomeDust(ServerPlayer player, float capacity) {
@@ -245,7 +355,7 @@ public final class Links {
     }
 
     /** What ends a move: the player's state on disk, in both places a server reads it from. */
-    private static void saveNow(MinecraftServer server) {
+    static void saveNow(MinecraftServer server) {
         server.getPlayerList().saveAll();
         // Singleplayer loads its owner from level.dat, which only an autosave or a quit writes, not the player file.
         CompoundTag host = server.getPlayerList().getSingleplayerData();
@@ -254,12 +364,49 @@ public final class Links {
         }
     }
 
-    /** A shell destroyed for good: nothing is to bring it back. A shell in a wreck comes with the destroyed path. */
+    /** A shell destroyed for good: nothing is to bring it back. An old copy is not the shell, so its end changes nothing. */
     static void destroyed(BodyHost shell) {
         ServerPlayer owner = owner(shell);
-        if (owner != null) {
-            owner.setData(ModAttachments.LINK, state(owner).withoutOutbox(shell.getUUID()));
+        if (owner != null && !older(state(owner), shell)) {
+            LinkState state = state(owner);
+            LinkState.KnownShell known = state.known(shell.getUUID()).orElseGet(() -> seen(shell));
+            owner.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withKnown(known.destroyed()));
         }
+    }
+
+    /** Whether a newer link number than this copy's is on record: the link, the outbox or the list. */
+    private static boolean older(LinkState state, BodyHost shell) {
+        UUID id = shell.getUUID();
+        return state.link().filter(link -> link.shell().equals(id) && link.epoch() > shell.epoch()).isPresent()
+                || state.outbox(id).filter(outbox -> outbox.epoch() > shell.epoch()).isPresent()
+                || state.known(id).filter(known -> known.epoch() > shell.epoch()).isPresent();
+    }
+
+    /** {@code shell} as it stands now. */
+    static LinkState.KnownShell seen(BodyHost shell) {
+        return new LinkState.KnownShell(shell.getUUID(), shell.epoch(), place(shell), shell.role() == HostRole.WRECK, false);
+    }
+
+    /** Puts {@code shell} on its owner's list, or brings its entry up to date. An old copy says nothing, and neither does a shell that is gone. */
+    static void note(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        if (owner != null) {
+            LinkState state = state(owner);
+            LinkState after = noted(state, shell);
+            if (after != state) {
+                owner.setData(ModAttachments.LINK, after);
+            }
+        }
+    }
+
+    /** {@code state} with {@code shell} up to date, or {@code state} itself if that changes nothing. */
+    static LinkState noted(LinkState state, BodyHost shell) {
+        Optional<LinkState.KnownShell> known = state.known(shell.getUUID());
+        LinkState.KnownShell now = seen(shell);
+        if (known.filter(entry -> entry.gone() || entry.epoch() > shell.epoch() || entry.equals(now)).isPresent()) {
+            return state;
+        }
+        return state.withKnown(now);
     }
 
     @Nullable
@@ -268,8 +415,10 @@ public final class Links {
     }
 
     /**
-     * Whether this copy of a shell lost to a newer one: its owner is in it, or a newer copy that can be read waits in the outbox. Only
-     * a crash leaves such a copy, on disk from before the link. With its owner away nobody can tell, and nobody can use it either.
+     * Whether this copy of a shell is left over, so it takes no link and gives up nothing: {@link #replaced}, or the outbox has ended
+     * and the list says the shell is newer than this. Only a crash leaves such a copy, on disk from before the link. An outbox nobody
+     * can read decides alone, because this copy is then the only readable one. With its owner away nobody can tell, and nobody can
+     * use it either.
      */
     public static boolean stale(BodyHost shell) {
         ServerPlayer owner = owner(shell);
@@ -277,9 +426,32 @@ public final class Links {
             return false;
         }
         LinkState state = state(owner);
-        return state.link().filter(link -> link.shell().equals(shell.getUUID()) && link.epoch() > shell.epoch()).isPresent()
-                || state.outbox(shell.getUUID()).filter(outbox -> outbox.epoch() > shell.epoch()
-                        && BodySnapshot.load(outbox.body(), owner.registryAccess()).isPresent()).isPresent();
+        UUID id = shell.getUUID();
+        return replaced(owner, state, shell)
+                || state.outbox(id).isEmpty() && state.known(id).filter(known -> known.epoch() > shell.epoch()).isPresent();
+    }
+
+    /**
+     * Whether this copy may remove itself: the newer body is known to exist, or the shell is gone. A list that only says a newer
+     * number was seen does not prove that copy still exists: the level refuses a copy it cannot see beside one in an unloading chunk,
+     * and that copy is lost at its chunk's next save. So such a copy stays, refused, and gives way when the newer one turns up in its
+     * level ({@link #onEntityJoin}). The worst case is then a rollback, not an empty world.
+     */
+    public static boolean replaced(BodyHost shell) {
+        ServerPlayer owner = owner(shell);
+        return owner != null && replaced(owner, state(owner), shell);
+    }
+
+    private static boolean replaced(ServerPlayer owner, LinkState state, BodyHost shell) {
+        UUID id = shell.getUUID();
+        if (state.link().filter(link -> link.shell().equals(id) && link.epoch() > shell.epoch()).isPresent()) {
+            return true;
+        }
+        Optional<LinkState.Outbox> outbox = state.outbox(id);
+        if (outbox.isPresent()) {
+            return outbox.get().epoch() > shell.epoch() && BodySnapshot.load(outbox.get().body(), owner.registryAccess()).isPresent();
+        }
+        return state.known(id).filter(LinkState.KnownShell::gone).isPresent();
     }
 
     /** Whether there is still a living player here to move: a stale object or a corpse would take a body with it. */
@@ -319,8 +491,8 @@ public final class Links {
         }
     }
 
-    private static LinkState.Place place(ServerPlayer player) {
-        return new LinkState.Place(player.level().dimension(), player.position(), player.getYRot(), player.getXRot());
+    static LinkState.Place place(Entity entity) {
+        return new LinkState.Place(entity.level().dimension(), entity.position(), entity.getYRot(), entity.getXRot());
     }
 
     /**
