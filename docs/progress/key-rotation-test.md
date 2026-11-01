@@ -1,0 +1,2 @@
+## Key directions pinned
+- `KeyRotationTest` works out which way each rotation key really moves a ship, for all four Helm facings: the jets a key opens give a torque, the torque a spin, and the spin moves the nose or the right wing. It takes no sign from the code it checks, so the reversed pitch and roll keys cannot come back. One test covers the allocator alone, another the steering the Helm uses.
