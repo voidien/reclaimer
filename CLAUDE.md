@@ -368,6 +368,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 | `#void_reclaimer:dyson/satellite_payloads` | Item tag | Items the Mass Driver launches as one Dyson Swarm Satellite each |
 | `#void_reclaimer:dyson/truss_payloads` | Item tag | Items the Mass Driver launches as one Dyson Shell Truss Module each |
 | `#void_reclaimer:launch_frame` | Block tag | Blocks that may form the Launch Complex's ring (Scaffold, Portal Frame, Create's industrial iron block and andesite casing) |
+| `#void_reclaimer:spire_frame` | Block tag | Blocks that may form a Spire tower's frame; by default it includes `#void_reclaimer:launch_frame` |
 
 ### Fixed sets (enums by design)
 - `HostRole` (`link`): what a `BodyHost` is for (shell, wreck, mirror). Each is a rule of remote control, not content; an unknown saved role reads as a shell, so a body is never lost.
@@ -474,6 +475,7 @@ Void Reclaimer is built to be extended by datapack makers, addon developers and 
 
 **Finishing the Spire (stage 2 above, built unattended from 2026-10-31, one slice at a time)**
 - **Done, PR 1 (Bio-Nutrient Slurry):** `ModFluids.BIO_NUTRIENT_SLURRY` with its bucket; Create basin recipe `create/terraform/bio_nutrient_slurry` (250 mB Purified Water + Fine Carbon Powder + Ashen Slag, unheated, gives 250 mB), toggle `bioSlurry`.
+- **Done, PR 2 (the tower):** `terraforming_spire` keeps its id and is now the tower's controller (`SpireBlock`, a `HorizontalKineticBlock` facing the tower, shaft on its back; old Spires load facing north with no tower and keep their count and any running pulse). `SpireTower` (pure): a 5 x 5 base with the Spire in the middle of the near edge, the frame being the base's outer row plus four corner pillars 9 tall, the column the 3 x 3 inside. `SpireAssembly` follows `LaunchComplex`: sneak-use assembles (frame cells in `#void_reclaimer:spire_frame`, column free, filled with invisible `spire_column` blocks), a broken frame sets it down, a missing column block grows back. Pulses sweep out from the tower's centre. A wrench leaves an assembled Spire alone. Placeholder model `geo/entity/spire_tower`, drawn by `client/render/SpireTowerRenderer`.
 
 **Remote control (interview 2026-10-31, owner's answers; planned, not built; after the assembly view)**
 - **Idea:** sit at a base or station with the main body and run other bodies around the galaxy. The player is an AI consciousness; a body is only somewhere it runs.

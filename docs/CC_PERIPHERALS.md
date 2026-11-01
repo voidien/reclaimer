@@ -67,14 +67,19 @@ print(("tier %d, shell %.0f%%"):format(s.tier, s.shellProgress * 100))
 
 | Function | Returns |
 |---|---|
-| `isRunning()` | whether a Genesis Pulse is sweeping out from this Spire |
+| `isAssembled()` | whether the frame is complete and the column filled |
+| `assemble()` | assembles the tower, like a sneak-use: `assembled`, `already_assembled`, `frame_incomplete`, `blocked` or `failed` |
+| `disassemble()` | sets it down: `disassembled`, `not_assembled` or `failed` |
+| `getSpeed()` | shaft speed in RPM |
+| `isRunning()` | whether a Genesis Pulse is sweeping out from this Spire's tower |
 | `getProgress()` | how far the running pulse has swept, 0 to 1 (0 when idle) |
 | `getPulses()` | pulses finished at this Spire |
-| `getRadius()` | blocks from the Spire to the edge of its square area |
-| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"no_profile"` |
+| `getRadius()` | blocks from the tower's centre to the edge of its square area |
+| `pulse()` | fires the Genesis Pulse like a right-click or redstone pulse: `true`, or `false` and a reason: `"busy"`, `"wrong_world"` (only on ruined Earth), `"not_assembled"`, `"no_profile"` |
 
 ```lua
 local spire = peripheral.find("void_reclaimer:terraforming_spire")
+if not spire.isAssembled() then print(spire.assemble()) end
 local ok, why = spire.pulse()
 if not ok then print("no pulse: " .. why) end
 while spire.isRunning() do print(("%.0f%%"):format(spire.getProgress() * 100)) sleep(1) end

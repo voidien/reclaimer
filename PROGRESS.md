@@ -24,6 +24,7 @@ Choices taken alone during unattended stretches, each the safest reversible defa
 - **Launch complex:** the ring block set (`#void_reclaimer:launch_frame`); the controller on the pad's edge rather than its centre; a one-layer pad with no collision for the gun tower; the self-healing pad; the controller's price (90/65/20/70); the old Mass Driver blocks kept registered but inert ("Launch complex, part 1"); the lean and kick angles and the 192-block view distance ("part 2").
 - **Helper drones:** they fly through blocks and cost no energy; the link flow on the item (source then destination; rock sets a mine point; the air sets a collect point); 16 items per trip at 0.35 blocks per tick; the recipe (60/40/10/40, Tools, Expansion); mined rock comes out as the block item, not dust, within an 8-block radius and a 40-tick dig; the owner is the only dust destination with a 50-dust tank, rate 1 and a 96-block range; a collect point outside any cloud gathers nothing forever ("Helper drones" parts 1 to 3).
 - **Bio-Nutrient Slurry:** the recipe's ingredients (Purified Water, Fine Carbon Powder, Ashen Slag: only nebula and Earth materials exist before the first pulse, so nothing grown), unheated, and 250 mB in and out ("Spire, part 1").
+- **Spire tower:** the old block becomes the controller rather than an inert leftover (old Spires face north, so a player may need to rebuild around or re-place one); the 5 x 5 x 9 shape with four pillars and no top ring; the default frame set (the launch frame's); the 256-block view distance ("Spire, part 2").
 - **Not decided alone, still open:** the asset list drift, hazards across the game, the Ship and Shuttle scale (see `HANDOFF.md`).
 
 ## Setup (workflow step 1): done
@@ -1052,6 +1053,19 @@ Same method; every Modrinth entry now pinned by version id, the two CurseForge m
 
 ### Placeholder assets
 - `textures/item/bio_nutrient_slurry_bucket.png`: the Purified Water bucket recoloured green. The fluid uses tinted water like the others.
+
+## Spire, part 2: the tower: done
+- **The old block grew up, it was not replaced.** `terraforming_spire` keeps its id, item, recipe, block entity id and CC type, and is now the tower's controller: `SpireBlock` is a `HorizontalKineticBlock` that faces its tower, with a shaft on its back. A world with an old Spire loses nothing: the block loads facing north with no tower, keeps its pulse count, and a pulse caught mid-sweep runs out from the block itself (`pulseCentre` is absent in the old save, so it stays the block). It only stops firing until a tower stands around it.
+- `SpireTower` (pure): a 5 x 5 base in front of the Spire, which sits in the middle of the near edge; the frame is the base's outer row without the Spire plus four corner pillars 9 tall, 47 blocks; the column is the 3 x 3 inside, 9 tall. Cells are (across, forward, up).
+- `SpireAssembly`, like `LaunchComplex`: sneak-use (or CC `assemble()`) needs every frame cell in the new tag `#void_reclaimer:spire_frame` (by default everything in `#void_reclaimer:launch_frame`) and a free column, fills the column with invisible solid `spire_column` blocks (no item, no drop); setting down removes them. Every 20 ticks a broken frame sets the tower down and a missing column block grows back. A pulse already running finishes whatever happens to the tower.
+- The pulse now sweeps out from the tower's centre, so 16 towers still tile the planet; `tryStart` refuses with `NOT_ASSEMBLED`.
+- `client/render/SpireTowerRenderer`: a global GeckoLib block entity renderer, drawn while assembled, seen up to 256 blocks away. A wrench does nothing to an assembled Spire: the frame is found from its facing.
+- CC: `isAssembled`, `assemble`, `disassemble`, `getSpeed`; `pulse()` gained `"not_assembled"`.
+- Tests: `SpireTowerTest` (3), `SpireTowerGameTests` (11: assembling, gaps and obstacles, the tag from the GameTest pack, a broken frame, breaking the Spire, sneak-use, the wrench, the client packet and save, refusing without a tower, an old save with a pulse mid-sweep), `aTowersPulseSweepsOutFromItsCentre`, `theSpireIsAPeripheralAndPulsesUnderThePlayersRules`.
+
+### Placeholder assets
+- `geo/entity/spire_tower.geo.json`, `textures/entity/spire_tower.png`, `animations/entity/spire_tower.animation.json` (empty): stacked boxes about 24 blocks tall, flat colours. Replace with `--promote-as entity/spire_tower`.
+- The Spire block still wears `textures/block/terraforming_spire.png` on all faces, so its shaft face does not show.
 
 ## Phases
 Original plan, with where each stands (the revised plan for what is left is in `CLAUDE.md`, "Revised phase plan"):

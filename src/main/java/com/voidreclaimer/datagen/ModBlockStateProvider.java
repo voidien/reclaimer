@@ -31,7 +31,11 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         simpleBlockWithItem(ModBlocks.PAYLOAD_CHAMBER.get(), cubeAll(ModBlocks.PAYLOAD_CHAMBER.get()));
         simpleBlockWithItem(ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), cubeAll(ModBlocks.MAGNETIC_BARREL_NOZZLE.get()));
         simpleBlockWithItem(ModBlocks.PORTAL_FRAME.get(), cubeAll(ModBlocks.PORTAL_FRAME.get()));
-        simpleBlockWithItem(ModBlocks.TERRAFORMING_SPIRE.get(), cubeAll(ModBlocks.TERRAFORMING_SPIRE.get()));
+        // The Spire faces its tower; the column filler is invisible (a model with no faces).
+        var spire = cubeAll(ModBlocks.TERRAFORMING_SPIRE.get());
+        horizontalBlock(ModBlocks.TERRAFORMING_SPIRE.get(), spire);
+        simpleBlockItem(ModBlocks.TERRAFORMING_SPIRE.get(), spire);
+        simpleBlock(ModBlocks.SPIRE_COLUMN.get(), models().getBuilder("spire_column").texture("particle", modLoc("block/terraforming_spire")));
         var thruster = models().cubeBottomTop("chemical_thruster", modLoc("block/chemical_thruster_side"),
                 modLoc("block/chemical_thruster_back"), modLoc("block/chemical_thruster_nozzle"));
         directionalBlock(ModBlocks.CHEMICAL_THRUSTER.get(), thruster);

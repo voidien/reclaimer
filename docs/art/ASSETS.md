@@ -341,7 +341,7 @@ All 80 come from art drop 1 and are UV-mapped to their models. If you regenerate
 | 11 | drop_pod | animated entity | RD 3D blocky + animate (GeckoLib) | scorched landing pod, brass ribs and heat shield underside | Animations: fall, land, open. |
 | 11 | industrial_mech | body or entity | RD 3D blocky + animate (GeckoLib) | heavy industrial mech, copper and andesite, hazard stripes | Defined in the design doc; if it is a body chassis it follows the socket contract. |
 | 11 | planetary_grid_hud | GUI | RD image | pixel art 4x4 planetary sector map, dark screen with cyan grid lines | 256x256 GUI sprite. |
-| 12 | terraforming_spire_multiblock | animated multiblock | RD 3D blocky + animate (GeckoLib) | tall terraforming spire: heavy base, ribbed column, glowing green emitter top | Genesis Pulse animation on the emitter. |
+| 12 | spire_tower | animated multiblock | RD 3D blocky + animate (GeckoLib) | tall terraforming spire: heavy base, ribbed column, glowing green emitter top | Drawn over the 5 x 5 tower, standing on its origin, about 24 blocks tall. Promote with --promote-as entity/spire_tower. Genesis Pulse animation on the emitter. |
 | 13 | data_monolith | block model | RD 3D blocky | tall black monolith with faint cyan circuit lines and an output drawer | Design not settled in the doc yet. |
 | 14 | restoration_hud | GUI | RD image | pixel art planet restoration progress panel, green and blue | 256x256 GUI sprite. |
 | later | helper_drone | animated entity | RD 3D blocky + animate (GeckoLib) | small cargo drone with a claw and rotors, Create style | Animations: fly, pick up, drop off. |

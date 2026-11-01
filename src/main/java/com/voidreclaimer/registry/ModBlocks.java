@@ -39,10 +39,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).noCollission().noOcclusion().strength(-1.0f)
                     .sound(SoundType.GLASS).lightLevel(state -> 11).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).noLootTable());
 
-    /** Fires the Genesis Pulse that rewrites ruined ground around it. */
+    /** Blocks that may form a Spire tower's frame. */
+    public static final TagKey<Block> SPIRE_FRAME = BlockTags.create(VoidReclaimer.id("spire_frame"));
+    /** The controller of a Spire tower: fires the Genesis Pulse that rewrites ruined ground around it. */
     public static final DeferredBlock<com.voidreclaimer.terraform.SpireBlock> TERRAFORMING_SPIRE = BLOCKS.registerBlock("terraforming_spire",
             com.voidreclaimer.terraform.SpireBlock::new,
-            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).strength(3.0f, 8.0f).sound(SoundType.COPPER).lightLevel(state -> 8));
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).strength(3.0f, 8.0f).sound(SoundType.COPPER).lightLevel(state -> 8).noOcclusion());
+    /** The invisible blocks that fill a Spire tower's column while it stands. */
+    public static final DeferredBlock<com.voidreclaimer.terraform.SpireColumnBlock> SPIRE_COLUMN =
+            BLOCKS.registerBlock("spire_column", com.voidreclaimer.terraform.SpireColumnBlock::new,
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(2.0f, 6.0f).sound(SoundType.METAL).noOcclusion().noLootTable()
+                            .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
 
     /** Pushes a block ship: burns fuel, needs a shaft, redstone is the throttle. Its stress impact is in {@code MachineSetup}. */
     public static final DeferredBlock<com.voidreclaimer.ship.ChemicalThrusterBlock> CHEMICAL_THRUSTER = BLOCKS.registerBlock("chemical_thruster",
