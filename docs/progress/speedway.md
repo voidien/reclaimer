@@ -1,0 +1,2 @@
+## Debug tool: the speedway test scene
+- `/void_reclaimer scene speedway` builds nine lit gates down +z: a straight for top speed, a slalom for handling and a straight to stop in. The first gate starts the clock, and each gate says its split and speed in chat (`debug/GateTimer`, `debug/Speedway`). Going round a gate ends the run; the first gate restarts it. Nothing is saved. From the flight research. Tests: `GateTimerTest`, `aFlightThroughTheSpeedwayIsTimed`.
