@@ -46,23 +46,29 @@ public record LinkState(Optional<Link> link, List<Outbox> outboxes, List<KnownSh
      * @param home  the main body, as a tag
      * @param from  where the main body was left
      * @param seat  the id of the Uplink Seat this link started from, if it started from one
+     * @param since the game time the link began, which a seat's charge is worked out from
      */
-    public record Link(UUID shell, long epoch, CompoundTag home, Place from, Optional<UUID> seat) {
+    public record Link(UUID shell, long epoch, CompoundTag home, Place from, Optional<UUID> seat, long since) {
         static final Codec<Link> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("shell").forGetter(Link::shell),
                 Codec.LONG.fieldOf("epoch").forGetter(Link::epoch),
                 CompoundTag.CODEC.fieldOf("home").forGetter(Link::home),
                 Place.CODEC.fieldOf("from").forGetter(Link::from),
-                UUIDUtil.CODEC.optionalFieldOf("seat").forGetter(Link::seat)
+                UUIDUtil.CODEC.optionalFieldOf("seat").forGetter(Link::seat),
+                Codec.LONG.optionalFieldOf("since", 0L).forGetter(Link::since)
         ).apply(instance, Link::new));
 
         public Link(UUID shell, long epoch, CompoundTag home, Place from) {
-            this(shell, epoch, home, from, Optional.empty());
+            this(shell, epoch, home, from, Optional.empty(), 0L);
+        }
+
+        public Link(UUID shell, long epoch, CompoundTag home, Place from, Optional<UUID> seat) {
+            this(shell, epoch, home, from, seat, 0L);
         }
 
         /** The same link, with the main body carried to {@code position}. */
         Link carriedTo(Vec3 position) {
-            return new Link(shell, epoch, home, new Place(from.dimension(), position, from.yaw(), from.pitch()), seat);
+            return new Link(shell, epoch, home, new Place(from.dimension(), position, from.yaw(), from.pitch()), seat, since);
         }
     }
 

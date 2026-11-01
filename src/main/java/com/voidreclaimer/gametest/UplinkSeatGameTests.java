@@ -1,8 +1,11 @@
 package com.voidreclaimer.gametest;
 
+import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.body.BuiltinBodies;
+import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.energy.EnergyData;
 import com.voidreclaimer.link.BodyHost;
 import com.voidreclaimer.link.HostRole;
 import com.voidreclaimer.link.LinkState;
@@ -170,6 +173,58 @@ public final class UplinkSeatGameTests {
                         finish(helper, player, level, pos);
                     });
         });
+    }
+
+    /** Runs a link from a seat for a while with the main body low, and checks what the wake gives it. */
+    private static void chargeTest(GameTestHelper helper, BlockPos pos, boolean fromSeat, boolean atStation, double rate) {
+        NaniteGameTests.inEntityTickingArea(helper, pos, 2, () -> {
+            ServerPlayer player = player(helper, pos);
+            ServerLevel level = player.serverLevel();
+            BlockPos core = pos.east(2);
+            if (atStation) {
+                level.setBlock(core, ModBlocks.STATION_CORE.get().defaultBlockState(), 3);
+            }
+            UplinkSeatBlockEntity seat = seat(level, pos);
+            float capacity = player.getData(ModAttachments.ENERGY).capacity();
+            Energy.update(player, new EnergyData(1f, capacity, false), true);
+            BodyHost shell = shell(player);
+            UUID id = shell.getUUID();
+            helper.runAfterDelay(25, () -> {
+                if (fromSeat) {
+                    seat.connect(player);
+                } else {
+                    Links.link(player, shell);
+                }
+                helper.startSequence()
+                        .thenWaitUntil(() -> helper.assertTrue(Links.state(player).linked(), "no link"))
+                        .thenExecuteAfter(40, () -> {
+                            long since = Links.state(player).link().orElseThrow().since();
+                            long ticks = level.getServer().overworld().getGameTime() - since;
+                            helper.assertTrue(Links.wake(player) == Links.Result.WOKEN, "no wake");
+                            float energy = player.getData(ModAttachments.ENERGY).energy();
+                            float expected = 1f + (float) (rate * ticks / 20.0);
+                            helper.assertTrue(Math.abs(energy - expected) < 0.01f, "energy " + energy + ", not " + expected);
+                            level.getEntity(id).discard();
+                            level.removeBlock(core, false);
+                            finish(helper, player, level, pos);
+                        });
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aSeatChargesTheMainBody(GameTestHelper helper) {
+        chargeTest(helper, new BlockPos(147_000, 80, 200), true, false, Config.LINK_SEAT_CHARGE.get());
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aSeatAtAStationChargesFaster(GameTestHelper helper) {
+        chargeTest(helper, new BlockPos(147_200, 80, 200), true, true, Config.LINK_SEAT_CHARGE.get() * Config.LINK_STATION_CHARGE.get());
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aLinkWithNoSeatChargesNothing(GameTestHelper helper) {
+        chargeTest(helper, new BlockPos(147_400, 80, 200), false, false, 0.0);
     }
 
     /** A seat that lost its id would lose every link that names it. */
