@@ -156,6 +156,7 @@ jobs:
           tools/restart-test.sh main aLinkOutlivesACrash
           tools/restart-test.sh main aWokenShellOutlivesACrash
           tools/restart-test.sh main anOldShellGoesAfterACrash
+          tools/restart-test.sh main aNewerShellWinsAClash
 
       - name: Upload run logs
         if: failure()

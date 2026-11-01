@@ -154,7 +154,7 @@ public class BodyHost extends LivingEntity {
         if (role() != HostRole.WRECK || hand != InteractionHand.MAIN_HAND) {
             return InteractionResult.PASS;
         }
-        if (player instanceof ServerPlayer server) {
+        if (player instanceof ServerPlayer server && !Links.stale(this)) {
             Wrecks.salvage(server, this);
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
