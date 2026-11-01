@@ -247,6 +247,12 @@ tasks.named('test', Test) {
 
 // Pure logic in about 5 s instead of 20: the game boots for neither. `test` stays the full run, in `build` and on CI. A new test
 // that fails here with NoClassDefFoundError needs the game: add it to this list.
+// DebugCommandsListedTest reads these, so a change to them must run it again.
+tasks.withType(Test).configureEach {
+    inputs.file('docs/debug-commands.md').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree('tools') { exclude '**/__pycache__/**' }).withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 tasks.register('fastTest', Test) {
     group = 'verification'
     useJUnitPlatform()
