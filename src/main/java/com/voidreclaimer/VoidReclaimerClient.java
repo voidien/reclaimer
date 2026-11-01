@@ -77,6 +77,7 @@ public final class VoidReclaimerClient {
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.HELM.get(), com.voidreclaimer.client.render.HelmRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.LAUNCH_CONTROLLER.get(), com.voidreclaimer.client.render.LaunchComplexRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.HOLO_PROJECTOR.get(), com.voidreclaimer.client.render.holo.HoloProjectorRenderer::new);
+        event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.SPIRE.get(), com.voidreclaimer.client.render.SpireTowerRenderer::new);
     }
 
     /** The Test Starship item uses vanilla's spawn egg model: brass shell, cyan spots. */

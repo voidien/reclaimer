@@ -241,7 +241,11 @@ public final class CCPeripheralGameTests {
             ServerLevel space = TestPlayers.deepSpace(helper);
             SpireBlockEntity idle = place(space, spacePos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
             requireMethods(helper, Lookup.of(space, spacePos), "Terraforming Spire",
-                    "isRunning", "getProgress", "getPulses", "getRadius", "pulse");
+                    "isRunning", "getProgress", "getPulses", "getRadius", "pulse", "isAssembled", "assemble", "disassemble", "getSpeed");
+            helper.assertFalse(lua.isAssembled(idle), "a lone Spire reads as assembled");
+            helper.assertTrue("frame_incomplete".equals(lua.assemble(idle)), "assemble() without a frame: " + lua.assemble(idle));
+            helper.assertTrue("not_assembled".equals(lua.disassemble(idle)), "disassemble() without a tower: " + lua.disassemble(idle));
+            helper.assertTrue(lua.getSpeed(idle) == 0.0, "getSpeed " + lua.getSpeed(idle));
             Object[] refused = lua.pulse(idle).getResult();
             helper.assertTrue(Boolean.FALSE.equals(refused[0]) && "wrong_world".equals(refused[1]),
                     "pulse() in deep space: " + Arrays.toString(refused));
@@ -252,17 +256,23 @@ public final class CCPeripheralGameTests {
             // On ruined Earth pulse() starts it, and a second call is refused while it runs. The block is removed in
             // the same tick, before the wave touches any ground of the persistent test world.
             ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
-            BlockPos earthPos = new BlockPos(350, 200, -300);
-            SpireBlockEntity spire = place(earth, earthPos, ModBlocks.TERRAFORMING_SPIRE.get(), SpireBlockEntity.class);
+            BlockPos earthPos = new BlockPos(344, 200, -304);
+            SpireTowerGameTests.clear(earth, earthPos);
+            SpireBlockEntity spire = SpireTowerGameTests.place(earth, earthPos);
             try {
+                Object[] noTower = lua.pulse(spire).getResult();
+                helper.assertTrue(Boolean.FALSE.equals(noTower[0]) && "not_assembled".equals(noTower[1]), "pulse() with no tower: " + Arrays.toString(noTower));
+                SpireTowerGameTests.frame(earth, earthPos, ModBlocks.SCAFFOLD.get());
+                helper.assertTrue("assembled".equals(lua.assemble(spire)) && lua.isAssembled(spire), "assemble() with a frame");
                 Object[] started = lua.pulse(spire).getResult();
                 helper.assertTrue(started.length == 1 && Boolean.TRUE.equals(started[0]), "pulse() on ruined Earth: " + Arrays.toString(started));
                 helper.assertTrue(lua.isRunning(spire), "not running after pulse()");
                 helper.assertTrue(lua.getProgress(spire) == 0.0, "progress before the first tick " + lua.getProgress(spire));
                 Object[] busy = lua.pulse(spire).getResult();
                 helper.assertTrue(Boolean.FALSE.equals(busy[0]) && "busy".equals(busy[1]), "a second pulse(): " + Arrays.toString(busy));
+                helper.assertTrue("disassembled".equals(lua.disassemble(spire)) && !lua.isAssembled(spire), "disassemble()");
             } finally {
-                earth.setBlock(earthPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                SpireTowerGameTests.clear(earth, earthPos);
             }
             helper.succeed();
         });

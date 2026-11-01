@@ -4,6 +4,7 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.earth.RuinedEarth;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.terraform.SpireBlockEntity;
+import com.voidreclaimer.terraform.SpireTower;
 import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -152,6 +153,44 @@ public final class SpireGameTests {
             } catch (RuntimeException e) {
                 clearPlatform(earth, center);
                 forceChunks(earth, center, PLATFORM + 4, false);
+                throw e;
+            }
+        });
+    }
+
+    /**
+     * A tower's pulse sweeps out from the tower's centre, two blocks in front of the Spire: the far side of the area is
+     * rewritten further from the Spire than a pulse from the block itself would reach, the near side stops short of it.
+     */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aTowersPulseSweepsOutFromItsCentre(GameTestHelper helper) {
+        ServerLevel earth = earth(helper);
+        BlockPos center = new BlockPos(300, 120, 408);
+        forceChunks(earth, center, PLATFORM + 4, true);
+        BlockPos spirePos = center.above(3).north(SpireTower.HALF);
+        Runnable cleanup = () -> {
+            SpireTowerGameTests.clear(earth, spirePos);
+            clearPlatform(earth, center);
+            forceChunks(earth, center, PLATFORM + 4, false);
+        };
+        helper.runAfterDelay(5, () -> {
+            try {
+                buildPlatform(earth, center);
+                SpireTowerGameTests.clear(earth, spirePos);
+                SpireBlockEntity spire = SpireTowerGameTests.build(helper, earth, spirePos);
+                spire.start(RADIUS, PULSE_TICKS);
+                helper.assertTrue(spire.pulseCentre().equals(center.above(3)), "pulse centre " + spire.pulseCentre());
+                until(helper, 400, () -> !spire.running(), () -> {
+                    try {
+                        helper.assertTrue(earth.getBlockState(center.offset(0, 2, RADIUS)).is(Blocks.GRASS_BLOCK), "the far edge was not reached");
+                        helper.assertTrue(earth.getBlockState(center.offset(0, 2, -RADIUS - 1)).is(ModBlocks.ASHEN_SLAG.get()), "swept out from the Spire, not the tower");
+                        helper.succeed();
+                    } finally {
+                        cleanup.run();
+                    }
+                }, cleanup);
+            } catch (RuntimeException e) {
+                cleanup.run();
                 throw e;
             }
         });

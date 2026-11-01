@@ -1,0 +1,10 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.void_reclaimer.spire_tower.idle": {
+      "loop": true,
+      "animation_length": 1.0,
+      "bones": {}
+    }
+  }
+}
