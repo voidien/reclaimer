@@ -1,0 +1,2 @@
+## Debug tool: what the Helm's steering is doing
+- `/void_reclaimer debug helm [player]` (`debug/HelmTrace`, pure) prints the last two seconds of steering: the mouse, the wanted turn, the real spin, the thrusters' authority and the lag from asking to turning. Suggested by the Helm review, asked for by the owner. It settles whether mouse packets stutter and whether thrusters lag more than the controller assumes. Tests: `HelmTraceTest`, `theHelmDebugReadoutSaysWhatHappened`.

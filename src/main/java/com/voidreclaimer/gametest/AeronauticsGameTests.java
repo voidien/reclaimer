@@ -45,6 +45,7 @@ public final class AeronauticsGameTests {
     private static final int HOLD_TICKS = 160;
     /** How long a turn test steers before it reads where the ship points. */
     private static final int TURN_TICKS = 60;
+    private static final com.voidreclaimer.debug.HelmTrace[] lastTrace = new com.voidreclaimer.debug.HelmTrace[1];
     private static final double STOPPED_SPIN = 0.15;
     private static final int SETTLE_TICKS = 10;
     private static final int SAMPLE_TICKS = 40;
@@ -822,6 +823,26 @@ public final class AeronauticsGameTests {
                 player -> player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f)),
                 player -> {},
                 (nose, wing) -> helper.assertTrue(nose.x > 0.1, "moving the mouse right should swing the nose east: " + nose));
+    }
+
+    /** The debug readout on a ship that has turned: it has to say something a person can tune from. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void theHelmDebugReadoutSaysWhatHappened(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(152_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        turnTest(helper, pos, TURN_TICKS,
+                player -> {
+                    player.setData(com.voidreclaimer.registry.ModAttachments.PILOT_MOUSE, new com.voidreclaimer.ship.PilotMouse(3f, 0f));
+                    if (player.getVehicle() instanceof com.voidreclaimer.ship.HelmSeat seat && space.getBlockEntity(seat.helmPos()) instanceof com.voidreclaimer.ship.HelmBlockEntity helm) {
+                        lastTrace[0] = helm.trace();
+                    }
+                },
+                player -> {},
+                (nose, wing) -> {
+                    String text = String.join(" | ", lastTrace[0].lines());
+                    helper.assertTrue(text.contains("Steering: mouse") && text.contains("Lag: about"), text);
+                });
     }
 
     /** The review's case: with both engines wide open on W, a turn has to throttle one back, and this ship has nothing else to turn with. */

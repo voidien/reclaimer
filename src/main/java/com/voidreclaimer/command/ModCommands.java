@@ -176,6 +176,17 @@ public final class ModCommands {
         return 1;
     }
 
+    /** What the Helm under {@code player} is steering like: asked, done and how late. */
+    private static int helm(CommandSourceStack source, net.minecraft.server.level.ServerPlayer player) {
+        if (!(player.getVehicle() instanceof com.voidreclaimer.ship.HelmSeat seat)
+                || !(player.level().getBlockEntity(seat.helmPos()) instanceof com.voidreclaimer.ship.HelmBlockEntity helm)) {
+            source.sendFailure(Component.literal(player.getScoreboardName() + " is not at a Helm"));
+            return 0;
+        }
+        helm.trace().lines().forEach(line -> source.sendSuccess(() -> Component.literal(line), false));
+        return 1;
+    }
+
     private static int chunks(CommandSourceStack source, net.minecraft.world.level.ChunkPos pos) {
         com.voidreclaimer.debug.ChunkReadout.of(source.getLevel(), pos).forEach(line -> source.sendSuccess(() -> Component.literal(line), false));
         return 1;
@@ -211,6 +222,10 @@ public final class ModCommands {
                                 .then(Commands.argument("condition", FloatArgumentType.floatArg(0f, 1f))
                                         .executes(ctx -> wear(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), FloatArgumentType.getFloat(ctx, "condition"))))))
                 .then(Commands.literal("debug")
+                        .then(Commands.literal("helm")
+                                .executes(ctx -> helm(ctx.getSource(), ctx.getSource().getPlayerOrException()))
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> helm(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
                         .then(Commands.literal("chunks")
                                 .executes(ctx -> chunks(ctx.getSource(), new net.minecraft.world.level.ChunkPos(net.minecraft.core.BlockPos.containing(ctx.getSource().getPosition()))))
                                 .then(Commands.argument("where", net.minecraft.commands.arguments.coordinates.ColumnPosArgument.columnPos())

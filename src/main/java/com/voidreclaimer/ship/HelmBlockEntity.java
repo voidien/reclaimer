@@ -1,5 +1,6 @@
 package com.voidreclaimer.ship;
 
+import com.voidreclaimer.debug.HelmTrace;
 import com.voidreclaimer.flight.FlightSettings;
 import com.voidreclaimer.network.HelmReadoutPayload;
 import io.netty.buffer.ByteBuf;
@@ -174,6 +175,21 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         return new Vector3d[] {forward, right, up};
     }
 
+    /** {@code turn} as pitch, yaw and roll, signed as the pilot names them: nose up, yaw right, roll right. */
+    private static double[] axes(Vector3d turn, ThrustAllocator.Frame frame) {
+        return new double[] {turn.dot(frame.right()), -turn.dot(frame.up()), turn.dot(frame.forward())};
+    }
+
+    private static double[] degrees(double[] radians) {
+        return new double[] {Math.toDegrees(radians[0]), Math.toDegrees(radians[1]), Math.toDegrees(radians[2])};
+    }
+
+    /** What this Helm's steering has been doing, for {@code /void_reclaimer debug helm}. */
+    public HelmTrace trace() {
+        return trace;
+    }
+
+    private final HelmTrace trace = new HelmTrace();
     private PilotMouse lastMouse = PilotMouse.NONE;
     private boolean mouseHeld;
 
@@ -258,8 +274,11 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         Vec3 look = pilot.getLookAngle();
         Vector3d lookInShip = new Quaterniond(Ships.orientation(ship)).conjugate().transform(new Vector3d(look.x, look.y, look.z));
         AimController steering = settings.aimSteering() ? AimController.Aimed.DEFAULT : AimController.Direct.DEFAULT;
-        return steering.torque(frame, new AimController.Request(input, mouse.right(), mouse.up(), lookInShip, spin, settings.rcsLock(),
-                AimController.Authority.of(model, frame, ship.getMassTracker().getInverseInertiaTensor())));
+        AimController.Authority authority = AimController.Authority.of(model, frame, ship.getMassTracker().getInverseInertiaTensor());
+        Vector3d torque = steering.torque(frame, new AimController.Request(input, mouse.right(), mouse.up(), lookInShip, spin, settings.rcsLock(), authority));
+        trace.setup(new double[] {Math.toDegrees(authority.pitch()), Math.toDegrees(authority.yaw()), Math.toDegrees(authority.roll())}, settings.aimSteering() ? "aim" : "mouse");
+        trace.record(new HelmTrace.Sample(mouse.right(), mouse.up(), axes(torque, frame), degrees(axes(spin, frame))));
+        return torque;
     }
 
     /** Sends the readout to the pilot for the HUD. */
