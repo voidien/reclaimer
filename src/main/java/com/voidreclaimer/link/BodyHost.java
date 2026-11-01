@@ -146,7 +146,7 @@ public class BodyHost extends LivingEntity {
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        return role() == HostRole.WRECK ? !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) : super.isInvulnerableTo(source);
+        return role() != HostRole.SHELL ? !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) : super.isInvulnerableTo(source);
     }
 
     @Override
