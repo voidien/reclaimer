@@ -3,6 +3,8 @@ package com.voidreclaimer.mixin;
 import com.voidreclaimer.gametest.GameTestFilter;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ImposterProtoChunk;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,12 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * {@link GameTestFilter#skipsChunkSaves()} run writes none. Chunks still load and unload, but one that unloads is gone: it comes back
  * as the generator made it. A test that needs a chunk must hold a ticket on it, and a test that needs the disk belongs in a restart
  * test; those run with real saves, and CI runs real saves on every push to main.
+ *
+ * <p>No test run writes a half-made chunk, real saves or not. There are about 600 of them round each forced area, no test touches
+ * them and the generator makes them again the same way, and their data outgrew a 10 GB heap waiting for the disk.
  */
 @Mixin(ChunkMap.class)
 abstract class GameTestChunkSaveMixin {
     @Inject(method = "save(Lnet/minecraft/world/level/chunk/ChunkAccess;)Z", at = @At("HEAD"), cancellable = true)
     private void void_reclaimer$skip(ChunkAccess chunk, CallbackInfoReturnable<Boolean> cir) {
-        if (GameTestFilter.skipsChunkSaves()) {
+        if (GameTestFilter.skipsChunkSaves() || GameTestFilter.isTestRun() && !(chunk instanceof LevelChunk || chunk instanceof ImposterProtoChunk)) {
             cir.setReturnValue(false);
         }
     }
