@@ -260,6 +260,32 @@ public final class StationGameTests {
         });
     }
 
+    /** A ship's blocks are in its plot, where no heightmap sees them: the drizzle has to look up to find the hull. */
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aShipsHullKeepsTheDrizzleOff(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel earth = server.getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        BlockPos pos = new BlockPos(330, 260, 330);
+        earth.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, earth, pos);
+            var player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+            player.teleportTo(earth, pos.getX() + 0.5, pos.getY() - 8, pos.getZ() + 0.5, 0f, 0f);
+            helper.assertTrue(com.voidreclaimer.earth.AcidDrizzle.underOpenSky(player), "nothing is over the player yet");
+            command(server, earth, pos, "fill " + (pos.getX() - 1) + " " + pos.getY() + " " + (pos.getZ() - 1) + " " + (pos.getX() + 1) + " " + pos.getY() + " " + (pos.getZ() + 1) + " minecraft:iron_block");
+            command(server, earth, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            helper.runAfterDelay(2, () -> {
+                boolean heightmapSees = earth.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) > player.getEyeY();
+                boolean open = com.voidreclaimer.earth.AcidDrizzle.underOpenSky(player);
+                earth.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
+                TestPlayers.remove(player);
+                helper.assertFalse(heightmapSees, "the blocks are still in the world, so this proves nothing about a ship");
+                helper.assertFalse(open, "a ship's hull reads as open sky");
+                helper.succeed();
+            });
+        });
+    }
+
     /**
      * A seat aboard a ship keeps the ship loaded while it is in use, so a shell run from a station does not cost the station, and a
      * wake lands by the ship in the world, not at the seat's position in the ship's own coordinates. The ship lets go after a wake.
