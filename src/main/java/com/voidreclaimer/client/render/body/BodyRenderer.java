@@ -25,6 +25,12 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+import software.bernie.geckolib.cache.object.GeoQuad;
+import software.bernie.geckolib.cache.object.GeoVertex;
 import software.bernie.geckolib.cache.GeckoLibCache;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -47,6 +53,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     /** How far sections are spread for the next draws, 0 to 1; only the assembly view sets it, round its own draw. */
     private static float explode;
     private static boolean showWear;
+    private static boolean mirrored;
     @Nullable
     private static BodyView previewView;
     @Nullable
@@ -122,6 +129,11 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     }
 
     /** Tints worn sections for the draws until this is set back to false: the assembly view's look at what needs repair. */
+    /** Set while a mirrored part is drawn: see {@link #createVerticesOfQuad}. */
+    static void setMirrored(boolean value) {
+        mirrored = value;
+    }
+
     public static void setShowWear(boolean show) {
         showWear = show;
     }
@@ -386,6 +398,22 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
             applyLean(poseStack, entity, lean, pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot), partialTick, nativeScale);
+        }
+    }
+
+    /** A mirror turns every face inside out, and a pass that culls, like the accent's, would drop them all: the corners go the other way round. */
+    @Override
+    public void createVerticesOfQuad(GeoQuad quad, Matrix4f poseState, Vector3f normal, VertexConsumer buffer, int packedLight, int packedOverlay, int colour) {
+        if (!mirrored) {
+            super.createVerticesOfQuad(quad, poseState, normal, buffer, packedLight, packedOverlay, colour);
+            return;
+        }
+        GeoVertex[] vertices = quad.vertices();
+        for (int i = vertices.length - 1; i >= 0; i--) {
+            GeoVertex vertex = vertices[i];
+            Vector3f position = vertex.position();
+            Vector4f placed = poseState.transform(new Vector4f(position.x(), position.y(), position.z(), 1f));
+            buffer.addVertex(placed.x(), placed.y(), placed.z(), colour, vertex.texU(), vertex.texV(), packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
         }
     }
 
