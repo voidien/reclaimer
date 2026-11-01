@@ -7,6 +7,14 @@
   "offset_y": -8.5,
   "yaw": 180,
   "pitches": true,
+  "sockets": {
+    "sensor_dome": ["dome"],
+    "rotor_front_left": ["rotor_fl"],
+    "rotor_front_right": ["rotor_fr"],
+    "rotor_back_left": ["rotor_bl"],
+    "rotor_back_right": ["rotor_br"],
+    "tool_claw": ["arm_r", "arm_r_x"]
+  },
   "mounts": {
     "mount_core_1": {
       "bone": "probe",

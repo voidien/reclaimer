@@ -1,0 +1,2 @@
+## Fix: a Drone's parts come off its model
+- All six removable Drone sections changed nothing on the model, which was one piece. A placeholder split of the Mining Probe now gives them parts: the side pods and rear nozzles for the rotors, the top plate and antennas for the dome, and the arms for the claw. The owner chose this on the build plans page, with new art later. A starter Drone looks the same, because it has every section.
