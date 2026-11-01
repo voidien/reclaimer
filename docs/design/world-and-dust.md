@@ -17,7 +17,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
   - At 0: low power mode (thrusters, tools, and the Replicator offline; no damage) until energy recovers to 5%.
 **Phase 2**
 - Thrust is relative to the view. W/S thrust along the look vector, A/D strafe along the view's right vector, and Space/Shift thrust along the view's up vector. No roll; a roll/6-DOF camera may come later (e.g. the Ship size class).
-- No drag in thruster flight. The **inertial dampener** (toggle, default key Z, on by default) brakes to a stop when no thrust key is held. With it off you drift indefinitely.
+- No drag in thruster flight. The **inertial dampener** (toggle, default key Z, on by default) brakes to a stop when no thrust key is held, and while one is held it brakes whatever drift is off the thrust's direction, at the same rate, so velocity follows the nose through a turn. That trim costs nothing beyond the thrust. With it off you drift indefinitely.
 - Hard top speed from `FlightStats`. Acceleration is thrust / mass. Phase 2 uses config "starter drone" stats; Phase 5 replaces `FlightStats.of(player)` with stats from the body.
 - Energy: thrust 2/s, dampener braking 1/s (config). In low power mode the thrusters and dampener are offline and you drift.
 - Creative uses vanilla flight; key V switches creative to thruster flight (same handling, no energy cost, no speed check).
