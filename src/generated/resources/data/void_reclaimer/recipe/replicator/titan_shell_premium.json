@@ -1,0 +1,43 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "void_reclaimer:config_choice",
+      "key": "shellPrices",
+      "value": "premium"
+    }
+  ],
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:tools",
+  "cost": {
+    "void_reclaimer:carbon": 900.0,
+    "void_reclaimer:ice": 670.0,
+    "void_reclaimer:metallic": 1400.0,
+    "void_reclaimer:silicate": 1030.0
+  },
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "void_reclaimer:titan_saucer"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "void_reclaimer:titan_neck"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "void_reclaimer:titan_bridge"
+      }
+    }
+  ],
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:titan_shell"
+  },
+  "ticks": 35000
+}
