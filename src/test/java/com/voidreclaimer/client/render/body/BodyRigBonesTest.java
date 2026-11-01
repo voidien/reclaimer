@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -44,6 +45,9 @@ class BodyRigBonesTest {
             "mech", Set.of(),
             "shuttle", Set.of(),
             "titan", Set.of());
+
+    /** The Ship's core section's own bones, drawn whatever else is fitted. */
+    private static final Set<String> SHIP_CORE_BONES = Set.of("keel_casing", "keel_frame", "cog_internal");
 
     private record Bone(String parent, boolean hasCubes) {}
 
@@ -138,6 +142,35 @@ class BodyRigBonesTest {
         for (String bone : ALWAYS_ON.get(name)) {
             assertTrue(bones.containsKey(bone) && bones.get(bone).hasCubes(), name + " " + bone + " is not a bone with cubes");
             assertFalse(owned(bone, bones, listed(rig, "sockets"), listed(rig, "socket_parts")), name + " " + bone + " has a socket: it is not always on");
+        }
+    }
+
+    /**
+     * The Ship has no spec: it is composed from section models, each drawn at the bone named after its socket, and a {@code cap_} bone
+     * closes the gap when a socket is empty. So a socket needs both, and the only other cubes are the core's.
+     */
+    @Test
+    void theComposedShipHasABoneAndACapForEverySocket() throws Exception {
+        JsonObject chassis = json("/data/void_reclaimer/void_reclaimer/chassis/ship.json");
+        JsonObject model = json("/assets/void_reclaimer/geo/body/ship.geo.json");
+        String core = chassis.get("core_socket").getAsString();
+        Set<String> sockets = new HashSet<>();
+        chassis.getAsJsonArray("sockets").forEach(socket -> sockets.add(socket.getAsJsonObject().get("id").getAsString()));
+        Set<String> names = new HashSet<>();
+        Set<String> loose = new HashSet<>();
+        for (JsonElement element : model.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject().getAsJsonArray("bones")) {
+            JsonObject bone = element.getAsJsonObject();
+            String name = bone.get("name").getAsString();
+            names.add(name);
+            boolean cap = name.startsWith("cap_") && sockets.contains(name.substring(4));
+            if (bone.has("cubes") && !bone.getAsJsonArray("cubes").isEmpty() && !cap && !SHIP_CORE_BONES.contains(name)) {
+                loose.add(name);
+            }
+        }
+        assertEquals(Set.of(), loose, "cubes that belong to no socket");
+        for (String socket : sockets) {
+            assertTrue(names.contains(BodyLook.socketBone(socket)), "no bone to draw the section in " + socket);
+            assertTrue(socket.equals(core) || names.contains("cap_" + socket), "nothing closes the gap when " + socket + " is empty");
         }
     }
 
