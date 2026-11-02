@@ -42,6 +42,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.HULL_PLATING_MK1.get());
                 output.accept(ModItems.HULL_PLATING_MK2.get());
                 output.accept(ModItems.HULL_PLATING_MK3.get());
+                output.accept(ModItems.AFTERBURNER.get());
                 output.accept(ModItems.BRASS_TRIM.get());
                 output.accept(ModItems.COGWHEEL_CROWN.get());
                 output.accept(ModItems.ELECTROLYZER.get());

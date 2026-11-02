@@ -55,7 +55,7 @@ public final class ClientFlightController {
         }
         boolean engaged = walker && !FlightInput.shouldDisengage(player.onGround(), input.jumping);
         setInput(player, FlightInput.of(input.up, input.down, input.left, input.right, input.jumping, input.shiftKeyDown)
-                .withEngaged(engaged));
+                .withEngaged(engaged).withBoost(net.minecraft.client.Minecraft.getInstance().options.keySprint.isDown()));
 
         input.forwardImpulse = 0f;
         input.leftImpulse = 0f;

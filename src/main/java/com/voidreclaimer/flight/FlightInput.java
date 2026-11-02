@@ -14,6 +14,8 @@ public record FlightInput(byte bits) {
     private static final int DOWN = 1 << 5;
     /** A walking body (the Mech) has its thrusters engaged. Not a key: set by the client controller. */
     private static final int ENGAGED = 1 << 6;
+    /** The sprint key is held, which fires an Afterburner if the body has one. */
+    private static final int BOOST = 1 << 7;
 
     public static final FlightInput NONE = new FlightInput((byte) 0);
     public static final StreamCodec<ByteBuf, FlightInput> STREAM_CODEC =
@@ -39,6 +41,14 @@ public record FlightInput(byte bits) {
 
     public FlightInput withEngaged(boolean value) {
         return new FlightInput((byte) (value ? bits | ENGAGED : bits & ~ENGAGED));
+    }
+
+    public boolean boost() {
+        return (bits & BOOST) != 0;
+    }
+
+    public FlightInput withBoost(boolean value) {
+        return new FlightInput((byte) (value ? bits | BOOST : bits & ~BOOST));
     }
 
     /** -1, 0 or 1 along the view direction. */

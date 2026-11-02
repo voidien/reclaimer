@@ -64,8 +64,8 @@ public final class ServerFlightHandler {
 
         tracker.setLastSpeed(stepDistance);
         chargeEnergy(player, stepDistance);
-        if (Tether.isRecalling(player)) {
-            // The server itself started the winch, which is faster than top speed: restart the window after it.
+        if (Tether.isRecalling(player) || player.getData(ModAttachments.AFTERBURNER).fading()) {
+            // The server itself started the winch, or the burn that is fading, which are faster than top speed: restart the window after it.
             tracker.clear();
         } else if (!Energy.isExempt(player) && (checkSpeed(player, tracker, position) || checkOverlap(player, tracker, position))) {
             return;

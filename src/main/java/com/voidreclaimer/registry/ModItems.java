@@ -56,6 +56,7 @@ public final class ModItems {
     public static final DeferredItem<ModuleItem> HULL_PLATING_MK1 = module("hull_plating_mk1", ModuleStats.utility(1, 0.5f, new ModuleStats.Plating(4f)));
     public static final DeferredItem<ModuleItem> HULL_PLATING_MK2 = module("hull_plating_mk2", ModuleStats.utility(3, 2.0f, new ModuleStats.Plating(12f)));
     public static final DeferredItem<ModuleItem> HULL_PLATING_MK3 = module("hull_plating_mk3", ModuleStats.utility(4, 6.0f, new ModuleStats.Plating(40f)));
+    public static final DeferredItem<ModuleItem> AFTERBURNER = module("afterburner", ModuleStats.utility(2, 0.4f, new ModuleStats.Afterburner(1.5f, 5f, 20f, 16f)));
 
     /** Cosmetic modules: no stats; drawn in Phase 5b. */
     public static final DeferredItem<ModuleItem> BRASS_TRIM = module("brass_trim", ModuleStats.simple(ModuleKind.COSMETIC, 1, 0f));

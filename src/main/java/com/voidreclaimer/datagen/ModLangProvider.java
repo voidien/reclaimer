@@ -39,6 +39,8 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("hud.void_reclaimer.speed", "%s m/s");
         add("hud.void_reclaimer.dampener_on", "Dampener ON");
+        add("hud.void_reclaimer.afterburner", "Afterburner %s%%");
+        add("hud.void_reclaimer.afterburner_cooling", "Afterburner cooling %s%%");
         add("hud.void_reclaimer.dampener_off", "Dampener OFF");
         add("hud.void_reclaimer.thrusters_offline", "THRUSTERS OFFLINE");
 
@@ -518,6 +520,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.HULL_PLATING_MK1.get(), "Hull Plating Mk I");
         add(ModItems.HULL_PLATING_MK2.get(), "Hull Plating Mk II");
         add(ModItems.HULL_PLATING_MK3.get(), "Hull Plating Mk III");
+        add(ModItems.AFTERBURNER.get(), "Afterburner");
         add(ModItems.BRASS_TRIM.get(), "Brass Trim");
         add(ModItems.COGWHEEL_CROWN.get(), "Cogwheel Crown");
         add("item.void_reclaimer.brass_trim.tooltip", "Cosmetic. Shown on the body once body models arrive.");
@@ -527,6 +530,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("tooltip.void_reclaimer.module.thruster", "Thrust %s · top speed %s m/s");
         add("tooltip.void_reclaimer.module.storage", "+%s inventory rows · +%s dust per kind");
         add("tooltip.void_reclaimer.module.plating", "+%s hearts");
+        add("tooltip.void_reclaimer.module.afterburner", "Hold sprint: top speed ×%s for %s s · cools in %s s · %s energy/s");
         add("tooltip.void_reclaimer.module.min_size", "Needs a %s body or larger");
         add("body.void_reclaimer.kind.core", "Core");
         add("body.void_reclaimer.kind.thruster", "Thruster");
@@ -852,6 +856,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.hull_plating_mk1", "Adds 2 hearts and some mass in a utility mount.");
         add("replicator.void_reclaimer.description.hull_plating_mk2", "Adds 6 hearts and more mass in a utility mount. Needs a Core Mk III.");
         add("replicator.void_reclaimer.description.hull_plating_mk3", "Adds 20 hearts and a lot of mass in a utility mount. Needs a Core Mk IV.");
+        add("replicator.void_reclaimer.description.afterburner", "Hold sprint while thrusting for 50% more top speed, up to 5 seconds, then let it cool. Goes in a utility mount and needs a Core Mk II.");
         add("replicator.void_reclaimer.description.tether_anchor", "A block you can clip onto. It keeps you from drifting far away, and holding G recalls you to it.");
         add("replicator.void_reclaimer.description.thruster_mk1", "The basic thruster module. It gives your body thrust to fly.");
         add("replicator.void_reclaimer.description.thruster_mk2", "A stronger thruster module with more thrust.");

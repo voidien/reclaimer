@@ -1,0 +1,4 @@
+## Afterburner
+- The Afterburner is a utility module for Core Mk II and up. Hold sprint while thrusting for +50% top speed, up to 5 s, at 16 energy a second, so a full burn costs 80. Top speed fades back over a second after a burn, so a body isn't stopped dead. The server runs the clock and the client only says the key is held; the new `afterburner` spec on `ModuleStats` lets a datapack module do the same.
+- **Decided alone:** it uses the sprint key rather than a new one, since sprint does nothing in flight, and it goes in a utility mount. A burn heats it and rest cools it, so a short burn needs a short rest; one held to the end locks it until it is cold (20 s). Two don't add up; the strongest counts. It raises only top speed, not thrust. The stats and the price (50/30/20/30 for 90 s at Expansion) are placeholders to tune.
+- **Not done:** no flame or sound yet, and the icon is a placeholder.

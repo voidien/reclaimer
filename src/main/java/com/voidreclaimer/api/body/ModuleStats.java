@@ -23,7 +23,7 @@ import net.minecraft.resources.ResourceLocation;
  */
 public record ModuleStats(ModuleKind kind, int tier, float mass, Optional<ResourceKey<SizeClass>> minSize,
                           Optional<Core> core, Optional<Thruster> thruster, Optional<Storage> storage,
-                          Optional<Collector> collector, Optional<Plating> plating) {
+                          Optional<Collector> collector, Optional<Plating> plating, Optional<Afterburner> afterburner) {
     public static final Codec<ModuleStats> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ModuleKind.CODEC.fieldOf("kind").forGetter(ModuleStats::kind),
             Codec.INT.optionalFieldOf("tier", 1).forGetter(ModuleStats::tier),
@@ -33,39 +33,45 @@ public record ModuleStats(ModuleKind kind, int tier, float mass, Optional<Resour
             Thruster.CODEC.optionalFieldOf("thruster").forGetter(ModuleStats::thruster),
             Storage.CODEC.optionalFieldOf("storage").forGetter(ModuleStats::storage),
             Collector.CODEC.optionalFieldOf("collector").forGetter(ModuleStats::collector),
-            Plating.CODEC.optionalFieldOf("plating").forGetter(ModuleStats::plating)
+            Plating.CODEC.optionalFieldOf("plating").forGetter(ModuleStats::plating),
+            Afterburner.CODEC.optionalFieldOf("afterburner").forGetter(ModuleStats::afterburner)
     ).apply(instance, ModuleStats::new));
 
     public static final StreamCodec<ByteBuf, ModuleStats> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 
     public static ModuleStats simple(ModuleKind kind, int tier, float mass) {
-        return new ModuleStats(kind, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        return new ModuleStats(kind, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static ModuleStats core(int tier, float mass, Core core) {
-        return new ModuleStats(ModuleKind.CORE, tier, mass, Optional.empty(), Optional.of(core), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        return new ModuleStats(ModuleKind.CORE, tier, mass, Optional.empty(), Optional.of(core), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static ModuleStats thruster(int tier, float mass, Optional<ResourceKey<SizeClass>> minSize, Thruster thruster) {
-        return new ModuleStats(ModuleKind.THRUSTER, tier, mass, minSize, Optional.empty(), Optional.of(thruster), Optional.empty(), Optional.empty(), Optional.empty());
+        return new ModuleStats(ModuleKind.THRUSTER, tier, mass, minSize, Optional.empty(), Optional.of(thruster), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static ModuleStats storage(int tier, float mass, Storage storage) {
-        return new ModuleStats(ModuleKind.STORAGE, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty(), Optional.empty());
+        return new ModuleStats(ModuleKind.STORAGE, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     /** A utility module that adds dust or inventory storage, like a storage pod but in a utility mount. */
     public static ModuleStats utility(int tier, float mass, Storage storage) {
-        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty(), Optional.empty());
+        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     /** A utility module that armours the body. */
     public static ModuleStats utility(int tier, float mass, Plating plating) {
-        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(plating));
+        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(plating), Optional.empty());
+    }
+
+    /** A utility module that burns for a higher top speed while the sprint key is held. */
+    public static ModuleStats utility(int tier, float mass, Afterburner afterburner) {
+        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(afterburner));
     }
 
     public static ModuleStats collector(int tier, float mass, Collector collector) {
-        return new ModuleStats(ModuleKind.TOOL, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(collector), Optional.empty());
+        return new ModuleStats(ModuleKind.TOOL, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(collector), Optional.empty(), Optional.empty());
     }
 
     /**
@@ -130,5 +136,20 @@ public record ModuleStats(ModuleKind kind, int tier, float mass, Optional<Resour
         public static final Codec<Plating> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.FLOAT.fieldOf("health").forGetter(Plating::health)
         ).apply(instance, Plating::new));
+    }
+
+    /**
+     * @param speedFactor     top speed is multiplied by this during a burn
+     * @param burnSeconds     the longest a burn lasts
+     * @param cooldownSeconds how long a full burn takes to cool down; a shorter burn cools in its share of this
+     * @param energyPerSecond energy used per second of burn
+     */
+    public record Afterburner(float speedFactor, float burnSeconds, float cooldownSeconds, float energyPerSecond) {
+        public static final Codec<Afterburner> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.FLOAT.fieldOf("speed_factor").forGetter(Afterburner::speedFactor),
+                Codec.FLOAT.fieldOf("burn_seconds").forGetter(Afterburner::burnSeconds),
+                Codec.FLOAT.fieldOf("cooldown_seconds").forGetter(Afterburner::cooldownSeconds),
+                Codec.FLOAT.optionalFieldOf("energy_per_second", 0f).forGetter(Afterburner::energyPerSecond)
+        ).apply(instance, Afterburner::new));
     }
 }
