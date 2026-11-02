@@ -1036,28 +1036,140 @@ public final class AeronauticsGameTests {
         });
     }
 
-    /** Enough holes in one place, and a lump of the rock around them comes away as a drifting ship. */
-    @GameTest(template = "empty", timeoutTicks = 300, batch = "fracture")
+    /** A plain stone ship with a glass nose, flown north at {@code speed} into a wall of glass with obsidian behind it, then {@code check}. */
+    private static void crashShip(GameTestHelper helper, BlockPos pos, double speed, Runnable check) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int chunks = -2; chunks <= 1; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) + chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            command(server, space, pos, "fill " + (x - 1) + " " + (y - 1) + " " + (z - 1) + " " + (x + 1) + " " + (y + 1) + " " + (z + 1) + " minecraft:stone");
+            command(server, space, pos, "setblock " + x + " " + y + " " + (z - 2) + " minecraft:glass");
+            command(server, space, pos, "fill " + (x - 3) + " " + (y - 3) + " " + (z - 12) + " " + (x + 3) + " " + (y + 3) + " " + (z - 12) + " minecraft:glass");
+            command(server, space, pos, "fill " + (x - 3) + " " + (y - 3) + " " + (z - 13) + " " + (x + 3) + " " + (y + 3) + " " + (z - 13) + " minecraft:obsidian");
+            helper.runAfterDelay(10, () -> {
+                command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z);
+                helper.runAfterDelay(10, () -> {
+                    nameShip(server, space, pos);
+                    var ship = shipNamed(space, pos);
+                    dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship).addLinearAndAngularVelocity(new org.joml.Vector3d(0, 0, -speed), new org.joml.Vector3d());
+                    helper.runAfterDelay(80, check);
+                });
+            });
+        });
+    }
+
+    private static int count(ServerLevel space, BlockPos from, BlockPos to, net.minecraft.world.level.block.Block block) {
+        int found = 0;
+        for (BlockPos at : BlockPos.betweenClosed(from, to)) {
+            found += space.getBlockState(at).is(block) ? 1 : 0;
+        }
+        return found;
+    }
+
+    /** At speed the wall's glass goes where the ship hit it, and the obsidian behind it stays. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aShipCrashBreaksTheWeakBlocksItHits(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(158_000, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        BlockPos from = pos.offset(-3, -3, -12), to = pos.offset(3, 3, -12);
+        crashShip(helper, pos, 18.0, () -> {
+            int glass = count(space, from, to, net.minecraft.world.level.block.Blocks.GLASS);
+            int obsidian = count(space, from.north(), to.north(), net.minecraft.world.level.block.Blocks.OBSIDIAN);
+            helper.assertTrue(glass < 49, "no glass broke");
+            helper.assertTrue(obsidian == 49, 49 - obsidian + " obsidian broke");
+            helper.succeed();
+        });
+    }
+
+    /** However hard it hits, a ship stops at a wall: its blocks and the wall's stay solid to each other. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aCrashingShipStopsAtTheObsidianBehindTheGlass(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(158_800, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        crashShip(helper, pos, 18.0, () -> {
+            var ship = shipNamed(space, pos);
+            double reached = ship.logicalPose().position().z();
+            helper.assertTrue(reached > pos.getZ() - 13.0, "the ship went through the wall, to " + reached + " from " + pos.getZ());
+            helper.succeed();
+        });
+    }
+
+    /** Under the safe speed a ship bumps and everything stays. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aGentleShipBumpBreaksNothing(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(158_400, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        crashShip(helper, pos, 4.0, () -> {
+            int glass = count(space, pos.offset(-3, -3, -12), pos.offset(3, 3, -12), net.minecraft.world.level.block.Blocks.GLASS);
+            helper.assertTrue(glass == 49, 49 - glass + " glass broke at 4 blocks a second");
+            helper.succeed();
+        });
+    }
+
+    /** Enough holes at the bottom of a pit, and a slab of the floor comes away as a ship, and really leaves: a piece can jam in the rock it came from. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "fracture")
     public static void tooMuchDrillingBreaksOffAPieceThatDrifts(GameTestHelper helper) {
         BlockPos pos = new BlockPos(92_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                space.setChunkForced((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz, true);
+            }
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + (pos.getX() - 8) + " " + (pos.getY() - 8) + " " + (pos.getZ() - 8) + " " + (pos.getX() + 8) + " " + (pos.getY() + 8) + " "
+                    + (pos.getZ() + 8) + " void_reclaimer:asteroid_metallic");
+            command(server, space, pos, "fill " + (pos.getX() - 5) + " " + (pos.getY() + 3) + " " + (pos.getZ() - 5) + " " + (pos.getX() + 5) + " " + (pos.getY() + 8) + " "
+                    + (pos.getZ() + 5) + " minecraft:air");
+            var ships = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space);
+            int before = ships.getAllSubLevels().size();
+            BlockPos hole = pos.above(3);
+            for (int drilled = 0; drilled < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); drilled++) {
+                com.voidreclaimer.asteroid.Fracture.drilled(space, hole);
+            }
+            int after = ships.getAllSubLevels().size();
+            helper.assertTrue(after == before + 1, "ships went from " + before + " to " + after);
+            nameShip(server, space, pos);
+            var piece = shipNamed(space, pos);
+            double start = piece.logicalPose().position().y();
+            helper.runAfterDelay(240, () -> {
+                double moved = piece.logicalPose().position().y() - start;
+                helper.assertTrue(moved > 6.0, "the piece is wedged: it moved " + moved + " blocks");
+                helper.succeed();
+            });
+        });
+    }
+
+    /** A listener can keep a rock whole, and the holes stand for the next try. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "fracture_kept")
+    public static void anAddonCanKeepARockWhole(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_400, 200, 3_000);
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
         space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
         helper.runAfterDelay(5, () -> {
             clearArea(server, space, pos);
-            command(server, space, pos, "fill " + (pos.getX() - 3) + " " + (pos.getY() - 3) + " " + (pos.getZ() - 3) + " " + (pos.getX() + 3) + " " + (pos.getY() + 3) + " "
+            command(server, space, pos, "fill " + (pos.getX() - 3) + " " + (pos.getY() - 3) + " " + (pos.getZ() - 3) + " " + (pos.getX() + 3) + " " + pos.getY() + " "
                     + (pos.getZ() + 3) + " void_reclaimer:asteroid_metallic");
-            int before = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().size();
-            for (int hole = 0; hole < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); hole++) {
-                com.voidreclaimer.asteroid.Fracture.drilled(space, pos);
+            var ships = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space);
+            int before = ships.getAllSubLevels().size();
+            TestEventListeners.noFractures = true;
+            try {
+                for (int drilled = 0; drilled < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); drilled++) {
+                    com.voidreclaimer.asteroid.Fracture.drilled(space, pos.above());
+                }
+            } finally {
+                TestEventListeners.noFractures = false;
             }
-            int after = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().size();
-            helper.assertTrue(after == before + 1, "ships went from " + before + " to " + after);
-            int left = 0;
-            for (BlockPos at : BlockPos.betweenClosed(pos.offset(-3, -3, -3), pos.offset(3, 3, 3))) {
-                left += space.getBlockState(at).is(com.voidreclaimer.registry.ModBlocks.ASTEROID_METALLIC.get()) ? 1 : 0;
-            }
-            helper.assertTrue(left == 343 - com.voidreclaimer.Config.ASTEROID_PIECE_BLOCKS.get(), left + " blocks of rock are left");
+            helper.assertTrue(ships.getAllSubLevels().size() == before, "the rock split all the same");
+            com.voidreclaimer.asteroid.Fracture.drilled(space, pos.above());
+            helper.assertTrue(ships.getAllSubLevels().size() == before + 1, "the next hole did not try again");
             helper.succeed();
         });
     }

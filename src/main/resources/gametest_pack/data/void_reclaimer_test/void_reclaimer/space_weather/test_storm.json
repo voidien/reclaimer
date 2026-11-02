@@ -1,0 +1,11 @@
+{
+  "dimensions": ["void_reclaimer:deep_space"],
+  "weight": 0,
+  "warning_seconds": 2,
+  "min_seconds": 3,
+  "max_seconds": 3,
+  "exposure": "void_reclaimer:everywhere",
+  "effects": [{"type": "void_reclaimer:energy", "strength": 0.05}],
+  "color": 16711680,
+  "name": {"text": "Test storm"}
+}

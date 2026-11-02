@@ -15,6 +15,9 @@ All start with `/void_reclaimer`.
 |---|---|
 | `body preset <player> drone\|mech\|ship\|shuttle\|titan` | A complete basic body: every socket filled, Mk I core, thrusters and storage |
 | `body preset <player> <chassis> full` | The same with the rest of the modules on it, to see them all |
+| `weather status` | What is coming or here in this level, or how long until the next |
+| `weather start <id>` | Starts a kind of weather now, warning and all |
+| `weather stop` | Ends it |
 | `body remove <player> <socket>` | Takes a section off into the inventory, with its modules and child sections |
 | `body remove <player> <socket> <kind> <index>` | Takes one module off, such as `rotor_front_left thruster 0` |
 | `body reset <player>` | Back to the starter Drone |

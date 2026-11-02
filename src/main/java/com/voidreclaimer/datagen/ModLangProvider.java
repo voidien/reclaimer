@@ -297,6 +297,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.shell.away", "In another dimension");
         add("message.void_reclaimer.respawn.shell_failed", "That shell can't be reached. You woke in a new Drone.");
         add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
+        add("hud.void_reclaimer.weather.warning", "%s in %s s: take cover");
+        add("hud.void_reclaimer.weather.active", "%s, %s s left");
+        add("hud.void_reclaimer.weather.unnamed", "Storm");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");
@@ -509,6 +512,9 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.THRUSTER_MK2.get(), "Thruster Mk II");
         add(ModItems.STORAGE_MK1.get(), "Storage Pod Mk I");
         add(ModItems.STORAGE_MK2.get(), "Storage Pod Mk II");
+        add(ModItems.DUST_COMPRESSOR_MK1.get(), "Dust Compressor Mk I");
+        add(ModItems.DUST_COMPRESSOR_MK2.get(), "Dust Compressor Mk II");
+        add(ModItems.DUST_COMPRESSOR_MK3.get(), "Dust Compressor Mk III");
         add(ModItems.BRASS_TRIM.get(), "Brass Trim");
         add(ModItems.COGWHEEL_CROWN.get(), "Cogwheel Crown");
         add("item.void_reclaimer.brass_trim.tooltip", "Cosmetic. Shown on the body once body models arrive.");
@@ -524,6 +530,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.kind.sensor", "Sensor");
         add("body.void_reclaimer.kind.tool", "Tool");
         add("body.void_reclaimer.kind.cosmetic", "Cosmetic");
+        add("body.void_reclaimer.kind.utility", "Utility");
 
         // ---- sections ----
         add(ModItems.DRONE_HULL.get(), "Drone Hull");
@@ -835,6 +842,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("replicator.void_reclaimer.description.spinner", "A Create machine that spins High-Purity Graphite into Carbon Thread when a shaft turns it.");
         add("replicator.void_reclaimer.description.storage_mk1", "A storage pod. It adds inventory rows and dust capacity.");
         add("replicator.void_reclaimer.description.storage_mk2", "A larger storage pod with more inventory rows and dust capacity.");
+        add("replicator.void_reclaimer.description.dust_compressor_mk1", "Holds 600 more of every dust kind in a utility mount, with no extra inventory.");
+        add("replicator.void_reclaimer.description.dust_compressor_mk2", "Holds 1200 more of every dust kind in a utility mount. Needs a Core Mk III.");
+        add("replicator.void_reclaimer.description.dust_compressor_mk3", "Holds 2400 more of every dust kind in a utility mount. Needs a Core Mk IV.");
         add("replicator.void_reclaimer.description.tether_anchor", "A block you can clip onto. It keeps you from drifting far away, and holding G recalls you to it.");
         add("replicator.void_reclaimer.description.thruster_mk1", "The basic thruster module. It gives your body thrust to fly.");
         add("replicator.void_reclaimer.description.thruster_mk2", "A stronger thruster module with more thrust.");
