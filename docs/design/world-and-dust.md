@@ -3,7 +3,7 @@
 Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR as the change.
 
 **Phase 1**
-- Deep space is an empty void (flat generator, no layers; since Phase 6 the custom asteroid generator on top of that, see the Asteroids block). Height is the vanilla maximum, Y -2032..2031. A soft push-back starts 96 blocks from either limit (config), so nothing reaches void damage.
+- Deep space is an empty void (flat generator, no layers; since Phase 6 the custom asteroid generator on top of that, see the Asteroids block). Both of our generators extend `space/BarrenChunkGenerator`, which gives each section its one biome outright and skips the decoration pass unless the dimension's settings have something to place. Height is the vanilla maximum, Y -2032..2031. A soft push-back starts 96 blocks from either limit (config), so nothing reaches void damage.
 - The Overworld, Nether, and End are locked for good. Endgame travel goes to `ruined_earth`. Creative and spectator players may bypass the lock (ops can switch modes). Nether portals can't be lit in deep space.
 - Light: real darkness, with sky light from a fixed, dim, distant sun (`fixed_time` 12800 gives effective sky light 10/15). Vanilla sky light only travels downward, so the sun is drawn near the zenith. Undersides and enclosed spaces stay dark.
 - Zero-G covers everything: players and mobs via a `generic.gravity` modifier, other entities via NoGravity plus a tag, and falling blocks via a mixin. Fluids still flow. Thrown or hit things keep vanilla's light drag. Gravity generators (later) hook into `ZeroGravity.isZeroG(level, pos)`.
