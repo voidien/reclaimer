@@ -370,6 +370,12 @@ public final class ModCommands {
                                                 .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.SHUTTLE, true))))
                                         .then(Commands.literal("titan").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.TITAN, false))
                                                 .then(Commands.literal("full").executes(ctx -> presetBody(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), com.voidreclaimer.body.BuiltinBodies.TITAN, true))))))
+                        .then(Commands.literal("fit")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("module", net.minecraft.commands.arguments.ResourceLocationArgument.id())
+                                                .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggestResource(moduleItems(), builder))
+                                                .executes(ctx -> fitModule(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
+                                                        net.minecraft.commands.arguments.ResourceLocationArgument.getId(ctx, "module"))))))
                         .then(Commands.literal("remove")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("socket", com.mojang.brigadier.arguments.StringArgumentType.word())
@@ -555,6 +561,37 @@ public final class ModCommands {
         com.voidreclaimer.body.BodyRules.Check check = Bodies.removeModule(player, new com.voidreclaimer.body.BodyData.Mount(socket, found.get(), index));
         source.sendSuccess(() -> Component.literal(socket + " " + kind + " " + index + ": " + check), true);
         return check == com.voidreclaimer.body.BodyRules.Check.OK ? 1 : 0;
+    }
+
+    /** Every module item, for the command's suggestions. */
+    private static java.util.List<net.minecraft.resources.ResourceLocation> moduleItems() {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.keySet().stream()
+                .filter(id -> com.voidreclaimer.body.Parts.module(new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id))) != null).toList();
+    }
+
+    /** Fits a module from nothing in the first mount that takes it, by the same rules as the Body tab. */
+    private static int fitModule(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.ResourceLocation id) {
+        var stack = new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id));
+        var module = com.voidreclaimer.body.Parts.module(stack);
+        if (module == null) {
+            source.sendFailure(Component.literal(id + " is not a module"));
+            return 0;
+        }
+        var view = Bodies.view(player);
+        com.voidreclaimer.body.BodyRules.Check last = com.voidreclaimer.body.BodyRules.Check.OK;
+        for (com.voidreclaimer.body.BodyData.Mount mount : view.mounts()) {
+            if (mount.kind() == module.kind()) {
+                last = com.voidreclaimer.body.BodyRules.canInstallModule(view, mount, stack);
+                if (last == com.voidreclaimer.body.BodyRules.Check.OK) {
+                    Bodies.store(player, view.data().withModule(mount, stack));
+                    source.sendSuccess(() -> Component.literal(id + " fitted: " + mount), true);
+                    return 1;
+                }
+            }
+        }
+        var refused = last;
+        source.sendFailure(Component.literal(id + " did not fit: " + (refused == com.voidreclaimer.body.BodyRules.Check.OK ? "no " + module.kind().getSerializedName() + " mount" : refused)));
+        return 0;
     }
 
     /** The module kinds fitted on a socket, for the command's suggestions. */
