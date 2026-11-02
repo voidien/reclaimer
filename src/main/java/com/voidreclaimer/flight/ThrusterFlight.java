@@ -70,6 +70,9 @@ public final class ThrusterFlight {
         return player.getAttributeValue(Attributes.GRAVITY) * Config.HOVER_WEIGHT_FACTOR.get();
     }
 
+    /** Hears a body losing more speed than is safe. Installed by the client entrypoint, which keeps this class free of client-only references. */
+    public static volatile java.util.function.Consumer<Vec3> crashed = lost -> {};
+
     /** Replaces vanilla travel for the local player: apply thrust, then move with collisions and no drag. */
     public static void travel(Player player) {
         // A big body turns first, so thrust goes where it now points. A push off a wall is a move, not a speed: it stays out of the momentum.
@@ -77,9 +80,15 @@ public final class ThrusterFlight {
         if (push.lengthSqr() > 0.0) {
             player.move(MoverType.SELF, push);
         }
-        com.voidreclaimer.body.BodyBoxes.Moved moved = com.voidreclaimer.body.BoxCollision.move(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
+        Vec3 wanted = step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT));
+        com.voidreclaimer.body.BodyBoxes.Moved moved = com.voidreclaimer.body.BoxCollision.move(player, wanted);
         player.setDeltaMovement(moved.speed());
         player.move(MoverType.SELF, moved.move());
+        // Whatever took the speed, the hit boxes or vanilla's box: the dampener's share went in step, so this is only what was hit.
+        Vec3 lost = wanted.subtract(player.getDeltaMovement());
+        if (lost.length() * FlightStats.TICKS_PER_SECOND > Config.CRASH_SAFE_SPEED.get()) {
+            crashed.accept(lost);
+        }
         player.calculateEntityAnimation(true);
         calmWalkBob(player);
     }

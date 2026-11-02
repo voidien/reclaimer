@@ -33,6 +33,16 @@ public final class TestEventListeners {
     /** Finished Replicator jobs also deliver a diamond. */
     public static final String BONUS_OUTPUT = "vr_test_bonus_output";
 
+    /** A crash does nothing. */
+    public static final String NO_CRASH = "vr_test_no_crash";
+
+    @SubscribeEvent
+    static void onCrash(com.voidreclaimer.api.event.BodyCrashEvent event) {
+        if (event.getPlayer().getTags().contains(NO_CRASH)) {
+            event.setCanceled(true);
+        }
+    }
+
     /** Body stats get +10 max health. */
     public static final String TOUGH = "vr_test_tough";
     /** Tool module use is cancelled. */

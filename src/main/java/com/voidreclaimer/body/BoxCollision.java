@@ -86,6 +86,25 @@ public final class BoxCollision {
         return body.isEmpty() ? 0.0 : BodyBoxes.deepest(body, worldBlocksNear(player.level(), reaches(body, Vec3.ZERO, 0.0)));
     }
 
+    /** The world's blocks {@code player}'s boxes would be in if they moved by {@code ahead}: what a crash reaches. Ships are not here. */
+    static List<BlockPos> blocksAhead(Player player, Vec3 ahead) {
+        BodyView view = Bodies.view(player);
+        List<BodyBoxes.Box> body = BodyTurning.place(player, view, BodyTurning.of(player));
+        List<BodyBoxes.Box> moved = body.stream().map(box -> box.moved(ahead)).toList();
+        List<BlockPos> found = new ArrayList<>();
+        LongSet seen = new LongOpenHashSet();
+        LongSet kept = new LongOpenHashSet();
+        for (AABB reach : reaches(moved, Vec3.ZERO, 0.0)) {
+            scan(player.level(), reach, seen, (pos, part) -> {
+                if (!kept.contains(pos.asLong()) && BodyBoxes.deepest(moved, List.of(BodyBoxes.Box.of(part.move(pos)))) > 0.0) {
+                    kept.add(pos.asLong());
+                    found.add(pos);
+                }
+            });
+        }
+        return found;
+    }
+
     /** All a body can hit this tick: blocks, ships and other bodies. */
     static List<BodyBoxes.Box> solidsNear(Player player, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
         List<BodyBoxes.Box> solids = blocksNear(player.level(), body, velocity, margin);

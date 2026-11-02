@@ -1,0 +1,4 @@
+## Bodies crash
+- A body flying into something loses the speed that went into it, whatever stopped it, and the client says how much (`BodyCrashPayload`). The server takes that up to 1.5 times top speed. Under 5 blocks a second nothing happens. Above it the body is hurt, growing with the square of the speed over 5, and a head-on hit at top speed destroys it and leaves a wreck, as the owner chose. It uses vanilla's `flyIntoWall` damage.
+- A big body also breaks the world's blocks it hit, weakest first, by speed and the square root of its mass, up to 32 a hit. A Ship at top speed breaks iron blocks and not obsidian. Blocks drop as usual. The `void_reclaimer:crash_proof` tag keeps a block out of it, and `BodyCrashEvent` lets a part soften a hit.
+- **Decided alone:** a small body breaks nothing, as the page only asked about big ones. A ship's blocks aren't broken here: they go with ship crashes, because removing a block with a constraint can hang the server.
