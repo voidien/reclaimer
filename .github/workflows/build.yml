@@ -86,6 +86,7 @@ jobs:
         test:
           - aCrashKeepsOnlyWhatWasSaved
           - aLinkOutlivesACrash
+          - aRelayListOutlivesARestart
           - aWokenShellOutlivesACrash
           - aShellsQueuedItemsOutliveACrash
           - anOldShellGoesAfterACrash

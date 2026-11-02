@@ -25,6 +25,7 @@ public final class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.STATION_CORE.get());
         dropSelf(ModBlocks.DOCKING_CLAMP.get());
         dropSelf(ModBlocks.UPLINK_SEAT.get());
+        dropSelf(ModBlocks.RELAY.get());
         dropSelf(ModBlocks.HOLO_PROJECTOR.get());
         dropSelf(ModBlocks.TERRAFORMING_SPIRE.get());
         dropSelf(ModBlocks.TETHER_ANCHOR.get());

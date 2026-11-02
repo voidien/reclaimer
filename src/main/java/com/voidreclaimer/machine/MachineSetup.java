@@ -56,6 +56,8 @@ public final class MachineSetup {
                 (entity, side) -> entity.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, com.voidreclaimer.registry.ModBlockEntities.RCS_THRUSTER.get(),
                 (entity, side) -> entity.energy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, com.voidreclaimer.registry.ModBlockEntities.RELAY.get(),
+                (entity, side) -> entity.energy());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.PAYLOAD_CHAMBER.get(),
                 (entity, side) -> entity.items());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, com.voidreclaimer.registry.ModBlockEntities.LAUNCH_CONTROLLER.get(),

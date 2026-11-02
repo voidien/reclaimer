@@ -170,6 +170,17 @@ Read-only: a link needs a player to take it.
 | `isOccupied()` | whether a player is linked from this seat |
 | `getOccupant()` | that player's name, or `""` |
 
+## Relay (`RelayPeripheral`)
+Read-only: a relay does nothing but run, and it runs while it has power.
+
+| Function | Returns |
+|---|---|
+| `getRelayId()` | the relay's id, which it keeps for good |
+| `isOnline()` | whether it has power; a dark relay passes nothing on |
+| `getEnergy()`, `getEnergyCapacity()` | Forge Energy in the buffer, and its size |
+| `getEnergyUse()` | Forge Energy it uses each tick while it runs |
+| `getRelayCount()` | how many relays this dimension knows |
+
 ## Holo Projector (`HoloPeripheral`)
 Lines count from 1. Writing text switches the projector to text and `setSource` to a readout: the last writer wins.
 

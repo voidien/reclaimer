@@ -104,6 +104,12 @@ public final class ModAttachments {
                     .sync(com.voidreclaimer.station.StationList.STREAM_CODEC)
                     .build());
 
+    /** A level's relays, saved with it so that an unloaded relay still counts. The server's alone. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.link.RelayList>> RELAYS = ATTACHMENT_TYPES.register("relays",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.link.RelayList.EMPTY)
+                    .serialize(com.voidreclaimer.link.RelayList.CODEC)
+                    .build());
+
     /** Any level: its Atmospheric Portal panes, kept by the pane block, so ships can be tested against portals. Saved, not synced. */
     public static final Supplier<AttachmentType<com.voidreclaimer.earth.PortalPanes>> PORTAL_PANES = ATTACHMENT_TYPES.register("portal_panes",
             () -> AttachmentType.builder(() -> com.voidreclaimer.earth.PortalPanes.NONE)
