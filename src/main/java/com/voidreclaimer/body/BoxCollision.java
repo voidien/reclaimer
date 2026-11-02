@@ -48,9 +48,8 @@ public final class BoxCollision {
             return velocity;
         }
         long start = System.nanoTime();
-        BodyData data = view.data();
-        List<BodyBoxes.Box> body = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), player.position(), player.getYRot(), player.getXRot(), view.stats().scale());
-        List<BodyBoxes.Box> blocks = blocksNear(player.level(), body, velocity);
+        List<BodyBoxes.Box> body = BodyTurning.place(player, view, BodyTurning.of(player));
+        List<BodyBoxes.Box> blocks = blocksNear(player.level(), body, velocity, MARGIN);
         Vec3 allowed = BodyBoxes.resolve(body, blocks, velocity);
         lastBlocks = blocks.size();
         lastMicros = (System.nanoTime() - start) / 1000L;
@@ -58,17 +57,17 @@ public final class BoxCollision {
     }
 
     /** Every solid block any box could reach this tick, in the world and on any ship near it. */
-    static List<BodyBoxes.Box> blocksNear(Level level, List<BodyBoxes.Box> body, Vec3 velocity) {
+    static List<BodyBoxes.Box> blocksNear(Level level, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
         List<BodyBoxes.Box> blocks = new ArrayList<>();
         LongSet seen = new LongOpenHashSet();
         AABB all = null;
         for (BodyBoxes.Box box : body) {
-            AABB reach = around(box).expandTowards(velocity).inflate(MARGIN);
+            AABB reach = around(box).expandTowards(velocity).inflate(margin);
             all = all == null ? reach : all.minmax(reach);
             scan(level, reach, seen, (pos, part) -> blocks.add(BodyBoxes.Box.of(part.move(pos))));
         }
         if (all != null) {
-            ships(level, all, body, velocity, blocks);
+            ships(level, all, body, velocity, margin, blocks);
         }
         return blocks;
     }
@@ -77,18 +76,18 @@ public final class BoxCollision {
      * A ship's blocks are in its plot, far from where they are drawn, so each body box is carried into the ship's own coordinates to
      * find them, and each block comes back as a box turned with the ship.
      */
-    private static void ships(Level level, AABB all, List<BodyBoxes.Box> body, Vec3 velocity, List<BodyBoxes.Box> blocks) {
+    private static void ships(Level level, AABB all, List<BodyBoxes.Box> body, Vec3 velocity, double margin, List<BodyBoxes.Box> blocks) {
         for (SubLevelAccess ship : SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(all))) {
             Pose3dc pose = ship.logicalPose();
             LongSet seen = new LongOpenHashSet();
             for (BodyBoxes.Box box : body) {
-                scan(level, inPlot(pose, box, velocity), seen, (pos, part) -> blocks.add(onShip(pose, part.move(pos))));
+                scan(level, inPlot(pose, box, velocity, margin), seen, (pos, part) -> blocks.add(onShip(pose, part.move(pos))));
             }
         }
     }
 
     /** What {@code box} could reach this tick, in the ship's own coordinates. */
-    private static AABB inPlot(Pose3dc pose, BodyBoxes.Box box, Vec3 velocity) {
+    private static AABB inPlot(Pose3dc pose, BodyBoxes.Box box, Vec3 velocity, double margin) {
         AABB plot = null;
         for (Vec3 corner : BodyBoxes.corners(box)) {
             for (Vec3 at : List.of(corner, corner.add(velocity))) {
@@ -97,7 +96,7 @@ public final class BoxCollision {
                 plot = plot == null ? point : plot.minmax(point);
             }
         }
-        return plot.inflate(MARGIN);
+        return plot.inflate(margin);
     }
 
     /** A block's shape on a ship, as a box in the world that turns with the ship. */

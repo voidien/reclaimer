@@ -16,14 +16,35 @@ public final class FlightHudLayer {
     private static final int COLOR_NORMAL = 0x9FE8FF;
     private static final int COLOR_DIM = 0x6F8A99;
     private static final int COLOR_WARNING = 0xFF5050;
+    /** Degrees between view and nose below which the marker would only sit on the crosshair. */
+    private static final double NOSE_SHOWN_FROM = 1.5;
+    private static final int NOSE_SIZE = 4;
+    private static final int NOSE_MARGIN = 12;
 
     private FlightHudLayer() {}
+
+    /** Where a big body's nose points while it catches up with the view: that is where thrust goes, and the crosshair is not. */
+    private static void renderNose(GuiGraphics graphics, Minecraft mc, Player player, float partialTick) {
+        com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.at(player, partialTick);
+        if (heading == null || Math.hypot(net.minecraft.util.Mth.wrapDegrees(player.getYRot() - heading.yaw()), player.getXRot() - heading.pitch()) < NOSE_SHOWN_FROM) {
+            return;
+        }
+        var nose = com.voidreclaimer.body.BodyBoxes.turn(heading.yaw(), heading.pitch()).transform(new org.joml.Vector3d(0.0, 0.0, -1.0));
+        var point = com.voidreclaimer.client.hud.ScreenProjection.project(mc.gameRenderer.getMainCamera(), new net.minecraft.world.phys.Vec3(nose.x, nose.y, nose.z),
+                mc.options.fov().get(), graphics.guiWidth(), graphics.guiHeight(), NOSE_MARGIN, NOSE_MARGIN);
+        int color = 0xFF000000 | COLOR_NORMAL;
+        graphics.fill(point.x() - NOSE_SIZE, point.y() - NOSE_SIZE, point.x() + NOSE_SIZE + 1, point.y() - NOSE_SIZE + 1, color);
+        graphics.fill(point.x() - NOSE_SIZE, point.y() + NOSE_SIZE, point.x() + NOSE_SIZE + 1, point.y() + NOSE_SIZE + 1, color);
+        graphics.fill(point.x() - NOSE_SIZE, point.y() - NOSE_SIZE, point.x() - NOSE_SIZE + 1, point.y() + NOSE_SIZE, color);
+        graphics.fill(point.x() + NOSE_SIZE, point.y() - NOSE_SIZE, point.x() + NOSE_SIZE + 1, point.y() + NOSE_SIZE, color);
+    }
 
     public static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || !(mc.getCameraEntity() instanceof Player player) || !ThrusterFlight.isActive(player)) {
             return;
         }
+        renderNose(graphics, mc, player, deltaTracker.getGameTimeDeltaPartialTick(true));
         Font font = mc.font;
         int x = graphics.guiWidth() / 2 + 96;
         int y = graphics.guiHeight() - 20;
