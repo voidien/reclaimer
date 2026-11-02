@@ -67,6 +67,10 @@ final class HoloCommand {
                     projector(ctx).setMap();
                     return Command.SINGLE_SUCCESS;
                 }))
+                .then(Commands.literal("network").executes(ctx -> {
+                    projector(ctx).setNetworkMap();
+                    return Command.SINGLE_SUCCESS;
+                }))
                 .then(Commands.literal("clear").executes(ctx -> {
                     projector(ctx).clearLines();
                     return Command.SINGLE_SUCCESS;

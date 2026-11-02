@@ -490,7 +490,7 @@ public final class CCPeripheralGameTests {
             HoloPeripheral lua = new HoloPeripheral();
             HoloProjectorBlockEntity holo = HoloGameTests.place(level, pos);
             requireMethods(helper, Lookup.of(level, pos), "Holo Projector", "getLines", "getLine", "setLine", "setLines", "clear", "setColor",
-                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "setGlobe", "setShip", "setMap", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
+                    "getScale", "setScale", "getHeight", "setHeight", "setBillboard", "setModel", "setBody", "setGlobe", "setShip", "setMap", "setNetworkMap", "getModel", "getMode", "getSource", "setSource", "getSources", "getSize");
             try {
                 Object[] written = lua.setLine(holo, new ObjectArguments(2.0, "two", "red")).getResult();
                 helper.assertTrue(Boolean.TRUE.equals(written[0]), "setLine refused");

@@ -138,6 +138,12 @@ public final class HoloPeripheral implements GenericPeripheral {
         holo.setMap();
     }
 
+    /** Shows a map of this dimension's relays and what the lit ones reach, zoomed out to show them all. */
+    @LuaFunction(mainThread = true)
+    public final void setNetworkMap(HoloProjectorBlockEntity holo) {
+        holo.setNetworkMap();
+    }
+
     /** The model shown, or nil when it is showing something else. */
     @Nullable
     @LuaFunction(mainThread = true)
