@@ -50,7 +50,9 @@ final class BodyStage {
         RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         graphics.enableScissor(left, top, right, bottom);
         BodyRenderer.setExplode(camera.explode());
+        BodyRenderer.setPosed(true);
         InventoryScreen.renderEntityInInventory(graphics, (left + right) / 2f, (top + bottom) / 2f, pixelsPerBlock, shift, pose, turn, player);
+        BodyRenderer.setPosed(false);
         BodyRenderer.setExplode(0f);
         graphics.disableScissor();
         // A big body reaches far towards the viewer: nothing drawn later may end up behind it.

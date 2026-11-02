@@ -110,7 +110,7 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> SHIP_HULL_SEGMENT_MK2 = section("ship_hull_segment_mk2", BuiltinBodies.HULL_SEGMENT, 3,
             s -> s.mass(0.4f).budget(1.2f).health(4f).wear(0.5f).mount(ModuleKind.STORAGE, 1));
     public static final DeferredItem<SectionItem> SHIP_WING = section("ship_wing", BuiltinBodies.WING, 3,
-            s -> s.mass(0.3f).turn(0.1f).mount(ModuleKind.COSMETIC, 1));
+            s -> s.mass(0.3f).turn(0.07f).mount(ModuleKind.COSMETIC, 1));
     public static final DeferredItem<SectionItem> SHIP_ENGINE_NACELLE = section("ship_engine_nacelle", BuiltinBodies.ENGINE_NACELLE, 3,
             s -> s.mass(0.4f).mount(ModuleKind.THRUSTER, 2));
     public static final DeferredItem<SectionItem> SHIP_ENGINE_NACELLE_MK2 = section("ship_engine_nacelle_mk2", BuiltinBodies.ENGINE_NACELLE, 3,
@@ -122,7 +122,7 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> SHIP_SENSOR_MAST = section("ship_sensor_mast", BuiltinBodies.SENSOR_MAST, 3,
             s -> s.mass(0.1f).reach(1f).mount(ModuleKind.SENSOR, 1));
     public static final DeferredItem<SectionItem> SHIP_RCS_CLUSTER = section("ship_rcs_cluster", BuiltinBodies.RCS_CLUSTER, 3,
-            s -> s.mass(0.15f).turn(0.1f));
+            s -> s.mass(0.15f).turn(0.07f));
     public static final DeferredItem<SectionItem> SHIP_DORSAL_SPINE = section("ship_dorsal_spine", BuiltinBodies.DORSAL_SPINE, 3,
             s -> s.mass(0.5f).budget(2f).health(3f).mount(ModuleKind.COSMETIC, 1));
     public static final DeferredItem<SectionItem> SHIP_VENTRAL_FIN = section("ship_ventral_fin", BuiltinBodies.VENTRAL_FIN, 3,
@@ -146,7 +146,7 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> SHUTTLE_STRUT = section("shuttle_strut", BuiltinBodies.SHUTTLE_STRUT, 3,
             s -> s.mass(0.15f).stability(0.05f));
     public static final DeferredItem<SectionItem> SHUTTLE_NACELLE = section("shuttle_nacelle", BuiltinBodies.SHUTTLE_NACELLE, 3,
-            s -> s.mass(0.4f).turn(0.1f).mount(ModuleKind.THRUSTER, 2));
+            s -> s.mass(0.4f).turn(0.2f).mount(ModuleKind.THRUSTER, 2));
 
     // ---- Titan sections (tier 4; the saucer is the core section) -----------------------------------------
 
@@ -164,9 +164,9 @@ public final class ModItems {
     public static final DeferredItem<SectionItem> TITAN_BAY_DOOR = section("titan_bay_door", BuiltinBodies.TITAN_BAY_DOOR, 4,
             s -> s.mass(3f).budget(5f).mount(ModuleKind.STORAGE, 2));
     public static final DeferredItem<SectionItem> TITAN_PYLON = section("titan_pylon", BuiltinBodies.TITAN_PYLON, 4,
-            s -> s.mass(2.5f).health(10f).turn(0.1f));
+            s -> s.mass(2.5f).health(10f).turn(0.0625f));
     public static final DeferredItem<SectionItem> TITAN_NACELLE = section("titan_nacelle", BuiltinBodies.TITAN_NACELLE, 4,
-            s -> s.mass(4f).turn(0.1f).mount(ModuleKind.THRUSTER, 3));
+            s -> s.mass(4f).turn(0.0625f).mount(ModuleKind.THRUSTER, 3));
 
     /** A saved body design: save, rebuild from the inventory, queue what's missing. */
     public static final DeferredItem<com.voidreclaimer.body.part.BlueprintItem> BODY_BLUEPRINT = ITEMS.register("body_blueprint",

@@ -18,9 +18,13 @@ import net.minecraft.world.phys.Vec3;
  * in flight, so a body that isn't flying simply points where it looks. A small body has no state here and always points at its view.
  */
 public final class BodyTurning {
-    /** Where a heavy body points this tick and last. Kept only while it flies, so it isn't saved. */
-    public record State(@Nullable BodyHeading now, @Nullable BodyHeading before, int tick, @Nullable ResourceKey<Level> level, @Nullable Chassis chassis) {
-        public static final State NONE = new State(null, null, 0, null, null);
+    /** Further in a tick than any body flies: it was moved, by a teleport or a link, and starts again at its view. */
+    private static final double JUMP = 16.0;
+
+    /** Where a heavy body points this tick and last, and where it was. Kept only while it flies, so it isn't saved. */
+    public record State(@Nullable BodyHeading now, @Nullable BodyHeading before, int tick, @Nullable ResourceKey<Level> level, @Nullable Chassis chassis,
+                        @Nullable Vec3 at) {
+        public static final State NONE = new State(null, null, 0, null, null, null);
     }
 
     private BodyTurning() {}
@@ -63,14 +67,15 @@ public final class BodyTurning {
         }
         State state = player.getData(ModAttachments.BODY_TURN);
         ResourceKey<Level> level = player.level().dimension();
-        if (!live(player, state) || !level.equals(state.level()) || !body.chassis().equals(state.chassis())) {
-            player.setData(ModAttachments.BODY_TURN, new State(view, view, player.tickCount, level, body.chassis()));
+        Vec3 at = player.position();
+        if (!live(player, state) || !level.equals(state.level()) || !body.chassis().equals(state.chassis()) || state.at().distanceToSqr(at) > JUMP * JUMP) {
+            player.setData(ModAttachments.BODY_TURN, new State(view, view, player.tickCount, level, body.chassis(), at));
             return Vec3.ZERO;
         }
         BodyHeading now = state.now();
         BodyHeading next = now.toward(view.yaw(), view.pitch(), rate);
         BodyHeading.Turn turn = next.equals(now) ? new BodyHeading.Turn(now, Vec3.ZERO) : now.turn(next, heading -> place(player, body, heading), blocksFor(player, body, now, next));
-        player.setData(ModAttachments.BODY_TURN, new State(turn.heading(), now, player.tickCount, level, body.chassis()));
+        player.setData(ModAttachments.BODY_TURN, new State(turn.heading(), now, player.tickCount, level, body.chassis(), at));
         return turn.push();
     }
 

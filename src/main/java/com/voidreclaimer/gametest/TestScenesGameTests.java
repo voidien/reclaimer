@@ -77,6 +77,52 @@ public final class TestScenesGameTests {
         });
     }
 
+    private static double halfTurn(GameTestHelper helper, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> chassis) {
+        var body = com.voidreclaimer.body.Bodies.preview(com.voidreclaimer.body.Bodies.preset(chassis), helper.getLevel().registryAccess());
+        double rate = com.voidreclaimer.body.BodyHeading.degreesPerTick(body.stats(),
+                com.voidreclaimer.body.BodyHeading.TURN_FACTOR, com.voidreclaimer.body.BodyHeading.SLOWEST_TURN, com.voidreclaimer.body.BodyHeading.FASTEST_TURN);
+        return 180.0 / (rate * com.voidreclaimer.flight.FlightStats.TICKS_PER_SECOND);
+    }
+
+    /** The owner's numbers for a half turn, from the bodies as built, so a change to a section or a mass can't drift from them unseen. */
+    @GameTest(template = "empty")
+    public static void theBuiltInBodiesTakeTheOwnersTimeToTurn(GameTestHelper helper) {
+        double shuttle = halfTurn(helper, com.voidreclaimer.body.BuiltinBodies.SHUTTLE);
+        double ship = halfTurn(helper, com.voidreclaimer.body.BuiltinBodies.SHIP);
+        double titan = halfTurn(helper, com.voidreclaimer.body.BuiltinBodies.TITAN);
+        helper.assertTrue(Math.abs(shuttle - 1.5) < 0.1, "Shuttle " + shuttle);
+        helper.assertTrue(Math.abs(ship - 4.0) < 0.1, "Ship " + ship);
+        helper.assertTrue(Math.abs(titan - 12.0) < 0.2, "Titan " + titan);
+        helper.succeed();
+    }
+
+    /** A body moved in one step is pointing at its view, not swinging round from where it was. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aTeleportedBigBodyPointsAtItsView(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(94_600, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            player.setYRot(0f);
+            player.setXRot(0f);
+            com.voidreclaimer.body.BodyTurning.turn(player);
+            player.setYRot(120f);
+            player.setPos(player.position().add(0.0, 0.0, 200.0));
+            player.tickCount++;
+            com.voidreclaimer.body.BodyTurning.turn(player);
+            float yaw = com.voidreclaimer.body.BodyTurning.of(player).yaw();
+            helper.assertTrue(yaw == 120f, "the body still swings from its old heading: " + yaw);
+            player.setYRot(0f);
+            player.setPos(player.position().add(0.0, 0.0, 2.0));
+            player.tickCount++;
+            com.voidreclaimer.body.BodyTurning.turn(player);
+            float flying = com.voidreclaimer.body.BodyTurning.of(player).yaw();
+            helper.assertTrue(flying > 100f, "flying on is not a teleport, yet the heading went to " + flying);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** A Titan's nose stops at a wall its vanilla box is nowhere near; the same flight is free for a Drone, and past a section that has gone. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aBigBodyStopsAtAWallItsVanillaBoxWouldMiss(GameTestHelper helper) {

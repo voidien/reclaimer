@@ -201,7 +201,8 @@ public final class PhotoScript {
     }
 
     private static HandlingReadout.Row row(String name, BodyView view) {
-        return HandlingReadout.row(name, view.stats(), BodyBounds.length(view));
+        return HandlingReadout.row(name, view.stats(), BodyBounds.length(view), com.voidreclaimer.body.BodyHeading.degreesPerTick(view.stats(),
+                com.voidreclaimer.Config.BODY_TURN_FACTOR.get(), com.voidreclaimer.Config.BODY_TURN_SLOWEST.get(), com.voidreclaimer.Config.BODY_TURN_FASTEST.get()));
     }
 
     private static int paint(PhotoDebug.Paint value) {

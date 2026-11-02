@@ -45,9 +45,9 @@ class BodyHeadingTest {
     @Test
     void theBasicBigBodiesTurnAtTheirNumbers() {
         // Masses and turn rates of `body preset`: the sections, a Mk I thruster and storage pod on every mount, and the core they need.
-        assertEquals(64.0 / 20, degreesPerTick(2, 15.0f, 0.4f), 1e-5, "Ship");
-        assertEquals(61.5 / 20, degreesPerTick(2, 7.8f, 0.2f), 1e-2, "Shuttle");
-        assertEquals(24.2 / 20, degreesPerTick(3, 39.7f, 0.4f), 1e-2, "Titan");
+        assertEquals(44.8 / 20, degreesPerTick(2, 15.0f, 0.28f), 1e-5, "Ship");
+        assertEquals(123.1 / 20, degreesPerTick(2, 7.8f, 0.4f), 1e-2, "Shuttle");
+        assertEquals(15.1 / 20, degreesPerTick(3, 39.7f, 0.25f), 1e-2, "Titan");
     }
 
     @Test
