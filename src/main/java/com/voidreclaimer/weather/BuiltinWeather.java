@@ -36,8 +36,11 @@ public final class BuiltinWeather {
 
     private BuiltinWeather() {}
 
-    /** Where the sun is from {@code level}, as a direction. Sable carries a clip through ships' hulls too. */
+    /** Where the sun is from {@code level}, as a direction: where its sky draws it. Sable carries a clip through ships' hulls too. */
     public static Vec3 toSun(Level level) {
+        if (level.dimension() == com.voidreclaimer.space.ModDimensions.DEEP_SPACE) {
+            return com.voidreclaimer.space.DeepSpaceSun.direction();
+        }
         double angle = level.getSunAngle(1f);
         return new Vec3(-Math.sin(angle), Math.cos(angle), 0.0);
     }
