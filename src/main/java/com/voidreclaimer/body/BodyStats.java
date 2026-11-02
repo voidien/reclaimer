@@ -122,7 +122,7 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
                 bySize * speedFactor / FlightStats.TICKS_PER_SECOND);
         return new BodyStats(sizeKey, size.scale(), size.rank(), mass, budget, coreTier, flight,
                 (float) (1.0 + ENERGY_PENALTY * overload), energyCapacity, solarRate, Math.max(MIN_HEALTH, health), reach,
-                intake, Math.min(MAX_ROWS, rows), dustCapacity, stability, turnRate);
+                intake, Math.min(MAX_ROWS, rows), (float) (dustCapacity * size.storageFactor()), stability, turnRate);
     }
 
     /** How far over the budget: 0 within budget, 0.5 at 150% of it. */
