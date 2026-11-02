@@ -22,10 +22,13 @@ import net.minecraft.util.StringRepresentable;
  * @param scale     size of the picture, {@link #MIN_SCALE} to {@link #MAX_SCALE}
  * @param height    blocks from the top of the projector to the picture, 0 to {@link #MAX_HEIGHT}
  * @param billboard whether the picture turns to the viewer
- * @param subject   what {@link Mode#MODEL} shows, a GeckoLib model id, or which globe {@link Mode#GLOBE} shows; unused by the others
+ * @param subject   what {@link Mode#MODEL} shows, a GeckoLib model id, which globe {@link Mode#GLOBE} shows, or {@link #NETWORK} for a
+ *                  {@link Mode#MAP} of relays and not of blocks; unused by the others
  * @param progress  what a globe shows, from the server; see {@link HoloGlobes}
  */
 public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocation source, float scale, float height, boolean billboard, String subject, HoloGlobes.Progress progress) {
+    /** The {@code subject} of a map of the relays. */
+    public static final String NETWORK = "network";
     public static final int MAX_LINES = 8;
     public static final int MAX_CHARS = 48;
     public static final int DEFAULT_COLOR = 0x7FDFFF;
@@ -159,6 +162,16 @@ public record HoloDisplay(List<Line> lines, int color, Mode mode, ResourceLocati
     /** Showing a top-down map of the blocks around the projector from now on. */
     public HoloDisplay withMap() {
         return new HoloDisplay(List.of(), color, Mode.MAP, source, scale, height, billboard, "", progress);
+    }
+
+    /** Showing a map of this level's relays from now on. */
+    public HoloDisplay withNetworkMap() {
+        return new HoloDisplay(List.of(), color, Mode.MAP, source, scale, height, billboard, NETWORK, progress);
+    }
+
+    /** Whether this is a map of the relays. */
+    public boolean showsNetwork() {
+        return mode == Mode.MAP && NETWORK.equals(subject);
     }
 
     /** Showing one of {@link HoloGlobes#NAMES} from now on. */

@@ -542,4 +542,40 @@ public final class HoloGameTests {
             helper.succeed();
         });
     }
+
+    /**
+     * A map of the relays zooms out to them and shows which are lit, wherever they are, and a plain map comes back as blocks. Its own
+     * batch and an empty list: the map fits every row in the level, and rows from other tests would zoom it out past what this reads.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "network_map")
+    public static void theNetworkMapShowsTheRelays(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(118_400, 80, 8);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            level.setBlock(pos, com.voidreclaimer.registry.ModBlocks.HOLO_PROJECTOR.get().defaultBlockState(), 3);
+            var projector = (com.voidreclaimer.display.HoloProjectorBlockEntity) level.getBlockEntity(pos);
+            level.setData(com.voidreclaimer.registry.ModAttachments.RELAYS, com.voidreclaimer.link.RelayList.EMPTY);
+            var lit = new java.util.UUID(118_400L, 1L);
+            var dark = new java.util.UUID(118_400L, 2L);
+            var east = net.minecraft.world.phys.Vec3.atCenterOf(pos).add(4000.0, 0.0, 0.0);
+            var south = net.minecraft.world.phys.Vec3.atCenterOf(pos).add(0.0, 0.0, 4000.0);
+            BlockPos nowhere = new BlockPos(118_400, 80, 900_000);
+            com.voidreclaimer.link.Relays.note(level, new com.voidreclaimer.link.RelayList.Entry(lit, nowhere, east, true, java.util.Optional.empty()));
+            com.voidreclaimer.link.Relays.note(level, new com.voidreclaimer.link.RelayList.Entry(dark, nowhere, south, false, java.util.Optional.empty()));
+            projector.setNetworkMap();
+            int radius = projector.mapRadius();
+            helper.assertTrue(radius >= 4000, "the map did not zoom out to its relays: " + radius);
+            int x = com.voidreclaimer.display.HoloMapImage.pixel(4000.0, radius);
+            int y = com.voidreclaimer.display.HoloMapImage.pixel(4000.0, radius);
+            int middle = com.voidreclaimer.display.HoloMapImage.pixel(0.0, radius);
+            byte[] image = projector.mapImage();
+            helper.assertTrue((image[middle * com.voidreclaimer.display.HoloMapImage.SIZE + x] & 0xFF) == com.voidreclaimer.display.HoloProjectorBlockEntity.NETWORK_COLOURS.lit(), "no lit relay to the east");
+            helper.assertTrue((image[y * com.voidreclaimer.display.HoloMapImage.SIZE + middle] & 0xFF) == com.voidreclaimer.display.HoloProjectorBlockEntity.NETWORK_COLOURS.dark(), "no dark relay to the south");
+            projector.setMap();
+            helper.assertTrue(projector.mapRadius() == com.voidreclaimer.Config.HOLO_MAP_RADIUS.get(), "a plain map stayed zoomed out");
+            level.setData(com.voidreclaimer.registry.ModAttachments.RELAYS, com.voidreclaimer.link.Relays.of(level).without(lit).without(dark));
+            level.removeBlock(pos, false);
+            helper.succeed();
+        });
+    }
 }
