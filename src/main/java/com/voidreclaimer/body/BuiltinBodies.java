@@ -171,12 +171,12 @@ public final class BuiltinBodies {
         shuttle.add(socket("nose", "body", 0, 14.08, 40, "hull", SHUTTLE_NOSE).withBoxes(shuttleBox(0, 1.8, 6.4, 3.6, 2, 2.8)));
         shuttle.add(socket("windshield", "body", 0, 28.8, 35.3, "control", SHUTTLE_WINDSHIELD));
         shuttle.add(socket("dome", "body", 0, 33, 11.2, "sensors", SHUTTLE_DOME).withBoxes(shuttleBox(0, 4.25, 2.4, 2, 0.7, 2)));
-        shuttle.add(socket("ridge", "body", 0, 31, -14.4, "hull", SHUTTLE_RIDGE));
+        shuttle.add(socket("ridge", "body", 0, 31, -14.4, "hull", SHUTTLE_RIDGE).withBoxes(shuttleBox(0, 4.12, -1.8, 1.5, 0.5, 5)));
         shuttle.add(socket("aft", "body", 0, 17.9, -32, "cargo", SHUTTLE_AFT).withBoxes(shuttleBox(0, 2.5, -5, 5, 3.4, 2)));
-        shuttle.add(socket("strut_l", "body", 16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(-3.25, 1.75, -2.65, 2.5, 0.5, 2.5)));
-        shuttle.add(socket("strut_l2", "body", 16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
-        shuttle.add(socket("strut_r", "body", -16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(3.25, 1.75, -2.65, 2.5, 0.5, 2.5)));
-        shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
+        shuttle.add(socket("strut_l", "body", 16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(-3.25, 1.75, -1.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_l2", "body", 16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(-3.25, 1.75, -3.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_r", "body", -16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(3.25, 1.75, -1.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(3.25, 1.75, -3.6, 2.5, 0.5, 1.5)));
         shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE)
                 .withBoxes(shuttleBox(-5, 1.25, -4.7, 1.6, 1.5, 4.6), shuttleBox(-5, 1.25, -0.2, 1.6, 1.5, 4.6)));
         shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE)
@@ -185,8 +185,8 @@ public final class BuiltinBodies {
 
         // The Titan: the saucer is the core. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> titan = new ArrayList<>();
-        titan.add(root("saucer", TITAN_SAUCER, "core").withBoxes(titanBox(0, 13.5, 14, 14, 8, 14), titanBox(0, 13.5, 25, 16, 8, 10),
-                titanBox(0, 13.5, 3, 16, 8, 10), titanBox(-11.5, 13.5, 14, 9, 8, 16), titanBox(11.5, 13.5, 14, 9, 8, 16)));
+        titan.add(root("saucer", TITAN_SAUCER, "core").withBoxes(titanBox(0, 13.5, 14, 16, 8, 32),
+                titanBox(-12, 13.5, 14, 8, 8, 22), titanBox(12, 13.5, 14, 8, 8, 22)));
         // The neck's section is also the drive hull, the rig's root bone.
         titan.add(socket("neck", "saucer", 0, 17.6, -6.4, "hull", TITAN_NECK).withBoxes(titanBox(0, 11, 0.8, 3, 3, 10),
                 titanBox(0, 5.25, -17, 10, 10.5, 10), titanBox(0, 5.25, -7, 10, 10.5, 10), titanBox(0, 5.25, 1, 10, 10.5, 10)));
@@ -194,8 +194,10 @@ public final class BuiltinBodies {
         titan.add(socket("sensor", "saucer", 0, 18.5, 28, "sensors", TITAN_SENSOR_ARRAY));
         titan.add(socket("deflector", "neck", 0, 10, 9.6, "hull", TITAN_DEFLECTOR));
         titan.add(socket("bay_door", "neck", 0, 6, -48, "cargo", TITAN_BAY_DOOR).withBoxes(titanBox(0, 5.5, -23.5, 6, 5, 3)));
-        titan.add(socket("pylon_l", "neck", 6.4, 17.6, -32, "propulsion", TITAN_PYLON).withBoxes(titanBox(-7, 13.7, -16, 2, 13, 4)));
-        titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON).withBoxes(titanBox(7, 13.7, -16, 2, 13, 4)));
+        titan.add(socket("pylon_l", "neck", 6.4, 17.6, -32, "propulsion", TITAN_PYLON)
+                .withBoxes(titanBox(-4.75, 10.9, -16, 4.5, 5.7, 4), titanBox(-9.25, 16.6, -16, 4.5, 5.7, 4)));
+        titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON)
+                .withBoxes(titanBox(4.75, 10.9, -16, 4.5, 5.7, 4), titanBox(9.25, 16.6, -16, 4.5, 5.7, 4)));
         titan.add(socket("nacelle_l", "pylon_l", 22, 38, -34, "propulsion", TITAN_NACELLE).withBoxes(titanBox(-11, 19, -26.5, 5, 5, 10),
                 titanBox(-11, 19, -17, 5, 5, 10), titanBox(-11, 19, -7.5, 5, 5, 10)));
         titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE).withBoxes(titanBox(11, 19, -26.5, 5, 5, 10),

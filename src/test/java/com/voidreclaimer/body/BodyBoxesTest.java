@@ -181,7 +181,7 @@ class BodyBoxesTest {
     @Test
     void theShuttleAndTitanHaveTheirBoxesAndTheOthersNone() {
         assertEquals(19, boxes(BuiltinBodies.TITAN));
-        assertEquals(11, boxes(BuiltinBodies.SHUTTLE));
+        assertEquals(14, boxes(BuiltinBodies.SHUTTLE));
         assertEquals(0, boxes(BuiltinBodies.SHIP), "the Ship waits to be measured");
         assertEquals(0, boxes(BuiltinBodies.DRONE));
         assertEquals(0, boxes(BuiltinBodies.MECH));
@@ -195,7 +195,7 @@ class BodyBoxesTest {
     void aLeftSectionMirrorsItsRight() {
         for (Chassis chassis : List.of(BuiltinBodies.CHASSIS.get(BuiltinBodies.TITAN), BuiltinBodies.CHASSIS.get(BuiltinBodies.SHUTTLE))) {
             for (Socket socket : chassis.sockets()) {
-                if (socket.id().endsWith("_l") && !socket.boxes().isEmpty()) {
+                if (socket.id().contains("_l") && !socket.boxes().isEmpty()) {
                     Socket right = chassis.socket(socket.id().replace("_l", "_r"));
                     assertEquals(socket.boxes().size(), right.boxes().size(), socket.id());
                     for (int i = 0; i < socket.boxes().size(); i++) {

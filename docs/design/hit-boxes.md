@@ -26,22 +26,20 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 
 `at` is right, up, forward from the feet, and `size` is width, height, length. Store them at scale 1, multiplied by the size class scale, like `cockpit`. The tables below are at body scale, so divide by the scale for JSON. Optional, default none, with a row in `extension-points.md`. The model turns about the feet and then rises by `originHeight`, so `at` must include that: the Shuttle's up is 0.5 lower, as noted.
 
-**Titan (19 boxes), scale 8, measured**
+**Titan (19 boxes), scale 8, measured** (right is the pilot's: `_l` sockets are negative. Measured as GeckoLib draws the cubes, turned ones included.)
 
 | Socket | at (right, up, forward) | size |
 |---|---|---|
-| saucer | 0, 13.5, 14 | 14, 8, 14 |
-| saucer | 0, 13.5, 25 | 16, 8, 10 |
-| saucer | 0, 13.5, 3 | 16, 8, 10 |
-| saucer | ±11.5, 13.5, 14 (2) | 9, 8, 16 |
+| saucer | 0, 13.5, 14 | 16, 8, 32 |
+| saucer | ±12, 13.5, 14 (2) | 8, 8, 22 |
 | bridge | 0, 18, 14 | 4, 1.2, 4 |
 | neck | 0, 11, 0.8 | 3, 3, 10 |
 | neck (hull `root`) | 0, 5.25, -17 / -7 / 1 (3) | 10, 10.5, 10 |
 | bay_door | 0, 5.5, -23.5 | 6, 5, 3 |
-| pylon_l, pylon_r | ±7, 13.7, -16 | 2, 13, 4 |
+| pylon_l, pylon_r | ±4.75, 10.9, -16 and ±9.25, 16.6, -16 (4) | 4.5, 5.7, 4 |
 | nacelle_l, nacelle_r | ±11, 19, -26.5 / -17 / -7.5 (6) | 5, 5, 10 |
 
-**Shuttle (11 boxes), scale 2, measured, then 0.5 lower for the pivot**
+**Shuttle (14 boxes), scale 2, measured, then 0.5 lower for the pivot**
 
 | Socket | at | size |
 |---|---|---|
@@ -50,7 +48,9 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 | dome | 0, 4.25, 2.4 | 2, 0.7, 2 |
 | aft | 0, 2.5, -5 | 5, 3.4, 2 |
 | nacelle_l, nacelle_r | ±5, 1.25, -4.7 and -0.2 (4) | 1.6, 1.5, 4.6 |
-| strut_l, strut_r | ±3.25, 1.75, -2.65 | 2.5, 0.5, 2.5 |
+| strut_l, strut_r | ±3.25, 1.75, -1.6 | 2.5, 0.5, 1.5 |
+| strut_l2, strut_r2 | ±3.25, 1.75, -3.6 | 2.5, 0.5, 1.5 |
+| ridge | 0, 4.12, -1.8 | 1.5, 0.5, 5 |
 
 **Ship (15 boxes), scale 3, provisional.** Adding the rig pivots, as `moveToPivot` draws them, gives 21.4 long and 17.6 wide, while `/vrphoto handling` reads 15.4 and the cubes alone give 16.3. Measure it through `BodyBounds` first.
 
