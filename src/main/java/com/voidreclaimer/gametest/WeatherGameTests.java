@@ -179,6 +179,42 @@ public final class WeatherGameTests {
         });
     }
 
+    /** High over Earth rocks come at a body, and lower down they don't. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theDebrisBeltThrowsRocksOnlyHighOverEarth(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        BlockPos spot = new BlockPos(60_000, 250, 60_000);
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dz = -5; dz <= 5; dz++) {
+                earth.setChunkForced((spot.getX() >> 4) + dx, (spot.getZ() >> 4) + dz, true);
+            }
+        }
+        helper.runAfterDelay(5, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 106_600.5, 300, 0.5);
+            player.teleportTo(earth, spot.getX() + 0.5, 100, spot.getZ() + 0.5, 0f, 0f);
+            var around = player.getBoundingBox().inflate(80.0, 400.0, 80.0);
+            for (int second = 0; second < 40; second++) {
+                com.voidreclaimer.earth.DebrisBelt.second(player);
+            }
+            int low = earth.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, around).size();
+            helper.assertTrue(low == 0, low + " rocks below the belt");
+            player.teleportTo(earth, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 0f, 0f);
+            for (int second = 0; second < 40; second++) {
+                com.voidreclaimer.earth.DebrisBelt.second(player);
+            }
+            var rocks = earth.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, player.getBoundingBox().inflate(80.0));
+            helper.assertTrue(!rocks.isEmpty(), "no rocks in the belt");
+            rocks.forEach(net.minecraft.world.entity.Entity::discard);
+            for (int dx = -5; dx <= 5; dx++) {
+                for (int dz = -5; dz <= 5; dz++) {
+                    earth.setChunkForced((spot.getX() >> 4) + dx, (spot.getZ() >> 4) + dz, false);
+                }
+            }
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** A listener can spare a body, as a shielding part will. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_spare")
     public static void anAddonCanSpareABody(GameTestHelper helper) {

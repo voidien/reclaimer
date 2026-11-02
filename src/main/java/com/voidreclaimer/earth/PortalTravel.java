@@ -1,5 +1,6 @@
 package com.voidreclaimer.earth;
 
+import com.voidreclaimer.Config;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModBlocks;
 import com.voidreclaimer.space.ModDimensions;
@@ -65,7 +66,18 @@ public final class PortalTravel {
         int height = Math.min(PortalShape.MAX_SIZE, Math.max(MIN_GATE_HEIGHT, origin.map(PortalShape.Rect::height).orElse(0)));
         PortalShape.Rect gate = ensureGate(earth, width, height);
         Vec3 position = standingBefore(gate.centerBottom(), Direction.SOUTH, entity);
-        return new DimensionTransition(earth, position, Vec3.ZERO, Direction.SOUTH.toYRot(), 0f, DimensionTransition.PLAY_PORTAL_SOUND);
+        if (!(entity instanceof net.minecraft.world.entity.player.Player)) {
+            return new DimensionTransition(earth, position, Vec3.ZERO, Direction.SOUTH.toYRot(), 0f, DimensionTransition.PLAY_PORTAL_SOUND);
+        }
+        // A body comes out over the gate, above the debris belt, and has to fly down through it. Keep the power on, or the fall hurts.
+        Vec3 high = new Vec3(position.x, Math.max(position.y, Config.EARTH_ARRIVAL_HEIGHT.get()), position.z);
+        return new DimensionTransition(earth, high, Vec3.ZERO, Direction.SOUTH.toYRot(), 0f, DimensionTransition.PLAY_PORTAL_SOUND.then(PortalTravel::warnOfTheDescent));
+    }
+
+    private static void warnOfTheDescent(Entity entity) {
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.void_reclaimer.portal.descent"), false);
+        }
     }
 
     private static DimensionTransition backOut(MinecraftServer server, ServerLevel earth, Entity entity) {
