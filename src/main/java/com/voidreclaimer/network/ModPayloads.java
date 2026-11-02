@@ -31,5 +31,6 @@ public final class ModPayloads {
         registrar.playToClient(SensorEchoPayload.TYPE, SensorEchoPayload.STREAM_CODEC, SensorEchoPayload::handle);
         registrar.playToClient(HelmReadoutPayload.TYPE, HelmReadoutPayload.STREAM_CODEC, HelmReadoutPayload::handle);
         registrar.playToClient(ShellListPayload.TYPE, ShellListPayload.STREAM_CODEC, ShellListPayload::handle);
+        registrar.playToClient(DeathShellsPayload.TYPE, DeathShellsPayload.STREAM_CODEC, DeathShellsPayload::handle);
     }
 }
