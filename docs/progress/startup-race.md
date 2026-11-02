@@ -1,0 +1,3 @@
+## Fix: the start-up race in dev runs
+- CI on #286 failed with `Found unused register callbacks`: a start-up race in Registrate that the retry loop used to hide, until #267 removed it. Mods are constructed in parallel, and an addon's callback that arrives between two steps of Create registering the same entry is orphaned. Dev runs throw on that; production only logs it. `runData` and `runClient` now start with one thread (`oneStartThread` in `build.gradle`), so nothing races.
+- **Known issue:** on a player's game the orphaned callback is dropped silently, so an addon's hook on one Create entry could rarely go missing. We can't set that for players without changing load order for every mod.

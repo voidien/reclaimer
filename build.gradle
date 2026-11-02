@@ -263,6 +263,19 @@ tasks.register('fastTest', Test) {
             '**/RecipeDescriptionTest.class', '**/ReplicatorLogicTest.class', '**/RecipeInputsTest.class'
 }
 
+// Mods are constructed in parallel, and Registrate has a race: an addon's callback that arrives between two steps of Create registering
+// the same entry is orphaned. In a dev run that throws "Found unused register callbacks" and the start dies. In
+// production it only logs, so players never see this. One thread leaves nothing to race. CI starts with no run folder, so this writes it.
+tasks.register('oneStartThread') {
+    def config = file('run/config/fml.toml')
+    doLast {
+        config.parentFile.mkdirs()
+        def text = config.exists() ? config.text : ''
+        config.text = text =~ /(?m)^maxThreads = / ? text.replaceAll(/(?m)^maxThreads = .*$/, 'maxThreads = 1') : text + 'maxThreads = 1\n'
+    }
+}
+tasks.matching { it.name in ['runData', 'runClient'] }.configureEach { dependsOn 'oneStartThread' }
+
 // Expands ${...} properties in src/main/templates (neoforge.mods.toml).
 var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     var replaceProperties = [
