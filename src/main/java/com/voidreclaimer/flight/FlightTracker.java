@@ -1,5 +1,7 @@
 package com.voidreclaimer.flight;
 
+import com.voidreclaimer.api.body.Chassis;
+import com.voidreclaimer.body.BodyHeading;
 import java.util.ArrayDeque;
 import net.minecraft.world.phys.Vec3;
 
@@ -7,6 +9,12 @@ import net.minecraft.world.phys.Vec3;
 public final class FlightTracker {
     private final ArrayDeque<Vec3> positions = new ArrayDeque<>();
     private double lastSpeed;
+    /** Where the body's boxes were last clear of everything, and what body that was: a different one proves nothing about this place. */
+    private Vec3 clearAt;
+    private Chassis clearChassis;
+    private int deepTicks;
+    /** The view at the last tick a big body was pointing along it. */
+    private BodyHeading settled;
 
     /** Records this tick's position, dropping the oldest beyond {@code window} entries. */
     public void record(Vec3 position, int window) {
@@ -38,8 +46,39 @@ public final class FlightTracker {
         lastSpeed = speed;
     }
 
+    void settle(BodyHeading view) {
+        settled = view;
+    }
+
+    /** Where the body pointed before it started lagging its view, or {@code otherwise} if it hasn't been flying. */
+    public BodyHeading settled(BodyHeading otherwise) {
+        return settled == null ? otherwise : settled;
+    }
+
+    /** The body's boxes are clear of everything here. */
+    void clearOfBlocks(Vec3 position, Chassis chassis) {
+        clearAt = position;
+        clearChassis = chassis;
+        deepTicks = 0;
+    }
+
+    /** Counts {@code ticks} more of a body deep in something. Returns how long that has lasted, in ticks. */
+    int deepFor(int ticks) {
+        deepTicks += ticks;
+        return deepTicks;
+    }
+
+    /** Where the body was last clear, or null if this {@code chassis} hasn't been: nothing says a body fitted in a tunnel got in by cheating. */
+    Vec3 lastClear(Chassis chassis) {
+        return chassis.equals(clearChassis) ? clearAt : null;
+    }
+
     public void clear() {
         positions.clear();
         lastSpeed = 0.0;
+        clearAt = null;
+        clearChassis = null;
+        deepTicks = 0;
+        settled = null;
     }
 }

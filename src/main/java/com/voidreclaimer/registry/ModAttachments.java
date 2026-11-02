@@ -42,6 +42,12 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<com.voidreclaimer.body.BodyTurning.State>> BODY_TURN = ATTACHMENT_TYPES.register("body_turn",
             () -> AttachmentType.builder(() -> com.voidreclaimer.body.BodyTurning.State.NONE).build());
 
+    /** Where the server last heard a big body points, while it lags its view. Not saved. Synced to everyone but its own client, which flies it. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.body.BodyTurning.Heard>> BODY_HEARD = ATTACHMENT_TYPES.register("body_heard",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.body.BodyTurning.Heard.NONE)
+                    .sync((holder, to) -> holder != to, com.voidreclaimer.body.BodyTurning.Heard.STREAM_CODEC)
+                    .build());
+
     /** Per-player flight toggles. Persisted, kept on death, synced to the owning player. */
     public static final Supplier<AttachmentType<FlightSettings>> FLIGHT_SETTINGS = ATTACHMENT_TYPES.register("flight_settings",
             () -> AttachmentType.builder(() -> FlightSettings.DEFAULT)
@@ -102,6 +108,12 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<com.voidreclaimer.station.StationList>> STATIONS = ATTACHMENT_TYPES.register("stations",
             () -> AttachmentType.builder(() -> com.voidreclaimer.station.StationList.EMPTY)
                     .sync(com.voidreclaimer.station.StationList.STREAM_CODEC)
+                    .build());
+
+    /** A level's relays, saved with it so that an unloaded relay still counts. The server's alone. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.link.RelayList>> RELAYS = ATTACHMENT_TYPES.register("relays",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.link.RelayList.EMPTY)
+                    .serialize(com.voidreclaimer.link.RelayList.CODEC)
                     .build());
 
     /** Any level: its Atmospheric Portal panes, kept by the pane block, so ships can be tested against portals. Saved, not synced. */

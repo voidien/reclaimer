@@ -190,6 +190,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> HOLO_PROJECTOR = ITEMS.registerSimpleBlockItem(ModBlocks.HOLO_PROJECTOR);
     public static final DeferredItem<BlockItem> DOCKING_CLAMP = ITEMS.registerSimpleBlockItem(ModBlocks.DOCKING_CLAMP);
     public static final DeferredItem<BlockItem> UPLINK_SEAT = ITEMS.registerSimpleBlockItem(ModBlocks.UPLINK_SEAT);
+    public static final DeferredItem<BlockItem> RELAY = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY);
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> DRONE_SHELL = remoteShell("drone_shell", com.voidreclaimer.body.BuiltinBodies.DRONE);
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> MECH_SHELL = remoteShell("mech_shell", com.voidreclaimer.body.BuiltinBodies.MECH);
     public static final DeferredItem<com.voidreclaimer.link.RemoteShellItem> SHIP_SHELL = remoteShell("ship_shell", com.voidreclaimer.body.BuiltinBodies.SHIP);

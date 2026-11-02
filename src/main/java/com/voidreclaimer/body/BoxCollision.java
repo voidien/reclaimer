@@ -79,6 +79,13 @@ public final class BoxCollision {
         return moved;
     }
 
+    /** How deep {@code player}'s boxes are in the world's blocks where the server thinks it is. A body with no boxes is never in anything here. */
+    public static double overlap(Player player) {
+        BodyView view = Bodies.view(player);
+        List<BodyBoxes.Box> body = BodyTurning.place(player, view, BodyTurning.of(player));
+        return body.isEmpty() ? 0.0 : BodyBoxes.deepest(body, worldBlocksNear(player.level(), reaches(body, Vec3.ZERO, 0.0)));
+    }
+
     /** All a body can hit this tick: blocks, ships and other bodies. */
     static List<BodyBoxes.Box> solidsNear(Player player, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
         List<BodyBoxes.Box> solids = blocksNear(player.level(), body, velocity, margin);
@@ -100,15 +107,34 @@ public final class BoxCollision {
         }
         AABB near = all;
         for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, near.inflate(longestReach(player.level().registryAccess())),
-                entity -> entity != player && entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost))) {
-            BodyView view = Bodies.view(other);
-            BodyData data = view.data();
-            List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), other.position(), other.getYRot(), other.getXRot(), view.stats().scale());
+                entity -> entity != player && isBody(entity))) {
+            List<BodyBoxes.Box> boxes = boxes(other);
             if (boxes.isEmpty() && small && other.getBoundingBox().intersects(near)) {
                 solids.add(BodyBoxes.Box.of(other.getBoundingBox()));
             }
             boxes.stream().filter(box -> box.bounds().intersects(near)).forEach(solids::add);
         }
+    }
+
+    /** Every box of the big bodies near {@code at}, as plain bounds: what something small should keep out of. */
+    public static List<AABB> bigBodiesNear(Level level, AABB at) {
+        List<AABB> boxes = new ArrayList<>();
+        for (LivingEntity body : level.getEntitiesOfClass(LivingEntity.class, at.inflate(longestReach(level.registryAccess())), BoxCollision::isBody)) {
+            boxes(body).stream().map(BodyBoxes.Box::bounds).filter(at::intersects).forEach(boxes::add);
+        }
+        return boxes;
+    }
+
+    private static boolean isBody(LivingEntity entity) {
+        return entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost);
+    }
+
+    /** The boxes of {@code body} where it stands and points; none for a body with no boxes. */
+    private static List<BodyBoxes.Box> boxes(LivingEntity body) {
+        BodyView view = Bodies.view(body);
+        BodyData data = view.data();
+        BodyHeading heading = BodyTurning.of(body);
+        return BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), body.position(), heading.yaw(), heading.pitch(), view.stats().scale());
     }
 
     /** How far any body reaches from its feet, at its own scale, for the bodies this world has. */
@@ -128,15 +154,22 @@ public final class BoxCollision {
         return body.stream().map(box -> around(box).expandTowards(velocity).inflate(margin)).toList();
     }
 
-    /** Every solid block any box could reach this tick, in the world and on any ship near it. */
-    static List<BodyBoxes.Box> blocksNear(Level level, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
+    private static List<BodyBoxes.Box> worldBlocksNear(Level level, List<AABB> reaches) {
         List<BodyBoxes.Box> blocks = new ArrayList<>();
         LongSet seen = new LongOpenHashSet();
+        for (AABB reach : reaches) {
+            scan(level, reach, seen, (pos, part) -> blocks.add(BodyBoxes.Box.of(part.move(pos))));
+        }
+        return blocks;
+    }
+
+    /** Every solid block any box could reach this tick, in the world and on any ship near it. */
+    static List<BodyBoxes.Box> blocksNear(Level level, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
         List<AABB> reaches = reaches(body, velocity, margin);
+        List<BodyBoxes.Box> blocks = worldBlocksNear(level, reaches);
         AABB all = null;
         for (AABB reach : reaches) {
             all = all == null ? reach : all.minmax(reach);
-            scan(level, reach, seen, (pos, part) -> blocks.add(BodyBoxes.Box.of(part.move(pos))));
         }
         if (all != null) {
             ships(level, all, body, reaches, velocity, margin, blocks);

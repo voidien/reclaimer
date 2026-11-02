@@ -86,6 +86,12 @@ public final class ModBlocks {
             com.voidreclaimer.link.UplinkSeatBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 8.0f).sound(SoundType.COPPER).noOcclusion());
 
+    /** Passes an Uplink Seat's signal on, on Forge Energy. */
+    public static final DeferredBlock<com.voidreclaimer.link.RelayBlock> RELAY = BLOCKS.registerBlock("relay",
+            com.voidreclaimer.link.RelayBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3.0f, 8.0f).sound(SoundType.COPPER)
+                    .lightLevel(state -> state.getValue(com.voidreclaimer.link.RelayBlock.LIT) ? 7 : 0));
+
     /** Shows text from programs or a built-in readout in the air above itself. */
     public static final DeferredBlock<com.voidreclaimer.display.HoloProjectorBlock> HOLO_PROJECTOR = BLOCKS.registerBlock("holo_projector",
             com.voidreclaimer.display.HoloProjectorBlock::new,

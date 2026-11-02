@@ -25,6 +25,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class ClientFlightController {
+    /** Closer to the view than this is pointing at it, in degrees. */
+    private static final float HEADING_SAME = 0.05f;
+    private static final int HEADING_AGAIN_TICKS = 20;
+    /** The last heading the server was told, or null if it thinks the body points at its view. */
+    private static com.voidreclaimer.body.BodyHeading sentHeading;
+
     private ClientFlightController() {}
 
     @SubscribeEvent
@@ -60,12 +66,25 @@ public final class ClientFlightController {
         player.setSprinting(false);
     }
 
+    /** Tells the server where a big body points while that isn't its view, once for each change and once more when it catches up. */
+    private static void reportHeading(LocalPlayer player) {
+        com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.of(player);
+        boolean lagging = Math.abs(net.minecraft.util.Mth.wrapDegrees(heading.yaw() - player.getYRot())) > HEADING_SAME
+                || Math.abs(heading.pitch() - player.getXRot()) > HEADING_SAME;
+        // Once a second regardless: the server may have held a word back, and a body stuck against a wall has no change to report.
+        if (lagging ? !heading.equals(sentHeading) || player.tickCount % HEADING_AGAIN_TICKS == 0 : sentHeading != null) {
+            PacketDistributor.sendToServer(new com.voidreclaimer.network.BodyHeadingPayload(lagging, heading.yaw(), heading.pitch()));
+            sentHeading = lagging ? heading : null;
+        }
+    }
+
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
+        reportHeading(mc.player);
         // Vanilla's "Move with WASD" tutorial waits for walking input, which thruster flight replaces, so it would
         // never finish. Its later steps (punch a tree, craft planks) don't fit the mod either: end it.
         if (mc.options.tutorialStep != TutorialSteps.NONE && ThrusterFlight.isActive(mc.player)) {

@@ -37,6 +37,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -63,6 +64,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * hand takes it back as an item with its links; a hit breaks it into that item as well. Right-click reports what it is doing.
  */
 public class HelperDrone extends Entity implements GeoEntity {
+    private static final int BIG_BODY_LOOK_TICKS = 10;
+    /** Further than a drone flies between looks, and as far as a search goes. */
+    private static final double BIG_BODY_LOOK_BLOCKS = 32.0;
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> MINE_PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> COLLECT_PHASE = SynchedEntityData.defineId(HelperDrone.class, EntityDataSerializers.BYTE);
@@ -89,6 +93,8 @@ public class HelperDrone extends Entity implements GeoEntity {
     private final HelperSteering.Route route = new HelperSteering.Route();
     private final BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
     private final HelperSteering.Cells cells = this::canFlyThrough;
+    /** The boxes of the big bodies near this drone, kept clear of like blocks. */
+    private List<AABB> bigBodies = List.of();
 
     public HelperDrone(EntityType<? extends HelperDrone> type, Level level) {
         super(type, level);
@@ -222,7 +228,23 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (level.isOutsideBuildHeight(y) || !level.isLoaded(probe)) {
             return false;
         }
-        return level.getBlockState(probe).getCollisionShape(level, probe).isEmpty();
+        return level.getBlockState(probe).getCollisionShape(level, probe).isEmpty() && outsideBigBodies(x, y, z);
+    }
+
+    private boolean outsideBigBodies(int x, int y, int z) {
+        for (AABB box : bigBodies) {
+            if (box.intersects(x, y, z, x + 1.0, y + 1.0, z + 1.0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Where the big bodies are is looked up now and then, as a body in flight moves little in that time and most of the time there is none. */
+    private void lookForBigBodies() {
+        if (tickCount % BIG_BODY_LOOK_TICKS == 0) {
+            bigBodies = com.voidreclaimer.body.BoxCollision.bigBodiesNear(level(), getBoundingBox().inflate(BIG_BODY_LOOK_BLOCKS));
+        }
     }
 
     @Override
@@ -231,6 +253,7 @@ public class HelperDrone extends Entity implements GeoEntity {
         if (!(level() instanceof ServerLevel server)) {
             return;
         }
+        lookForBigBodies();
         if (links.collecting()) {
             tickCollecting(server);
         } else if (links.mining()) {
