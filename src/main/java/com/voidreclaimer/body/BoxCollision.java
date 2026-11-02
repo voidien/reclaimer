@@ -107,16 +107,34 @@ public final class BoxCollision {
         }
         AABB near = all;
         for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, near.inflate(longestReach(player.level().registryAccess())),
-                entity -> entity != player && entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost))) {
-            BodyView view = Bodies.view(other);
-            BodyData data = view.data();
-            BodyHeading heading = BodyTurning.of(other);
-            List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), other.position(), heading.yaw(), heading.pitch(), view.stats().scale());
+                entity -> entity != player && isBody(entity))) {
+            List<BodyBoxes.Box> boxes = boxes(other);
             if (boxes.isEmpty() && small && other.getBoundingBox().intersects(near)) {
                 solids.add(BodyBoxes.Box.of(other.getBoundingBox()));
             }
             boxes.stream().filter(box -> box.bounds().intersects(near)).forEach(solids::add);
         }
+    }
+
+    /** Every box of the big bodies near {@code at}, as plain bounds: what something small should keep out of. */
+    public static List<AABB> bigBodiesNear(Level level, AABB at) {
+        List<AABB> boxes = new ArrayList<>();
+        for (LivingEntity body : level.getEntitiesOfClass(LivingEntity.class, at.inflate(longestReach(level.registryAccess())), BoxCollision::isBody)) {
+            boxes(body).stream().map(BodyBoxes.Box::bounds).filter(at::intersects).forEach(boxes::add);
+        }
+        return boxes;
+    }
+
+    private static boolean isBody(LivingEntity entity) {
+        return entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost);
+    }
+
+    /** The boxes of {@code body} where it stands and points; none for a body with no boxes. */
+    private static List<BodyBoxes.Box> boxes(LivingEntity body) {
+        BodyView view = Bodies.view(body);
+        BodyData data = view.data();
+        BodyHeading heading = BodyTurning.of(body);
+        return BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), body.position(), heading.yaw(), heading.pitch(), view.stats().scale());
     }
 
     /** How far any body reaches from its feet, at its own scale, for the bodies this world has. */

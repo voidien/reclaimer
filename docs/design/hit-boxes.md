@@ -85,6 +85,8 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 7. **Turn test, push and stop (done, `BodyBoxes.turnPush`, `BodyHeading.turn`):** called in `travel`.
 8. **Server checks:** the heading is heard (done, `BodyHeadingPayload`, `BodyTurning.heard`, `ModAttachments.BODY_HEARD`, synced to everyone but the flying client, so others draw it and stop at it). The overlap check runs every 10 ticks (`ServerFlightHandler.checkOverlap`): a body 0.5 blocks or more into something for 2 seconds goes back to where it was last clear, and a body that has never been clear here, such as one fitted in a tunnel, is left alone. The speed check allows for a turn's pushes.
 
+9. **Helper drones (done, `BoxCollision.bigBodiesNear`):** a drone looks for big bodies every 10 ticks and treats their boxes as blocks, so a parked Titan is flown round like a wall. A body flying into a drone doesn't stop for it, and the drone leaves straight towards its target as it does from inside a block.
+
 ## For later
 - **If collision costs too much:** merge the Ship's tiny boxes first. 10 of its 29 are hardpoints and cargo bays, at the cost of a removed part keeping its box. Measure with real timings before doing this.
 - **Titan separation:** boxes follow sockets, so they split cleanly, except the hull's three, which live on `neck` because the rig's `root` does. The drive half needs those to go with it.

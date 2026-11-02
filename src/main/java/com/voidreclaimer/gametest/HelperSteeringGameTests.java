@@ -31,6 +31,31 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class HelperSteeringGameTests {
     private HelperSteeringGameTests() {}
 
+    /** A Titan shell's saucer is as solid as a wall to a drone, far from where the shell stands, and the cell beyond it is free. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDroneKeepsOutOfABigBody(GameTestHelper helper) {
+        net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(97_200, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            net.minecraft.server.level.ServerLevel space = TestPlayers.deepSpace(helper);
+            var owner = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            var drone = HelperDrone.spawn(space, net.minecraft.world.phys.Vec3.atCenterOf(origin.offset(0, 13, 24)), HelperLinks.EMPTY, owner.getUUID());
+            int x = origin.getX(), y = origin.getY() + 13, z = origin.getZ() + 25;
+            helper.assertTrue(drone.canFlyThrough(x, y, z), "the empty cell is not free");
+            var shell = com.voidreclaimer.link.BodyHost.spawn(space, origin.getBottomCenter(), com.voidreclaimer.link.HostRole.SHELL,
+                    com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN), owner.getUUID());
+            shell.setYRot(0f);
+            shell.setXRot(0f);
+            helper.runAfterDelay(12, () -> {
+                helper.assertFalse(drone.canFlyThrough(x, y, z), "a drone would fly into the saucer");
+                helper.assertTrue(drone.canFlyThrough(x, y + 20, z), "a cell far above the saucer counts as the body");
+                shell.discard();
+                drone.discard();
+                TestPlayers.remove(owner);
+                helper.succeed();
+            });
+        });
+    }
+
     private static final int Y = 80, Z = 4_008;
 
     private static Container chest(ServerLevel level, BlockPos pos) {
