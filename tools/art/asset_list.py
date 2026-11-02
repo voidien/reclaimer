@@ -65,6 +65,9 @@ item(G, 'thruster_mk1', 'small copper rocket thruster nozzle with an andesite mo
 item(G, 'thruster_mk2', 'larger brass rocket thruster with a flared nozzle and a faint blue exhaust glow')
 item(G, 'storage_mk1', 'small andesite storage pod with a hatch and brass latches')
 item(G, 'storage_mk2', 'larger brass storage pod with two hatches and copper bands')
+item(G, 'dust_compressor_mk1', 'squat andesite pressure canister with one brass band, dust compressed inside')
+item(G, 'dust_compressor_mk2', 'heavier steel pressure canister with two bright bands and a small gauge')
+item(G, 'dust_compressor_mk3', 'dense dark pressure canister with three glowing cyan bands')
 item(G, 'brass_trim', 'decorative curved brass trim plate with rivets (cosmetic part)')
 item(G, 'cogwheel_crown', 'ring of small brass cogwheels forming a crown (cosmetic part)')
 

@@ -32,6 +32,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class SpaceWeatherTicker {
     private static final int EVERY_TICKS = 20;
     private static final int SECONDS_A_HOUR = 3600;
+    private static final java.util.Set<ResourceLocation> MISSING = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private SpaceWeatherTicker() {}
 
@@ -56,9 +57,13 @@ public final class SpaceWeatherTicker {
 
     @SubscribeEvent
     static void onServerTick(ServerTickEvent.Post event) {
-        if (event.getServer().getTickCount() % EVERY_TICKS == 0 && Config.WEATHER_ENABLED.get()) {
+        if (event.getServer().getTickCount() % EVERY_TICKS == 0) {
             for (ServerLevel level : event.getServer().getAllLevels()) {
-                if (!level.players().isEmpty()) {
+                if (!Config.WEATHER_ENABLED.get()) {
+                    if (of(level).weather().isPresent()) {
+                        stop(level);
+                    }
+                } else if (!level.players().isEmpty()) {
                     second(level);
                 }
             }
@@ -129,8 +134,33 @@ public final class SpaceWeatherTicker {
                 WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
                 if (type != null) {
                     type.second(player, effect.strength() * strength * event.getShare());
+        if (exposure == null) {
+            missing(weather.exposure());
+            return;
+        }
+        for (ServerPlayer player : List.copyOf(level.players())) {
+            if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
+                continue;
+            }
+            float share = exposure.exposure(player);
+            SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(level, id, weather, player, share);
+            if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
+                for (SpaceWeather.Effect effect : weather.effects()) {
+                    WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
+                    if (type == null) {
+                        missing(effect.type());
+                    } else if (player.isAlive()) {
+                        type.second(player, effect.strength() * state.strength() * event.getShare());
+                    }
                 }
             }
+        }
+    }
+
+    /** A file names something that isn't there, most likely a typo. Once, or a storm would fill the log. */
+    private static void missing(ResourceLocation id) {
+        if (MISSING.add(id)) {
+            VoidReclaimer.LOGGER.warn("Space weather names {}, which does not exist, so that part of it does nothing", id);
         }
     }
 
@@ -162,14 +192,21 @@ public final class SpaceWeatherTicker {
         return (int) ((low + random.nextDouble() * (high - low)) * SECONDS_A_HOUR);
     }
 
-    /** Starts {@code id} now, warning and all, for a command. */
+    /** Starts {@code id} now, warning and all, for a command, ending what was here. False if there is no such kind, or a listener said no. */
     public static boolean start(ServerLevel level, ResourceLocation id) {
         Optional<SpaceWeather> weather = registry(level).getOptional(id);
         if (weather.isEmpty()) {
             return false;
         }
-        level.setData(ModAttachments.WEATHER, WeatherClock.start(candidate(id, weather.get()), level.getRandom()::nextInt));
-        NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Warning(level, id, weather.get()));
+        stop(level);
+        if (NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Warning(level, id, weather.get())).isCanceled()) {
+            return false;
+        }
+        WeatherState state = WeatherClock.start(candidate(id, weather.get()), level.getRandom()::nextInt);
+        level.setData(ModAttachments.WEATHER, state);
+        if (state.active()) {
+            NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Started(level, id, weather.get()));
+        }
         return true;
     }
 

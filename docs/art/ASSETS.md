@@ -90,7 +90,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 ## The list
 
-### Tools & modules (16)
+### Tools & modules (19)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
@@ -108,6 +108,9 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | thruster_mk2 | `item/thruster_mk2.png` | 16x16 | no | art drop 1 (redo optional) | larger brass rocket thruster with a flared nozzle and a faint blue exhaust glow |  |
 | storage_mk1 | `item/storage_mk1.png` | 16x16 | no | art drop 1 (redo optional) | small andesite storage pod with a hatch and brass latches |  |
 | storage_mk2 | `item/storage_mk2.png` | 16x16 | no | art drop 1 (redo optional) | larger brass storage pod with two hatches and copper bands |  |
+| dust_compressor_mk1 | `item/dust_compressor_mk1.png` | 16x16 | no | placeholder | squat andesite pressure canister with one brass band, dust compressed inside |  |
+| dust_compressor_mk2 | `item/dust_compressor_mk2.png` | 16x16 | no | placeholder | heavier steel pressure canister with two bright bands and a small gauge |  |
+| dust_compressor_mk3 | `item/dust_compressor_mk3.png` | 16x16 | no | placeholder | dense dark pressure canister with three glowing cyan bands |  |
 | brass_trim | `item/brass_trim.png` | 16x16 | no | art drop 1 (redo optional) | decorative curved brass trim plate with rivets (cosmetic part) |  |
 | cogwheel_crown | `item/cogwheel_crown.png` | 16x16 | no | art drop 1 (redo optional) | ring of small brass cogwheels forming a crown (cosmetic part) |  |
 
