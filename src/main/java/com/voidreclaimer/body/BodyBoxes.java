@@ -231,6 +231,24 @@ public final class BodyBoxes {
         return slides == 0 ? new Moved(velocity, velocity) : new Moved(new Vec3(moved.x, moved.y, moved.z), new Vec3(kept.x, kept.y, kept.z));
     }
 
+    /** How deep the deepest of {@code body}'s boxes is in any of {@code blocks}: 0 if none touches. */
+    public static double deepest(List<Box> body, List<Box> blocks) {
+        double deepest = 0.0;
+        Vector3d out = new Vector3d();
+        Axes axes = null;
+        List<AABB> bounds = blocks.stream().map(Box::bounds).toList();
+        for (Box box : body) {
+            AABB around = box.bounds();
+            for (int i = 0; i < blocks.size(); i++) {
+                if (around.intersects(bounds.get(i))) {
+                    axes = Axes.between(box, blocks.get(i), axes);
+                    deepest = Math.max(deepest, depth(box, NOT_MOVED, blocks.get(i), axes, out));
+                }
+            }
+        }
+        return deepest;
+    }
+
     /**
      * Each box of {@code to} with the blocks within {@code reach} of it, and how deep the same box of {@code from} is: {@code from} is
      * where the tick starts, and a move and a turn can both go no deeper than that.

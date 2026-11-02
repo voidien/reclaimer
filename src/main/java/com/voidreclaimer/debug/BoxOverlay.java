@@ -40,8 +40,8 @@ public final class BoxOverlay {
         BodyView view = Bodies.view(entity);
         BodyData data = view.data();
         double scale = view.stats().scale();
-        // The heading lives on the client that flies the body, so these show where it looks; the server hears the heading in step 8.
-        List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), entity.position(), entity.getYRot(), entity.getXRot(), scale);
+        com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.of(entity);
+        List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), entity.position(), heading.yaw(), heading.pitch(), scale);
         if (boxes.isEmpty()) {
             return;
         }
@@ -51,7 +51,7 @@ public final class BoxOverlay {
             touching += inBlock ? 1 : 0;
             shapes.box(BodyBoxes.corners(box), inBlock ? TOUCHING : FREE);
         }
-        Vector3d forward = BodyBoxes.turn(entity.getYRot(), entity.getXRot()).transform(new Vector3d(0, 0, -HEADING_LENGTH * scale));
+        Vector3d forward = BodyBoxes.turn(heading.yaw(), heading.pitch()).transform(new Vector3d(0, 0, -HEADING_LENGTH * scale));
         shapes.arrow(entity.position(), new Vec3(forward.x, forward.y, forward.z), HEADING);
         facts.add(String.format(Locale.ROOT, "%s: %d boxes, %d in a block, last check %d blocks, %d us", entity.getName().getString(), boxes.size(), touching,
                 com.voidreclaimer.body.BoxCollision.lastBlocks(), com.voidreclaimer.body.BoxCollision.lastMicros()));

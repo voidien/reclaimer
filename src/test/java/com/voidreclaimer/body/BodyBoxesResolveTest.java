@@ -368,4 +368,10 @@ class BodyBoxesResolveTest {
         assertSame(velocity, moved.move());
         assertSame(velocity, moved.speed());
     }
+
+    @Test
+    void theDeepestOverlapIsHowFarABoxIsIn() {
+        assertEquals(0.0, BodyBoxes.deepest(List.of(box(0, 0.5, 0.5, 1)), wall(3)), 1e-9);
+        assertEquals(0.25, BodyBoxes.deepest(List.of(box(2.25, 0.5, 0.5, 1)), wall(3)), 1e-9);
+    }
 }
