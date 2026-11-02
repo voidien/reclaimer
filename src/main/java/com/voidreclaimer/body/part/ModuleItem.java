@@ -35,6 +35,8 @@ public class ModuleItem extends Item {
                 String.format(Locale.ROOT, "%.3f", t.thrust()), fmt(t.topSpeed())).withStyle(ChatFormatting.GRAY)));
         stats.storage().ifPresent(s -> tooltip.add(Component.translatable("tooltip.void_reclaimer.module.storage", s.rows(),
                 fmt(s.dustCapacity())).withStyle(ChatFormatting.GRAY)));
+        stats.plating().ifPresent(p -> tooltip.add(Component.translatable("tooltip.void_reclaimer.module.plating", fmt(p.health() / 2f))
+                .withStyle(ChatFormatting.GRAY)));
         stats.minSize().ifPresent(size -> tooltip.add(Component.translatable("tooltip.void_reclaimer.module.min_size",
                 Component.translatable("body." + size.location().getNamespace() + ".size." + size.location().getPath()))
                 .withStyle(ChatFormatting.GOLD)));

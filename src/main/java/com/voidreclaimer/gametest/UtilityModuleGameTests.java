@@ -97,4 +97,38 @@ public final class UtilityModuleGameTests {
             helper.succeed();
         });
     }
+
+    /** It adds health and mass in a utility mount, its tier is the core's business, and taking it off takes the health back. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void hullPlatingAddsHealthAndMass(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(185_824, 300, 8);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.starter());
+            BodyView bare = Bodies.view(player);
+            BodyData.Mount mount = bare.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            ItemStack mk1 = new ItemStack(ModItems.HULL_PLATING_MK1.get());
+            helper.assertTrue(BodyRules.canInstallModule(bare, mount, mk1) == BodyRules.Check.OK, "a Drone could not wear a Mk I");
+            helper.assertTrue(BodyRules.canInstallModule(bare, mount, new ItemStack(ModItems.HULL_PLATING_MK2.get())) == BodyRules.Check.TIER_TOO_HIGH, "a Core Mk I took a Mk II");
+
+            Bodies.store(player, bare.data().withModule(mount, mk1));
+            float whole = bare.stats().maxHealth() + 4f;
+            helper.assertTrue(player.getMaxHealth() == whole, "a plated Drone has " + player.getMaxHealth() + " health, not " + whole);
+            helper.assertTrue(Bodies.stats(player).mass() == bare.stats().mass() + 0.5f, "plating added no mass: " + Bodies.stats(player).mass());
+            player.setHealth(whole);
+
+            // Any module can carry the spec, so a datapack's own plating works the same way.
+            ItemStack custom = mk1.copy();
+            custom.set(com.voidreclaimer.registry.ModDataComponents.MODULE.get(), com.voidreclaimer.api.body.ModuleStats.utility(1, 0.1f, new com.voidreclaimer.api.body.ModuleStats.Plating(10f)));
+            Bodies.store(player, bare.data().withModule(mount, custom));
+            helper.assertTrue(player.getMaxHealth() == bare.stats().maxHealth() + 10f, "a module of its own gave " + player.getMaxHealth());
+            player.setHealth(player.getMaxHealth());
+
+            Bodies.store(player, bare.data());
+            helper.assertTrue(player.getMaxHealth() == bare.stats().maxHealth(), "the health stayed after the plating came off");
+            helper.assertTrue(player.getHealth() == bare.stats().maxHealth(), "health over the new limit: " + player.getHealth());
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
 }

@@ -1,0 +1,15 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:ice": 10.0,
+    "void_reclaimer:metallic": 40.0,
+    "void_reclaimer:silicate": 20.0
+  },
+  "milestone": "void_reclaimer:diversified",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:hull_plating_mk1"
+  },
+  "ticks": 1200
+}

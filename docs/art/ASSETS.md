@@ -90,7 +90,7 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 
 ## The list
 
-### Tools & modules (19)
+### Tools & modules (22)
 
 | Asset | File | Size | Tile | Status | Subject (prompt suffix) | Notes |
 |---|---|---|---|---|---|---|
@@ -111,6 +111,9 @@ Art drop 1 came from your private art repo (`cosmicvoiddweller/void-reclaimer-ar
 | dust_compressor_mk1 | `item/dust_compressor_mk1.png` | 16x16 | no | placeholder | squat andesite pressure canister with one brass band, dust compressed inside |  |
 | dust_compressor_mk2 | `item/dust_compressor_mk2.png` | 16x16 | no | placeholder | heavier steel pressure canister with two bright bands and a small gauge |  |
 | dust_compressor_mk3 | `item/dust_compressor_mk3.png` | 16x16 | no | placeholder | dense dark pressure canister with three glowing cyan bands |  |
+| hull_plating_mk1 | `item/hull_plating_mk1.png` | 16x16 | no | placeholder | single riveted andesite armour plate with a brass edge |  |
+| hull_plating_mk2 | `item/hull_plating_mk2.png` | 16x16 | no | placeholder | two overlapping riveted steel armour plates |  |
+| hull_plating_mk3 | `item/hull_plating_mk3.png` | 16x16 | no | placeholder | thick dark layered armour plate with cyan seams |  |
 | brass_trim | `item/brass_trim.png` | 16x16 | no | art drop 1 (redo optional) | decorative curved brass trim plate with rivets (cosmetic part) |  |
 | cogwheel_crown | `item/cogwheel_crown.png` | 16x16 | no | art drop 1 (redo optional) | ring of small brass cogwheels forming a crown (cosmetic part) |  |
 
