@@ -39,8 +39,8 @@ public final class ModLangProvider extends LanguageProvider {
 
         add("hud.void_reclaimer.speed", "%s m/s");
         add("hud.void_reclaimer.dampener_on", "Dampener ON");
-        add("hud.void_reclaimer.afterburner", "Afterburner %s%%");
-        add("hud.void_reclaimer.afterburner_cooling", "Afterburner cooling %s%%");
+        add("hud.void_reclaimer.afterburner", "Burner %s%%");
+        add("hud.void_reclaimer.afterburner_cooling", "Burner cooling %s%%");
         add("hud.void_reclaimer.dampener_off", "Dampener OFF");
         add("hud.void_reclaimer.thrusters_offline", "THRUSTERS OFFLINE");
 

@@ -18,6 +18,7 @@ All start with `/void_reclaimer`.
 | `weather status` | What is coming or here in this level, or how long until the next |
 | `weather start <id>` | Starts a kind of weather now, warning and all |
 | `weather stop` | Ends it |
+| `body fit <player> <module>` | Fits a module from nothing in the first mount that takes it, by the Body tab's rules, replacing what is there, or says why it won't go |
 | `body remove <player> <socket>` | Takes a section off into the inventory, with its modules and child sections |
 | `body remove <player> <socket> <kind> <index>` | Takes one module off, such as `rotor_front_left thruster 0` |
 | `body reset <player>` | Back to the starter Drone |
