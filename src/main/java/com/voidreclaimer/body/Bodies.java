@@ -232,7 +232,13 @@ public final class Bodies {
                 return chassis;
             }
         }
-        return BuiltinBodies.CHASSIS.get(BuiltinBodies.DRONE);
+        return halfOn(access, body.coreSocket()).orElse(BuiltinBodies.CHASSIS.get(BuiltinBodies.DRONE));
+    }
+
+    /** The part of a bigger body whose core socket is {@code socket}: a part has no core section to say what it is. */
+    private static java.util.Optional<Chassis> halfOn(RegistryAccess access, String socket) {
+        return access.registry(com.voidreclaimer.api.VoidReclaimerRegistries.CHASSIS).stream().flatMap(net.minecraft.core.Registry::stream)
+                .filter(chassis -> chassis.halfOf().isPresent() && chassis.coreSocket().equals(socket)).findFirst();
     }
 
     static Function<ResourceKey<SizeClass>, SizeClass> sizes(RegistryAccess access) {

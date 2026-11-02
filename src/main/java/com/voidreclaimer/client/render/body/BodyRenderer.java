@@ -292,7 +292,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     public void render(LivingEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         BodyView view = previewView != null && entity == Minecraft.getInstance().player ? previewView : Bodies.view(entity);
         SectionStats core = Parts.section(view.data().core());
-        String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
+        String rig = BodyLook.rig(view.chassis(), core);
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
         ResourceLocation modelId = spec != null ? spec.model() : com.voidreclaimer.VoidReclaimer.id("geo/body/" + rig + ".geo.json");
         BakedGeoModel rigModel = GeckoLibCache.getBakedModels().get(modelId);
@@ -457,7 +457,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     public static float facing(LivingEntity entity) {
         BodyView view = Bodies.view(entity);
         SectionStats core = Parts.section(view.data().core());
-        String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
+        String rig = BodyLook.rig(view.chassis(), core);
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
         if (spec != null ? spec.pitches() : BodyLook.pitches(rig)) {
             return entity instanceof net.minecraft.world.entity.player.Player player ? com.voidreclaimer.body.BodyTurning.of(player).yaw() : entity.getYRot();

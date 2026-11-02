@@ -7,6 +7,9 @@
   "yaw": 180,
   "pitches": true,
   "sockets": {
+    "saucer": [
+      "saucer"
+    ],
     "bridge": [
       "bridge"
     ],
