@@ -20,6 +20,10 @@ public final class Config {
     public static final ModConfigSpec.BooleanValue WEATHER_ENABLED;
     public static final ModConfigSpec.DoubleValue WEATHER_GAP_MIN_HOURS;
     public static final ModConfigSpec.DoubleValue WEATHER_GAP_MAX_HOURS;
+    public static final ModConfigSpec.DoubleValue CRASH_SAFE_SPEED;
+    public static final ModConfigSpec.DoubleValue CRASH_AT_TOP_SPEED;
+    public static final ModConfigSpec.BooleanValue CRASH_BREAKS_BLOCKS;
+    public static final ModConfigSpec.IntValue CRASH_MOST_BLOCKS;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FACTOR;
     public static final ModConfigSpec.DoubleValue BODY_TURN_SLOWEST;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FASTEST;
@@ -314,6 +318,14 @@ public final class Config {
         WEATHER_ENABLED = BUILDER.comment("Whether storms come at all.").define("enabled", true);
         WEATHER_GAP_MIN_HOURS = BUILDER.comment("The shortest gap between storms in a level, in hours of play there.").defineInRange("gapMinHours", 2.0, 0.01, 1000.0);
         WEATHER_GAP_MAX_HOURS = BUILDER.comment("The longest gap between storms in a level, in hours of play there.").defineInRange("gapMaxHours", 3.0, 0.01, 1000.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Crashes: a body flying into something.").push("crash");
+        CRASH_SAFE_SPEED = BUILDER.comment("Blocks a second along what is hit. Under this nothing happens.").defineInRange("safeSpeed", 5.0, 0.0, 1000.0);
+        CRASH_AT_TOP_SPEED = BUILDER.comment("The share of its health a body loses in a head-on hit at its top speed. It grows with the square of the speed over the safe one. At 1 such a hit destroys it.")
+                .defineInRange("atTopSpeed", 1.0, 0.0, 100.0);
+        CRASH_BREAKS_BLOCKS = BUILDER.comment("Whether a big body breaks the blocks it hits, the weak ones first.").define("breaksBlocks", true);
+        CRASH_MOST_BLOCKS = BUILDER.comment("The most blocks one hit can break.").defineInRange("mostBlocks", 32, 0, 1024);
         BUILDER.pop();
 
         BUILDER.comment("Ships.").push("ship");

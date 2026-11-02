@@ -35,6 +35,7 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry;
  * to run a player tick (which fires {@code PlayerTickEvent}).
  */
 final class TestPlayers {
+    private static final int SPAWN_PROTECTION_TICKS = 60;
     private static final AtomicInteger COUNTER = new AtomicInteger();
 
     private TestPlayers() {}
@@ -104,6 +105,13 @@ final class TestPlayers {
             return ids;
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Can't read NeoForge payload registrations", e);
+        }
+    }
+
+    /** A new player can't be hurt for three seconds, and a test doesn't wait that long: runs those ticks of the player's own clock at once. */
+    static void endSpawnProtection(ServerPlayer player) {
+        for (int tick = 0; tick < SPAWN_PROTECTION_TICKS; tick++) {
+            player.tick();
         }
     }
 

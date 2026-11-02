@@ -1,0 +1,10 @@
+{
+  "dimensions": ["void_reclaimer:deep_space"],
+  "weight": 0,
+  "warning_seconds": 0,
+  "min_seconds": 2,
+  "max_seconds": 2,
+  "exposure": "void_reclaimer:sun_line",
+  "effects": [{"type": "void_reclaimer:energy", "strength": 0.2}],
+  "name": {"text": "Test cover"}
+}
