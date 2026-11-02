@@ -88,6 +88,8 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue SALVAGE_REFUND;
     public static final ModConfigSpec.DoubleValue NANITE_ENERGY;
 
+    public static final ModConfigSpec.BooleanValue EARTH_TOXIC_AIR;
+    public static final ModConfigSpec.DoubleValue EARTH_TOXIC_WEAR;
     public static final ModConfigSpec.BooleanValue WEAR_ENABLED;
     public static final ModConfigSpec.DoubleValue WEAR_PER_THRUST_MINUTE;
     public static final ModConfigSpec.DoubleValue WEAR_PER_TOOL_USE;
@@ -337,6 +339,10 @@ public final class Config {
         EARTH_WIND_SPEED = BUILDER
                 .comment("Top speed of the wind over ruined Earth, in blocks per second; it drifts ships and the flying body (the dampener holds). 0 switches it off.")
                 .defineInRange("windSpeed", 1.5, 0.0, 20.0);
+        EARTH_TOXIC_AIR = BUILDER.comment("Ruined Earth's air wears bodies, indoors too, outside restored sectors. It never takes health, but a section worn right out stops working until repaired.")
+                .define("toxicAir", true);
+        EARTH_TOXIC_WEAR = BUILDER.comment("Condition each section loses to the air per minute on an unrestored Earth: 0.01 wears one out in 100 minutes.")
+                .defineInRange("toxicWearPerMinute", 0.01, 0.0, 1.0);
         EARTH_ACID_DRIZZLE = BUILDER.comment("Acid Drizzle falls on ruined Earth outside restored sectors, and slowly wears body sections under the open sky.")
                 .define("acidDrizzle", true);
         EARTH_ACID_WEAR = BUILDER.comment("Condition each section loses per minute in full Acid Drizzle (1.0 = all of it). Less as the planet heals. It never breaks a section.")

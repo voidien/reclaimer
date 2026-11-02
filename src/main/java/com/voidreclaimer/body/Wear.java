@@ -18,8 +18,8 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Light, repairable wear on body sections. Thrust wears the sections carrying thrusters; using a tool module wears the
  * section holding it. Below {@link #FULL_EFFECT} condition a section (and the thrusters on it) lose effectiveness
- * smoothly, at most {@link #MAX_LOSS}. Sections never break, creative bodies don't wear, and wear can be switched off in
- * the config. Repair is in the Body tab ({@link Bodies#repair}).
+ * smoothly, at most {@link #MAX_LOSS}, and a section worn right out gives nothing at all until it is repaired. Sections never
+ * break, creative bodies don't wear, and wear can be switched off in the config. Repair is in the Body tab ({@link Bodies#repair}).
  *
  * <p>Wear is gathered per player and written to the section item in 1% steps, so the body isn't re-synced every tick.
  */
@@ -41,10 +41,13 @@ public final class Wear {
         return value == null ? 1f : value;
     }
 
-    /** Effectiveness multiplier for a condition: 1 down to {@link #FULL_EFFECT}, then falling to {@code 1 - MAX_LOSS} at 0. */
+    /** Effectiveness multiplier for a condition: 1 down to {@link #FULL_EFFECT}, then falling towards {@code 1 - MAX_LOSS}, and 0 at 0. */
     public static float efficiency(float condition) {
         if (condition >= FULL_EFFECT) {
             return 1f;
+        }
+        if (condition <= 0f) {
+            return 0f;
         }
         return 1f - MAX_LOSS * (FULL_EFFECT - Math.max(0f, condition)) / FULL_EFFECT;
     }

@@ -43,6 +43,16 @@ public final class TestEventListeners {
         }
     }
 
+    /** Ruined Earth's air does not reach this player. */
+    public static final String NO_TOXIC_AIR = "vr_test_no_toxic_air";
+
+    @SubscribeEvent
+    static void onToxicAir(com.voidreclaimer.api.event.ToxicAirEvent event) {
+        if (event.getPlayer().getTags().contains(NO_TOXIC_AIR)) {
+            event.setCanceled(true);
+        }
+    }
+
     /** Body stats get +10 max health. */
     public static final String TOUGH = "vr_test_tough";
     /** Tool module use is cancelled. */

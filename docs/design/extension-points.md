@@ -41,6 +41,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:config_choice` | Recipe condition (`machine.ConfigChoiceCondition`) | `key`, `value`: the recipe loads only at that setting of a config choice (`shellPrices`) |
 | `BodyCrashEvent` | Event | A body flew into something, on the server, before any harm. Cancel it, change the damage, or say whether blocks break |
 | `void_reclaimer:crash_proof` | Block tag | Blocks no crash breaks |
+| `ToxicAirEvent` | Event | Ruined Earth's air is about to wear a body for a second. Cancel it for a part that filters the air |
 | `MainBodyWreckedEvent` | Event | A main body was destroyed and left as a wreck, with the wreck's id. The player already wears a new starter body |
 | `BodyCollisionEvent` | Event | A body hit something in flight: a big body by its hit boxes, or a smaller one against a big body. One crash is one event, with the speed it had, the speed it kept and the part lost. Fires on the client that flies the body |
 | `ShellLinkEvent.Pre` | Event, cancellable | Before a link changes anything; cancelled, the link ends `CANCELLED`. A listener that throws counts as a refusal |

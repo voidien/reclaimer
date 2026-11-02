@@ -74,6 +74,57 @@ public final class AcidDrizzleGameTests {
         });
     }
 
+    /** Unlike the drizzle, the air comes indoors, and it never takes health. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void toxicAirWearsABodyUnderARoofToo(GameTestHelper helper) {
+        onEarth(helper, 300 + 96, (earth, player, pos) -> {
+            BlockPos roof = pos.above(4);
+            earth.setBlock(roof, Blocks.STONE.defaultBlockState(), 3);
+            try {
+                float health = player.getHealth();
+                for (int second = 0; second < 1200; second++) {
+                    com.voidreclaimer.earth.ToxicAir.second(player);
+                }
+                helper.assertTrue(allWorn(player), "the air did not reach under the roof");
+                helper.assertTrue(player.getHealth() == health, "the air took health");
+                helper.succeed();
+            } finally {
+                earth.setBlock(roof, Blocks.AIR.defaultBlockState(), 3);
+            }
+        });
+    }
+
+    /** A filter, when there is one, stops it through this event. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void anAddonCanKeepTheAirOut(GameTestHelper helper) {
+        onEarth(helper, 300 + 128, (earth, player, pos) -> {
+            player.addTag(TestEventListeners.NO_TOXIC_AIR);
+            for (int second = 0; second < 1200; second++) {
+                com.voidreclaimer.earth.ToxicAir.second(player);
+            }
+            helper.assertFalse(allWorn(player), "a filtered body wore");
+            helper.succeed();
+        });
+    }
+
+    /** Worn right out, a section gives nothing: here its health. Repaired, it comes back. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aSectionWornOutStopsWorkingUntilRepaired(GameTestHelper helper) {
+        onEarth(helper, 300 + 160, (earth, player, pos) -> {
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.SHIP));
+            float whole = com.voidreclaimer.body.Bodies.stats(player).maxHealth();
+            var body = com.voidreclaimer.body.Bodies.data(player);
+            String socket = body.sections().entrySet().stream()
+                    .filter(entry -> com.voidreclaimer.body.Parts.section(entry.getValue()).maxHealth() > 0f).findFirst().orElseThrow().getKey();
+            com.voidreclaimer.body.Bodies.store(player, body.withSection(socket, com.voidreclaimer.body.Wear.withCondition(body.section(socket), 0f)));
+            float worn = com.voidreclaimer.body.Bodies.stats(player).maxHealth();
+            helper.assertTrue(worn < whole, "a section worn out still gives its health: " + worn + " of " + whole);
+            com.voidreclaimer.body.Bodies.store(player, body);
+            helper.assertTrue(com.voidreclaimer.body.Bodies.stats(player).maxHealth() == whole, "the repair did not bring it back");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aRoofKeepsTheDrizzleOff(GameTestHelper helper) {
         onEarth(helper, 332, (earth, player, pos) -> {
