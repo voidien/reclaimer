@@ -191,7 +191,7 @@ public final class Config {
 
         BUILDER.comment("How big bodies turn with weight. The view turns at once and the body follows.").push("bodyTurning");
         BODY_TURN_FACTOR = BUILDER
-                .comment("Degrees a second for each unit of the body's turn rate per unit of its mass. Higher turns faster.")
+                .comment("Degrees a second for each unit of the body's turn rate per unit of its mass. Higher turns faster. At the default a Shuttle takes 1.5 s for a half turn, a Ship 4 s and a Titan 12 s.")
                 .defineInRange("factor", com.voidreclaimer.body.BodyHeading.TURN_FACTOR, 1.0, 100_000.0);
         BODY_TURN_SLOWEST = BUILDER.comment("Degrees a second for a body with nothing to help it turn.")
                 .defineInRange("slowest", com.voidreclaimer.body.BodyHeading.SLOWEST_TURN, 0.1, 720.0);

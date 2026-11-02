@@ -79,7 +79,9 @@ public class BodyInventoryScreen extends AbstractContainerScreen<BodyInventoryMe
             // Pixels per block of the model at scale 1: the preview divides by the body's scale, which the renderer multiplies back.
             float radius = com.voidreclaimer.client.render.body.BodyBounds.radius(com.voidreclaimer.body.Bodies.view(player));
             int scale = (int) Mth.clamp(PREVIEW_HEIGHT * 0.42 / Math.max(0.2, radius), 2, 140);
+            com.voidreclaimer.client.render.body.BodyRenderer.setPosed(true);
             InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, 0.0625f, mouseX, mouseY, player);
+            com.voidreclaimer.client.render.body.BodyRenderer.setPosed(false);
             graphics.drawString(font, Component.translatable("menu.void_reclaimer.inventory.dust"), x1, y2 + 6, ACCENT, false);
             DustMeterLayer.drawRows(graphics, minecraft, player, x1, y2 + 18, 1f, true);
         }
