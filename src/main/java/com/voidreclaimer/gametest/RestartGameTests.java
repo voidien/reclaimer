@@ -121,6 +121,66 @@ public final class RestartGameTests {
     private static final net.minecraft.resources.ResourceLocation ITEMS_TOO =
             net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("void_reclaimer_test", "replicator/items_too");
 
+    private static final BlockPos WRECK_SPOT = new BlockPos(76_500, 80, 0);
+    private static final UUID WRECK_PLAYER = UUID.nameUUIDFromBytes("vr_wreck_crash".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+    /** A main body dies with a job running, and the server dies before the wreck reaches the disk: all of it must be somewhere, once. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aMainBodyWreckOutlivesACrashBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, WRECK_SPOT, 1, () -> {
+            ServerPlayer player = TestPlayers.joinAs(helper, WRECK_PLAYER);
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            player.teleportTo(space, WRECK_SPOT.getX() + 0.5, WRECK_SPOT.getY(), WRECK_SPOT.getZ() + 0.5, 0f, 0f);
+            player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            player.getInventory().clearContent();
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP));
+            var replicator = com.voidreclaimer.replicator.ReplicatorData.EMPTY.withUnlocked(com.voidreclaimer.replicator.Milestones.AWAKENING);
+            com.voidreclaimer.replicator.Replicator.store(player, replicator);
+            player.setData(ModAttachments.DUST, com.voidreclaimer.dust.DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            player.getInventory().setItem(2, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND, 7));
+            helper.assertTrue(com.voidreclaimer.replicator.Replicator.queue(player, ITEMS_TOO) == com.voidreclaimer.replicator.ReplicatorLogic.QueueResult.QUEUED, "not queued");
+            player.hasChangedDimension();
+            player.hurt(space.damageSources().genericKill(), Float.MAX_VALUE);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(player.isDeadOrDying(), "still alive"))
+                    .thenExecute(RestartTests::crash);
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aMainBodyWreckOutlivesACrashAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerPlayer player = TestPlayers.joinAs(helper, WRECK_PLAYER);
+        LinkState state = Links.state(player);
+        helper.assertTrue(state.outboxes().size() == 1, "the player file holds " + state.outboxes().size() + " outboxes");
+        helper.assertTrue(com.voidreclaimer.replicator.Replicator.data(player).jobs().isEmpty(), "the job is in the queue as well as the wreck");
+        helper.assertTrue(player.getInventory().isEmpty(), "the player has the items as well as the wreck");
+        helper.assertTrue(Bodies.data(player).equals(Bodies.starter()), "the player kept the body as well as the wreck");
+        UUID id = state.outboxes().get(0).shell();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(space.getEntity(id) instanceof BodyHost, "the wreck is lost"))
+                .thenExecute(() -> {
+                    BodyHost wreck = (BodyHost) space.getEntity(id);
+                    helper.assertTrue(wreck.role() == HostRole.WRECK, "it came back as a " + wreck.role());
+                    int ingots = 0;
+                    int planks = 0;
+                    int diamonds = 0;
+                    for (int i = 0; i < wreck.items().size(); i++) {
+                        var stack = net.minecraft.world.item.ItemStack.parseOptional(player.registryAccess(), wreck.items().getCompound(i));
+                        ingots += stack.is(net.minecraft.world.item.Items.IRON_INGOT) ? stack.getCount() : 0;
+                        planks += stack.is(net.minecraft.world.item.Items.OAK_PLANKS) ? stack.getCount() : 0;
+                        diamonds += stack.is(net.minecraft.world.item.Items.DIAMOND) ? stack.getCount() : 0;
+                    }
+                    helper.assertTrue(ingots == 3 && planks == 1, ingots + " ingots and " + planks + " planks, not 3 and 1");
+                    helper.assertTrue(diamonds == 7, diamonds + " diamonds, not 7");
+                    helper.assertTrue(wreck.items().size() > Bodies.data(wreck).sections().size(), "the sections are not in the wreck");
+                    helper.succeed();
+                });
+    }
+
     /** A shell dies with a job running, and the server dies before the wreck reaches the disk: the items must be somewhere, once. */
     @GameTest(template = "empty", timeoutTicks = 300)
     public static void aShellsQueuedItemsOutliveACrashBeforeRestart(GameTestHelper helper) {
@@ -160,9 +220,13 @@ public final class RestartGameTests {
                 .thenWaitUntil(() -> helper.assertTrue(space.getEntity(id) instanceof BodyHost, "the shell is lost"))
                 .thenExecute(() -> {
                     BodyHost shell = (BodyHost) space.getEntity(id);
-                    var carried = com.voidreclaimer.debug.ItemCensus.of(com.voidreclaimer.link.BodySnapshot.of(shell), player.registryAccess());
-                    var ingot = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(net.minecraft.world.item.Items.IRON_INGOT);
-                    helper.assertTrue(carried.counts().getOrDefault(ingot, 0) == 3, "the shell holds " + carried.counts().getOrDefault(ingot, 0) + " of 3 ingots");
+                    helper.assertTrue(shell.role() == HostRole.WRECK, "it came back as a " + shell.role());
+                    int ingots = 0;
+                    for (int i = 0; i < shell.items().size(); i++) {
+                        var stack = net.minecraft.world.item.ItemStack.parseOptional(player.registryAccess(), shell.items().getCompound(i));
+                        ingots += stack.is(net.minecraft.world.item.Items.IRON_INGOT) ? stack.getCount() : 0;
+                    }
+                    helper.assertTrue(ingots == 3, "the wreck holds " + ingots + " of 3 ingots");
                     shell.discard();
                     player.setData(ModAttachments.LINK, LinkState.NONE);
                     TestPlayers.remove(player);

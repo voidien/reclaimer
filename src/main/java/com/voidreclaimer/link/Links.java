@@ -3,12 +3,16 @@ package com.voidreclaimer.link;
 import com.mojang.logging.LogUtils;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.VoidReclaimer;
+import com.voidreclaimer.api.event.MainBodyWreckedEvent;
 import com.voidreclaimer.api.event.ShellLinkEvent;
 import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.tether.TetherData;
+import com.voidreclaimer.energy.EnergyData;
+import com.voidreclaimer.energy.Energy;
 import com.voidreclaimer.replicator.Replicator;
 import com.voidreclaimer.replicator.ReplicatorLogic;
 import com.voidreclaimer.space.ModDimensions;
@@ -28,6 +32,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
@@ -89,6 +94,8 @@ public final class Links {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
+    /** The link number of a wreck that has never been a shell. */
+    private static final long FIRST_EPOCH = 1L;
 
     private Links() {}
 
@@ -167,6 +174,49 @@ public final class Links {
                 }
             }));
         }
+    }
+
+    /** Last in line, so a mod that cancels the death loses nothing. With the game rule that keeps inventories, the body is kept too. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    static void onMainBodyDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !player.isSpectator()
+                && !player.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+            leaveWreck(player);
+        }
+    }
+
+    /**
+     * The main body stays where it died as a wreck, with everything it carried and was built from, and what it paid into the Replicator
+     * queue. The player goes on in a new starter body. The order is {@link #wake}'s, and for the same reason: the player file and the
+     * chunk save apart, so the body is in the outbox before it leaves the player, and a crash at any point leaves it in one place.
+     */
+    private static void leaveWreck(ServerPlayer player) {
+        LinkState state = state(player);
+        BodySnapshot taken = BodySnapshot.take(player);
+        ReplicatorLogic.Lost queued = Replicator.leftBy(player, Optional.empty());
+        BodySnapshot body = taken.withPending(queued.items());
+        CompoundTag tag = saved(body, player);
+        if (tag == null) {
+            return;
+        }
+        UUID id = UUID.randomUUID();
+        LinkState.Place at = place(player);
+        player.setData(ModAttachments.LINK, state.withOutbox(new LinkState.Outbox(id, FIRST_EPOCH, tag, at, false))
+                .withKnown(new LinkState.KnownShell(id, FIRST_EPOCH, at, true, false)));
+        Optional<BodyHost> wreck = restored(player.serverLevel(), at, id, FIRST_EPOCH, body, player);
+        wreck.ifPresent(host -> {
+            Outboxes.settled(id);
+            Wrecks.make(host);
+        });
+        Replicator.settle(player, queued);
+        player.getInventory().clearContent();
+        player.setData(ModAttachments.TETHER, TetherData.NONE);
+        player.syncData(ModAttachments.TETHER);
+        Bodies.store(player, Bodies.starter());
+        EnergyData energy = player.getData(ModAttachments.ENERGY);
+        Energy.update(player, new EnergyData(energy.capacity(), energy.capacity(), false), true);
+        saveNow(player.server);
+        NeoForge.EVENT_BUS.post(new MainBodyWreckedEvent(player, id));
     }
 
     @SubscribeEvent
@@ -383,10 +433,15 @@ public final class Links {
 
     /** A throw is an addon's. The outbox already holds the shell, so a wake goes on without it, as when the level will not take it. */
     private static Optional<BodyHost> putBack(ServerLevel level, LinkState.Place at, LinkState.Link link, BodySnapshot body, ServerPlayer player) {
+        return restored(level, at, link.shell(), link.epoch(), body, player);
+    }
+
+    /** A body back in the world, or empty if the level won't take it or an addon throws: it stays in the outbox then, and comes back from there. */
+    private static Optional<BodyHost> restored(ServerLevel level, LinkState.Place at, UUID id, long epoch, BodySnapshot body, ServerPlayer player) {
         try {
-            return BodyHost.restore(level, at, link.shell(), link.epoch(), body, player.getUUID());
+            return BodyHost.restore(level, at, id, epoch, body, player.getUUID());
         } catch (RuntimeException e) {
-            LOGGER.error("Shell {} could not be put back", link.shell(), e);
+            LOGGER.error("Body {} could not be put in the world", id, e);
             return Optional.empty();
         }
     }

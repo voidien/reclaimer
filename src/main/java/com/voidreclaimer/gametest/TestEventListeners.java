@@ -63,6 +63,13 @@ public final class TestEventListeners {
     static final Map<UUID, List<String>> LINK_EVENTS = new ConcurrentHashMap<>();
 
     /** The last collision a test player had: how far along the move it was stopped. */
+    static final java.util.Map<java.util.UUID, java.util.UUID> WRECKS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    static void onMainBodyWrecked(com.voidreclaimer.api.event.MainBodyWreckedEvent event) {
+        WRECKS.put(event.getPlayer().getUUID(), event.getWreck());
+    }
+
     static final java.util.Map<java.util.UUID, Double> COLLISIONS = new java.util.concurrent.ConcurrentHashMap<>();
 
     @SubscribeEvent

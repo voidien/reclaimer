@@ -103,8 +103,9 @@ public final class Replicator {
     }
 
     /**
-     * The main body's queued items drop with its inventory, and stay in the queue when the game keeps inventories. Last in line, so a
-     * mod that cancels the drops leaves the job alone and its items safe.
+     * Queued items normally go into the main body's wreck ({@code Links.leaveWreck}), and stay in the queue when the game keeps
+     * inventories. A body that could not be saved falls apart instead, and they drop with the rest. Last in line, so a mod that cancels
+     * the drops leaves the job alone and its items safe.
      */
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
     static void onDrops(net.neoforged.neoforge.event.entity.living.LivingDropsEvent event) {
