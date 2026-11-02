@@ -87,6 +87,7 @@ jobs:
           - aCrashKeepsOnlyWhatWasSaved
           - aLinkOutlivesACrash
           - aWokenShellOutlivesACrash
+          - aShellsQueuedItemsOutliveACrash
           - anOldShellGoesAfterACrash
           - aNewerShellWinsAClash
           - anOldCopyIsRecovered

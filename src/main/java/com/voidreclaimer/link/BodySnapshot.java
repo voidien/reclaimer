@@ -43,6 +43,13 @@ import org.slf4j.Logger;
 public record BodySnapshot(BodyData body, EnergyData energy, TetherData tether, ListTag items, int selected, float health, ListTag effects) {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /** With {@code more} waiting among the body's parts, so they stay with it wherever it goes, a wreck or a crash included. */
+    public BodySnapshot withPending(List<net.minecraft.world.item.ItemStack> more) {
+        List<net.minecraft.world.item.ItemStack> all = new java.util.ArrayList<>(body.pending());
+        all.addAll(more);
+        return new BodySnapshot(body.withPending(all), energy, tether, items, selected, health, effects);
+    }
+
     public BodySnapshot withEnergy(EnergyData value) {
         return new BodySnapshot(body, value, tether, items, selected, health, effects);
     }

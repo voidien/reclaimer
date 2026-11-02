@@ -9,6 +9,8 @@ import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.replicator.Replicator;
+import com.voidreclaimer.replicator.ReplicatorLogic;
 import com.voidreclaimer.space.ModDimensions;
 import com.voidreclaimer.space.SpawnHandler;
 import java.util.ArrayDeque;
@@ -273,7 +275,11 @@ public final class Links {
         ServerLevel target = player.server.getLevel(point.dimension());
         LinkState.Place at = place(player);
         ServerLevel shellLevel = player.serverLevel();
-        BodySnapshot body = BodySnapshot.take(player);
+        BodySnapshot taken = BodySnapshot.take(player);
+        // A lost shell keeps what it paid into the Replicator queue. They go in its snapshot, so they are in the outbox before the job
+        // ends: a crash at any point leaves them in one place or the other. The job ends with the wake, below.
+        ReplicatorLogic.Lost queued = lost ? Replicator.leftBy(player, Optional.of(link.shell())) : ReplicatorLogic.Lost.nothing(Replicator.data(player), player.getData(ModAttachments.DUST));
+        BodySnapshot body = taken.withPending(queued.items());
         CompoundTag bodyTag = saved(body, player);
         if (bodyTag == null) {
             return Result.FAILED;
@@ -289,7 +295,7 @@ public final class Links {
         }
         if (!wear(player, charged(player, home.get(), link))) {
             shell.ifPresent(BodyHost::discard);
-            wear(player, body);
+            wear(player, taken);
             arrive(player, shellLevel, at.position(), at.yaw(), at.pitch());
             player.setData(ModAttachments.LINK, state);
             return Result.FAILED;
@@ -300,6 +306,7 @@ public final class Links {
                 Wrecks.make(host);
             }
         });
+        Replicator.settle(player, queued);
         // A lost shell that the level would not take comes back from the outbox as a shell, not a wreck.
         boolean wrecked = lost && shell.isPresent();
         player.setData(ModAttachments.LINK, state.withOutbox(outbox).withoutLink()

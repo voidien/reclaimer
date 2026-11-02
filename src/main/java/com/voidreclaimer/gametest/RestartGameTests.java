@@ -116,6 +116,60 @@ public final class RestartGameTests {
                 });
     }
 
+    private static final UUID QUEUE_PLAYER = new UUID(0x7E57L, 0xB0B3L);
+    private static final BlockPos QUEUE_SPOT = new BlockPos(76_100, 80, 0);
+    private static final net.minecraft.resources.ResourceLocation ITEMS_TOO =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("void_reclaimer_test", "replicator/items_too");
+
+    /** A shell dies with a job running, and the server dies before the wreck reaches the disk: the items must be somewhere, once. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aShellsQueuedItemsOutliveACrashBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, QUEUE_SPOT, 1, () -> {
+            ServerPlayer player = TestPlayers.joinAs(helper, QUEUE_PLAYER);
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            player.teleportTo(space, QUEUE_SPOT.getX() + 0.5, QUEUE_SPOT.getY(), QUEUE_SPOT.getZ() + 0.5, 0f, 0f);
+            player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            BodyHost shell = BodyHost.spawn(space, player.position().add(0.0, 0.0, 4.0), HostRole.SHELL, Bodies.preset(BuiltinBodies.DRONE), player.getUUID());
+            helper.assertTrue(Links.link(player, shell) == Links.Result.LINKED, "no link");
+            player.getInventory().clearContent();
+            var replicator = com.voidreclaimer.replicator.ReplicatorData.EMPTY.withUnlocked(com.voidreclaimer.replicator.Milestones.AWAKENING);
+            com.voidreclaimer.replicator.Replicator.store(player, replicator);
+            player.setData(ModAttachments.DUST, com.voidreclaimer.dust.DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(com.voidreclaimer.replicator.Replicator.queue(player, ITEMS_TOO) == com.voidreclaimer.replicator.ReplicatorLogic.QueueResult.QUEUED, "not queued");
+            // Vanilla leaves a player invulnerable until the client says it has changed dimension, and a test player never says so.
+            player.hasChangedDimension();
+            player.hurt(space.damageSources().genericKill(), Float.MAX_VALUE);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertFalse(Links.state(player).linked(), "still in the shell"))
+                    .thenExecute(RestartTests::crash);
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aShellsQueuedItemsOutliveACrashAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        ServerPlayer player = TestPlayers.joinAs(helper, QUEUE_PLAYER);
+        LinkState state = Links.state(player);
+        helper.assertTrue(state.outboxes().size() == 1, "the player file holds " + state.outboxes().size() + " outboxes");
+        helper.assertTrue(com.voidreclaimer.replicator.Replicator.data(player).jobs().isEmpty(), "the job is in the queue as well as the shell");
+        UUID id = state.outboxes().get(0).shell();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(space.getEntity(id) instanceof BodyHost, "the shell is lost"))
+                .thenExecute(() -> {
+                    BodyHost shell = (BodyHost) space.getEntity(id);
+                    var carried = com.voidreclaimer.debug.ItemCensus.of(com.voidreclaimer.link.BodySnapshot.of(shell), player.registryAccess());
+                    var ingot = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(net.minecraft.world.item.Items.IRON_INGOT);
+                    helper.assertTrue(carried.counts().getOrDefault(ingot, 0) == 3, "the shell holds " + carried.counts().getOrDefault(ingot, 0) + " of 3 ingots");
+                    shell.discard();
+                    player.setData(ModAttachments.LINK, LinkState.NONE);
+                    TestPlayers.remove(player);
+                    helper.succeed();
+                });
+    }
+
     private static final UUID CLASH_SHELL = new UUID(0x7E57L, 0xC1A5L);
     private static final BlockPos CLASH_OLD = new BlockPos(262_000, 80, 0);
     private static final BlockPos CLASH_NEW = new BlockPos(262_400, 80, 0);

@@ -60,6 +60,26 @@ class RecipeInputsTest {
     }
 
     @Test
+    void aLostBodyTakesOnlyItsOwnJobsThatTookItems() {
+        Optional<UUID> shell = Optional.of(UUID.randomUUID());
+        ReplicatorJob lost = new ReplicatorJob(ID, List.of(new ItemStack(Items.STONE)), DustCost.of(4, 0, 0, 0), List.of(new ItemStack(Items.IRON_INGOT, 2)), shell, 0, 9);
+        ReplicatorJob plain = jobPaidBy(shell, false);
+        ReplicatorJob home = jobPaidBy(Optional.empty(), true);
+        var gone = ReplicatorLogic.loseBody(ReplicatorData.EMPTY.withJobs(List.of(plain, lost, home)), com.voidreclaimer.dust.DustData.of(1, 0, 0, 0), shell, 100f);
+        assertEquals(List.of(plain, home), gone.data().jobs());
+        assertEquals(1, gone.items().size());
+        assertEquals(2, gone.items().get(0).getCount());
+        assertEquals(5f, gone.dust().get(com.voidreclaimer.dust.DustKinds.METALLIC), 1e-4f, "the job's dust came back");
+    }
+
+    @Test
+    void aBodyWithNoJobsChangesNothing() {
+        ReplicatorData data = ReplicatorData.EMPTY.withJobs(List.of(jobPaidBy(Optional.empty(), true)));
+        var gone = ReplicatorLogic.loseBody(data, com.voidreclaimer.dust.DustData.of(1, 0, 0, 0), Optional.of(UUID.randomUUID()), 100f);
+        assertTrue(data == gone.data() && gone.items().isEmpty());
+    }
+
+    @Test
     void aRecipeWithNoItemsTakesNothing() {
         assertEquals(RecipeInputs.NOTHING, RecipeInputs.plan(inventory(), List.of()));
     }

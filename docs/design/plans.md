@@ -35,7 +35,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 - **Done, shells:** a parked shell takes no harm; only a command that ignores invulnerability reaches one, and it leaves a wreck. While linked the shell is the player's body, and takes harm as a body does. Sneak-use scraps your own idle shell into a wreck to loot; the shell item does not come back.
 - **Main body destroyed:** it stays as a wreck where it died and the player flies back to salvage it. Reuses the shell wreck code. Replaces today's respawn rules for what is carried. (Danger page, 2026-11-01:)
   - **Where you wake:** at a Backup Core in a new starter Drone, or in a Remote Shell if you own one.
-  - **What stays:** everything: inventory, sections and modules.
+  - **What stays:** everything: inventory, sections and modules, and the items in any job it paid for (`Replicator.leftBy`: put them somewhere a crash can't lose them, then `settle`).
   - **How long:** for good, with a HUD marker. In space it drifts slowly, which suits the Wreck Finder.
 - **Crashes:** a hard ship crash breaks blocks near the impact, more at higher speed. Under 5 blocks a second nothing breaks. Weak blocks go first, and at high enough speed anything can break, the Helm and Station Core included. Bodies take collision damage too. Fall damage on Earth stays.
 - **Toxic air:** wears the body's parts, and a part worn to zero stops giving its stats until repaired. It never takes health.

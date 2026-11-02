@@ -84,6 +84,39 @@ public final class Replicator {
                 .map(known -> known.gone() || known.wrecked()).orElse(true);
     }
 
+    /**
+     * What {@code body} leaves behind if it has gone: its jobs that took items end, and the dust comes back. This changes nothing yet, so
+     * the caller can put the items somewhere safe first, and then {@link #settle}. A shell's go in its snapshot, and so its wreck; the
+     * main body's drop with its inventory, and will go in its wreck too.
+     */
+    public static ReplicatorLogic.Lost leftBy(ServerPlayer player, Optional<UUID> body) {
+        return ReplicatorLogic.loseBody(data(player), player.getData(ModAttachments.DUST), body, DustData.capacity(player));
+    }
+
+    /** Ends the jobs of {@link #leftBy}, once what they took is safe. */
+    public static void settle(ServerPlayer player, ReplicatorLogic.Lost lost) {
+        if (!lost.items().isEmpty()) {
+            store(player, lost.data());
+            player.setData(ModAttachments.DUST, lost.dust());
+            player.syncData(ModAttachments.DUST);
+        }
+    }
+
+    /**
+     * The main body's queued items drop with its inventory, and stay in the queue when the game keeps inventories. Last in line, so a
+     * mod that cancels the drops leaves the job alone and its items safe.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    static void onDrops(net.neoforged.neoforge.event.entity.living.LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !player.serverLevel().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY)) {
+            ReplicatorLogic.Lost lost = leftBy(player, Optional.empty());
+            for (ItemStack item : lost.items()) {
+                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(player.serverLevel(), player.getX(), player.getEyeY(), player.getZ(), item));
+            }
+            settle(player, lost);
+        }
+    }
+
     public static boolean cancel(ServerPlayer player, int index) {
         ReplicatorData before = data(player);
         if (index >= 0 && index < before.jobs().size()
