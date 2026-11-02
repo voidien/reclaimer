@@ -25,11 +25,6 @@ public final class Wrecks {
         body.sections().values().forEach(stack -> add(contents, stack, registries));
         body.modules().values().forEach(stack -> add(contents, stack, registries));
         body.pending().forEach(stack -> add(contents, stack, registries));
-        // What the shell paid into its owner's Replicator queue stays with it. An owner who is away keeps the job: see ReplicatorLogic.canCancel.
-        ServerPlayer owner = shell.owner() == null || shell.getServer() == null ? null : shell.getServer().getPlayerList().getPlayer(shell.owner());
-        if (owner != null) {
-            com.voidreclaimer.replicator.Replicator.bodyLost(owner, java.util.Optional.of(shell.getUUID())).forEach(stack -> add(contents, stack, registries));
-        }
         shell.setItems(contents);
         shell.setEffects(new ListTag());
         shell.removeAllEffects();

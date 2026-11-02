@@ -200,6 +200,7 @@ public final class PhotoDebug {
                 DebugShapes built = new DebugShapes();
                 ShipOverlay.add(level, from, OVERLAY_RANGE, built, lines);
                 LogisticsOverlay.add(level, from, OVERLAY_RANGE, built, lines);
+                com.voidreclaimer.debug.BoxOverlay.add(level, from, OVERLAY_RANGE, built, lines);
                 shapes = built;
             }
             String time = DebugTime.describe(server);

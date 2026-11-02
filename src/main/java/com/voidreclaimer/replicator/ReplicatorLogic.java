@@ -28,7 +28,11 @@ public final class ReplicatorLogic {
     }
 
     /** What a body that has gone leaves: the queue and dust without its jobs, and the items those jobs took. */
-    public record Lost(ReplicatorData data, DustData dust, List<ItemStack> items) {}
+    public record Lost(ReplicatorData data, DustData dust, List<ItemStack> items) {
+        public static Lost nothing(ReplicatorData data, DustData dust) {
+            return new Lost(data, dust, List.of());
+        }
+    }
 
     /**
      * A body has gone, so the jobs it paid for with items end. The items go where the body's other things go, and the dust comes back,

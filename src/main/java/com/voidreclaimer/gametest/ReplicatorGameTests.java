@@ -321,14 +321,41 @@ public final class ReplicatorGameTests {
                     .thenExecute(() -> {
                         var wreck = (com.voidreclaimer.link.BodyHost) level.getEntity(id);
                         helper.assertTrue(wreck != null && wreck.role() == com.voidreclaimer.link.HostRole.WRECK, "no wreck");
-                        var carried = com.voidreclaimer.debug.ItemCensus.of(com.voidreclaimer.link.BodySnapshot.of(wreck), player.registryAccess());
-                        var ingot = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(net.minecraft.world.item.Items.IRON_INGOT);
-                        helper.assertTrue(carried.counts().getOrDefault(ingot, 0) == 3, "the wreck holds " + carried.counts().getOrDefault(ingot, 0) + " of 3 ingots");
+                        int ingots = 0;
+                        for (int i = 0; i < wreck.items().size(); i++) {
+                            ItemStack stack = ItemStack.parseOptional(player.registryAccess(), wreck.items().getCompound(i));
+                            ingots += stack.is(net.minecraft.world.item.Items.IRON_INGOT) ? stack.getCount() : 0;
+                        }
+                        helper.assertTrue(ingots == 3, "the wreck holds " + ingots + " of 3 ingots");
                         helper.assertTrue(Replicator.data(player).jobs().isEmpty(), "the job outlived its shell");
                         helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "the dust did not come back");
                         LinkOutboxGameTests.finish(helper, player, level, id);
                     });
         });
+    }
+
+    /** A part in the offhand or worn counts, as it does for milestones, and the main inventory is spent first. */
+    @GameTest(template = "empty")
+    public static void aRecipeLooksInTheOffhandAndArmorLast(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 47_900.5, 80, 0.5);
+        try {
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.AWAKENING));
+            player.setData(ModAttachments.DUST, DustData.of(20, 0, 0, 0));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 1));
+            player.getInventory().offhand.set(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().armor.set(0, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "the offhand and armor did not count");
+            helper.assertTrue(player.getInventory().items.get(0).isEmpty(), "the main inventory was not spent first");
+            helper.assertTrue(player.getInventory().offhand.get(0).getCount() == 1, "the offhand lost " + (3 - player.getInventory().offhand.get(0).getCount()) + " of 2");
+            helper.assertTrue(player.getInventory().armor.get(0).isEmpty(), "the armor slot kept its item");
+            helper.assertTrue(Replicator.cancel(player, 0), "not cancelled");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 4, "the ingots did not all come back");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.OAK_PLANKS) == 1, "the planks did not come back");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(player);
+        }
     }
 
     /** The extension point: a recipe's {@code inputs} are taken with the dust, by item or tag, and a cancel gives back the same items. */

@@ -240,7 +240,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
         assemblyButton.visible = tab == bodyTab;
         replicateButton.active = recipeTab && selected != null && data.isUnlocked(selected.value().milestone())
                 && !data.queueFull() && selected.value().cost().canAfford(player.getData(ModAttachments.DUST))
-                && com.voidreclaimer.replicator.RecipeInputs.plan(player.getInventory().items, selected.value().inputs()) != null;
+                && com.voidreclaimer.replicator.RecipeInputs.plan(com.voidreclaimer.replicator.RecipeInputs.slots(player.getInventory()), selected.value().inputs()) != null;
         collectButton.active = !data.buffer().isEmpty();
     }
 
@@ -384,7 +384,7 @@ public final class ReplicatorScreen extends Screen implements com.voidreclaimer.
             }
             int inputX = left + 10 + i * INPUT_WIDTH;
             int needed = inputs.get(i).count();
-            int held = com.voidreclaimer.replicator.RecipeInputs.held(minecraft.player.getInventory().items, inputs.get(i));
+            int held = com.voidreclaimer.replicator.RecipeInputs.held(com.voidreclaimer.replicator.RecipeInputs.slots(minecraft.player.getInventory()), inputs.get(i));
             graphics.renderItem(shown[0], inputX, inputY);
             graphics.drawString(font, held + "/" + needed, inputX + 18, inputY + 4, held >= needed ? TEXT : 0xFF5050, false);
         }

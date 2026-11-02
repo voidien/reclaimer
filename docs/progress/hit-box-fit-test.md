@@ -1,0 +1,2 @@
+## Boxes match the model
+- `BodyBoxFitTest` reads the boxes from the chassis and the model from its `.geo.json`, placed as GeckoLib draws it, turned cubes included. Every box sits on its own section, every cube is near a box, and the boxes have the model's outline. New art or a moved box fails it. It covers all three big bodies. The Ship is read part by part, as `BodyPartsLayer` draws it, because `BodyBounds` stops at each section's pivot and reads it 6 blocks short.

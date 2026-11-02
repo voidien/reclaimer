@@ -18,9 +18,10 @@ import net.minecraft.world.phys.Vec3;
  * @param pivot    joint position in model pixels, relative to the parent's pivot
  * @param area     group for the Body tab's filters ("arms", "legs", "propulsion", ...)
  * @param mirror   draw the section flipped left to right, for the far side of a pair built from one lopsided model
+ * @param boxes    the small boxes the section's part of a big body is made of; none for a body that is only its vanilla box
  */
 public record Socket(String id, List<ResourceLocation> accepts, boolean required, Optional<String> parent, Vec3 pivot,
-                     String area, boolean mirror) {
+                     String area, boolean mirror, List<HitBox> boxes) {
     public static final Codec<Socket> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("id").forGetter(Socket::id),
             ResourceLocation.CODEC.listOf().fieldOf("accepts").forGetter(Socket::accepts),
@@ -28,17 +29,32 @@ public record Socket(String id, List<ResourceLocation> accepts, boolean required
             Codec.STRING.optionalFieldOf("parent").forGetter(Socket::parent),
             Vec3.CODEC.optionalFieldOf("pivot", Vec3.ZERO).forGetter(Socket::pivot),
             Codec.STRING.optionalFieldOf("area", "body").forGetter(Socket::area),
-            Codec.BOOL.optionalFieldOf("mirror", false).forGetter(Socket::mirror)
+            Codec.BOOL.optionalFieldOf("mirror", false).forGetter(Socket::mirror),
+            HitBox.CODEC.listOf().optionalFieldOf("boxes", List.of()).forGetter(Socket::boxes)
     ).apply(instance, Socket::new));
+
+    public Socket {
+        boxes = List.copyOf(boxes);
+    }
 
     /** A socket drawn the normal way round; the constructor addons have used since the first API. */
     public Socket(String id, List<ResourceLocation> accepts, boolean required, Optional<String> parent, Vec3 pivot, String area) {
         this(id, accepts, required, parent, pivot, area, false);
     }
 
+    /** The same with no boxes; the constructor addons have used since mirroring. */
+    public Socket(String id, List<ResourceLocation> accepts, boolean required, Optional<String> parent, Vec3 pivot, String area, boolean mirror) {
+        this(id, accepts, required, parent, pivot, area, mirror, List.of());
+    }
+
     /** This socket, drawn flipped left to right. */
     public Socket mirrored() {
-        return new Socket(id, accepts, required, parent, pivot, area, true);
+        return new Socket(id, accepts, required, parent, pivot, area, true, boxes);
+    }
+
+    /** This socket with these boxes. */
+    public Socket withBoxes(HitBox... list) {
+        return new Socket(id, accepts, required, parent, pivot, area, mirror, List.of(list));
     }
 
     public boolean accepts(ResourceLocation socketType) {
