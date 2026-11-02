@@ -71,6 +71,11 @@ public final class BodyBoxes {
         }
 
         /** The smallest box along the world's axes that holds this one. */
+        /** This box {@code by} away. */
+        Box moved(Vec3 by) {
+            return new Box(socket, new Vector3d(middle).add(by.x, by.y, by.z), half, turn);
+        }
+
         AABB bounds() {
             Vector3d[] axes = axes();
             double x = reach(axes, WORLD_X);

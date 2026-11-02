@@ -31,6 +31,8 @@ public final class ServerFlightHandler {
     private static final double TELEPORT_JUMP = 8.0;
     /** Slack for collision push-out and rounding. */
     private static final double SLACK_BLOCKS = 1.0;
+    /** The fastest the wind can carry a body, in blocks a second, for anything that goes by speed. */
+    public static final double MOST_WIND = 30.0;
     private static final int OVERLAP_CHECK_TICKS = 10;
     /** Deeper than rounding or a push being worked out, in blocks. */
     private static final double DEEP_OVERLAP = 0.5;
@@ -128,10 +130,16 @@ public final class ServerFlightHandler {
      */
     @SubscribeEvent
     static void onFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof Player player && ThrusterFlight.isActive(player) && !Energy.isExempt(player)
-                && Energy.canPowerSystems(player) && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
+        if (event.getEntity() instanceof Player player && !fallHurts(player)) {
             event.setCanceled(true);
         }
+    }
+
+    /** Whether vanilla's fall damage reaches this body. */
+    public static boolean fallHurts(Player player) {
+        return !(ThrusterFlight.isActive(player) && !Energy.isExempt(player) && Energy.canPowerSystems(player)
+                && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener())
+                && !com.voidreclaimer.space.ZeroGravity.isZeroG(player.level(), player.blockPosition());
     }
 
     /**

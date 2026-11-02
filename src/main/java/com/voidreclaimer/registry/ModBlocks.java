@@ -19,6 +19,8 @@ public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(VoidReclaimer.MOD_ID);
 
     /** Blocks the Salvage Tool can dismantle for a dust refund: things the AI built, never natural rock. */
+    /** Blocks no crash breaks. */
+    public static final TagKey<Block> CRASH_PROOF = BlockTags.create(VoidReclaimer.id("crash_proof"));
     public static final TagKey<Block> SALVAGEABLE = BlockTags.create(VoidReclaimer.id("salvageable"));
 
     /** Cheap, light silicate build block; the first thing the AI can build in the void. */

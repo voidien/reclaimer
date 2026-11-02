@@ -17,6 +17,10 @@ public final class Config {
     public static final ModConfigSpec.IntValue SPAWN_Z;
 
     public static final ModConfigSpec.DoubleValue HELM_SPEED_CAP;
+    public static final ModConfigSpec.DoubleValue CRASH_SAFE_SPEED;
+    public static final ModConfigSpec.DoubleValue CRASH_AT_TOP_SPEED;
+    public static final ModConfigSpec.BooleanValue CRASH_BREAKS_BLOCKS;
+    public static final ModConfigSpec.IntValue CRASH_MOST_BLOCKS;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FACTOR;
     public static final ModConfigSpec.DoubleValue BODY_TURN_SLOWEST;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FASTEST;
@@ -305,6 +309,14 @@ public final class Config {
                 .defineInRange("seatCharge", 0.5, 0.0, 1000.0);
         LINK_STATION_CHARGE = BUILDER.comment("A seat within station range of a Station Core charges this many times faster (1 = no bonus).")
                 .defineInRange("stationCharge", 2.0, 1.0, 100.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Crashes: a body flying into something.").push("crash");
+        CRASH_SAFE_SPEED = BUILDER.comment("Blocks a second along what is hit. Under this nothing happens.").defineInRange("safeSpeed", 5.0, 0.0, 1000.0);
+        CRASH_AT_TOP_SPEED = BUILDER.comment("The share of its health a body loses in a head-on hit at its top speed. It grows with the square of the speed over the safe one. At 1 such a hit destroys it.")
+                .defineInRange("atTopSpeed", 1.0, 0.0, 100.0);
+        CRASH_BREAKS_BLOCKS = BUILDER.comment("Whether a big body breaks the blocks it hits, the weak ones first.").define("breaksBlocks", true);
+        CRASH_MOST_BLOCKS = BUILDER.comment("The most blocks one hit can break.").defineInRange("mostBlocks", 32, 0, 1024);
         BUILDER.pop();
 
         BUILDER.comment("Ships.").push("ship");
