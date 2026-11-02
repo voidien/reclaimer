@@ -111,6 +111,7 @@ public final class Outboxes {
             // What was a wreck when it was last seen is one again: a crash doesn't mend it.
             if (Links.state(player).known(outbox.shell()).filter(LinkState.KnownShell::wrecked).isPresent()) {
                 Wrecks.make(host.get());
+                Wrecks.setDrifting(host.get());
             }
             LOGGER.info("Shell {} was missing and has been rebuilt from the outbox", outbox.shell());
         } catch (RuntimeException e) {

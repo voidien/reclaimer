@@ -48,6 +48,8 @@ public class BodyHost extends LivingEntity {
     private UUID owner;
     /** The contents, as {@code Inventory.save} writes them: kept as saved, so that one bad item cannot lose the rest. */
     private ListTag items = new ListTag();
+    /** How far a wreck moves each tick in space, for good: nothing out there stops it. */
+    private Vec3 drift = Vec3.ZERO;
     private int selected;
     /** Effects as the game saves them, kept as they were: a body nobody is in does not wear them down. */
     private ListTag effects = new ListTag();
@@ -106,6 +108,21 @@ public class BodyHost extends LivingEntity {
         return shell;
     }
 
+    /** A wreck in space drifts, and its owner's marker follows it. Where something holds it up, it stays. */
+    private void drift() {
+        if (com.voidreclaimer.space.ZeroGravity.isZeroG(level(), blockPosition())) {
+            move(net.minecraft.world.entity.MoverType.SELF, drift);
+        }
+        if (tickCount % STALE_CHECK_TICKS == 0 && owner != null && level().getServer().getPlayerList().getPlayer(owner) instanceof ServerPlayer player) {
+            com.voidreclaimer.core.DeathMarker.follow(player, getUUID(), net.minecraft.core.GlobalPos.of(level().dimension(), blockPosition()));
+        }
+    }
+
+    /** Sets a wreck drifting at {@code speed} blocks a tick. */
+    void setDrift(Vec3 speed) {
+        drift = speed;
+    }
+
     /** The void takes nothing with a body in it, or a parked body could be lost for good. It is held at the bottom of the world. */
     @Override
     protected void onBelowWorld() {
@@ -130,6 +147,9 @@ public class BodyHost extends LivingEntity {
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && role() == HostRole.WRECK && drift.lengthSqr() > 0.0) {
+            drift();
+        }
         if (!level().isClientSide && tickCount % STALE_CHECK_TICKS == 0 && role() != HostRole.MIRROR) {
             if (Links.replaced(this)) {
                 LOGGER.info("Shell {} was an old copy and has been removed", getUUID());
@@ -252,6 +272,9 @@ public class BodyHost extends LivingEntity {
         tag.put("items", items.copy());
         tag.putInt("selected", selected);
         tag.put("held_effects", effects.copy());
+        if (drift.lengthSqr() > 0.0) {
+            tag.put("drift", newDoubleList(drift.x, drift.y, drift.z));
+        }
     }
 
     @Override
@@ -263,6 +286,8 @@ public class BodyHost extends LivingEntity {
         items = tag.getList("items", Tag.TAG_COMPOUND).copy();
         selected = tag.getInt("selected");
         effects = tag.getList("held_effects", Tag.TAG_COMPOUND).copy();
+        ListTag way = tag.getList("drift", Tag.TAG_DOUBLE);
+        drift = way.size() == 3 ? new Vec3(way.getDouble(0), way.getDouble(1), way.getDouble(2)) : Vec3.ZERO;
     }
 
     @Override

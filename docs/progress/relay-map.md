@@ -1,0 +1,3 @@
+## The network on a Holo Projector
+- A Holo Projector can show a map of its dimension's relays: lit and dark ones, the projector itself, and what the lit ones reach, zoomed out to show them all (`setNetworkMap()`, `/void_reclaimer holo <pos> network`). It uses the map mode the projector already has, so saved projectors stay readable and the renderer did not change.
+- **Defaults chosen (safest, reversible):** the map shows every relay in the dimension, whoever built it, because relays have no owner. It shows reach as plain range, so it doesn't yet say which relays a seat can really get to; the owner's Signal Mapper module is the place for that.

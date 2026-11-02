@@ -130,6 +130,66 @@ public final class MainWreckGameTests {
         });
     }
 
+    /** The marker stays when the player arrives, follows the wreck as it drifts, and goes when the wreck has been emptied. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aWreckDriftsAndItsMarkerStaysUntilItIsEmptied(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(98_400, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            destroy(player, space);
+            UUID id = TestEventListeners.WRECKS.remove(player.getUUID());
+            BodyHost wreck = (BodyHost) space.getEntity(id);
+            var start = wreck.position();
+            ServerPlayer back = space.getServer().getPlayerList().respawn(player, false, net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+            back.teleportTo(space, start.x, start.y, start.z, 0f, 0f);
+            helper.runAfterDelay(45, () -> {
+                back.tickCount += 20 - back.tickCount % 20;
+                back.doTick();
+                helper.assertTrue(wreck.position().distanceTo(start) > 0.3, "the wreck stayed at " + wreck.position());
+                helper.assertTrue(wreck.position().distanceTo(start) < 3.0, "the wreck flew off to " + wreck.position());
+                var marker = back.getData(ModAttachments.DEATH_MARKER);
+                helper.assertTrue(marker.wreck().filter(id::equals).isPresent(), "arriving cleared the marker of a full wreck");
+                while (!wreck.isRemoved()) {
+                    back.getInventory().clearContent();
+                    wreck.interact(back, net.minecraft.world.InteractionHand.MAIN_HAND);
+                }
+                helper.assertTrue(back.getData(ModAttachments.DEATH_MARKER).pos().isEmpty(), "an emptied wreck kept its marker");
+                back.setData(ModAttachments.LINK, LinkState.NONE);
+                TestPlayers.remove(back);
+                helper.succeed();
+            });
+        });
+    }
+
+    /** The death screen's shell card: the player respawns in a new body and is linked to the shell at once, so that body is there to come back to. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aPlayerWakesInTheShellTheyChose(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(98_800, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            BodyHost shell = BodyHost.spawn(space, player.position().add(0.0, 0.0, 6.0), HostRole.SHELL, Bodies.preset(BuiltinBodies.MECH), player.getUUID());
+            UUID id = shell.getUUID();
+            destroy(player, space);
+            TestEventListeners.WRECKS.remove(player.getUUID());
+            Links.chooseWake(player, java.util.Optional.of(UUID.randomUUID()));
+            Links.chooseWake(player, java.util.Optional.of(id));
+            ServerPlayer back = space.getServer().getPlayerList().respawn(player, false, net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(Links.state(back).linked(), "not linked"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(Links.state(back).link().filter(link -> link.shell().equals(id)).isPresent(), "linked to the wrong shell");
+                        helper.assertTrue(Bodies.data(back).equals(Bodies.preset(BuiltinBodies.MECH)), "the player is not wearing the shell");
+                        helper.assertTrue(Links.wake(back) == Links.Result.WOKEN, "no body to come back to");
+                        helper.assertTrue(Bodies.data(back).equals(Bodies.starter()), "the body to come back to is not the new Drone");
+                        back.setData(ModAttachments.LINK, LinkState.NONE);
+                        TestPlayers.remove(back);
+                    })
+                    .thenSucceed();
+        });
+    }
+
     /** With the game rule that keeps inventories, nothing is left behind. Its own batch: the rule is the whole server's. */
     @GameTest(template = "empty", timeoutTicks = 300, batch = "keep_inventory")
     public static void keepingInventoriesLeavesNoWreck(GameTestHelper helper) {

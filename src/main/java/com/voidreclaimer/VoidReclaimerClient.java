@@ -47,6 +47,7 @@ public final class VoidReclaimerClient {
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
+        com.voidreclaimer.network.DeathShellsPayload.clientHandler = com.voidreclaimer.client.screen.DeathScreenCores::onShells;
         com.voidreclaimer.network.ShellListPayload.clientHandler = payload ->
                 Minecraft.getInstance().setScreen(new com.voidreclaimer.client.screen.ShellPickerScreen(payload));
     }
@@ -107,6 +108,7 @@ public final class VoidReclaimerClient {
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("planetary_grid"), com.voidreclaimer.client.hud.PlanetaryGridLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("module"), ModuleHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("signal_bars"), com.voidreclaimer.client.hud.SignalBarsLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("station_markers"), com.voidreclaimer.client.hud.StationMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_meter"), DustMeterLayer::render);
