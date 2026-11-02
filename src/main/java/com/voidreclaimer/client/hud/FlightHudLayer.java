@@ -1,6 +1,7 @@
 package com.voidreclaimer.client.hud;
 
 import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.flight.AfterburnerState;
 import com.voidreclaimer.flight.FlightStats;
 import com.voidreclaimer.flight.ThrusterFlight;
 import com.voidreclaimer.registry.ModAttachments;
@@ -74,5 +75,14 @@ public final class FlightHudLayer {
             color = COLOR_DIM;
         }
         graphics.drawString(font, status, x, y + 10, color);
+
+        // Above the speed: how much burn is left, or how far it has to cool.
+        AfterburnerState burner = player.getData(ModAttachments.AFTERBURNER);
+        if (burner.heat() > 0f) {
+            int percent = Math.round(burner.heat() * 100f);
+            Component line = burner.overheated() ? Component.translatable("hud.void_reclaimer.afterburner_cooling", percent)
+                    : Component.translatable("hud.void_reclaimer.afterburner", 100 - percent);
+            graphics.drawString(font, line, x, y - 10, burner.overheated() ? COLOR_WARNING : COLOR_NORMAL);
+        }
     }
 }

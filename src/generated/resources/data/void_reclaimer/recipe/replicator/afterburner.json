@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 30.0,
+    "void_reclaimer:ice": 20.0,
+    "void_reclaimer:metallic": 50.0,
+    "void_reclaimer:silicate": 30.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:afterburner"
+  },
+  "ticks": 1800
+}

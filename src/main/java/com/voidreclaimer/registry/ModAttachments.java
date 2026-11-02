@@ -63,6 +63,12 @@ public final class ModAttachments {
     public static final Supplier<AttachmentType<FlightInput>> FLIGHT_INPUT = ATTACHMENT_TYPES.register("flight_input",
             () -> AttachmentType.builder(() -> FlightInput.NONE).build());
 
+    /** Transient: how an Afterburner stands, synced to the owning player, whose top speed depends on it. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.flight.AfterburnerState>> AFTERBURNER = ATTACHMENT_TYPES.register("afterburner",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.flight.AfterburnerState.COLD)
+                    .sync((holder, to) -> holder == to, com.voidreclaimer.flight.AfterburnerState.STREAM_CODEC)
+                    .build());
+
     /** Server-only, transient: recent positions for the speed check. */
     public static final Supplier<AttachmentType<FlightTracker>> FLIGHT_TRACKER = ATTACHMENT_TYPES.register("flight_tracker",
             () -> AttachmentType.builder(FlightTracker::new).build());

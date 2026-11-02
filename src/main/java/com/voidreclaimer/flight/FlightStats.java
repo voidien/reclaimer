@@ -13,9 +13,11 @@ import net.minecraft.world.entity.player.Player;
 public record FlightStats(double mass, double thrust, double brakeForce, double maxSpeed) {
     public static final double TICKS_PER_SECOND = 20.0;
 
-    /** Current handling for a player, from the assembled body (both sides; the client has the synced body). */
+    /** Current handling for a player, from the assembled body and any burn in progress (both sides; the client has the synced body). */
     public static FlightStats of(Player player) {
-        return com.voidreclaimer.body.Bodies.stats(player).flight();
+        FlightStats stats = com.voidreclaimer.body.Bodies.stats(player).flight();
+        float factor = player.getData(com.voidreclaimer.registry.ModAttachments.AFTERBURNER).speedFactor();
+        return factor > 1f ? new FlightStats(stats.mass, stats.thrust, stats.brakeForce, stats.maxSpeed * factor) : stats;
     }
 
     public double acceleration() {

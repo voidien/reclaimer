@@ -11,6 +11,13 @@ import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.BuiltinBodies;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.registry.ModDataComponents;
+import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.energy.EnergyData;
+import com.voidreclaimer.flight.AfterburnerState;
+import com.voidreclaimer.flight.Afterburners;
+import com.voidreclaimer.flight.FlightInput;
+import com.voidreclaimer.flight.FlightStats;
+import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModItems;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +134,69 @@ public final class UtilityModuleGameTests {
             Bodies.store(player, bare.data());
             helper.assertTrue(player.getMaxHealth() == bare.stats().maxHealth(), "the health stayed after the plating came off");
             helper.assertTrue(player.getHealth() == bare.stats().maxHealth(), "health over the new limit: " + player.getHealth());
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** Sprint and thrust burn for a higher top speed and heavy energy; a full burn locks it, and the top speed fades rather than stops. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void anAfterburnerBurnsThenCools(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(186_240, 300, 8);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP));
+            double top = FlightStats.of(player).maxSpeed();
+            FlightInput thrust = FlightInput.of(true, false, false, false, false, false);
+            EnergyData full = player.getData(ModAttachments.ENERGY);
+
+            player.setData(ModAttachments.FLIGHT_INPUT, thrust.withBoost(true));
+            Afterburners.tick(player);
+            helper.assertTrue(FlightStats.of(player).maxSpeed() == top, "a body with no Afterburner burned");
+
+            BodyView bare = Bodies.view(player);
+            BodyData.Mount mount = bare.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            Bodies.store(player, bare.data().withModule(mount, new ItemStack(ModItems.AFTERBURNER.get())));
+
+            player.setData(ModAttachments.FLIGHT_INPUT, thrust);
+            Afterburners.tick(player);
+            helper.assertTrue(FlightStats.of(player).maxSpeed() == top, "it burned with the key up");
+            player.setData(ModAttachments.FLIGHT_INPUT, FlightInput.NONE.withBoost(true));
+            Afterburners.tick(player);
+            helper.assertTrue(FlightStats.of(player).maxSpeed() == top, "it burned with no thrust held");
+
+            player.setData(ModAttachments.FLIGHT_INPUT, thrust.withBoost(true));
+            Afterburners.tick(player);
+            helper.assertTrue(Math.abs(FlightStats.of(player).maxSpeed() - top * 1.5) < 1e-6, "top speed in a burn is " + FlightStats.of(player).maxSpeed() + ", from " + top);
+            for (int tick = 0; tick < 130; tick++) {
+                Afterburners.tick(player);
+            }
+            AfterburnerState spent = player.getData(ModAttachments.AFTERBURNER);
+            helper.assertTrue(spent.overheated() && !spent.burning(), "a held burn never ended: " + spent);
+            float used = full.energy() - player.getData(ModAttachments.ENERGY).energy();
+            helper.assertTrue(Math.abs(used - 80f) < 2f, "a full burn used " + used + " energy, not 80");
+            helper.assertTrue(Math.abs(FlightStats.of(player).maxSpeed() - top) < 1e-6, "the top speed never came down: " + FlightStats.of(player).maxSpeed());
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** With no energy left it does not light, whatever is held. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void anAfterburnerNeedsEnergy(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(186_656, 300, 8);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP));
+            double top = FlightStats.of(player).maxSpeed();
+            BodyView bare = Bodies.view(player);
+            BodyData.Mount mount = bare.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            Bodies.store(player, bare.data().withModule(mount, new ItemStack(ModItems.AFTERBURNER.get())));
+            EnergyData energy = player.getData(ModAttachments.ENERGY);
+            Energy.update(player, new EnergyData(0f, energy.capacity(), true), true);
+            player.setData(ModAttachments.FLIGHT_INPUT, FlightInput.of(true, false, false, false, false, false).withBoost(true));
+            Afterburners.tick(player);
+            helper.assertTrue(FlightStats.of(player).maxSpeed() == top, "it burned with nothing in the tank");
             TestPlayers.remove(player);
             helper.succeed();
         });
