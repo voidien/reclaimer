@@ -1,0 +1,4 @@
+## Blocks stop a big body, as pure logic
+- `BodyBoxes.resolve(body, blocks, velocity)` returns the part of a move a body can have among blocks, and flight does not call it yet. The body slides along what it hits, and the move is never longer than asked. With nothing in the way it returns the same velocity, so free flight isn't rounded.
+- A box that starts a tick inside something can go no deeper into anything than it started. That's per box, so a body too big for a tunnel can still go along it. `BodyBoxesResolveTest` covers this, the joins of a wall, a thin block, a stop 29,999,000 blocks out and a Titan at a wall.
+- Known limits: a body with buried boxes thin on all three axes can stick, and until the heading step, turning into a wall gives a box that much room (`docs/design/hit-boxes.md`).
