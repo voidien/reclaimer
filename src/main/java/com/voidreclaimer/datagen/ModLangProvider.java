@@ -293,6 +293,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.core", "%s (%s)");
         add("screen.void_reclaimer.respawn.spawn.detail", "Always available");
         add("screen.void_reclaimer.respawn.distance", "%s m from here");
+        add("screen.void_reclaimer.respawn.shell", "Remote Shell %s");
+        add("screen.void_reclaimer.respawn.shell.away", "In another dimension");
+        add("message.void_reclaimer.respawn.shell_failed", "That shell can't be reached. You woke in a new Drone.");
         add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
