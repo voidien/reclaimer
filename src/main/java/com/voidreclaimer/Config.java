@@ -184,7 +184,6 @@ public final class Config {
     public static final ModConfigSpec.IntValue EARTH_ARRIVAL_EDGE;
     public static final ModConfigSpec.IntValue EARTH_BELT_FLOOR;
     public static final ModConfigSpec.DoubleValue EARTH_BELT_ROCKS;
-    public static final ModConfigSpec.DoubleValue EARTH_ACID_WEAR;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
     public static final ModConfigSpec.IntValue SPIRE_CATALYSTS;
     public static final ModConfigSpec.IntValue SPIRE_WATER;
@@ -358,8 +357,6 @@ public final class Config {
         EARTH_BELT_ROCKS = BUILDER.comment("Rocks a second at a body in the belt over a ruined planet. It thins as sectors are restored.").defineInRange("beltRocks", 0.5, 0.0, 20.0);
         EARTH_ACID_DRIZZLE = BUILDER.comment("Acid Drizzle falls on ruined Earth outside restored sectors, and slowly wears body sections under the open sky.")
                 .define("acidDrizzle", true);
-        EARTH_ACID_WEAR = BUILDER.comment("Condition each section loses per minute in full Acid Drizzle (1.0 = all of it). Less as the planet heals. It never breaks a section.")
-                .defineInRange("acidWearPerMinute", 0.003, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust Sensor.").push("sensor");

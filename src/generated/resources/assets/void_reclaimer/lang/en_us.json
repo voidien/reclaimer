@@ -908,5 +908,6 @@
   "tooltip.void_reclaimer.section.wear": "wear resistance %s",
   "weather.void_reclaimer.debris_storm": "Debris storm",
   "weather.void_reclaimer.ion_storm": "Ion storm",
-  "weather.void_reclaimer.solar_flare": "Solar flare"
+  "weather.void_reclaimer.solar_flare": "Solar flare",
+  "weather.void_reclaimer.toxic_air": "Toxic air"
 }

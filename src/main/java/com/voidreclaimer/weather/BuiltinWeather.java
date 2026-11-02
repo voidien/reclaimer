@@ -28,6 +28,7 @@ public final class BuiltinWeather {
         EXPOSURES.register("everywhere", () -> player -> 1f);
         EXPOSURES.register("open_sky", () -> player -> EnergyTicker.sunExposure(player) > 0f ? 1f : 0f);
         EXPOSURES.register("sun_line", () -> player -> sunLine(player) ? 1f : 0f);
+        EXPOSURES.register("toxic_air", () -> com.voidreclaimer.earth.AcidDrizzle::exposure);
         EFFECTS.register("wear", () -> BuiltinWeather::wear);
         EFFECTS.register("damage", () -> BuiltinWeather::damage);
         EFFECTS.register("energy", () -> BuiltinWeather::energy);

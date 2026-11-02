@@ -18,8 +18,8 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Light, repairable wear on body sections. Thrust wears the sections carrying thrusters; using a tool module wears the
  * section holding it. Below {@link #FULL_EFFECT} condition a section (and the thrusters on it) lose effectiveness
- * smoothly, at most {@link #MAX_LOSS}. Sections never break, creative bodies don't wear, and wear can be switched off in
- * the config. Repair is in the Body tab ({@link Bodies#repair}).
+ * smoothly, at most {@link #MAX_LOSS}, and a section worn right out gives nothing at all until it is repaired. Sections never
+ * break, creative bodies don't wear, and wear can be switched off in the config. Repair is in the Body tab ({@link Bodies#repair}).
  *
  * <p>Wear is gathered per player and written to the section item in 1% steps, so the body isn't re-synced every tick.
  */
@@ -29,6 +29,8 @@ public final class Wear {
     /** Effectiveness lost at condition 0. */
     public static final float MAX_LOSS = 0.25f;
     static final float STEP = 0.01f;
+    /** Flying and working never wear a section right out: a Drone can't be stranded by its own thruster. */
+    public static final float FLOOR_FROM_USE = 0.01f;
 
     /** Wear gathered since the last 1% step, per player and socket (server side; lost on restart, which is harmless). */
     private static final Map<UUID, Map<String, Float>> GATHERED = new java.util.concurrent.ConcurrentHashMap<>();
@@ -41,10 +43,13 @@ public final class Wear {
         return value == null ? 1f : value;
     }
 
-    /** Effectiveness multiplier for a condition: 1 down to {@link #FULL_EFFECT}, then falling to {@code 1 - MAX_LOSS} at 0. */
+    /** Effectiveness multiplier for a condition: 1 down to {@link #FULL_EFFECT}, then falling towards {@code 1 - MAX_LOSS}, and 0 at 0. */
     public static float efficiency(float condition) {
         if (condition >= FULL_EFFECT) {
             return 1f;
+        }
+        if (condition <= 0f) {
+            return 0f;
         }
         return 1f - MAX_LOSS * (FULL_EFFECT - Math.max(0f, condition)) / FULL_EFFECT;
     }
@@ -90,7 +95,7 @@ public final class Wear {
             }
         });
         for (String socket : sockets) {
-            add(player, socket, amount);
+            add(player, socket, amount, FLOOR_FROM_USE);
         }
     }
 
@@ -98,12 +103,16 @@ public final class Wear {
     public static void onToolUse(ServerPlayer player) {
         BodyData.Mount mount = Bodies.view(player).activeToolMount();
         if (mount != null) {
-            add(player, mount.socket(), Config.WEAR_PER_TOOL_USE.get().floatValue());
+            add(player, mount.socket(), Config.WEAR_PER_TOOL_USE.get().floatValue(), FLOOR_FROM_USE);
         }
     }
 
-    /** Gathers wear on {@code socket}'s section, scaled by its wear resistance, and applies it in 1% steps. */
+    /** Gathers wear on {@code socket}'s section, scaled by its wear resistance, and applies it in 1% steps. Anything that isn't the body's own use can wear a section right out. */
     public static void add(ServerPlayer player, String socket, float amount) {
+        add(player, socket, amount, 0f);
+    }
+
+    private static void add(ServerPlayer player, String socket, float amount, float floor) {
         if (!Config.WEAR_ENABLED.get() || player.isCreative() || player.isSpectator() || amount <= 0f) {
             return;
         }
@@ -121,8 +130,8 @@ public final class Wear {
         }
         gathered.remove(socket);
         float condition = condition(section);
-        if (condition > 0f) {
-            Bodies.store(player, body.withSection(socket, withCondition(section, condition - total)));
+        if (condition > floor) {
+            Bodies.store(player, body.withSection(socket, withCondition(section, Math.max(floor, condition - total))));
         }
     }
 }

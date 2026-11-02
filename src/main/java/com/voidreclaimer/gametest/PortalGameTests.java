@@ -222,8 +222,9 @@ public final class PortalGameTests {
                                 "return gate too small for the Ship: " + gate);
                         BlockPos gatePane = gate.rect().at(gate.width() / 2, 1);
                         helper.assertTrue(earth.getBlockState(gatePane).is(ModBlocks.ATMOSPHERIC_PORTAL.get()), "the return gate is not lit");
-                        helper.assertTrue(player.getY() >= gate.bottomLeft().getY() - 0.01 && Math.abs(player.getX() - gate.rect().centerBottom().x) < 1
-                                        && player.getZ() > gate.bottomLeft().getZ() + 1.5 && player.getZ() < gate.bottomLeft().getZ() + 5,
+                        // A body comes out over the far side of the planet, above the debris belt, not at the gate.
+                        helper.assertTrue(player.getY() >= com.voidreclaimer.Config.EARTH_BELT_FLOOR.get() && Math.abs(player.getX() - gate.rect().centerBottom().x) < 1
+                                        && player.getZ() > com.voidreclaimer.earth.RuinedTerrain.HALF / 2,
                                 "arrived in the wrong place: " + player.position());
                         helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) > 0, "no gravity on ruined Earth");
                         BlockPos back = gatePane;

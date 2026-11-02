@@ -65,8 +65,27 @@ public final class SpaceWeatherTicker {
         }
     }
 
+    /** One second of the kind {@code id}, which never stops, on {@code player}: for a test that wants a body of its own. */
+    public static void alwaysOn(ServerPlayer player, ResourceLocation id) {
+        ServerLevel level = player.serverLevel();
+        registry(level).getOptional(id).filter(weather -> weather.dimensions().contains(level.dimension()))
+                .ifPresent(weather -> reach(id, weather, player, 1f));
+    }
+
+    private static void always(ServerLevel level) {
+        for (var entry : registry(level).entrySet()) {
+            SpaceWeather weather = entry.getValue();
+            if (weather.always() && weather.dimensions().contains(level.dimension())) {
+                for (ServerPlayer player : List.copyOf(level.players())) {
+                    reach(entry.getKey().location(), weather, player, 1f);
+                }
+            }
+        }
+    }
+
     /** One second of {@code level}'s weather. */
     public static void second(ServerLevel level) {
+        always(level);
         WeatherState before = of(level);
         RandomSource random = level.getRandom();
         WeatherState after = WeatherClock.second(before, candidates(level), () -> gap(random), random::nextInt);
@@ -88,7 +107,9 @@ public final class SpaceWeatherTicker {
                 NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Started(level, id.get(), weather.get()));
             }
             if (after.active()) {
-                reach(level, id.get(), weather.get(), after);
+                for (ServerPlayer player : List.copyOf(level.players())) {
+                    reach(id.get(), weather.get(), player, after.strength());
+                }
             }
             if (before.active() && !after.active()) {
                 NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Ended(level, id.get(), weather.get()));
@@ -96,23 +117,18 @@ public final class SpaceWeatherTicker {
         }
     }
 
-    private static void reach(ServerLevel level, ResourceLocation id, SpaceWeather weather, WeatherState state) {
+    private static void reach(ResourceLocation id, SpaceWeather weather, ServerPlayer player, float strength) {
         WeatherExposureType exposure = ModRegistries.WEATHER_EXPOSURE_TYPES.get(weather.exposure());
-        if (exposure == null) {
+        if (exposure == null || player.isCreative() || player.isSpectator() || !player.isAlive()) {
             return;
         }
-        for (ServerPlayer player : List.copyOf(level.players())) {
-            if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
-                continue;
-            }
-            float share = exposure.exposure(player);
-            SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(level, id, weather, player, share);
-            if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
-                for (SpaceWeather.Effect effect : weather.effects()) {
-                    WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
-                    if (type != null) {
-                        type.second(player, effect.strength() * state.strength() * event.getShare());
-                    }
+        float share = exposure.exposure(player);
+        SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(player.serverLevel(), id, weather, player, share);
+        if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
+            for (SpaceWeather.Effect effect : weather.effects()) {
+                WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
+                if (type != null) {
+                    type.second(player, effect.strength() * strength * event.getShare());
                 }
             }
         }
@@ -124,7 +140,7 @@ public final class SpaceWeatherTicker {
         Registry<SpaceWeather> registry = registry(level);
         for (var entry : registry.entrySet()) {
             SpaceWeather weather = entry.getValue();
-            if (weather.dimensions().contains(level.dimension()) && weather.milestone().map(milestone -> reached(level, milestone)).orElse(true)) {
+            if (!weather.always() && weather.dimensions().contains(level.dimension()) && weather.milestone().map(milestone -> reached(level, milestone)).orElse(true)) {
                 candidates.add(candidate(entry.getKey().location(), weather));
             }
         }
