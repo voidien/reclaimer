@@ -100,7 +100,8 @@ public final class BoxCollision {
         return plot.inflate(MARGIN);
     }
 
-    private static BodyBoxes.Box onShip(Pose3dc pose, AABB part) {
+    /** A block's shape on a ship, as a box in the world that turns with the ship. */
+    static BodyBoxes.Box onShip(Pose3dc pose, AABB part) {
         Vec3 middle = pose.transformPosition(part.getCenter());
         return new BodyBoxes.Box("", new Vector3d(middle.x, middle.y, middle.z), new Vector3d(part.getXsize() / 2.0, part.getYsize() / 2.0, part.getZsize() / 2.0),
                 pose.orientation());
