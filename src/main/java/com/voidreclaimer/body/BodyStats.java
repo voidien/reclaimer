@@ -111,6 +111,9 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
                 rows += module.storage().get().rows();
                 dustCapacity += module.storage().get().dustCapacity();
             }
+            if (module.plating().isPresent()) {
+                health += module.plating().get().health() * e;
+            }
         }
         mass = Math.max(mass, 0.01f);
         budget = Math.max(budget, MIN_BUDGET);
