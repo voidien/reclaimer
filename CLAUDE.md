@@ -130,6 +130,7 @@ The mod must work alongside **Sodium, ModernFix, FerriteCore, and ImmediatelyFas
 | `docs/design/extension-points.md` | any registry, data component, tag or event; every new extension point goes here |
 | `docs/design/structure.md` | adding a package |
 | `docs/design/art.md` | art, textures, models, the Retro Diffusion tools |
+| `docs/design/hit-boxes.md` | big-body collision, heading, anything that moves a big body |
 | `docs/debug-commands.md` | any check in the game, any throwaway test, any new debug tool |
 | `docs/design/original-phases.md` | history only |
 
