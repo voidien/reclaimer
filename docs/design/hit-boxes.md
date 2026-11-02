@@ -6,7 +6,7 @@ This is the plan from the old PC's reading of the code and the Sable 2.0.6 jar, 
 
 The owner's further answers: a portal takes a Shuttle, while Ships and Titans stay in orbit. Thrust follows where the body points. Helper drones steer around big bodies. Wanted with this: a test that boxes match the model, a collision event with speed and contact, bodies pushing ships they hit, and debris rocks on the same collision code.
 
-**Built so far:** the data and the pure maths (`api.body.HitBox`, `Socket.boxes`, `body/BodyBoxes`) with the Titan and Shuttle lists. Nothing reads them yet, so a body flies as it did. The Ship's list waits for its measurement.
+**Built so far:** the data and the pure maths (`api.body.HitBox`, `Socket.boxes`, `body/BodyBoxes`) with the Ship, Shuttle and Titan lists. Nothing reads them yet, so a body flies as it did.
 
 ## How it works
 - **Hook:** `ThrusterFlight.travel`, between `step` and `move`, calls `BodyBoxes.resolve(player, velocity)`. No mixin is needed, and it can't clash with Sable's `@Redirect` on `collide`. Collision is client side today: `LivingEntityTravelMixin` runs only for the local player, and the server's `handleMovePlayer` re-runs `move` with the vanilla box only. Creative vanilla flight stays boxless.
@@ -54,18 +54,21 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 | strut_l2, strut_r2 | ±3.25, 1.75, -3.6 | 2.5, 0.5, 1.5 |
 | ridge | 0, 4.12, -1.8 | 1.5, 0.5, 5 |
 
-**Ship (15 boxes), scale 3, provisional.** Adding the rig pivots, as `moveToPivot` draws them, gives 21.4 long and 17.6 wide, while `/vrphoto handling` reads 15.4 and the cubes alone give 16.3. Measure it through `BodyBounds` first.
+**Ship (29 boxes), scale 3, measured.** 21.4 long, 17.6 wide, 7.8 tall, from the rig's pivots and each section's model as they are drawn. `BodyBounds` and `/vrphoto handling` read 15.4, because a composed rig's box only reaches each section's pivot, so don't size anything from them. `up` is from the feet, with the rig's origin 2.7 above them. `wing_port` and every odd numbered pair member are on the pilot's left, and the keel is the rig's own frame, not `ship_keel`. The RCS clusters have no box: they sit inside the keel and bow.
 
 | Socket | at | size |
 |---|---|---|
-| keel | 0, 0.2, 1.4 and -4.8 | 5.6, 3.4, 6.2 |
-| bow | 0, 0.2, 10.4 and 5.5 | 3.6, 1.8, 5 |
-| bridge | 0, 2.75, 1.6 | 1.6, 3.9, 2.7 |
-| wing_port, wing_starboard | ±3.6 and ±7, 0, -2.9 (4) | 3.4, 0.6, 7.4 |
-| nacelle_1, nacelle_3 | ±1.5, 0, -7.9 | 1.4, 2.2, 1 |
-| dorsal_spine | 0, 1.85, -2.4 | 0.6, 2.9, 5.6 |
-| ventral_fin | 0, -1.75, -3.1 | 0.6, 2.7, 3.6 |
-| mast_port, mast_starboard | ±1.1, 1.3, 0 | 0.6, 1.8, 0.6 |
+| keel | 0, 2.815, -2.44 | 3, 1.35, 10.88 |
+| bow | 0, 2.915, 7.97 | 3.56, 1.75, 9.94 |
+| bridge | 0, 5.42, 1.66 | 1.68, 3.94, 2.68 |
+| hull_1 to 6 | ±1.265, 2.69, 2.25 / 0.75 / -0.75 | 1.41, 1.1, 1.5 |
+| wing_port, wing_starboard | ±5.365, 2.69, -2.865 | 6.89, 0.54, 7.39 |
+| nacelle_1 to 4 | ±1.5, 3.265 and 2.135, -5.065 | 1.34, 1.05, 6.75 |
+| hardpoint_1 to 6 | ±2.3, 2.325, 2.25 / 0.75 / -0.75 | 1.22, 0.37, 0.38 |
+| cargo_1 to 4 | ±0.75, 1.555, 0.77 and -0.35 | 1.12, 0.89, 1.08 |
+| mast_port, mast_starboard | ±1.125, 3.97, 0 | 0.57, 1.78, 0.56 |
+| dorsal_spine | 0, 4.53, -2.435 | 0.56, 2.9, 5.63 |
+| ventral_fin | 0, 0.97, -3.095 | 0.56, 2.72, 3.57 |
 
 ## PRs, each working alone
 0. **Spike, done 2026-11-02, code not kept.** A client command probed a grid of points round the player through `SableCompanion.INSTANCE.getAllIntersecting` and `logicalPose().transformPositionInverse`, then read `level.getBlockState` at the plot position, against a real 5 x 5 ship made with `/sable assemble connected`:

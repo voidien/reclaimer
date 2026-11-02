@@ -136,33 +136,37 @@ public final class BuiltinBodies {
         map.put(MECH, new Chassis(MECH_SIZE, "torso", List.copyOf(mech)).withWalks(true));
 
         List<Socket> ship = new ArrayList<>();
-        ship.add(root("keel", SHIP_KEEL, "core"));
-        ship.add(socket("bow", "keel", 0, 0, -24, "hull", BOW));
-        ship.add(socket("bridge", "keel", 0, 6, -12, "control", BRIDGE));
+        ship.add(root("keel", SHIP_KEEL, "core").withBoxes(shipBox(0, 2.815, -2.44, 3, 1.35, 10.88)));
+        ship.add(socket("bow", "keel", 0, 0, -24, "hull", BOW).withBoxes(shipBox(0, 2.915, 7.97, 3.56, 1.75, 9.94)));
+        ship.add(socket("bridge", "keel", 0, 6, -12, "control", BRIDGE).withBoxes(shipBox(0, 5.42, 1.66, 1.68, 3.94, 2.68)));
         for (int i = 1; i <= 6; i++) {
-            Socket hull = socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT);
+            Socket hull = socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT)
+                    .withBoxes(shipBox(pilotSide(i) * 1.265, 2.69, 2.25 - 1.5 * ((i - 1) / 2), 1.41, 1.1, 1.5));
             // The hull segment, wing and hardpoint models are lopsided: the far side of each pair is drawn flipped.
             ship.add(i % 2 == 0 ? hull.mirrored() : hull);
         }
-        ship.add(socket("wing_port", "keel", 14, 0, 4, "control", WING));
-        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING).mirrored());
+        ship.add(socket("wing_port", "keel", 14, 0, 4, "control", WING).withBoxes(shipBox(-5.365, 2.69, -2.865, 6.89, 0.54, 7.39)));
+        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING).withBoxes(shipBox(5.365, 2.69, -2.865, 6.89, 0.54, 7.39)).mirrored());
         for (int i = 1; i <= 4; i++) {
-            ship.add(socket("nacelle_" + i, "keel", i <= 2 ? 8 : -8, i % 2 == 0 ? -3 : 3, 20, "propulsion", ENGINE_NACELLE));
+            ship.add(socket("nacelle_" + i, "keel", i <= 2 ? 8 : -8, i % 2 == 0 ? -3 : 3, 20, "propulsion", ENGINE_NACELLE)
+                    .withBoxes(shipBox(i <= 2 ? -1.5 : 1.5, i % 2 == 0 ? 2.135 : 3.265, -5.065, 1.34, 1.05, 6.75)));
         }
         for (int i = 1; i <= 6; i++) {
             // Hardpoints also take a Mech hand.
-            Socket hardpoint = socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND);
+            Socket hardpoint = socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND)
+                    .withBoxes(shipBox(pilotSide(i) * 2.3, 2.325, 2.25 - 1.5 * ((i - 1) / 2), 1.22, 0.37, 0.38));
             ship.add(i % 2 == 0 ? hardpoint.mirrored() : hardpoint);
         }
         for (int i = 1; i <= 4; i++) {
-            ship.add(socket("cargo_" + i, "keel", i % 2 == 0 ? -4 : 4, -4, -4 + 6 * ((i - 1) / 2), "cargo", CARGO_BAY));
+            ship.add(socket("cargo_" + i, "keel", i % 2 == 0 ? -4 : 4, -4, -4 + 6 * ((i - 1) / 2), "cargo", CARGO_BAY)
+                    .withBoxes(shipBox(pilotSide(i) * 0.75, 1.555, i <= 2 ? 0.77 : -0.35, 1.12, 0.89, 1.08)));
         }
-        ship.add(socket("mast_port", "keel", 6, 10, 0, "sensors", SENSOR_MAST));
-        ship.add(socket("mast_starboard", "keel", -6, 10, 0, "sensors", SENSOR_MAST));
+        ship.add(socket("mast_port", "keel", 6, 10, 0, "sensors", SENSOR_MAST).withBoxes(shipBox(-1.125, 3.97, 0, 0.57, 1.78, 0.56)));
+        ship.add(socket("mast_starboard", "keel", -6, 10, 0, "sensors", SENSOR_MAST).withBoxes(shipBox(1.125, 3.97, 0, 0.57, 1.78, 0.56)));
         ship.add(socket("rcs_fore", "keel", 0, 2, -20, "control", RCS_CLUSTER));
         ship.add(socket("rcs_aft", "keel", 0, 2, 16, "control", RCS_CLUSTER));
-        ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE));
-        ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN));
+        ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE).withBoxes(shipBox(0, 4.53, -2.435, 0.56, 2.9, 5.63)));
+        ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN).withBoxes(shipBox(0, 0.97, -3.095, 0.56, 2.72, 3.57)));
         map.put(SHIP, new Chassis(SHIP_SIZE, "keel", List.copyOf(ship), new Chassis.Cockpit(0.9f, -0.3f, 0f)));
 
         // The Shuttle: a second Ship-class layout. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
@@ -204,6 +208,16 @@ public final class BuiltinBodies {
                 titanBox(11, 19, -17, 5, 5, 10), titanBox(11, 19, -7.5, 5, 5, 10)));
         map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan), new Chassis.Cockpit(1.7f, 0.5f, 0f)));
         return Map.copyOf(map);
+    }
+
+    /** A Ship box, in blocks at the Ship's scale, from the feet. */
+    private static HitBox shipBox(double right, double up, double forward, double width, double height, double length) {
+        return box(SIZE_CLASSES.get(SHIP_SIZE).scale(), right, up, forward, width, height, length);
+    }
+
+    /** Which side of the pilot the {@code i}th of a pair of Ship sections is on: the first of each pair is the port, left side. */
+    private static int pilotSide(int i) {
+        return i % 2 == 0 ? 1 : -1;
     }
 
     /** A Titan box, in blocks at the Titan's scale: its feet are the model's origin. */

@@ -179,10 +179,10 @@ class BodyBoxesTest {
     }
 
     @Test
-    void theShuttleAndTitanHaveTheirBoxesAndTheOthersNone() {
+    void theBigBodiesHaveTheirBoxesAndTheOthersNone() {
         assertEquals(19, boxes(BuiltinBodies.TITAN));
         assertEquals(14, boxes(BuiltinBodies.SHUTTLE));
-        assertEquals(0, boxes(BuiltinBodies.SHIP), "the Ship waits to be measured");
+        assertEquals(29, boxes(BuiltinBodies.SHIP));
         assertEquals(0, boxes(BuiltinBodies.DRONE));
         assertEquals(0, boxes(BuiltinBodies.MECH));
     }
