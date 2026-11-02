@@ -1,3 +1,4 @@
 ## Wake in a shell from the death screen
 - The death screen has a card for each of your shells beside the spawn and the charged Backup Cores, as the owner chose. A shell card respawns you at the free spawn in a new Drone and links you to the shell at once, so that Drone is the body you come back to. If the link fails you stay in the Drone and are told why. Test: `aPlayerWakesInTheShellTheyChose`.
-- Cards that don't fit the screen are left out: at GUI scale 3 that is about four.
+- Cards that don't fit the screen are left out: at GUI scale 3 that is about four. On a narrow window the Respawn and Title Screen buttons move right of the cards.
+- **Known issues:** a card can offer a shell whose copy on disk turned out old after a crash; picking it says so and leaves you in the Drone. A marker whose wreck goes while its owner is offline stays, which only a dedicated server can reach.

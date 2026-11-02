@@ -38,6 +38,7 @@ public final class DeathScreenCores {
     private static final int CARD_WIDTH = 168;
     private static final int CARD_HEIGHT = 28;
     private static final int GAP = 4;
+    private static final int RIGHT_OF_CARDS = X + CARD_WIDTH + GAP * 2;
     private static final int TEXT = 0xFFE6F2FF;
     private static final int DIM = 0xFF8899AA;
     private static final int ACCENT = 0xFF7FD4FF;
@@ -132,6 +133,16 @@ public final class DeathScreenCores {
             add(event, new Choice(Optional.empty(), Optional.of(row.shell())), Component.translatable("screen.void_reclaimer.respawn.shell", row.number()), detail, y);
         }
         select(Choice.SPAWN);
+        clearOfTheCards(event);
+    }
+
+    /** On a narrow window the screen's own buttons would sit under the cards: they move right, and a wide window leaves them alone. */
+    private static void clearOfTheCards(ScreenEvent.Init.Post event) {
+        for (var widget : event.getListenersList()) {
+            if (widget instanceof AbstractWidget button && !(widget instanceof Card) && button.getX() < RIGHT_OF_CARDS) {
+                button.setX(RIGHT_OF_CARDS);
+            }
+        }
     }
 
     private static void add(ScreenEvent.Init.Post event, Choice choice, Component name, Component detail, int y) {
@@ -157,8 +168,13 @@ public final class DeathScreenCores {
         }
         Font font = Minecraft.getInstance().font;
         GuiGraphics graphics = event.getGuiGraphics();
-        // A short line from the AI under the score, whether or not a core can be chosen.
-        graphics.drawCenteredString(font, Component.translatable("screen.void_reclaimer.respawn.ai_line"), event.getScreen().width / 2, 116, DIM);
+        // A short line from the AI under the score, whether or not a core can be chosen, beside the cards if there are any.
+        int left = cards.isEmpty() ? 0 : RIGHT_OF_CARDS;
+        int width = event.getScreen().width - left - GAP;
+        int line = 0;
+        for (var text : font.split(Component.translatable("screen.void_reclaimer.respawn.ai_line"), width)) {
+            graphics.drawCenteredString(font, text, left + width / 2, 116 + line++ * font.lineHeight, DIM);
+        }
         if (!cards.isEmpty()) {
             graphics.drawString(font, Component.translatable("screen.void_reclaimer.respawn.title"), X, TOP - 12, ACCENT);
         }

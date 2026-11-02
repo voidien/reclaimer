@@ -508,10 +508,8 @@ public final class Links {
     /** A shell destroyed for good: nothing is to bring it back. An old copy is not the shell, so its end changes nothing. */
     static void destroyed(BodyHost shell) {
         ServerPlayer owner = owner(shell);
-        if (owner != null) {
-            DeathMarker.clear(owner, shell.getUUID());
-        }
         if (owner != null && !older(state(owner), shell)) {
+            DeathMarker.clear(owner, shell.getUUID());
             LinkState state = state(owner);
             LinkState.KnownShell known = state.known(shell.getUUID()).orElseGet(() -> seen(shell));
             owner.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withKnown(known.destroyed()));
