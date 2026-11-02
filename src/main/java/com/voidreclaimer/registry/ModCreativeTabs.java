@@ -36,6 +36,9 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.THRUSTER_MK2.get());
                 output.accept(ModItems.STORAGE_MK1.get());
                 output.accept(ModItems.STORAGE_MK2.get());
+                output.accept(ModItems.DUST_COMPRESSOR_MK1.get());
+                output.accept(ModItems.DUST_COMPRESSOR_MK2.get());
+                output.accept(ModItems.DUST_COMPRESSOR_MK3.get());
                 output.accept(ModItems.BRASS_TRIM.get());
                 output.accept(ModItems.COGWHEEL_CROWN.get());
                 output.accept(ModItems.ELECTROLYZER.get());
