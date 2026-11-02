@@ -275,9 +275,9 @@ public final class ReplicatorGameTests {
         });
     }
 
-    /** Queued items are carried things: a death drops them with the rest, and the dust comes back. */
+    /** Queued items are carried things: a death leaves them in the wreck with the rest, and the dust comes back. */
     @GameTest(template = "empty", timeoutTicks = 100)
-    public static void aDyingBodyDropsWhatItsJobsTook(GameTestHelper helper) {
+    public static void aDyingBodyLeavesWhatItsJobsTookInItsWreck(GameTestHelper helper) {
         net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(48_100, 80, 0);
         NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
             ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
@@ -287,15 +287,19 @@ public final class ReplicatorGameTests {
             player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
             player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
             helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued");
-            // The world outlives a run, and an entity can be saved in it, so what an earlier run dropped can still be here.
-            var near = new net.minecraft.world.phys.AABB(origin).inflate(8);
-            player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, near).forEach(net.minecraft.world.entity.Entity::discard);
+            player.hasChangedDimension();
             player.hurt(player.serverLevel().damageSources().genericKill(), Float.MAX_VALUE);
-            var drops = player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, near);
-            int ingots = drops.stream().filter(drop -> drop.getItem().is(net.minecraft.world.item.Items.IRON_INGOT)).mapToInt(drop -> drop.getItem().getCount()).sum();
-            helper.assertTrue(ingots == 3, ingots + " of 3 ingots dropped");
+            var wreck = (com.voidreclaimer.link.BodyHost) player.serverLevel().getEntity(TestEventListeners.WRECKS.remove(player.getUUID()));
+            int ingots = 0;
+            for (int i = 0; i < wreck.items().size(); i++) {
+                ItemStack stack = ItemStack.parseOptional(player.registryAccess(), wreck.items().getCompound(i));
+                ingots += stack.is(net.minecraft.world.item.Items.IRON_INGOT) ? stack.getCount() : 0;
+            }
+            helper.assertTrue(ingots == 3, ingots + " of 3 ingots are in the wreck");
             helper.assertTrue(Replicator.data(player).jobs().isEmpty(), "the job outlived the items it took");
             helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "the dust did not come back");
+            wreck.discard();
+            player.setData(ModAttachments.LINK, com.voidreclaimer.link.LinkState.NONE);
             TestPlayers.remove(player);
             helper.succeed();
         });

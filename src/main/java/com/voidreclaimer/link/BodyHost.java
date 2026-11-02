@@ -106,6 +106,17 @@ public class BodyHost extends LivingEntity {
         return shell;
     }
 
+    /** The void takes nothing with a body in it, or a parked body could be lost for good. It is held at the bottom of the world. */
+    @Override
+    protected void onBelowWorld() {
+        if (role() == HostRole.MIRROR) {
+            super.onBelowWorld();
+        } else {
+            setPos(getX(), level().getMinBuildHeight(), getZ());
+            setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
     /** Puts {@code body} on this host: its size, health limit and reach follow. */
     public void wear(BodyData body) {
         setData(ModAttachments.BODY, body);

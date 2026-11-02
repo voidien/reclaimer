@@ -17,7 +17,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Where the player last died, so the HUD can point back to the floating drops. Cleared on arrival.
+ * Where the player last died, so the HUD can point back to the wreck. Cleared on arrival.
  *
  * @param pos death position, empty when there is nothing to recover
  */

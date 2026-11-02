@@ -89,6 +89,7 @@ jobs:
           - aRelayListOutlivesARestart
           - aWokenShellOutlivesACrash
           - aShellsQueuedItemsOutliveACrash
+          - aMainBodyWreckOutlivesACrash
           - anOldShellGoesAfterACrash
           - aNewerShellWinsAClash
           - anOldCopyIsRecovered
