@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -37,7 +38,28 @@ public final class Signal {
     public static RelayGraph.Reading read(MinecraftServer server, LinkState.Place seat, LinkState.Place target) {
         RelayGraph.Node node = new RelayGraph.Node(new RelayGraph.Place(seat.dimension(), seat.position()), range(server, seat));
         double band = SignalMath.fromConfig().staticBand(Links.atStation(server, seat));
-        return new RelayGraph(List.of(), List.of()).signal(node, new RelayGraph.Place(target.dimension(), target.position()), band);
+        return new RelayGraph(relays(server), List.of()).signal(node, new RelayGraph.Place(target.dimension(), target.position()), band);
+    }
+
+    /** How far a relay reaches now, in blocks. */
+    public static double relayRange(MinecraftServer server) {
+        return SignalMath.fromConfig().relayRange(DysonSphereData.of(server).tier());
+    }
+
+    /** Every relay with power, in every level. One that is not loaded counts as it was last seen. */
+    private static List<RelayGraph.Node> relays(MinecraftServer server) {
+        double range = relayRange(server);
+        List<RelayGraph.Node> nodes = new ArrayList<>();
+        for (ServerLevel level : server.getAllLevels()) {
+            if (level.hasData(ModAttachments.RELAYS)) {
+                for (RelayList.Entry entry : Relays.of(level).relays()) {
+                    if (entry.lit()) {
+                        nodes.add(new RelayGraph.Node(new RelayGraph.Place(level.dimension(), entry.position()), range));
+                    }
+                }
+            }
+        }
+        return nodes;
     }
 
     /** What a player at a seat can see of their shells: everything on their list that has not gone. */

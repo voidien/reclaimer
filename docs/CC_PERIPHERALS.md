@@ -177,6 +177,7 @@ Read-only: a relay does nothing but run, and it runs while it has power.
 |---|---|
 | `getRelayId()` | the relay's id, which it keeps for good |
 | `isOnline()` | whether it has power; a dark relay passes nothing on |
+| `getRange()` | how far it reaches now, in blocks, while it has power |
 | `getEnergy()`, `getEnergyCapacity()` | Forge Energy in the buffer, and its size |
 | `getEnergyUse()` | Forge Energy it uses each tick while it runs |
 | `getRelayCount()` | how many relays this dimension knows |

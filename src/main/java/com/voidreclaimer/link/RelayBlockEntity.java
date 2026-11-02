@@ -2,6 +2,7 @@ package com.voidreclaimer.link;
 
 import com.voidreclaimer.Config;
 import com.voidreclaimer.registry.ModBlockEntities;
+import com.voidreclaimer.ship.ShipTickets;
 import com.voidreclaimer.ship.Ships;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 /**
  * A Relay. It runs on Forge Energy from any energy mod, through the standard capability, and goes dark without it. Its id lasts as long
  * as the block does, wherever a ship takes it, because a position on a ship means nothing. It writes its own row in the {@link RelayList}.
+ * While it has power it holds its ship loaded, so the ship can go on drifting and the relay on spending energy with nobody near.
  */
 public class RelayBlockEntity extends BlockEntity {
     private static final String ID = "relay_id";
@@ -66,11 +68,16 @@ public class RelayBlockEntity extends BlockEntity {
         return level instanceof ServerLevel server ? Relays.of(server).relays().size() : 0;
     }
 
+    /** How far it reaches now, in blocks, while it has power. */
+    public double range() {
+        return level == null || level.getServer() == null ? 0.0 : Signal.relayRange(level.getServer());
+    }
+
     /** What a right-click says. */
     public Component readout() {
         boolean lit = isLit();
         return Component.translatable(lit ? "message.void_reclaimer.relay.online" : "message.void_reclaimer.relay.dark",
-                stored, energyCapacity(), energyPerTick(), relaysInLevel()).withStyle(lit ? ChatFormatting.AQUA : ChatFormatting.RED);
+                stored, energyCapacity(), energyPerTick(), relaysInLevel(), (long) range()).withStyle(lit ? ChatFormatting.AQUA : ChatFormatting.RED);
     }
 
     static void serverTick(Level level, BlockPos pos, BlockState state, RelayBlockEntity relay) {
@@ -98,6 +105,13 @@ public class RelayBlockEntity extends BlockEntity {
         Vec3 middle = Vec3.atCenterOf(worldPosition);
         Vec3 place = ship == null ? middle : ship.logicalPose().transformPosition(middle);
         Relays.note(level, new RelayList.Entry(id, worldPosition, place, lit, Optional.ofNullable(ship).map(ServerSubLevel::getUniqueId)));
+        if (ship != null) {
+            if (lit) {
+                ShipTickets.hold(level, ship, id);
+            } else {
+                ShipTickets.release(level, ship, id);
+            }
+        }
     }
 
     @Override

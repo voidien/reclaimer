@@ -24,6 +24,12 @@ public final class RelayPeripheral implements GenericPeripheral {
         return relay.isLit();
     }
 
+    /** How far it reaches now, in blocks, while it has power. */
+    @LuaFunction(mainThread = true)
+    public final double getRange(RelayBlockEntity relay) {
+        return relay.range();
+    }
+
     /** Forge Energy in the buffer. */
     @LuaFunction(mainThread = true)
     public final int getEnergy(RelayBlockEntity relay) {

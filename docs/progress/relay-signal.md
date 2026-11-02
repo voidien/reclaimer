@@ -1,0 +1,3 @@
+## Relay block, part 2: it carries the signal
+- A lit Relay now passes an Uplink Seat's signal on, through `RelayGraph`, which until now was given no relays. It reaches `link.relayRange` plus the Dyson bonus, in its own dimension. The picker, the out-of-range refusal and the once-a-second link check all read it. The readout and the CC peripheral (`getRange()`) show the reach. Test: `aLitRelayCarriesTheSignal`.
+- **Default chosen (safest, reversible):** an unloaded relay carries the signal as it was last seen, so a network does not fall apart when the player leaves a base. It uses no energy while unloaded, which is free reach for as long as its chunk is unloaded.
