@@ -10,6 +10,7 @@
     "GameTestStopMixin",
     "GameTestChunkTasksMixin",
     "ChunkMapAccessor",
+    "LevelChunkSectionAccessor",
     "MinecraftServerStorageAccessor",
     "GameTestRegistryMixin",
     "GameTestBatchChunkMixin",

@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.voidreclaimer.Config;
 import com.voidreclaimer.registry.ModBlocks;
+import com.voidreclaimer.space.BarrenChunkGenerator;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
-import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
@@ -31,9 +31,9 @@ import net.minecraft.world.phys.Vec3;
  * <p>The world seed arrives in {@link #createState}, which runs when the level is created, before any chunk is made.
  * Sodium is not involved: these are ordinary blocks in ordinary chunks.
  */
-public final class AsteroidChunkGenerator extends FlatLevelSource {
+public final class AsteroidChunkGenerator extends BarrenChunkGenerator {
     public static final MapCodec<AsteroidChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)
+            FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(BarrenChunkGenerator::settings)
     ).apply(instance, instance.stable(AsteroidChunkGenerator::new)));
 
     /** Clear space around the deep space spawn, from the nearest edge of any body. */

@@ -1,0 +1,4 @@
+## A lighter deep space
+- `space/BarrenChunkGenerator`, under both of our generators, gives each section its one biome outright and skips the decoration pass when there is nothing to place. Vanilla started every section from plains, grew its palette to write the real biome, and read all 254 sections back. A dimension with lakes, features or structures still gets vanilla's pass.
+- Ruined Earth's terrain writes straight into sections, as vanilla's noise generator does, and updates its heightmaps once a column.
+- A profile of a GameTest run put these at about 50% of the sampled CPU. Sharing the main suite between three servers was tried and dropped: 57 s against 55 s on one, because each server starts cold and they use up the CPU. Compiling with C1 only (92 s) and ParallelGC (55 s against 51 s) were slower too.
