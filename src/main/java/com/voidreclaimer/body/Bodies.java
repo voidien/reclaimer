@@ -177,6 +177,18 @@ public final class Bodies {
         return new BodyView(body, chassis(access, body), compute(body, access), sizes(access), layouts(access));
     }
 
+    /** How much of a body's health is the hull under its plating: harm goes by a share of this, so plating soaks a hit up instead of growing it. */
+    public static float healthUnderPlating(LivingEntity entity) {
+        float plating = 0f;
+        for (ItemStack module : data(entity).modules().values()) {
+            ModuleStats stats = Parts.module(module);
+            if (stats != null && stats.plating().isPresent()) {
+                plating += stats.plating().get().health();
+            }
+        }
+        return Math.max(entity.getMaxHealth() - plating, 1f);
+    }
+
     /** The active tool module, or empty. */
     public static ItemStack activeTool(LivingEntity entity) {
         return view(entity).activeTool();
