@@ -1,0 +1,3 @@
+## Ships crash
+- A ship that hits something at over 5 blocks a second breaks the blocks at the contact, its own and what it hit, the weakest first, by the same rule as a body's crash, using the ship's mass, up to 32 a tick. The Helm and Station Core can go at high enough speed. The `crash_proof` tag and `ShipCrashEvent` keep a block.
+- Every block answers Sable's public callback (`BlockCrashMixin`), which records the hit; the blocks go at the end of the server tick, because a block change inside the physics step can hang the server (`ship/ShipCrash`). Sable's own fragile blocks go on working through it.

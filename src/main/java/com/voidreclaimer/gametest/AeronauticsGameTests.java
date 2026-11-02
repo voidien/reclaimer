@@ -1036,6 +1036,67 @@ public final class AeronauticsGameTests {
         });
     }
 
+    /** A plain stone ship with a glass nose, flown north at {@code speed} into a wall of glass with obsidian behind it, then {@code check}. */
+    private static void crashShip(GameTestHelper helper, BlockPos pos, double speed, Runnable check) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int chunks = -2; chunks <= 1; chunks++) {
+            space.setChunkForced(pos.getX() >> 4, (pos.getZ() >> 4) + chunks, true);
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+            command(server, space, pos, "fill " + (x - 1) + " " + (y - 1) + " " + (z - 1) + " " + (x + 1) + " " + (y + 1) + " " + (z + 1) + " minecraft:stone");
+            command(server, space, pos, "setblock " + x + " " + y + " " + (z - 2) + " minecraft:glass");
+            command(server, space, pos, "fill " + (x - 3) + " " + (y - 3) + " " + (z - 12) + " " + (x + 3) + " " + (y + 3) + " " + (z - 12) + " minecraft:glass");
+            command(server, space, pos, "fill " + (x - 3) + " " + (y - 3) + " " + (z - 13) + " " + (x + 3) + " " + (y + 3) + " " + (z - 13) + " minecraft:obsidian");
+            helper.runAfterDelay(10, () -> {
+                command(server, space, pos, "sable assemble connected " + x + " " + y + " " + z);
+                helper.runAfterDelay(10, () -> {
+                    nameShip(server, space, pos);
+                    var ship = shipNamed(space, pos);
+                    dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship).addLinearAndAngularVelocity(new org.joml.Vector3d(0, 0, -speed), new org.joml.Vector3d());
+                    helper.runAfterDelay(80, check);
+                });
+            });
+        });
+    }
+
+    private static int count(ServerLevel space, BlockPos from, BlockPos to, net.minecraft.world.level.block.Block block) {
+        int found = 0;
+        for (BlockPos at : BlockPos.betweenClosed(from, to)) {
+            found += space.getBlockState(at).is(block) ? 1 : 0;
+        }
+        return found;
+    }
+
+    /** At speed the wall's glass goes where the ship hit it, and the obsidian behind it stays. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aShipCrashBreaksTheWeakBlocksItHits(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(91_000, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        BlockPos from = pos.offset(-3, -3, -12), to = pos.offset(3, 3, -12);
+        crashShip(helper, pos, 18.0, () -> {
+            int glass = count(space, from, to, net.minecraft.world.level.block.Blocks.GLASS);
+            int obsidian = count(space, from.north(), to.north(), net.minecraft.world.level.block.Blocks.OBSIDIAN);
+            helper.assertTrue(glass < 49, "no glass broke");
+            helper.assertTrue(obsidian == 49, 49 - obsidian + " obsidian broke");
+            helper.succeed();
+        });
+    }
+
+    /** Under the safe speed a ship bumps and everything stays. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aGentleShipBumpBreaksNothing(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(91_400, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        crashShip(helper, pos, 4.0, () -> {
+            int glass = count(space, pos.offset(-3, -3, -12), pos.offset(3, 3, -12), net.minecraft.world.level.block.Blocks.GLASS);
+            helper.assertTrue(glass == 49, 49 - glass + " glass broke at 4 blocks a second");
+            helper.succeed();
+        });
+    }
+
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aChemicalThrusterPushesItsShip(GameTestHelper helper) {
