@@ -2,7 +2,9 @@
 
 The owner's decision (2026-11-01): every big body, meaning the Ship, Shuttle and Titan, gets several small boxes along its model that turn with it. They hit blocks, ships and other bodies. A turn into something pushes the body away, and stops if it is still blocked. The view turns at once, and big bodies turn with weight. This replaces the rule against custom hit boxes for big bodies once built.
 
-This is the plan from the old PC's reading of the code and the Sable 2.0.6 jar. Nothing is built, nothing here has been run, and every cost is an estimate.
+This is the plan from the old PC's reading of the code and the Sable 2.0.6 jar, checked by the spike below. Nothing is built, and the costs are estimates unless the spike measured them.
+
+The owner's further answers: a portal takes a Shuttle, while Ships and Titans stay in orbit. Thrust follows where the body points. Helper drones steer around big bodies. Wanted with this: a test that boxes match the model, a collision event with speed and contact, bodies pushing ships they hit, and debris rocks on the same collision code.
 
 **Built so far:** the data and the pure maths (`api.body.HitBox`, `Socket.boxes`, `body/BodyBoxes`) with the Titan and Shuttle lists. Nothing reads them yet, so a body flies as it did. The Ship's list waits for its measurement.
 
@@ -66,7 +68,11 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 | mast_port, mast_starboard | ±1.1, 1.3, 0 | 0.6, 1.8, 0.6 |
 
 ## PRs, each working alone
-0. **Spike, not merged:** one box against a rotated ship through the public API, in an Aeronautics GameTest and a real client. It answers whether the client can read plot blocks, whether `getAllIntersecting` works there, whether a body resting on a deck jitters (`trackingSubLevel`), and what the Ship's true extents are.
+0. **Spike, done 2026-11-02, code not kept.** A client command probed a grid of points round the player through `SableCompanion.INSTANCE.getAllIntersecting` and `logicalPose().transformPositionInverse`, then read `level.getBlockState` at the plot position, against a real 5 x 5 ship made with `/sable assemble connected`:
+   - No ship before assembly, one after. All 25 blocks read on a level ship, and again after a restart. On a ship tilted with `/sable teleport @e x y z 45 30`, 24 of 25 were hit by the world-aligned sample grid, which is the grid landing unevenly on a tilted plate.
+   - About 0.2 µs a point at 15,625 points (2.5 to 3.5 ms) and 0.07 µs at 274,625 (18 ms). That covers looking up the block, so the estimate of 1,600 tests a tick stands.
+   - The Ship is about 21 long and 18 wide on the 16-block floor grid, which matches the rig pivots. `BodyBounds` and `/vrphoto handling` read 15.4 for it, because a composed rig's box only reaches each section's pivot plus a block.
+   - Not answered: whether a body resting on a deck jitters (`trackingSubLevel`). That needs real collision, so it falls to PR 4.
 1. **Data:** `Socket.boxes`, the built-in lists, a pure `BodyBoxes` pose, a common copy of the turn maths, and unit tests. No behaviour change.
 2. **Debug view:** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
 3. **Blocks:** `resolve` in `travel`, with sub-steps of at most 0.5 block and the never-trap rule.
@@ -77,4 +83,4 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 8. **Server checks.**
 
 ## Not confirmed
-What `OrientedBoundingBox3d.sat` returns, client reads of plot blocks, jitter on a deck, `MergedMassTracker`, how `ShipOverlay` is wired in, real timings, and the Ship's size.
+What `OrientedBoundingBox3d.sat` returns, jitter on a deck, `MergedMassTracker`, how `ShipOverlay` is wired in, and timings for the full collision pass.

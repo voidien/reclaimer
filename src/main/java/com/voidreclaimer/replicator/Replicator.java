@@ -1,32 +1,33 @@
 package com.voidreclaimer.replicator;
 
+import com.voidreclaimer.Config;
+import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.event.MilestoneReachedEvent;
 import com.voidreclaimer.api.event.ReplicatorJobFinishedEvent;
 import com.voidreclaimer.api.milestone.Milestone;
 import com.voidreclaimer.api.milestone.MilestoneContext;
-import java.util.ArrayList;
-import java.util.List;
-import net.minecraft.resources.ResourceKey;
-import net.neoforged.neoforge.common.NeoForge;
-import com.voidreclaimer.Config;
-import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.dyson.DysonSphereData;
 import com.voidreclaimer.energy.Energy;
+import com.voidreclaimer.link.LinkState;
+import com.voidreclaimer.link.Links;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.registry.ModRecipeTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -59,7 +60,7 @@ public final class Replicator {
         List<ItemStack> inventory = player.getInventory().items;
         RecipeInputs.Plan plan = recipe == null ? RecipeInputs.NOTHING : RecipeInputs.plan(inventory, recipe.inputs());
         ReplicatorLogic.Queued queued = ReplicatorLogic.queue(
-                data(player), player.getData(ModAttachments.DUST), id, recipe, plan == null ? null : plan.items());
+                data(player), player.getData(ModAttachments.DUST), id, recipe, plan == null ? null : plan.items(), currentBody(player));
         if (queued.result() == ReplicatorLogic.QueueResult.QUEUED) {
             plan.take(inventory);
             store(player, queued.data());
@@ -72,8 +73,24 @@ public final class Replicator {
         return queued.result();
     }
 
+    /** The shell the player is in, or empty for the main body. */
+    private static Optional<UUID> currentBody(ServerPlayer player) {
+        return Links.state(player).link().map(LinkState.Link::shell);
+    }
+
+    /** Whether a shell the player owned has gone for good, or is a wreck: it can't come back for what it paid. */
+    private static boolean shellGone(ServerPlayer player, UUID shell) {
+        return Links.state(player).shells().stream().filter(known -> known.shell().equals(shell)).findFirst()
+                .map(known -> known.gone() || known.wrecked()).orElse(true);
+    }
+
     public static boolean cancel(ServerPlayer player, int index) {
         ReplicatorData before = data(player);
+        if (index >= 0 && index < before.jobs().size()
+                && !ReplicatorLogic.canCancel(before.jobs().get(index), currentBody(player), shell -> shellGone(player, shell))) {
+            player.displayClientMessage(Component.translatable("message.void_reclaimer.replicator.other_body").withStyle(ChatFormatting.GRAY), true);
+            return false;
+        }
         ReplicatorLogic.Queued cancelled = ReplicatorLogic.cancel(
                 before, player.getData(ModAttachments.DUST), index, DustData.capacity(player));
         if (cancelled.result() != ReplicatorLogic.QueueResult.QUEUED) {

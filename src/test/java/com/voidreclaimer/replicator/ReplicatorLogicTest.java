@@ -29,11 +29,11 @@ class ReplicatorLogicTest {
 
     @Test
     void missingItemsAreRefusedAfterDustAndChangeNothing() {
-        var refused = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE, null);
+        var refused = ReplicatorLogic.queue(UNLOCKED, RICH, ID, RECIPE, null, java.util.Optional.empty());
         assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_ITEMS, refused.result());
         assertEquals(UNLOCKED, refused.data());
         assertEquals(RICH, refused.dust());
-        assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST, ReplicatorLogic.queue(UNLOCKED, DustData.of(0, 0, 0, 0), ID, RECIPE, null).result());
+        assertEquals(ReplicatorLogic.QueueResult.NOT_ENOUGH_DUST, ReplicatorLogic.queue(UNLOCKED, DustData.of(0, 0, 0, 0), ID, RECIPE, null, java.util.Optional.empty()).result());
     }
 
     private static ReplicatorData queueOf(String... names) {

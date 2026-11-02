@@ -1,6 +1,7 @@
 package com.voidreclaimer.replicator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
@@ -28,6 +31,32 @@ class RecipeInputsTest {
 
     private static List<ItemStack> inventory(ItemStack... stacks) {
         return List.of(stacks);
+    }
+
+    private static ReplicatorJob jobPaidBy(Optional<UUID> body, boolean items) {
+        return new ReplicatorJob(ID, List.of(new ItemStack(Items.STONE)), DustCost.NONE, items ? List.of(new ItemStack(Items.IRON_INGOT)) : List.of(), body, 0, 9);
+    }
+
+    @Test
+    void onlyTheBodyThatPaidCanCancelAJobThatTookItems() {
+        Optional<UUID> shell = Optional.of(UUID.randomUUID());
+        Optional<UUID> other = Optional.of(UUID.randomUUID());
+        assertTrue(ReplicatorLogic.canCancel(jobPaidBy(shell, true), shell, id -> false), "the shell that paid");
+        assertTrue(ReplicatorLogic.canCancel(jobPaidBy(Optional.empty(), true), Optional.empty(), id -> false), "the main body that paid");
+        assertFalse(ReplicatorLogic.canCancel(jobPaidBy(shell, true), Optional.empty(), id -> false), "home cancelling a shell's job");
+        assertFalse(ReplicatorLogic.canCancel(jobPaidBy(Optional.empty(), true), shell, id -> false), "a shell cancelling a job from home");
+        assertFalse(ReplicatorLogic.canCancel(jobPaidBy(shell, true), other, id -> false), "another shell");
+    }
+
+    @Test
+    void aBodyThatHasGoneCantHoldItsJobsForGood() {
+        Optional<UUID> shell = Optional.of(UUID.randomUUID());
+        assertTrue(ReplicatorLogic.canCancel(jobPaidBy(shell, true), Optional.empty(), id -> true));
+    }
+
+    @Test
+    void aJobWithNoItemsCanBeCancelledAnywhere() {
+        assertTrue(ReplicatorLogic.canCancel(jobPaidBy(Optional.of(UUID.randomUUID()), false), Optional.empty(), id -> false));
     }
 
     @Test
@@ -98,7 +127,7 @@ class RecipeInputsTest {
 
     @Test
     void aJobKeepsItsItemsThroughASaveAndAdvancing() {
-        ReplicatorJob job = new ReplicatorJob(ID, List.of(new ItemStack(Items.STONE)), DustCost.NONE, List.of(new ItemStack(Items.IRON_INGOT, 2)), 0, 9);
+        ReplicatorJob job = new ReplicatorJob(ID, List.of(new ItemStack(Items.STONE)), DustCost.NONE, List.of(new ItemStack(Items.IRON_INGOT, 2)), Optional.empty(), 0, 9);
         var saved = ReplicatorJob.CODEC.encodeStart(JsonOps.INSTANCE, job).getOrThrow();
         ReplicatorJob loaded = ReplicatorJob.CODEC.parse(JsonOps.INSTANCE, saved).getOrThrow();
         assertEquals(1, loaded.items().size());

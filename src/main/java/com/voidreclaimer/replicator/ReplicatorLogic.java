@@ -3,6 +3,9 @@ package com.voidreclaimer.replicator;
 import com.voidreclaimer.dust.DustData;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -13,16 +16,28 @@ public final class ReplicatorLogic {
 
     public enum QueueResult { QUEUED, LOCKED, QUEUE_FULL, NOT_ENOUGH_DUST, UNKNOWN_RECIPE, NOT_ENOUGH_ITEMS }
 
+    /**
+     * Whether a body can cancel a job. A job that took items gives them back to the body that paid, so they can't travel for free, and
+     * only that body can cancel it. If that body has gone there is nowhere to wait for, so any body can.
+     *
+     * @param body      the shell doing this, or empty for the main body
+     * @param bodyGone  whether a shell has gone for good
+     */
+    public static boolean canCancel(ReplicatorJob job, Optional<UUID> body, Predicate<UUID> bodyGone) {
+        return job.items().isEmpty() || job.paidBy().equals(body) || job.paidBy().filter(bodyGone).isPresent();
+    }
+
     /** Outcome of queueing: the result code and, when queued, the new data and dust. */
     public record Queued(QueueResult result, ReplicatorData data, DustData dust) {}
 
     /** A job that takes no items: the rules alone, for tests. The game goes through the one below, which knows what the player holds. */
     static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe) {
-        return queue(data, dust, id, recipe, List.of());
+        return queue(data, dust, id, recipe, List.of(), Optional.empty());
     }
 
-    /** {@code items} are what the job takes from the inventory, or null when the player hasn't got them. */
-    public static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe, @Nullable List<ItemStack> items) {
+    /** {@code items} are what the job takes from the inventory, or null when the player hasn't got them; {@code body} is who pays. */
+    public static Queued queue(ReplicatorData data, DustData dust, ResourceLocation id, @Nullable ReplicatorRecipe recipe, @Nullable List<ItemStack> items,
+                               Optional<UUID> body) {
         if (recipe == null) {
             return new Queued(QueueResult.UNKNOWN_RECIPE, data, dust);
         }
@@ -39,7 +54,7 @@ public final class ReplicatorLogic {
             return new Queued(QueueResult.NOT_ENOUGH_ITEMS, data, dust);
         }
         List<ReplicatorJob> jobs = new ArrayList<>(data.jobs());
-        jobs.add(new ReplicatorJob(id, recipe.results(), recipe.cost(), items, 0, recipe.ticks()));
+        jobs.add(new ReplicatorJob(id, recipe.results(), recipe.cost(), items, body, 0, recipe.ticks()));
         return new Queued(QueueResult.QUEUED, data.withJobs(jobs), recipe.cost().takeFrom(dust));
     }
 

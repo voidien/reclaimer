@@ -174,7 +174,7 @@ public final class ObtainabilityGameTests {
         }
         ReplicatorData data = Replicator.data(player);
         ReplicatorJob job = data.jobs().get(0);
-        Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.total() - 1, job.total()))));
+        Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.paidBy(), job.total() - 1, job.total()))));
         player.doTick();
         player.doTick();
         Replicator.collect(player);
