@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
@@ -20,6 +21,14 @@ public final class RecipeInputs {
     public static final Plan NOTHING = new Plan(Map.of(), List.of());
 
     private RecipeInputs() {}
+
+    /** Where a recipe looks: the main inventory, then the offhand, then armor, so something worn goes last. */
+    public static List<ItemStack> slots(Inventory inventory) {
+        List<ItemStack> slots = new ArrayList<>(inventory.items);
+        slots.addAll(inventory.offhand);
+        slots.addAll(inventory.armor);
+        return slots;
+    }
 
     /** How many of the items {@code input} takes are in {@code inventory}. */
     public static int held(List<ItemStack> inventory, SizedIngredient input) {

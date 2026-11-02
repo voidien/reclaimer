@@ -57,7 +57,7 @@ public final class Replicator {
 
     public static ReplicatorLogic.QueueResult queue(ServerPlayer player, ResourceLocation id) {
         ReplicatorRecipe recipe = recipe(player, id);
-        List<ItemStack> inventory = player.getInventory().items;
+        List<ItemStack> inventory = RecipeInputs.slots(player.getInventory());
         RecipeInputs.Plan plan = recipe == null ? RecipeInputs.NOTHING : RecipeInputs.plan(inventory, recipe.inputs());
         ReplicatorLogic.Queued queued = ReplicatorLogic.queue(
                 data(player), player.getData(ModAttachments.DUST), id, recipe, plan == null ? null : plan.items(), currentBody(player));
