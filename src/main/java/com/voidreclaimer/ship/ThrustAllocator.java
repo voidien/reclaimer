@@ -76,6 +76,29 @@ public final class ThrustAllocator {
         return wanted(frame, input.surge(), input.sway(), input.heave());
     }
 
+    /** {@code wanted}, in the ship frame, with nothing left that adds to a speed at {@code cap}: at the cap the keys still steer the ship. */
+    public static Vector3d underCap(Vector3dc wanted, Vector3dc velocityShipFrame, double cap) {
+        Vector3d allowed = new Vector3d(wanted);
+        double speed = velocityShipFrame.length();
+        if (speed >= cap && speed > 0.0) {
+            Vector3d along = new Vector3d(velocityShipFrame).div(speed);
+            double adding = allowed.dot(along);
+            if (adding > 0.0) {
+                allowed.fma(-adding, along);
+            }
+        }
+        return allowed;
+    }
+
+    /** The push back down to {@code cap} for a ship over it, easing off as it gets there as a hold does, over {@code ramp} blocks a second. */
+    public static Vector3d overCap(Vector3dc velocityShipFrame, double cap, double ramp) {
+        double speed = velocityShipFrame.length();
+        if (speed <= cap) {
+            return new Vector3d();
+        }
+        return new Vector3d(velocityShipFrame).div(-speed).mul(Math.min(1.0, (speed - cap) / ramp));
+    }
+
     /** Which of the six pushes the ship can make at all: {forward, back, right, left, up, down} as the best force fraction. */
     public static double[] translationCoverage(List<Thruster> thrusters, Frame frame) {
         Vector3dc[] dirs = {frame.forward(), new Vector3d(frame.forward()).negate(), frame.right(), new Vector3d(frame.right()).negate(),

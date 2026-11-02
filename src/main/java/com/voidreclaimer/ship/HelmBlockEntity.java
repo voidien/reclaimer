@@ -1,5 +1,6 @@
 package com.voidreclaimer.ship;
 
+import com.voidreclaimer.Config;
 import com.voidreclaimer.debug.HelmTrace;
 import com.voidreclaimer.flight.FlightSettings;
 import com.voidreclaimer.network.HelmReadoutPayload;
@@ -230,13 +231,21 @@ public class HelmBlockEntity extends BlockEntity implements GeoBlockEntity {
         // steers with its main engines still turns under full thrust. The steering carries the turn keys and stops a spin; the
         // holds keep the force. A key always wins on its axis.
         Vector3d turn = helm.steer(pilot, ship, model, frame, input, spin, settings);
+        double cap = Config.HELM_SPEED_CAP.get();
         double[] throttles = ship.getMassTracker() == null ? ThrustAllocator.throttles(model, frame, input)
-                : ThrustAllocator.throttles(model, frame, ThrustAllocator.keyForce(frame, input), turn);
+                : ThrustAllocator.throttles(model, frame, ThrustAllocator.underCap(ThrustAllocator.keyForce(frame, input), velocity, cap), turn);
         if (settings.dampener()) {
             Vector3d[] hold = ThrustAllocator.holdRequest(frame, input, velocity, spin, settings.dampener(), false, HOLD_DEADBAND, HOLD_RAMP);
             double[] holding = ThrustAllocator.throttles(model, frame, hold[0], turn);
             for (int i = 0; i < throttles.length; i++) {
                 throttles[i] = Math.max(throttles[i], holding[i]);
+            }
+        }
+        // The cap holds with the dampener off too. Only a Helm has one: a redstone throttle answers to nobody.
+        if (velocity.length() > cap) {
+            double[] slowing = ThrustAllocator.throttles(model, frame, ThrustAllocator.overCap(velocity, cap, HOLD_RAMP), turn);
+            for (int i = 0; i < throttles.length; i++) {
+                throttles[i] = Math.max(throttles[i], slowing[i]);
             }
         }
         for (int i = 0; i < thrusters.size(); i++) {

@@ -16,6 +16,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue SPAWN_Y;
     public static final ModConfigSpec.IntValue SPAWN_Z;
 
+    public static final ModConfigSpec.DoubleValue HELM_SPEED_CAP;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FACTOR;
     public static final ModConfigSpec.DoubleValue BODY_TURN_SLOWEST;
     public static final ModConfigSpec.DoubleValue BODY_TURN_FASTEST;
@@ -304,6 +305,11 @@ public final class Config {
                 .defineInRange("seatCharge", 0.5, 0.0, 1000.0);
         LINK_STATION_CHARGE = BUILDER.comment("A seat within station range of a Station Core charges this many times faster (1 = no bonus).")
                 .defineInRange("stationCharge", 2.0, 1.0, 100.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Ships.").push("ship");
+        HELM_SPEED_CAP = BUILDER.comment("Top speed of a ship flown from a Helm, in blocks a second. Keys stop adding speed here and the thrusters hold it down. A ship on redstone has no cap.")
+                .defineInRange("helmSpeedCap", 100.0, 1.0, 10_000.0);
         BUILDER.pop();
 
         BUILDER.comment("Stations.").push("station");

@@ -212,4 +212,23 @@ class ThrustAllocatorTest {
         hold = ThrustAllocator.holdRequest(FRAME, PilotInput.NONE, new Vector3d(), new Vector3d(0, 1, 0), true, true, 0.05, 1.0);
         assertArrayEquals(new double[] {0, 1, 1, 0}, ThrustAllocator.throttles(ship, FRAME, hold[0], hold[1]), EPS);
     }
+
+    @Test
+    void atTheCapTheKeysStopAddingSpeedAndStillSteer() {
+        Vector3d velocity = new Vector3d(0, 0, -100);
+        Vector3d forward = new Vector3d(0, 0, -1);
+        assertEquals(0.0, ThrustAllocator.underCap(forward, velocity, 100).length(), EPS);
+        Vector3d sideways = ThrustAllocator.underCap(new Vector3d(1, 0, -1), velocity, 100);
+        assertEquals(1.0, sideways.x, EPS);
+        assertEquals(0.0, sideways.z, EPS);
+        assertEquals(1.0, ThrustAllocator.underCap(new Vector3d(0, 0, 1), velocity, 100).z, EPS, "braking is always allowed");
+        assertEquals(1.0, ThrustAllocator.underCap(forward, new Vector3d(0, 0, -99), 100).length(), EPS, "under the cap");
+    }
+
+    @Test
+    void overTheCapThePushBackEasesOffOnTheWayDown() {
+        assertEquals(0.0, ThrustAllocator.overCap(new Vector3d(0, 0, -100), 100, 1).length(), EPS);
+        assertEquals(1.0, ThrustAllocator.overCap(new Vector3d(0, 0, -103), 100, 1).z, EPS);
+        assertEquals(0.5, ThrustAllocator.overCap(new Vector3d(0, 0, -100.5), 100, 1).z, EPS);
+    }
 }

@@ -1018,6 +1018,24 @@ public final class AeronauticsGameTests {
         });
     }
 
+    /** A ship over the Helm's cap comes back down to it with the dampener off. Its own batch: the cap is a config value for every ship in the run. */
+    @GameTest(template = "empty", timeoutTicks = 600, batch = "helm_cap")
+    public static void aHelmHoldsItsShipToTheSpeedCap(GameTestHelper helper) {
+        double cap = com.voidreclaimer.Config.HELM_SPEED_CAP.get();
+        com.voidreclaimer.Config.HELM_SPEED_CAP.set(1.0);
+        holdShip(helper, new BlockPos(90_400, 200, 3_000), false, log -> {
+            com.voidreclaimer.Config.HELM_SPEED_CAP.set(cap);
+            double speed = linearSpeed(log);
+            if (Double.isNaN(speed)) {
+                helper.fail("lost the ship: " + log);
+            } else if (speed > 1.4) {
+                helper.fail("the ship is doing " + speed + " against a cap of 1; " + log);
+            } else {
+                helper.succeed();
+            }
+        });
+    }
+
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aChemicalThrusterPushesItsShip(GameTestHelper helper) {

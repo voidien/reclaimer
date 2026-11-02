@@ -224,7 +224,10 @@ public final class Links {
      */
     private static void leaveWreck(ServerPlayer player) {
         LinkState state = state(player);
+        // A dead player's open menu throws its crafting grid on the floor, and a living one's puts it back in the inventory.
+        player.setHealth(1f);
         BodySnapshot taken = BodySnapshot.take(player);
+        player.setHealth(0f);
         ReplicatorLogic.Lost queued = Replicator.leftBy(player, Optional.empty());
         BodySnapshot body = taken.withPending(queued.items());
         CompoundTag tag = saved(body, player);
@@ -232,7 +235,7 @@ public final class Links {
             return;
         }
         UUID id = UUID.randomUUID();
-        LinkState.Place at = place(player);
+        LinkState.Place at = inWorld(player.serverLevel(), place(player));
         player.setData(ModAttachments.LINK, state.withOutbox(new LinkState.Outbox(id, FIRST_EPOCH, tag, at, false))
                 .withKnown(new LinkState.KnownShell(id, FIRST_EPOCH, at, true, false)));
         Optional<BodyHost> wreck = restored(player.serverLevel(), at, id, FIRST_EPOCH, body, player);
@@ -250,7 +253,13 @@ public final class Links {
         EnergyData energy = player.getData(ModAttachments.ENERGY);
         Energy.update(player, new EnergyData(energy.capacity(), energy.capacity(), false), true);
         saveNow(player.server);
-        NeoForge.EVENT_BUS.post(new MainBodyWreckedEvent(player, id));
+        tell(new MainBodyWreckedEvent(player, id));
+    }
+
+    /** {@code place}, or the nearest spot in the world if a body fell out of the bottom of it: a wreck has to be somewhere it can be reached. */
+    private static LinkState.Place inWorld(ServerLevel level, LinkState.Place place) {
+        Vec3 at = place.position();
+        return at.y >= level.getMinBuildHeight() ? place : new LinkState.Place(place.dimension(), new Vec3(at.x, level.getMinBuildHeight(), at.z), place.yaw(), place.pitch());
     }
 
     @SubscribeEvent
@@ -458,7 +467,7 @@ public final class Links {
     }
 
     /** The move is done and saved: an addon that throws now must not take the server down with it. */
-    private static void tell(ShellLinkEvent event) {
+    private static void tell(net.neoforged.bus.api.Event event) {
         try {
             NeoForge.EVENT_BUS.post(event);
         } catch (RuntimeException e) {

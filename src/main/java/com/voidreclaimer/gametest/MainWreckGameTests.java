@@ -108,6 +108,29 @@ public final class MainWreckGameTests {
                 helper.assertTrue(back.getData(ModAttachments.DEATH_MARKER).pos().isEmpty(), "an emptied wreck kept its marker");
                 back.setData(ModAttachments.LINK, LinkState.NONE);
                 TestPlayers.remove(back);
+    /** Ruined Earth's void kills whatever falls in, and the wreck of a body that fell must not go the same way, or everything is lost for good. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aBodyLostInTheVoidLeavesAWreckTheVoidCannotTake(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        BlockPos spot = new BlockPos(50_000, earth.getMinBuildHeight() - 80, 50_000);
+        earth.setChunkForced(spot.getX() >> 4, spot.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 98_900.5, 300, 0.5);
+            player.teleportTo(earth, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 0f, 0f);
+            player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 7));
+            destroy(player, earth);
+            UUID id = TestEventListeners.WRECKS.remove(player.getUUID());
+            helper.assertTrue(id != null && earth.getEntity(id) instanceof BodyHost, "no wreck");
+            BodyHost wreck = (BodyHost) earth.getEntity(id);
+            helper.assertTrue(wreck.getY() >= earth.getMinBuildHeight(), "the wreck is at " + wreck.getY() + ", below the world");
+            helper.runAfterDelay(60, () -> {
+                helper.assertFalse(wreck.isRemoved(), "the void took the wreck");
+                helper.assertTrue(wreck.role() == HostRole.WRECK, "it is a " + wreck.role());
+                helper.assertTrue(count(wreck.items(), Items.DIAMOND, player.registryAccess()) == 7, "the diamonds went");
+                wreck.discard();
+                earth.setChunkForced(spot.getX() >> 4, spot.getZ() >> 4, false);
+                player.setData(ModAttachments.LINK, LinkState.NONE);
+                TestPlayers.remove(player);
                 helper.succeed();
             });
         });
@@ -138,6 +161,24 @@ public final class MainWreckGameTests {
                         TestPlayers.remove(back);
                     })
                     .thenSucceed();
+    /** A crafting grid is carried too: a dead player's closing menu must not throw it on the floor. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void whatIsInACraftingGridGoesInTheWreck(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(99_000, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, who) -> new net.minecraft.world.inventory.CraftingMenu(id, inventory, net.minecraft.world.inventory.ContainerLevelAccess.create(space, origin)),
+                    net.minecraft.network.chat.Component.empty()));
+            player.containerMenu.getSlot(1).set(new ItemStack(Items.DIAMOND, 3));
+            destroy(player, space);
+            UUID id = TestEventListeners.WRECKS.remove(player.getUUID());
+            BodyHost wreck = (BodyHost) space.getEntity(id);
+            helper.assertTrue(count(wreck.items(), Items.DIAMOND, player.registryAccess()) == 3, "the diamonds are not in the wreck");
+            wreck.discard();
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            TestPlayers.remove(player);
+            helper.succeed();
         });
     }
 

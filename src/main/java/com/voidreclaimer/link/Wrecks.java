@@ -71,6 +71,10 @@ public final class Wrecks {
         for (int i = 0; i < contents.size(); i++) {
             ItemStack stack = ItemStack.parseOptional(registries, contents.getCompound(i));
             if (stack.isEmpty()) {
+                // An item from a mod that has gone stays, in case the mod comes back.
+                if (!contents.getCompound(i).isEmpty()) {
+                    left.add(contents.get(i));
+                }
                 continue;
             }
             int before = stack.getCount();
