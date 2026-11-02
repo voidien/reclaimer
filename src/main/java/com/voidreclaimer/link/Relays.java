@@ -2,12 +2,15 @@ package com.voidreclaimer.link;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.registry.ModAttachments;
+import com.voidreclaimer.ship.ShipTickets;
 import com.voidreclaimer.ship.Ships;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.platform.SableEventPlatform;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
+import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -46,6 +49,8 @@ public final class Relays {
 
     public static void note(ServerLevel level, RelayList.Entry entry) {
         RelayList list = of(level);
+        list.find(entry.id()).flatMap(RelayList.Entry::ship).filter(ship -> entry.ship().filter(ship::equals).isEmpty())
+                .ifPresent(ship -> letGo(level, ship, entry.id()));
         RelayList updated = list.with(entry);
         if (updated != list) {
             level.setData(ModAttachments.RELAYS, updated);
@@ -69,10 +74,18 @@ public final class Relays {
         for (RelayList.Entry entry : list.relays()) {
             if (canCheck(level, entry) && !isThere(level, entry)) {
                 kept = kept.without(entry.id());
+                entry.ship().ifPresent(ship -> letGo(level, ship, entry.id()));
             }
         }
         if (kept != list) {
             level.setData(ModAttachments.RELAYS, kept);
+        }
+    }
+
+    /** A relay that has left a ship, or gone, stops holding it. Sable saves tickets, so one left behind would keep the ship loaded for good. */
+    private static void letGo(ServerLevel level, UUID shipId, UUID relay) {
+        if (SubLevelContainer.getContainer(level).getSubLevel(shipId) instanceof ServerSubLevel ship) {
+            ShipTickets.release(level, ship, relay);
         }
     }
 

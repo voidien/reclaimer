@@ -217,6 +217,68 @@ public final class RelayGameTests {
         });
     }
 
+    /** A lit relay holds its ship, a dark one does not, and a relay that has gone lets go: Sable saves tickets, so a leak would last for good. */
+    @GameTest(template = "empty", timeoutTicks = 500, batch = "relay_on_a_ship")
+    public static void aLitRelayHoldsItsShip(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        BlockPos pos = new BlockPos(177_900, 230, 3_000);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        RelayBlockEntity[] aboard = new RelayBlockEntity[1];
+        dev.ryanhcode.sable.sublevel.ServerSubLevel[] ship = new dev.ryanhcode.sable.sublevel.ServerSubLevel[1];
+        UUID[] id = new UUID[1];
+        UUID moved = new UUID(177_900L, 1L);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + (pos.getX() - 1) + " " + (pos.getY() - 1) + " " + (pos.getZ() - 1) + " " + (pos.getX() + 1) + " " + (pos.getY() - 1) + " " + (pos.getZ() + 1) + " minecraft:iron_block");
+            id[0] = place(space, pos).id();
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(row(space, id[0]).isPresent(), "the Relay is not on the list"))
+                    .thenExecute(() -> command(server, space, pos, "sable assemble connected " + pos.getX() + " " + (pos.getY() - 1) + " " + pos.getZ()))
+                    .thenWaitUntil(() -> helper.assertTrue(row(space, id[0]).filter(entry -> entry.ship().isPresent()).isPresent(), "the row did not go aboard: " + row(space, id[0])))
+                    .thenExecute(() -> {
+                        aboard[0] = (RelayBlockEntity) space.getBlockEntity(row(space, id[0]).orElseThrow().block());
+                        helper.assertTrue(!com.voidreclaimer.ship.ShipTickets.release(space, shipOf(space, id[0]), id[0]), "a dark Relay held its ship");
+                        aboard[0].energy().receiveEnergy(600, false);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(row(space, id[0]).filter(RelayList.Entry::lit).isPresent(), "the Relay did not light up"))
+                    .thenExecuteAfter(22, () -> {
+                        var held = shipOf(space, id[0]);
+                        helper.assertTrue(com.voidreclaimer.ship.ShipTickets.release(space, held, id[0]), "a lit Relay does not hold its ship");
+                        com.voidreclaimer.ship.ShipTickets.hold(space, held, id[0]);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(!aboard[0].isLit(), "the Relay never ran out"))
+                    .thenExecuteAfter(22, () -> helper.assertTrue(!com.voidreclaimer.ship.ShipTickets.release(space, shipOf(space, id[0]), id[0]), "a Relay that went dark still holds its ship"))
+                    .thenExecute(() -> {
+                        // Alight again, then broken: the ticket has to go with it.
+                        aboard[0].energy().receiveEnergy(2000, false);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(row(space, id[0]).filter(RelayList.Entry::lit).isPresent(), "the Relay did not light up again"))
+                    .thenExecuteAfter(22, () -> {
+                        ship[0] = shipOf(space, id[0]);
+                        space.setBlock(row(space, id[0]).orElseThrow().block(), Blocks.AIR.defaultBlockState(), 3);
+                    })
+                    .thenWaitUntil(() -> helper.assertTrue(row(space, id[0]).isEmpty(), "a Relay broken aboard stayed on the list"))
+                    .thenExecute(() -> {
+                        helper.assertTrue(!com.voidreclaimer.ship.ShipTickets.release(space, ship[0], id[0]), "a broken Relay left its ticket on the ship");
+                        // A row that moves off a ship lets go of it too: a relay carried from one ship to another.
+                        com.voidreclaimer.ship.ShipTickets.hold(space, ship[0], moved);
+                        Relays.note(space, new RelayList.Entry(moved, new BlockPos(177_900, 80, 900_000), Vec3.atCenterOf(pos), true, Optional.of(ship[0].getUniqueId())));
+                        Relays.note(space, new RelayList.Entry(moved, new BlockPos(177_900, 80, 900_000), Vec3.atCenterOf(pos), true, Optional.empty()));
+                        helper.assertTrue(!com.voidreclaimer.ship.ShipTickets.release(space, ship[0], moved), "a relay that left a ship still holds it");
+                        space.setData(com.voidreclaimer.registry.ModAttachments.RELAYS, Relays.of(space).without(moved));
+                        nameShip(server, space, pos);
+                        removeShip(server, space, pos);
+                        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
+                    })
+                    .thenSucceed();
+        });
+    }
+
+    private static dev.ryanhcode.sable.sublevel.ServerSubLevel shipOf(ServerLevel level, UUID relay) {
+        return com.voidreclaimer.ship.Ships.shipAt(level, row(level, relay).orElseThrow().block());
+    }
+
     /** A ship that only unloads comes back, so its relays stay listed: nothing about them can have changed. */
     @GameTest(template = "empty", timeoutTicks = 400, batch = "relay_on_a_ship")
     public static void aShipThatUnloadsKeepsItsRelays(GameTestHelper helper) {
