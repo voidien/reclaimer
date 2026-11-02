@@ -21,6 +21,34 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class TestScenesGameTests {
     private TestScenesGameTests() {}
 
+    /** The overlay reads the same boxes collision will, so a stone in the saucer has to show. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theBoxOverlayShowsABigBodyAndWhatItTouches(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(93_800, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            space.getChunkSource().move(player);
+            var shapes = new com.voidreclaimer.debug.DebugShapes();
+            var facts = new java.util.ArrayList<String>();
+            com.voidreclaimer.debug.BoxOverlay.add(space, player.position(), 8.0, shapes, facts);
+            helper.assertTrue(facts.stream().anyMatch(fact -> fact.contains("19 boxes, 0 in a block")), "free: " + facts);
+            helper.assertTrue(shapes.lines().stream().anyMatch(line -> line.colour() == com.voidreclaimer.debug.BoxOverlay.FREE), "no green box drawn");
+            var ahead = com.voidreclaimer.body.BodyBoxes.place(com.voidreclaimer.body.Bodies.view(player).chassis(), socket -> true, player.position(), player.getYRot(), player.getXRot(), 1.0).get(0).middle();
+            BlockPos stone = BlockPos.containing(ahead.x(), ahead.y(), ahead.z());
+            space.setBlock(stone, Blocks.STONE.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            var touching = new java.util.ArrayList<String>();
+            var red = new com.voidreclaimer.debug.DebugShapes();
+            com.voidreclaimer.debug.BoxOverlay.add(space, player.position(), 8.0, red, touching);
+            space.setBlock(stone, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            TestPlayers.remove(player);
+            helper.assertTrue(touching.stream().anyMatch(fact -> fact.contains("in a block") && !fact.contains(" 0 in a block")), "a stone in the body was not seen: " + touching);
+            helper.assertTrue(red.lines().stream().anyMatch(line -> line.colour() == com.voidreclaimer.debug.BoxOverlay.TOUCHING), "no red box drawn");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aFlightThroughTheSpeedwayIsTimed(GameTestHelper helper) {
         BlockPos origin = TestScenes.origin(TestScenes.Scene.SPEEDWAY);

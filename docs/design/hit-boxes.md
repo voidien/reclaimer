@@ -77,7 +77,7 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
    - The Ship is about 21 long and 18 wide on the 16-block floor grid, which matches the rig pivots. `BodyBounds` and `/vrphoto handling` read 15.4 for it, because a composed rig's box only reaches each section's pivot plus a block.
    - Not answered: whether a body resting on a deck jitters (`trackingSubLevel`). That needs real collision, so it falls to PR 4.
 1. **Data:** `Socket.boxes`, the built-in lists, a pure `BodyBoxes` pose, a common copy of the turn maths, and unit tests. No behaviour change.
-2. **Debug view:** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
+2. **Debug view (done, `debug/BoxOverlay`):** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
 3. **Blocks:** `resolve` in `travel`, with sub-steps of at most 0.5 block and the never-trap rule.
 4. **Ships.**
 5. **Bodies.**

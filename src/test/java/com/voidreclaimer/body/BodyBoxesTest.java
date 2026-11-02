@@ -22,6 +22,16 @@ import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 class BodyBoxesTest {
+    @org.junit.jupiter.api.Test
+    void aBoxHasItsEightCornersWhereItsSidesAre() {
+        var box = BodyBoxes.Box.of(new net.minecraft.world.phys.AABB(1, 2, 3, 3, 6, 9));
+        var corners = BodyBoxes.corners(box);
+        org.junit.jupiter.api.Assertions.assertEquals(8, corners.size());
+        org.junit.jupiter.api.Assertions.assertEquals(8L, corners.stream().distinct().count(), "two corners fell on the same place");
+        org.junit.jupiter.api.Assertions.assertEquals(new net.minecraft.world.phys.Vec3(1, 2, 3), corners.get(0));
+        org.junit.jupiter.api.Assertions.assertEquals(new net.minecraft.world.phys.Vec3(3, 6, 9), corners.get(7));
+    }
+
     private static final double EPS = 1e-9;
     private static final Vec3 FEET = new Vec3(100, 64, -30);
 
