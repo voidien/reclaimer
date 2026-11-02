@@ -18,7 +18,8 @@ import net.minecraft.world.level.Level;
  * most one new {@link WeatherEffectType}.
  *
  * @param dimensions     where it happens
- * @param always         whether it never stops, like a planet's bad air, instead of coming and going
+ * @param always         whether it never stops, like a planet's bad air, instead of coming and going. Such a kind only reaches bodies: its
+ *                       {@code signalLoss} and {@code scrambles} do nothing, as they belong to a storm's time in a level
  * @param weight         how often it comes up against the others; 0 means only by command
  * @param milestone      the milestone a player in the dimension must have reached before it comes
  * @param warningSeconds how long the warning runs before it starts

@@ -71,7 +71,7 @@ public final class SectionCareGameTests {
 
             Bodies.store(player, Bodies.data(player).withSection(ARM, Wear.withCondition(Bodies.data(player).section(ARM), 0f)));
             double acceleration = FlightStats.of(player).acceleration();
-            helper.assertTrue(acceleration == 0.0, "a worn-out arm should give nothing: " + acceleration);
+            helper.assertTrue(acceleration > 0.0 && acceleration < 0.03 * 0.76, "the last thruster limps on, at three quarters: " + acceleration);
 
             Bodies.store(player, Bodies.data(player).withSection(ARM, Wear.withCondition(Bodies.data(player).section(ARM), Wear.FLOOR_FROM_USE + 0.005f)));
             for (int i = 0; i < 1200 * 5; i++) {

@@ -35,6 +35,10 @@ public final class CrashRules {
         return Math.max(0.0, before - kept);
     }
 
+    /** Blocks of the {@code simulated} mod that hold a constraint between ships, in {@code void_reclaimer:crash_proof}. */
+    public static final java.util.List<String> HOLDS_A_CONSTRAINT = java.util.List.of("docking_connector", "paired_docking_connector", "merging_glue",
+            "physics_assembler", "rope_connector", "rope_winch", "swivel_bearing", "swivel_bearing_link_block");
+
     /** The hardest block a hit breaks. Mass counts for less than speed: its square root. */
     public static double hardness(double speed, double mass, double safe) {
         if (speed <= safe) {

@@ -25,8 +25,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * Runs each level's weather, once a second. A level with nobody in it has no weather to speak of, so its clock stops. Each kind is a file
- * in {@code void_reclaimer:space_weather}: this only keeps time and hands each exposed body to the kind's effects.
+ * Runs each level's weather, once a second. A level with nobody in it waits for its next storm, but one already on its way runs out: a link
+ * lost to a storm can't be made again until the storm is over, and the storm can't wait for someone to come back. Each kind is a file in {@code void_reclaimer:space_weather}: this only keeps time and hands each exposed body to the kind's effects.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class SpaceWeatherTicker {
@@ -63,7 +63,7 @@ public final class SpaceWeatherTicker {
                     if (of(level).weather().isPresent()) {
                         stop(level);
                     }
-                } else if (!level.players().isEmpty()) {
+                } else if (!level.players().isEmpty() || of(level).weather().isPresent()) {
                     second(level);
                 }
             }

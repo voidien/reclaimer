@@ -60,7 +60,7 @@ public final class BodyCrash {
         if (!player.isAlive() || player.isCreative() || player.isSpectator()) {
             return;
         }
-        BodyCrashEvent event = new BodyCrashEvent(player, speed, (float) (share * player.getMaxHealth()), false);
+        BodyCrashEvent event = new BodyCrashEvent(player, speed, (float) (share * Bodies.healthUnderPlating(player)), false);
         if (!NeoForge.EVENT_BUS.post(event).isCanceled() && event.getDamage() > 0f) {
             player.hurt(player.serverLevel().damageSources().flyIntoWall(), event.getDamage());
         }

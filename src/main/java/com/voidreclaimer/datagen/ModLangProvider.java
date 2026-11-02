@@ -305,7 +305,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("weather.void_reclaimer.ion_storm", "Ion storm");
         add("weather.void_reclaimer.debris_storm", "Debris storm");
         add("weather.void_reclaimer.toxic_air", "Toxic air");
-        add("message.void_reclaimer.portal.descent", "Through the portal, over the far side of Earth, above the debris belt. Keep the thrusters powered on the way down. The way back is the gate at the planet's centre.");
+        add("message.void_reclaimer.portal.descent", "Through the portal, over the far side of Earth, above the debris belt. Thrusters powered, dampener on, and a Mech engages them first. Ease off the way down before the ground: a landing at speed is a crash. The way back is the gate at the planet's centre.");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");

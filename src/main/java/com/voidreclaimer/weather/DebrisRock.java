@@ -6,6 +6,7 @@ import com.voidreclaimer.body.BoxCollision;
 import com.voidreclaimer.body.CrashRules;
 import com.voidreclaimer.flight.FlightStats;
 import com.voidreclaimer.registry.ModEntities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -38,8 +39,8 @@ public class DebrisRock extends Entity implements ItemSupplier {
     private static final double FASTEST = 30.0;
     /** How far from a body's middle a rock may be aimed. */
     private static final double SCATTER = 3.0;
-    /** A rock counts as this heavy in the crash rule: light, so only weak blocks go. */
-    private static final double MASS = 2.5;
+    /** A rock counts as this heavy in the crash rule: light, so even the fastest rock breaks glass and stops at stone. */
+    private static final double MASS = 0.5;
     private static final int LIFE_TICKS = 200;
     private static final ItemStack LOOK = new ItemStack(Items.COBBLESTONE);
 
@@ -72,6 +73,10 @@ public class DebrisRock extends Entity implements ItemSupplier {
         }
         Vec3 from = middle.add(way.normalize().scale(SPAWN_NEAR + random.nextDouble() * (SPAWN_FAR - SPAWN_NEAR)));
         Vec3 aim = middle.add((random.nextDouble() - 0.5) * SCATTER, (random.nextDouble() - 0.5) * SCATTER, (random.nextDouble() - 0.5) * SCATTER);
+        BlockPos start = BlockPos.containing(from);
+        if (!level.getBlockState(start).getCollisionShape(level, start).isEmpty()) {
+            return;
+        }
         double speed = (SLOWEST + random.nextDouble() * (FASTEST - SLOWEST)) / FlightStats.TICKS_PER_SECOND;
         launch(level, from, aim.subtract(from).normalize().scale(speed));
     }
@@ -86,8 +91,9 @@ public class DebrisRock extends Entity implements ItemSupplier {
                 discard();
                 return;
             }
-            LivingEntity struck = BoxCollision.bodyOnLine(server, from, to);
             BlockHitResult block = server.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            // Only as far as the block: a body behind it is covered.
+            LivingEntity struck = BoxCollision.bodyOnLine(server, from, block.getType() == HitResult.Type.MISS ? to : block.getLocation());
             if (struck != null) {
                 hit(server, struck);
                 return;

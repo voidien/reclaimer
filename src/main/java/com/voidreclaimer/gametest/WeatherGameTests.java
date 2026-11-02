@@ -168,13 +168,46 @@ public final class WeatherGameTests {
             space.setBlock(glass, Blocks.GLASS.defaultBlockState(), 3);
             space.setBlock(stone, Blocks.STONE.defaultBlockState(), 3);
             var from = net.minecraft.world.phys.Vec3.atCenterOf(origin);
-            var speed = new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.0);
-            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, speed));
+            // The slowest rock of a storm still breaks glass, and the fastest stops at stone.
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, new net.minecraft.world.phys.Vec3(0.0, 0.0, 0.9)));
             helper.assertTrue(space.getBlockState(glass).isAir(), "the rock left the glass");
-            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, speed));
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.5)));
             helper.assertTrue(space.getBlockState(stone).is(Blocks.STONE), "the rock broke stone");
             space.setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
             space.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(origin).inflate(16)).forEach(net.minecraft.world.entity.Entity::discard);
+            helper.succeed();
+        });
+    }
+
+    /** A wall a body hides behind stops a rock, however close the body is to it. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aWallCoversABodyFromRocks(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_800, 300, 400);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 4.5);
+            TestPlayers.endSpawnProtection(player);
+            BlockPos wall = origin.offset(0, 0, 3);
+            space.setBlock(wall, Blocks.OBSIDIAN.defaultBlockState(), 3);
+            space.setBlock(wall.above(), Blocks.OBSIDIAN.defaultBlockState(), 3);
+            float health = player.getHealth();
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, net.minecraft.world.phys.Vec3.atCenterOf(origin), new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.5)));
+            helper.assertTrue(player.getHealth() == health, "a rock came through the wall: " + health + " to " + player.getHealth());
+            space.setBlock(wall, Blocks.AIR.defaultBlockState(), 3);
+            space.setBlock(wall.above(), Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    /** A storm a link was lost to has to end with nobody there, or the link could never be made again. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "emptyLevelStorm")
+    public static void aStormRunsOutInALevelWithNobodyInIt(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        var id = com.voidreclaimer.VoidReclaimer.id("ion_storm");
+        earth.setData(com.voidreclaimer.registry.ModAttachments.WEATHER, new com.voidreclaimer.weather.WeatherState(java.util.Optional.of(id), 0, 2, 1f, 100));
+        helper.assertTrue(earth.players().isEmpty(), "a body in the level");
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(com.voidreclaimer.weather.SpaceWeatherTicker.of(earth).weather().isEmpty(), "the storm is still there: " + com.voidreclaimer.weather.SpaceWeatherTicker.of(earth));
             helper.succeed();
         });
     }

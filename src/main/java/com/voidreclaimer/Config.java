@@ -323,7 +323,7 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("Space weather. Each kind is a datapack file in void_reclaimer/space_weather.").push("weather");
-        WEATHER_ENABLED = BUILDER.comment("Whether storms come at all.").define("enabled", true);
+        WEATHER_ENABLED = BUILDER.comment("Whether space weather happens at all: storms, and the kinds that never stop, like Earth's toxic air.").define("enabled", true);
         WEATHER_GAP_MIN_HOURS = BUILDER.comment("The shortest gap between storms in a level, in hours of play there.").defineInRange("gapMinHours", 2.0, 0.01, 1000.0);
         WEATHER_GAP_MAX_HOURS = BUILDER.comment("The longest gap between storms in a level, in hours of play there.").defineInRange("gapMaxHours", 3.0, 0.01, 1000.0);
         WEATHER_ROCK_DAMAGE = BUILDER.comment("The share of a body's health one debris rock takes.").defineInRange("rockDamage", 0.04, 0.0, 1.0);
