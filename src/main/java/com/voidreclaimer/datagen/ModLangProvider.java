@@ -300,6 +300,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.weather.warning", "%s in %s s: take cover");
         add("hud.void_reclaimer.weather.active", "%s, %s s left");
         add("hud.void_reclaimer.weather.unnamed", "Storm");
+        add("weather.void_reclaimer.solar_flare", "Solar flare");
+        add("weather.void_reclaimer.ion_storm", "Ion storm");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");

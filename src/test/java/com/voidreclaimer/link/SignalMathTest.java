@@ -110,4 +110,12 @@ class SignalMathTest {
         assertEquals(1, SignalMath.bars(0.01));
         assertEquals(0, SignalMath.bars(0.0));
     }
+
+    @Test
+    void aStormThinsAStrongSignalAndTakesAWeakOne() {
+        assertEquals(0.6, SignalMath.underStorm(1.0, 0.4), EXACT);
+        assertEquals(0.0, SignalMath.underStorm(0.3, 0.4), EXACT);
+        assertEquals(0.3, SignalMath.underStorm(0.3, 0.0), EXACT);
+        assertEquals(0.3, SignalMath.underStorm(0.3, -1.0), EXACT);
+    }
 }

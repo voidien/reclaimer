@@ -38,7 +38,7 @@ public final class DustSensorLayer {
 
     public static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui || !(mc.getCameraEntity() instanceof Player player) || !DustSensor.has(player)) {
+        if (mc.options.hideGui || !(mc.getCameraEntity() instanceof Player player) || !DustSensor.has(player) || WeatherScramble.of(mc.level) > 0f) {
             return;
         }
         DustField field = DustField.of(player.level());

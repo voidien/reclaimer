@@ -41,6 +41,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 - **Toxic air:** wears the body's parts, and a part worn to zero stops giving its stats until repaired. It never takes health.
 - **Storms:** come every 2 to 3 hours by default, set in the mods menu, and begin after the Expansion milestone.
 - **Landing without a module:** you may go through the portal, fall damage applies, and the portal or an AI log warns you first.
+- **Done, solar flares and ion storms (`data/void_reclaimer/void_reclaimer/space_weather/`):** a flare gives 45 seconds' warning, then hurts a body with a clear line to the sun, by share of health and energy, so rock or a hull between you and the sun is cover. An ion storm thins remote links wherever the far end is, and a link it takes to nothing is lost after the usual warning (the owner's answer: only a weak link); sensors and the HUD go to static. Both wait for the Expansion milestone.
 - **Hazards chosen:** debris storms (fast rock showers that chip bodies and stations), Earth's toxic air (hurts bodies until sectors heal), ion storms (scramble sensors and the HUD and weaken remote links), solar flares (a warning, then take cover behind rock or a station), fracturing asteroids (too much drilling splits a rock and sends pieces drifting), and a debris belt around Earth (a dangerous crossing that clears as the planet heals).
 - **Not chosen:** radiation near stars, running out of power, dust squalls, quakes and sinkholes.
 

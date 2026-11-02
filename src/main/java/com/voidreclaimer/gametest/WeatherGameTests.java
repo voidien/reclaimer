@@ -69,6 +69,43 @@ public final class WeatherGameTests {
         });
     }
 
+    /** Both ship with the mod, wait for the Expansion milestone, and are read from their files. */
+    @GameTest(template = "empty")
+    public static void theFlareAndTheIonStormAreThereAndWaitForTheirMilestone(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        var registry = SpaceWeatherTicker.registry(space);
+        var flare = registry.get(VoidReclaimer.id("solar_flare"));
+        var ion = registry.get(VoidReclaimer.id("ion_storm"));
+        helper.assertTrue(flare != null && flare.exposure().equals(VoidReclaimer.id("sun_line")), "no flare, or one that ignores cover");
+        helper.assertTrue(flare.milestone().filter(VoidReclaimer.id("expansion")::equals).isPresent(), "the flare comes before the Expansion milestone");
+        helper.assertTrue(ion != null && ion.signalLoss() > 0f && ion.scrambles(), "no ion storm, or one that leaves signals alone");
+        helper.assertTrue(ion.dimensions().contains(com.voidreclaimer.earth.RuinedEarth.DIMENSION), "no ion storms on Earth");
+        helper.succeed();
+    }
+
+    /** An ion storm thins a link, and one with little signal to start with is lost. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_ion")
+    public static void anIonStormThinsAStrongLinkAndLosesAWeakOne(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        var server = space.getServer();
+        var dimension = space.dimension();
+        var seat = new com.voidreclaimer.link.LinkState.Place(dimension, new net.minecraft.world.phys.Vec3(105_000.5, 80, 0.5), 0f, 0f);
+        double range = com.voidreclaimer.link.Signal.range(server, seat);
+        var near = new com.voidreclaimer.link.LinkState.Place(dimension, seat.position().add(4.0, 0.0, 0.0), 0f, 0f);
+        var far = new com.voidreclaimer.link.LinkState.Place(dimension, seat.position().add(range * 0.97, 0.0, 0.0), 0f, 0f);
+        double clear = com.voidreclaimer.link.Signal.read(server, seat, near).strength();
+        helper.assertTrue(com.voidreclaimer.link.Signal.read(server, seat, far).reachable(), "the far end is out of range before the storm");
+        space.setData(ModAttachments.WEATHER, new WeatherState(java.util.Optional.of(VoidReclaimer.id("ion_storm")), 0, 100, 1f, -1));
+        try {
+            var storm = com.voidreclaimer.link.Signal.read(server, seat, near);
+            helper.assertTrue(storm.reachable() && storm.strength() < clear, "a storm left the signal at " + storm.strength());
+            helper.assertFalse(com.voidreclaimer.link.Signal.read(server, seat, far).reachable(), "a weak link came through");
+        } finally {
+            space.setData(ModAttachments.WEATHER, WeatherState.NONE);
+        }
+        helper.succeed();
+    }
+
     /** A listener can spare a body, as a shielding part will. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_spare")
     public static void anAddonCanSpareABody(GameTestHelper helper) {

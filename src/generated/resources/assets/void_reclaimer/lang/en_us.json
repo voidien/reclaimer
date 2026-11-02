@@ -903,5 +903,7 @@
   "tooltip.void_reclaimer.section.rows": "+%s rows",
   "tooltip.void_reclaimer.section.stability": "stability +%s",
   "tooltip.void_reclaimer.section.turn": "turn +%s",
-  "tooltip.void_reclaimer.section.wear": "wear resistance %s"
+  "tooltip.void_reclaimer.section.wear": "wear resistance %s",
+  "weather.void_reclaimer.ion_storm": "Ion storm",
+  "weather.void_reclaimer.solar_flare": "Solar flare"
 }

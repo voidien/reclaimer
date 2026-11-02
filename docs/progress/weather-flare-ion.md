@@ -1,0 +1,3 @@
+## Solar flares and ion storms
+- The first two kinds of weather, as data files on the shared system, both after the Expansion milestone. A solar flare warns for 45 seconds, then hurts a body in a clear line to the sun, by up to 5% of health and 2% of energy a second. Rock or a hull is cover. An ion storm, in deep space and on Earth, takes up to 60% of a remote link's signal, so a strong link gets through thinner and a weak one is lost after the 5-second warning. The HUD shows static and the Dust Sensor goes quiet.
+- **Decided alone:** a storm goes by the weather at the far end of a link, where the shell is. Numbers are first guesses, in the files.

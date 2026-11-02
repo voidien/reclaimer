@@ -11,6 +11,8 @@ import net.minecraft.util.RandomSource;
 /** Static across the view as a link nears the edge of its signal: more dashes the weaker it is, changing every tick. A lost signal also counts down. */
 public final class StaticLayer {
     private static final int MOST_DASHES = 400;
+    /** A storm at full strength gives this much static, enough to read through. */
+    private static final float STORM_STATIC = 0.4f;
     private static final int LONGEST_DASH = 24;
     private static final int SEED_STEP = 31;
     private static final int HALF_SECOND = 10;
@@ -23,7 +25,8 @@ public final class StaticLayer {
         if (minecraft.player == null) {
             return;
         }
-        double level = SignalMath.staticLevel(minecraft.player.getData(ModAttachments.LINK_SIGNAL));
+        double level = Math.max(SignalMath.staticLevel(minecraft.player.getData(ModAttachments.LINK_SIGNAL)),
+                minecraft.level == null ? 0f : WeatherScramble.of(minecraft.level) * STORM_STATIC);
         if (level <= 0) {
             return;
         }

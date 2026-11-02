@@ -39,6 +39,17 @@ public final class SpaceWeatherTicker {
         return level.getData(ModAttachments.WEATHER);
     }
 
+    /** What is here now, not what is on its way. */
+    public static Optional<SpaceWeather> active(ServerLevel level) {
+        WeatherState state = of(level);
+        return state.active() ? state.weather().flatMap(registry(level)::getOptional) : Optional.empty();
+    }
+
+    /** How much of a remote link's signal the weather in {@code level} is taking now. */
+    public static double signalLoss(ServerLevel level) {
+        return active(level).map(weather -> (double) weather.signalLoss() * of(level).strength()).orElse(0.0);
+    }
+
     public static Registry<SpaceWeather> registry(ServerLevel level) {
         return level.registryAccess().registryOrThrow(VoidReclaimerRegistries.SPACE_WEATHER);
     }

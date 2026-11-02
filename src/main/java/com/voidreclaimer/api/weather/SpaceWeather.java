@@ -25,11 +25,13 @@ import net.minecraft.world.level.Level;
  * @param maxSeconds     the longest it lasts
  * @param exposure       what shelters a body, from {@link VoidReclaimerRegistries#WEATHER_EXPOSURE_TYPE}
  * @param effects        what it does each second to a body it reaches
+ * @param signalLoss     how much of a remote link's signal it takes at full strength, 0 to 1: a link left with none is lost
+ * @param scrambles      whether sensors and the HUD go to static while it lasts
  * @param color          the HUD's colour, as 0xRRGGBB
  * @param name           what the HUD calls it
  */
 public record SpaceWeather(List<ResourceKey<Level>> dimensions, int weight, Optional<ResourceLocation> milestone, int warningSeconds, int minSeconds,
-                           int maxSeconds, ResourceLocation exposure, List<Effect> effects, int color, Optional<Component> name) {
+                           int maxSeconds, ResourceLocation exposure, List<Effect> effects, float signalLoss, boolean scrambles, int color, Optional<Component> name) {
     /**
      * One thing it does.
      *
@@ -52,6 +54,8 @@ public record SpaceWeather(List<ResourceKey<Level>> dimensions, int weight, Opti
             Codec.INT.fieldOf("max_seconds").forGetter(SpaceWeather::maxSeconds),
             ModCodecs.ID.fieldOf("exposure").forGetter(SpaceWeather::exposure),
             Effect.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(SpaceWeather::effects),
+            Codec.FLOAT.optionalFieldOf("signal_loss", 0f).forGetter(SpaceWeather::signalLoss),
+            Codec.BOOL.optionalFieldOf("scrambles", false).forGetter(SpaceWeather::scrambles),
             Codec.INT.optionalFieldOf("color", 0xFFFFFF).forGetter(SpaceWeather::color),
             ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(SpaceWeather::name)
     ).apply(instance, SpaceWeather::new));
