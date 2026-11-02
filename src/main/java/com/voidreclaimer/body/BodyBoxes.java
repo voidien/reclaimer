@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
@@ -15,8 +16,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 /**
- * Where a big body's boxes are in the world, and whether two boxes overlap. Pure, so it can be unit tested. Nothing moves or stops a
- * body yet: flight does not read this.
+ * Where a big body's boxes are in the world, whether two boxes overlap, and how far a body can move among blocks. Pure, so it can be
+ * unit tested. Nothing moves or stops a body yet: flight does not read this.
  *
  * <p>A body's own axes are right +X, up +Y and forward -Z, turned about its feet, as {@code BodyLook.turn} turns the model. A box
  * stays aligned with the body, so a world block or anything else that does not turn is a box with no turn at all.
@@ -26,7 +27,16 @@ public final class BodyBoxes {
     private static final double TOUCHING = 1.0E-7;
     /** A cross of two nearly parallel axes says nothing, and its length is too small to divide by. */
     private static final double PARALLEL = 1.0E-10;
+    /** The longest step {@link #resolve} takes at a time. */
+    private static final double SUB_STEP = 0.5;
+    /** How many times one tick's move can lose part of itself to what it hit. After that the rest is dropped, so a move always ends. */
+    private static final int SLIDES = 8;
+    /** A move or a speed along an axis below this is no move. */
+    private static final double STILL = 1.0E-12;
     private static final Quaterniondc NO_TURN = new Quaterniond();
+    private static final Vector3dc WORLD_X = new Vector3d(1, 0, 0);
+    private static final Vector3dc WORLD_Y = new Vector3d(0, 1, 0);
+    private static final Vector3dc WORLD_Z = new Vector3d(0, 0, 1);
 
     /**
      * A box in the world.
@@ -51,6 +61,33 @@ public final class BodyBoxes {
         /** How far the box reaches along {@code axis} from its middle. */
         private double reach(Vector3d[] axes, Vector3dc axis) {
             return Math.abs(axes[0].dot(axis)) * half.x() + Math.abs(axes[1].dot(axis)) * half.y() + Math.abs(axes[2].dot(axis)) * half.z();
+        }
+
+        /** The smallest box along the world's axes that holds this one. */
+        private AABB bounds() {
+            Vector3d[] axes = axes();
+            double x = reach(axes, WORLD_X);
+            double y = reach(axes, WORLD_Y);
+            double z = reach(axes, WORLD_Z);
+            return new AABB(middle.x() - x, middle.y() - y, middle.z() - z, middle.x() + x, middle.y() + y, middle.z() + z);
+        }
+    }
+
+    /** One of a body's boxes this tick: the blocks it can reach, and how deep in one of them it started. */
+    private record Moving(Box box, List<Box> near, double deepest) {}
+
+    /** The first place a move meets a block: how far through the step, as a fraction, and the axis the move can no longer go along. */
+    private record Contact(double time, Vector3d axis) {}
+
+    /** The axes between two turns. A body's boxes share one turn and blocks share none, so this is rarely worked out again. */
+    private record Axes(Quaterniondc ourTurn, Quaterniondc theirTurn, Vector3d[] ours, Vector3d[] theirs, List<Vector3d> all) {
+        static Axes between(Box moving, Box fixed, @Nullable Axes last) {
+            if (last != null && last.ourTurn == moving.turn() && last.theirTurn == fixed.turn()) {
+                return last;
+            }
+            Vector3d[] ours = moving.axes();
+            Vector3d[] theirs = fixed.axes();
+            return new Axes(moving.turn(), fixed.turn(), ours, theirs, candidates(ours, theirs));
         }
     }
 
@@ -111,6 +148,139 @@ public final class BodyBoxes {
             }
         }
         return Optional.ofNullable(best);
+    }
+
+    /**
+     * How much of {@code velocity} a body can have this tick. The move runs until a box meets a block, loses the part that goes into
+     * that block, and carries on with the rest, so the body slides along what it hits. It is never longer than {@code velocity}.
+     *
+     * <p>A box that starts inside something can go no deeper into anything than it started, however it moves: it can back out, or go
+     * along a tunnel narrower than itself, where the next wall block ahead is no deeper than the one beside it. So a body is not
+     * trapped by a chassis fitted in a tunnel, and a hair of overlap left by rounding opens no way through a wall.
+     *
+     * @param body     the body's boxes where it is now
+     * @param blocks   all that can stop it, out to the length of {@code velocity} from {@code body}
+     * @param velocity what it wants to move this tick, in blocks
+     */
+    public static Vec3 resolve(List<Box> body, List<Box> blocks, Vec3 velocity) {
+        double length = velocity.length();
+        if (length <= STILL) {
+            return velocity;
+        }
+        List<Moving> boxes = moving(body, blocks, length);
+        Vector3d left = new Vector3d(velocity.x, velocity.y, velocity.z);
+        Vector3d moved = new Vector3d();
+        int slides = 0;
+        while (slides < SLIDES && left.length() > STILL) {
+            Vector3d step = new Vector3d(left);
+            if (step.length() > SUB_STEP) {
+                step.normalize(SUB_STEP);
+            }
+            Contact contact = first(boxes, moved, step);
+            if (contact == null) {
+                moved.add(step);
+                left.sub(step);
+            } else {
+                moved.fma(contact.time(), step);
+                left.fma(-contact.time(), step);
+                left.fma(-left.dot(contact.axis()), contact.axis());
+                slides++;
+            }
+        }
+        return slides == 0 ? velocity : new Vec3(moved.x, moved.y, moved.z);
+    }
+
+    /** Each box with what it can reach this tick. A slide only shortens a move, so nothing past the length of it matters. */
+    private static List<Moving> moving(List<Box> body, List<Box> blocks, double length) {
+        List<AABB> bounds = blocks.stream().map(Box::bounds).toList();
+        List<Moving> boxes = new ArrayList<>();
+        Axes axes = null;
+        for (Box box : body) {
+            AABB reach = box.bounds().inflate(length);
+            List<Box> near = new ArrayList<>();
+            double deepest = 0.0;
+            for (int i = 0; i < blocks.size(); i++) {
+                if (reach.intersects(bounds.get(i))) {
+                    near.add(blocks.get(i));
+                    axes = Axes.between(box, blocks.get(i), axes);
+                    deepest = Math.max(deepest, depth(box, blocks.get(i), axes));
+                }
+            }
+            if (!near.isEmpty()) {
+                boxes.add(new Moving(box, near, deepest));
+            }
+        }
+        return boxes;
+    }
+
+    /** How deep {@code moving} is in {@code fixed}: the length of {@link #push}, without working out the axes for every block. */
+    private static double depth(Box moving, Box fixed, Axes axes) {
+        Vector3d apart = new Vector3d(fixed.middle()).sub(moving.middle());
+        double least = Double.MAX_VALUE;
+        for (Vector3d axis : axes.all()) {
+            double overlap = moving.reach(axes.ours(), axis) + fixed.reach(axes.theirs(), axis) - Math.abs(apart.dot(axis));
+            if (overlap <= TOUCHING) {
+                return 0.0;
+            }
+            least = Math.min(least, overlap);
+        }
+        return least;
+    }
+
+    @Nullable
+    private static Contact first(List<Moving> boxes, Vector3dc moved, Vector3dc step) {
+        Contact first = null;
+        Axes axes = null;
+        for (Moving box : boxes) {
+            for (Box block : box.near()) {
+                axes = Axes.between(box.box(), block, axes);
+                Contact contact = sweep(box.box(), moved, step, block, box.deepest(), axes);
+                if (contact != null && (first == null || contact.time() < first.time())) {
+                    first = contact;
+                }
+            }
+        }
+        return first;
+    }
+
+    /**
+     * When a box, already {@code moved} from where it stands, first goes more than {@code deepest} into {@code fixed} on its way through
+     * {@code step}, or null if it does not. They are that deep only while every axis is that deep, so the contact is when the last axis
+     * closes, and that axis is the one the move loses. An axis that only touches counts as having a gap of nothing, so if it is not closing
+     * it keeps them apart, or a body sliding along a wall would catch on each block, and if it is closing the contact is now.
+     */
+    @Nullable
+    private static Contact sweep(Box moving, Vector3dc moved, Vector3dc step, Box fixed, double deepest, Axes axes) {
+        double apartX = fixed.middle().x() - moving.middle().x() - moved.x();
+        double apartY = fixed.middle().y() - moving.middle().y() - moved.y();
+        double apartZ = fixed.middle().z() - moving.middle().z() - moved.z();
+        double closes = Double.NEGATIVE_INFINITY;
+        double opens = Double.POSITIVE_INFINITY;
+        Vector3d last = null;
+        for (Vector3d axis : axes.all()) {
+            double along = axis.dot(apartX, apartY, apartZ);
+            double speed = axis.dot(step);
+            double room = moving.reach(axes.ours(), axis) + fixed.reach(axes.theirs(), axis) - deepest;
+            double gap = Math.abs(along) - room;
+            boolean moves = Math.abs(speed) > STILL;
+            if (gap >= -TOUCHING) {
+                if (!moves || along * speed <= 0.0) {
+                    return null;
+                }
+                double time = Math.max(gap, 0.0) / Math.abs(speed);
+                if (time > closes) {
+                    closes = time;
+                    last = axis;
+                }
+            }
+            if (moves) {
+                opens = Math.min(opens, (along + Math.signum(speed) * room) / speed);
+            }
+            if (closes >= opens || closes >= 1.0) {
+                return null;
+            }
+        }
+        return last == null ? null : new Contact(closes, last);
     }
 
     private static List<Vector3d> candidates(Vector3d[] ours, Vector3d[] theirs) {
