@@ -102,9 +102,10 @@ public final class BodyTurning {
             return;
         }
         Heard last = player.getData(ModAttachments.BODY_HEARD);
-        BodyHeading from = last.lagging() ? last.heading() : new BodyHeading(player.getYRot(), player.getXRot());
+        // Not the view now: the packet that moved it lands first, so it is where the body is turning to. The body starts from where it pointed.
+        BodyHeading from = last.lagging() ? last.heading() : player.getData(ModAttachments.FLIGHT_TRACKER).settled(new BodyHeading(player.getYRot(), player.getXRot()));
         int tick = player.getServer().getTickCount();
-        int ticks = last.lagging() ? Mth.clamp(tick - last.tick(), 1, MOST_TICKS_HEARD) : 1;
+        int ticks = last.lagging() ? Mth.clamp(tick - last.tick(), 0, MOST_TICKS_HEARD) : 1;
         BodyHeading now = from.atMost(new BodyHeading(yaw, Mth.clamp(pitch, -90f, 90f)), rate * TURN_ROOM * ticks);
         player.setData(ModAttachments.BODY_HEARD, new Heard(true, now.yaw(), now.pitch(), tick));
     }
