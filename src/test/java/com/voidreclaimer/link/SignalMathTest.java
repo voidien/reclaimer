@@ -99,4 +99,15 @@ class SignalMathTest {
         assertEquals(0, SignalMath.staticLevel(1.5), EXACT);
         assertEquals(1, SignalMath.staticLevel(-1), EXACT);
     }
+
+    @Test
+    void barsGoOutOneAtATimeAndTheLastOnlyWhenTheSignalIsLost() {
+        assertEquals(SignalMath.BARS, SignalMath.bars(1.0));
+        assertEquals(SignalMath.BARS, SignalMath.bars(0.76));
+        assertEquals(3, SignalMath.bars(0.75));
+        assertEquals(2, SignalMath.bars(0.5));
+        assertEquals(1, SignalMath.bars(0.25));
+        assertEquals(1, SignalMath.bars(0.01));
+        assertEquals(0, SignalMath.bars(0.0));
+    }
 }
