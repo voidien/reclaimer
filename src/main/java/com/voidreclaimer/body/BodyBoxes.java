@@ -77,6 +77,18 @@ public final class BodyBoxes {
         return boxes;
     }
 
+    /** A box's eight corners in the world. The bits of each index pick its side on the box's own axes, as {@code DebugShapes.box} wants. */
+    public static List<Vec3> corners(Box box) {
+        List<Vec3> corners = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            Vector3d local = new Vector3d((i & 1) == 0 ? -box.half().x() : box.half().x(), (i & 2) == 0 ? -box.half().y() : box.half().y(),
+                    (i & 4) == 0 ? -box.half().z() : box.half().z());
+            box.turn().transform(local).add(box.middle());
+            corners.add(new Vec3(local.x, local.y, local.z));
+        }
+        return corners;
+    }
+
     /**
      * The shortest move that takes {@code moving} out of {@code fixed}, or nothing when they do not overlap. Two boxes are apart when
      * some axis has a gap between them, and only 15 axes need looking at: the three of each box, and the crosses of those.

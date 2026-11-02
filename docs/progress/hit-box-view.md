@@ -1,0 +1,2 @@
+## Debug tool: see a big body's hit boxes
+- Photo mode's overlay (O, `/vrphoto overlay true`) now draws each big body's boxes, green when free and red inside a block, with a line for where it points, and says how many touch in a shot's text. Step 2 of `docs/design/hit-boxes.md`. Nothing stops a player yet, and it doesn't see ships yet. Tests: `theBoxOverlayShowsABigBodyAndWhatItTouches`, `aBoxHasItsEightCornersWhereItsSidesAre`.

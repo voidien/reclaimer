@@ -92,7 +92,7 @@ All start with `/vrphoto`, and they run on the client.
 | `orbit <yaw> <pitch> <distance>` | Moves the camera round the focus |
 | `debug true\|false` | The debug layer: hit boxes, chunk borders and a panel of facts |
 | `labels true\|false` | Socket and mount names over the model, with positions in a shot's text file |
-| `overlay true\|false` | Ship, thruster, helper drone and rotation overlays |
+| `overlay true\|false` | Ship, thruster, helper drone and rotation overlays, and big bodies' hit boxes: green free, red in a block, with a line for where the body points |
 | `paint all\|base\|accent` | Draws parts with one of their two passes |
 | `time freeze\|step\|slow\|normal` | Drives the server's tick manager |
 | `handling`, `handling all` | Mass, speeds, lengths a second, time to top speed and stopping distance, for your body or every built-in one |
