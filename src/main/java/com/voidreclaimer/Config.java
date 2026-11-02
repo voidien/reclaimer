@@ -41,6 +41,8 @@ public final class Config {
     public static final ModConfigSpec.DoubleValue EARTH_WIND_SPEED;
     public static final ModConfigSpec.DoubleValue LINK_SEAT_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_RELAY_RANGE;
+    public static final ModConfigSpec.IntValue LINK_RELAY_FE_PER_TICK;
+    public static final ModConfigSpec.IntValue LINK_RELAY_FE_BUFFER;
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_1_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_2_RANGE;
     public static final ModConfigSpec.DoubleValue LINK_DYSON_TIER_3_RANGE;
@@ -283,6 +285,9 @@ public final class Config {
         BUILDER.comment("Remote control. The ranges are first guesses, all placeholders.").push("link");
         LINK_SEAT_RANGE = BUILDER.comment("Blocks a seat reaches with no Dyson tier.").defineInRange("seatRange", 1024.0, 1.0, 100_000_000.0);
         LINK_RELAY_RANGE = BUILDER.comment("Blocks a relay reaches with no Dyson tier.").defineInRange("relayRange", 2048.0, 1.0, 100_000_000.0);
+        LINK_RELAY_FE_PER_TICK = BUILDER.comment("Forge Energy a Relay uses each tick. Without it the relay goes dark.")
+                .defineInRange("relayFePerTick", 20, 0, 1_000_000);
+        LINK_RELAY_FE_BUFFER = BUILDER.comment("Forge Energy a Relay holds.").defineInRange("relayFeBuffer", 2000, 1, 100_000_000);
         LINK_DYSON_TIER_1_RANGE = BUILDER.comment("Blocks Dyson tier 1 adds to every seat and relay.").defineInRange("dysonTier1Range", 2048.0, 0.0, 100_000_000.0);
         LINK_DYSON_TIER_2_RANGE = BUILDER.comment("Blocks Dyson tier 2 adds on top of tier 1.").defineInRange("dysonTier2Range", 16_384.0, 0.0, 100_000_000.0);
         LINK_DYSON_TIER_3_RANGE = BUILDER.comment("Blocks Dyson tier 3 adds on top of tier 2.").defineInRange("dysonTier3Range", 262_144.0, 0.0, 100_000_000.0);

@@ -142,6 +142,15 @@ public final class TestScenesGameTests {
             com.voidreclaimer.body.Bodies.store(titan, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
             titan.setYRot(0f);
             titan.setXRot(0f);
+            titan.doTick();
+            // In the order they arrive: the packet that moved the view, then the heading, which has only just left where the view was.
+            titan.setYRot(120f);
+            com.voidreclaimer.body.BodyTurning.heard(titan, true, 0.5f, 0f);
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of(titan).yaw() == 0.5f, "the first word was dragged to " + com.voidreclaimer.body.BodyTurning.of(titan).yaw());
+            com.voidreclaimer.body.BodyTurning.heard(titan, false, 0f, 0f);
+            titan.setYRot(0f);
+            titan.doTick();
+            titan.setYRot(90f);
             com.voidreclaimer.body.BodyTurning.heard(titan, true, 90f, 0f);
             float believed = com.voidreclaimer.body.BodyTurning.of(titan).yaw();
             helper.assertTrue(believed > 0f && believed < 2f, "a Titan was believed to have turned " + believed + " degrees in a tick");

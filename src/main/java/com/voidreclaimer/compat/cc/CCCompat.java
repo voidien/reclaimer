@@ -40,7 +40,7 @@ public final class CCCompat {
 
         /** Every generic source we register; tests check against it. */
         public static List<dan200.computercraft.api.lua.GenericSource> all() {
-            return List.of(new MachinePeripheral(), new DysonPeripheral(), new SpirePeripheral(), new SpawnTravelPeripherals.BackupCore(), new ThrusterPeripheral(), new HelmPeripheral(), new StationPeripheral(), new DockingClampPeripheral(), new UplinkSeatPeripheral(), new HoloPeripheral());
+            return List.of(new MachinePeripheral(), new DysonPeripheral(), new SpirePeripheral(), new SpawnTravelPeripherals.BackupCore(), new ThrusterPeripheral(), new HelmPeripheral(), new StationPeripheral(), new DockingClampPeripheral(), new UplinkSeatPeripheral(), new RelayPeripheral(), new HoloPeripheral());
         }
 
         static void registerCapabilities(RegisterCapabilitiesEvent event) {

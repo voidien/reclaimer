@@ -49,6 +49,9 @@ public final class ServerFlightHandler {
             return;
         }
 
+        if (!player.getData(ModAttachments.BODY_HEARD).lagging()) {
+            tracker.settle(new com.voidreclaimer.body.BodyHeading(player.getYRot(), player.getXRot()));
+        }
         Vec3 position = player.position();
         Vec3 previous = tracker.latest();
         double stepDistance = previous == null ? 0.0 : previous.distanceTo(position);
@@ -132,13 +135,16 @@ public final class ServerFlightHandler {
     }
 
     /**
-     * A big body's boxes are flown on the client, so the server looks now and then. A body held deep in something for two seconds goes
-     * back to where it was last clear; a hair of overlap, or a body that has never been clear here, is left alone. Returns true if the
-     * player was corrected.
+     * A big body's boxes are flown on the client, so the server looks now and then. A body held deep in a block for two seconds goes back
+     * to where it was last clear; a hair of overlap, or a body that has never been clear here, is left alone. Ships don't count: one can
+     * move into a body by itself, and the client can't get out of that. Returns true if the player was corrected.
      */
     private static boolean checkOverlap(ServerPlayer player, FlightTracker tracker, Vec3 position) {
+        if (player.tickCount % OVERLAP_CHECK_TICKS != 0) {
+            return false;
+        }
         var chassis = com.voidreclaimer.body.Bodies.view(player).chassis();
-        if (player.tickCount % OVERLAP_CHECK_TICKS != 0 || chassis.sockets().stream().allMatch(socket -> socket.boxes().isEmpty())) {
+        if (chassis.sockets().stream().allMatch(socket -> socket.boxes().isEmpty())) {
             return false;
         }
         if (com.voidreclaimer.body.BoxCollision.overlap(player) < DEEP_OVERLAP) {
