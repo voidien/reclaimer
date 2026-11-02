@@ -1110,6 +1110,70 @@ public final class AeronauticsGameTests {
         });
     }
 
+    /** Enough holes at the bottom of a pit, and a slab of the floor comes away as a ship, and really leaves: a piece can jam in the rock it came from. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "fracture")
+    public static void tooMuchDrillingBreaksOffAPieceThatDrifts(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                space.setChunkForced((pos.getX() >> 4) + dx, (pos.getZ() >> 4) + dz, true);
+            }
+        }
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + (pos.getX() - 8) + " " + (pos.getY() - 8) + " " + (pos.getZ() - 8) + " " + (pos.getX() + 8) + " " + (pos.getY() + 8) + " "
+                    + (pos.getZ() + 8) + " void_reclaimer:asteroid_metallic");
+            command(server, space, pos, "fill " + (pos.getX() - 5) + " " + (pos.getY() + 3) + " " + (pos.getZ() - 5) + " " + (pos.getX() + 5) + " " + (pos.getY() + 8) + " "
+                    + (pos.getZ() + 5) + " minecraft:air");
+            var ships = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space);
+            int before = ships.getAllSubLevels().size();
+            BlockPos hole = pos.above(3);
+            for (int drilled = 0; drilled < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); drilled++) {
+                com.voidreclaimer.asteroid.Fracture.drilled(space, hole);
+            }
+            int after = ships.getAllSubLevels().size();
+            helper.assertTrue(after == before + 1, "ships went from " + before + " to " + after);
+            nameShip(server, space, pos);
+            var piece = shipNamed(space, pos);
+            double start = piece.logicalPose().position().y();
+            helper.runAfterDelay(240, () -> {
+                double moved = piece.logicalPose().position().y() - start;
+                helper.assertTrue(moved > 6.0, "the piece is wedged: it moved " + moved + " blocks");
+                helper.succeed();
+            });
+        });
+    }
+
+    /** A listener can keep a rock whole, and the holes stand for the next try. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "fracture_kept")
+    public static void anAddonCanKeepARockWhole(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_400, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + (pos.getX() - 3) + " " + (pos.getY() - 3) + " " + (pos.getZ() - 3) + " " + (pos.getX() + 3) + " " + pos.getY() + " "
+                    + (pos.getZ() + 3) + " void_reclaimer:asteroid_metallic");
+            var ships = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space);
+            int before = ships.getAllSubLevels().size();
+            TestEventListeners.noFractures = true;
+            try {
+                for (int drilled = 0; drilled < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); drilled++) {
+                    com.voidreclaimer.asteroid.Fracture.drilled(space, pos.above());
+                }
+            } finally {
+                TestEventListeners.noFractures = false;
+            }
+            helper.assertTrue(ships.getAllSubLevels().size() == before, "the rock split all the same");
+            com.voidreclaimer.asteroid.Fracture.drilled(space, pos.above());
+            helper.assertTrue(ships.getAllSubLevels().size() == before + 1, "the next hole did not try again");
+            helper.succeed();
+        });
+    }
+
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aChemicalThrusterPushesItsShip(GameTestHelper helper) {

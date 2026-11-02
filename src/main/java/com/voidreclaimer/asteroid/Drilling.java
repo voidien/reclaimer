@@ -64,6 +64,7 @@ public final class Drilling {
             event.setCanceled(true);
             ServerLevel level = player.serverLevel();
             level.destroyBlock(event.getPos(), false, player);
+            Fracture.drilled(level, event.getPos());
             DustData dust = player.getData(ModAttachments.DUST);
             DustData gained = dust.add(rock.dustKind(), Config.DRILL_DUST_YIELD.get().floatValue(), DustData.capacity(player));
             player.setData(ModAttachments.DUST, gained);

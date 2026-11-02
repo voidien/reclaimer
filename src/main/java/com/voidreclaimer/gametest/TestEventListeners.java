@@ -70,6 +70,16 @@ public final class TestEventListeners {
         }
     }
 
+    /** While set, no rock splits. It is the whole server's, so its test runs alone. */
+    static volatile boolean noFractures;
+
+    @SubscribeEvent
+    static void onRockFracture(com.voidreclaimer.api.event.RockFractureEvent event) {
+        if (noFractures) {
+            event.setCanceled(true);
+        }
+    }
+
     /** Body stats get +10 max health. */
     public static final String TOUGH = "vr_test_tough";
     /** Tool module use is cancelled. */
