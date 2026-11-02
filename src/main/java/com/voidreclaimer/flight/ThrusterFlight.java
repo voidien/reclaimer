@@ -70,6 +70,17 @@ public final class ThrusterFlight {
         return player.getAttributeValue(Attributes.GRAVITY) * Config.HOVER_WEIGHT_FACTOR.get();
     }
 
+    /**
+     * The speed that went into what was hit: what the hit boxes took, and what vanilla's box took on an axis it collided on. The dampener's
+     * share went in {@code step}, and vanilla also slows a body in a cobweb or on soul sand, which is no crash.
+     */
+    private static Vec3 lostToWhatWasHit(Player player, Vec3 wanted, Vec3 kept) {
+        Vec3 after = player.getDeltaMovement();
+        Vec3 byVanilla = new Vec3(player.horizontalCollision ? kept.x - after.x : 0.0, player.verticalCollision ? kept.y - after.y : 0.0,
+                player.horizontalCollision ? kept.z - after.z : 0.0);
+        return wanted.subtract(kept).add(byVanilla);
+    }
+
     /** Hears a body losing more speed than is safe. Installed by the client entrypoint, which keeps this class free of client-only references. */
     public static volatile java.util.function.Consumer<Vec3> crashed = lost -> {};
 
@@ -84,9 +95,8 @@ public final class ThrusterFlight {
         com.voidreclaimer.body.BodyBoxes.Moved moved = com.voidreclaimer.body.BoxCollision.move(player, wanted);
         player.setDeltaMovement(moved.speed());
         player.move(MoverType.SELF, moved.move());
-        // Whatever took the speed, the hit boxes or vanilla's box: the dampener's share went in step, so this is only what was hit.
-        Vec3 lost = wanted.subtract(player.getDeltaMovement());
-        if (lost.length() * FlightStats.TICKS_PER_SECOND > Config.CRASH_SAFE_SPEED.get()) {
+        Vec3 lost = lostToWhatWasHit(player, wanted, moved.speed());
+        if (lost.length() * FlightStats.TICKS_PER_SECOND > Config.CRASH_SAFE_SPEED.get() && !Tether.isRecalling(player)) {
             crashed.accept(lost);
         }
         player.calculateEntityAnimation(true);

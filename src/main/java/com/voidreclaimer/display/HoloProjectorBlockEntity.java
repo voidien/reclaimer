@@ -26,12 +26,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A placed Holo Projector: its {@link HoloDisplay}, its owner, and on the server the refresh of a readout. Every change goes
  * through {@link #apply}, which saves and resends only when something really changed, so a steady readout costs no packets.
  */
 public final class HoloProjectorBlockEntity extends BlockEntity {
+    /** How a network map draws: the projector, a lit relay, a dark one, and what the lit ones reach. */
+    public static final HoloNetworkMap.Colours NETWORK_COLOURS = new HoloNetworkMap.Colours(
+            MapColor.SNOW.getPackedId(MapColor.Brightness.HIGH) & 0xFF, MapColor.DIAMOND.getPackedId(MapColor.Brightness.HIGH) & 0xFF,
+            MapColor.STONE.getPackedId(MapColor.Brightness.NORMAL) & 0xFF, MapColor.COLOR_BLUE.getPackedId(MapColor.Brightness.LOW) & 0xFF);
+
     private HoloDisplay display = HoloDisplay.EMPTY;
     @Nullable
     private UUID owner;
@@ -118,6 +124,12 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         apply(display.withShip());
     }
 
+    /** Shows a map of this level's relays and draws its first picture at once. */
+    public void setNetworkMap() {
+        apply(display.withNetworkMap());
+        refreshMap();
+    }
+
     /** Shows a map of the blocks around the projector and draws its first picture at once. */
     public void setMap() {
         apply(display.withMap());
@@ -139,14 +151,30 @@ public final class HoloProjectorBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide()) {
             return;
         }
-        int radius = Config.HOLO_MAP_RADIUS.get();
-        byte[] image = HoloMapImage.compose((x, y) -> mapPixel(level, worldPosition.getX() + HoloMapImage.offset(x, radius), worldPosition.getZ() + HoloMapImage.offset(y, radius)));
+        boolean network = display.showsNetwork();
+        List<HoloNetworkMap.Node> relays = network ? relays() : List.of();
+        Vec3 here = network ? worldSpot() : Vec3.ZERO;
+        int radius = network ? HoloNetworkMap.radius(relays, here.x, here.z) : Config.HOLO_MAP_RADIUS.get();
+        byte[] image = network ? HoloNetworkMap.draw(relays, here.x, here.z, radius, com.voidreclaimer.link.Signal.relayRange(level.getServer()), NETWORK_COLOURS)
+                : HoloMapImage.compose((x, y) -> mapPixel(level, worldPosition.getX() + HoloMapImage.offset(x, radius), worldPosition.getZ() + HoloMapImage.offset(y, radius)));
         if (radius != mapRadius || !Arrays.equals(image, mapImage)) {
             mapImage = image;
             mapRadius = radius;
             syncs++;
             ((ServerLevel) level).sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
+    }
+
+    private List<HoloNetworkMap.Node> relays() {
+        return com.voidreclaimer.link.Relays.of((ServerLevel) level).relays().stream()
+                .map(relay -> new HoloNetworkMap.Node(relay.position().x, relay.position().z, relay.lit())).toList();
+    }
+
+    /** Where the projector is in the world: on a ship that is not where its block is. */
+    private Vec3 worldSpot() {
+        Vec3 middle = Vec3.atCenterOf(worldPosition);
+        var ship = com.voidreclaimer.ship.Ships.shipAt((ServerLevel) level, worldPosition);
+        return ship == null ? middle : ship.logicalPose().transformPosition(middle);
     }
 
     /** The top block of a column as a packed map colour; 0 for nothing there or a chunk that is not loaded. */

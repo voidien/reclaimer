@@ -100,6 +100,72 @@ public final class CrashGameTests {
         });
     }
 
+    /** The winch stops on the anchor's middle, and a long body's nose gets there first. That is no crash. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aWinchPullingABodyIntoItsAnchorDoesNotHurtIt(GameTestHelper helper) {
+        inTheOpen(helper, new BlockPos(102_600, 300, 0), BuiltinBodies.SHIP, player -> {
+            player.setData(ModAttachments.TETHER, player.getData(ModAttachments.TETHER).withRecalling(true));
+            float health = player.getHealth();
+            BodyCrash.heard(player, new Vec3(0.0, 0.0, top(player)));
+            helper.assertTrue(player.getHealth() == health, "the winch cost it " + (health - player.getHealth()));
+            player.setData(ModAttachments.TETHER, player.getData(ModAttachments.TETHER).withRecalling(false));
+        });
+    }
+
+    /** A cobweb stops a body dead, and nothing was hit. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aCobwebIsNotACrash(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(103_000, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 3, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            space.setBlock(origin, Blocks.COBWEB.defaultBlockState(), 3);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.DRONE));
+            AtomicReference<Vec3> heard = new AtomicReference<>();
+            Consumer<Vec3> before = ThrusterFlight.crashed;
+            ThrusterFlight.crashed = heard::set;
+            try {
+                player.setDeltaMovement(0.0, 0.0, 0.5);
+                player.makeStuckInBlock(Blocks.COBWEB.defaultBlockState(), new Vec3(0.25, 0.05, 0.25));
+                ThrusterFlight.travel(player);
+                helper.assertTrue(heard.get() == null, "a cobweb was reported as a crash: " + heard.get());
+            } finally {
+                ThrusterFlight.crashed = before;
+            }
+            space.setBlock(origin, Blocks.AIR.defaultBlockState(), 3);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** Rock needs a drill, however hard it is hit. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aCrashDoesNotDoADrillsWork(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(103_400, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 3, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            BlockPos rock = origin.offset(0, 2, 20);
+            var state = com.voidreclaimer.registry.ModBlocks.ASTEROID_METALLIC.get().defaultBlockState();
+            for (int x = -6; x <= 6; x++) {
+                for (int y = -6; y <= 12; y++) {
+                    space.setBlock(rock.offset(x, y - 2, 0), state, 3);
+                }
+            }
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP));
+            player.setHealth(player.getMaxHealth());
+            TestPlayers.endSpawnProtection(player);
+            player.setYRot(0f);
+            player.setXRot(0f);
+            hit(player, top(player) * 0.7);
+            helper.assertTrue(space.getBlockState(rock).is(state.getBlock()), "a crash broke rock");
+            BlockPos.betweenClosed(rock.offset(-6, -8, 0), rock.offset(6, 10, 0)).forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
+            player.setData(ModAttachments.LINK, LinkState.NONE);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** Flies the body along +Z until it touches, and hits at {@code speed} blocks a tick. */
     private static void hit(ServerPlayer player, double speed) {
         Vec3 ahead = new Vec3(0.0, 0.0, 0.5);

@@ -5,6 +5,7 @@ import com.voidreclaimer.api.event.BodyCrashEvent;
 import com.voidreclaimer.flight.FlightStats;
 import com.voidreclaimer.flight.ServerFlightHandler;
 import com.voidreclaimer.registry.ModBlocks;
+import com.voidreclaimer.tether.Tether;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -29,12 +30,13 @@ public final class BodyCrash {
 
     /** {@code lost} is the speed that went into what it hit, in blocks a tick. */
     public static void heard(ServerPlayer player, Vec3 lost) {
-        if (!Double.isFinite(lost.lengthSqr()) || !player.isAlive() || player.isCreative() || player.isSpectator()) {
+        // The winch stops on the anchor's middle, and a long body's nose gets there first: that is the winch's doing, not the pilot's.
+        if (!Double.isFinite(lost.lengthSqr()) || !player.isAlive() || player.isCreative() || player.isSpectator() || Tether.data(player).recalling()) {
             return;
         }
         double perSecond = FlightStats.TICKS_PER_SECOND;
         double top = FlightStats.of(player).maxSpeed() * perSecond;
-        double speed = Math.min(lost.length() * perSecond, Math.max(top, ServerFlightHandler.MOST_WIND) * SPEED_ROOM);
+        double speed = Math.min(onlyTheHit(player, lost).length() * perSecond, Math.max(top, ServerFlightHandler.MOST_WIND) * SPEED_ROOM);
         double safe = Config.CRASH_SAFE_SPEED.get();
         if (speed <= safe) {
             return;
@@ -51,6 +53,11 @@ public final class BodyCrash {
         if (event.getDamage() > 0f) {
             player.hurt(player.serverLevel().damageSources().flyIntoWall(), event.getDamage());
         }
+    }
+
+    /** A fall vanilla will charge for is not charged again. */
+    private static Vec3 onlyTheHit(ServerPlayer player, Vec3 lost) {
+        return lost.y < 0.0 && ServerFlightHandler.fallHurts(player) ? new Vec3(lost.x, 0.0, lost.z) : lost;
     }
 
     /** The weakest first, and only what this hit can break: a Ship that clips a station takes the glass, and leaves the frame. */

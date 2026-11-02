@@ -9,6 +9,14 @@ import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
+import com.voidreclaimer.core.DeathMarker;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.BlockPos;
+import java.util.HashMap;
+import java.util.Map;
+import com.voidreclaimer.network.DeathShellsPayload;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.tether.TetherData;
 import com.voidreclaimer.energy.EnergyData;
@@ -94,6 +102,8 @@ public final class Links {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Queue<Move> MOVES = new ArrayDeque<>();
+    /** Who picked a shell on the death screen. Lives on the server thread. */
+    private static final Map<UUID, UUID> WAKE_CHOICES = new HashMap<>();
     /** The link number of a wreck that has never been a shell. */
     private static final long FIRST_EPOCH = 1L;
 
@@ -179,9 +189,31 @@ public final class Links {
     /** Last in line, so a mod that cancels the death loses nothing. With the game rule that keeps inventories, the body is kept too. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onMainBodyDeath(LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && !player.isSpectator()
-                && !player.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
-            leaveWreck(player);
+        if (event.getEntity() instanceof ServerPlayer player && !player.isSpectator()) {
+            if (!player.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+                leaveWreck(player);
+            }
+            WAKE_CHOICES.remove(player.getUUID());
+            PacketDistributor.sendToPlayer(player, new DeathShellsPayload(Signal.rows(player).stream().filter(row -> !ShellRow.WRECK.equals(row.status()) && !row.recoverable()).toList()));
+        }
+    }
+
+    /** The death screen's choice: wake in this shell, or nowhere special. It only lasts until the respawn, so it isn't saved. */
+    public static void chooseWake(ServerPlayer player, Optional<UUID> shell) {
+        shell.filter(id -> state(player).known(id).isPresent()).ifPresentOrElse(id -> WAKE_CHOICES.put(player.getUUID(), id), () -> WAKE_CHOICES.remove(player.getUUID()));
+    }
+
+    /** A shell is a link like any other, so the player has a body to come back to: the new one, where it respawned. */
+    @SubscribeEvent
+    static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        UUID shell = WAKE_CHOICES.remove(event.getEntity().getUUID());
+        if (shell != null && event.getEntity() instanceof ServerPlayer player) {
+            requestLink(player, shell, result -> {
+                if (result != Result.LINKED) {
+                    LOGGER.warn("{} chose to wake in shell {} and could not: {}", player.getScoreboardName(), shell, result);
+                    player.displayClientMessage(Component.translatable("message.void_reclaimer.respawn.shell_failed"), false);
+                }
+            });
         }
     }
 
@@ -210,7 +242,9 @@ public final class Links {
         wreck.ifPresent(host -> {
             Outboxes.settled(id);
             Wrecks.make(host);
+            Wrecks.setDrifting(host);
         });
+        DeathMarker.point(player, id, GlobalPos.of(at.dimension(), BlockPos.containing(at.position())));
         Replicator.settle(player, queued);
         player.getInventory().clearContent();
         player.setData(ModAttachments.TETHER, TetherData.NONE);
@@ -231,6 +265,7 @@ public final class Links {
     @SubscribeEvent
     static void onServerStopped(ServerStoppedEvent event) {
         MOVES.clear();
+        WAKE_CHOICES.clear();
     }
 
     private static Result run(MinecraftServer server, Move move) {
@@ -474,6 +509,7 @@ public final class Links {
     static void destroyed(BodyHost shell) {
         ServerPlayer owner = owner(shell);
         if (owner != null && !older(state(owner), shell)) {
+            DeathMarker.clear(owner, shell.getUUID());
             LinkState state = state(owner);
             LinkState.KnownShell known = state.known(shell.getUUID()).orElseGet(() -> seen(shell));
             owner.setData(ModAttachments.LINK, state.withoutOutbox(shell.getUUID()).withKnown(known.destroyed()));

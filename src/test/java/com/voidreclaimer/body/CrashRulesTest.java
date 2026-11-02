@@ -29,8 +29,9 @@ class CrashRulesTest {
     }
 
     @Test
-    void aBodyWithNoSpeedToSpeakOfStillCounts() {
-        assertTrue(Double.isFinite(CrashRules.healthShare(6.0, 0.0, SAFE, 1.0)));
+    void aBodyWithNoSpeedToSpeakOfIsNotMadeOfGlass() {
+        assertEquals(0.04, CrashRules.healthShare(6.0, 0.0, SAFE, 1.0), 1e-9);
+        assertEquals(0.04, CrashRules.healthShare(6.0, 6.0, SAFE, 1.0), 1e-9);
     }
 
     @Test

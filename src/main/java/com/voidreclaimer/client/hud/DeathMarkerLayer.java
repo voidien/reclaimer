@@ -13,7 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
-/** Screen-edge marker pointing to where the AI last died (its drops float there), until it gets close. */
+/** Screen-edge marker pointing to where the AI last died, and to the wreck it left there. */
 public final class DeathMarkerLayer {
     private static final int COLOR = 0xFFFF8A80;
     private static final int MARGIN = 24;

@@ -2,11 +2,13 @@ package com.voidreclaimer.client.screen;
 
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.core.BackupCoreList;
+import com.voidreclaimer.link.ShellRow;
 import com.voidreclaimer.network.RespawnChoicePayload;
 import com.voidreclaimer.registry.ModAttachments;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import com.voidreclaimer.core.CoreCharging;
 import com.voidreclaimer.core.RespawnCards;
@@ -24,9 +26,9 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Adds a "Restore at" panel to the death screen: a card for the free deep space spawn and one for every Backup Core with a
- * charge (name, charge pips, distance from where you died), plus a short line from the AI under the score. The choice is sent
- * to the server, which uses it when the vanilla Respawn button is pressed.
+ * Adds a "Restore at" panel to the death screen: a card for the free deep space spawn, one for every Backup Core with a charge (name,
+ * charge pips, distance from where you died) and one for every Remote Shell, plus a short line from the AI under the score. The choice
+ * is sent to the server, which uses it when the vanilla Respawn button is pressed. Cards that don't fit the screen are left out.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID, value = Dist.CLIENT)
 public final class DeathScreenCores {
@@ -36,25 +38,38 @@ public final class DeathScreenCores {
     private static final int CARD_WIDTH = 168;
     private static final int CARD_HEIGHT = 28;
     private static final int GAP = 4;
+    private static final int RIGHT_OF_CARDS = X + CARD_WIDTH + GAP * 2;
     private static final int TEXT = 0xFFE6F2FF;
     private static final int DIM = 0xFF8899AA;
     private static final int ACCENT = 0xFF7FD4FF;
 
-    private static Optional<GlobalPos> selected = Optional.empty();
+    private static Choice selected = Choice.SPAWN;
     private static final List<Card> cards = new ArrayList<>();
+    /** The shells the server said can be woken in at this death. */
+    private static List<ShellRow> shells = List.of();
 
     private DeathScreenCores() {}
 
-    /** One choice: the spawn (no position) or a Backup Core. */
+    /** Installed as {@link com.voidreclaimer.network.DeathShellsPayload#clientHandler}. */
+    public static void onShells(com.voidreclaimer.network.DeathShellsPayload payload) {
+        shells = payload.rows();
+    }
+
+    /** Where to go: the spawn, with neither, a Backup Core or a shell. */
+    private record Choice(Optional<GlobalPos> core, Optional<UUID> shell) {
+        static final Choice SPAWN = new Choice(Optional.empty(), Optional.empty());
+    }
+
+    /** One choice. */
     private static final class Card extends AbstractWidget {
-        private final Optional<GlobalPos> pos;
+        private final Choice choice;
         private final Component name;
         private final Component detail;
         private final Runnable onChoose;
 
-        Card(int x, int y, Optional<GlobalPos> pos, Component name, Component detail, Runnable onChoose) {
+        Card(int x, int y, Choice choice, Component name, Component detail, Runnable onChoose) {
             super(x, y, CARD_WIDTH, CARD_HEIGHT, name);
-            this.pos = pos;
+            this.choice = choice;
             this.name = name;
             this.detail = detail;
             this.onChoose = onChoose;
@@ -62,7 +77,7 @@ public final class DeathScreenCores {
 
         @Override
         protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            boolean chosen = pos.equals(selected);
+            boolean chosen = choice.equals(selected);
             int back = chosen ? 0xF0233B4D : isHoveredOrFocused() ? 0xF01C2833 : 0xE0121820;
             graphics.fill(getX(), getY(), getX() + width, getY() + height, back);
             graphics.renderOutline(getX(), getY(), width, height, chosen ? ACCENT : 0xFF3A4A5A);
@@ -88,18 +103,18 @@ public final class DeathScreenCores {
             return;
         }
         cards.clear();
-        selected = Optional.empty();
+        selected = Choice.SPAWN;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
         List<BackupCoreList.Entry> cores = mc.player.getData(ModAttachments.BACKUP_CORES).cores().stream()
                 .filter(entry -> entry.charges() > 0).toList();
-        if (cores.isEmpty()) {
+        if (cores.isEmpty() && shells.isEmpty()) {
             return;
         }
         int y = TOP;
-        add(event, Optional.empty(), Component.translatable("screen.void_reclaimer.respawn.spawn"),
+        add(event, Choice.SPAWN, Component.translatable("screen.void_reclaimer.respawn.spawn"),
                 Component.translatable("screen.void_reclaimer.respawn.spawn.detail"), y);
         for (BackupCoreList.Entry entry : cores) {
             y += CARD_HEIGHT + GAP;
@@ -109,21 +124,40 @@ public final class DeathScreenCores {
                 detail = detail.copy().append(Component.translatable("screen.void_reclaimer.respawn.distance",
                         RespawnCards.blocks(p.getX() + 0.5 - mc.player.getX(), p.getY() + 0.5 - mc.player.getY(), p.getZ() + 0.5 - mc.player.getZ())));
             }
-            add(event, Optional.of(entry.pos()), Component.literal(entry.name()), detail, y);
+            add(event, new Choice(Optional.of(entry.pos()), Optional.empty()), Component.literal(entry.name()), detail, y);
         }
-        select(Optional.empty());
+        for (ShellRow row : shells) {
+            y += CARD_HEIGHT + GAP;
+            Component detail = row.sameDimension() ? Component.translatable("screen.void_reclaimer.respawn.distance", Math.round(row.distance()))
+                    : Component.translatable("screen.void_reclaimer.respawn.shell.away");
+            add(event, new Choice(Optional.empty(), Optional.of(row.shell())), Component.translatable("screen.void_reclaimer.respawn.shell", row.number()), detail, y);
+        }
+        select(Choice.SPAWN);
+        clearOfTheCards(event);
     }
 
-    private static void add(ScreenEvent.Init.Post event, Optional<GlobalPos> pos, Component name, Component detail, int y) {
-        Card card = new Card(X, y, pos, name, detail, () -> select(pos));
+    /** On a narrow window the screen's own buttons would sit under the cards: they move right, and a wide window leaves them alone. */
+    private static void clearOfTheCards(ScreenEvent.Init.Post event) {
+        for (var widget : event.getListenersList()) {
+            if (widget instanceof AbstractWidget button && !(widget instanceof Card) && button.getX() < RIGHT_OF_CARDS) {
+                button.setX(RIGHT_OF_CARDS);
+            }
+        }
+    }
+
+    private static void add(ScreenEvent.Init.Post event, Choice choice, Component name, Component detail, int y) {
+        if (y + CARD_HEIGHT > event.getScreen().height - GAP) {
+            return;
+        }
+        Card card = new Card(X, y, choice, name, detail, () -> select(choice));
         event.addListener(card);
         cards.add(card);
     }
 
-    private static void select(Optional<GlobalPos> pos) {
-        selected = pos;
+    private static void select(Choice choice) {
+        selected = choice;
         if (Minecraft.getInstance().getConnection() != null) {
-            PacketDistributor.sendToServer(new RespawnChoicePayload(pos));
+            PacketDistributor.sendToServer(new RespawnChoicePayload(choice.core(), choice.shell()));
         }
     }
 
@@ -134,8 +168,13 @@ public final class DeathScreenCores {
         }
         Font font = Minecraft.getInstance().font;
         GuiGraphics graphics = event.getGuiGraphics();
-        // A short line from the AI under the score, whether or not a core can be chosen.
-        graphics.drawCenteredString(font, Component.translatable("screen.void_reclaimer.respawn.ai_line"), event.getScreen().width / 2, 116, DIM);
+        // A short line from the AI under the score, whether or not a core can be chosen, beside the cards if there are any.
+        int left = cards.isEmpty() ? 0 : RIGHT_OF_CARDS;
+        int width = event.getScreen().width - left - GAP;
+        int line = 0;
+        for (var text : font.split(Component.translatable("screen.void_reclaimer.respawn.ai_line"), width)) {
+            graphics.drawCenteredString(font, text, left + width / 2, 116 + line++ * font.lineHeight, DIM);
+        }
         if (!cards.isEmpty()) {
             graphics.drawString(font, Component.translatable("screen.void_reclaimer.respawn.title"), X, TOP - 12, ACCENT);
         }

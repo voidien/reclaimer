@@ -15,6 +15,9 @@ import net.minecraft.world.phys.Vec3;
  * too, is one list of stacks that a player takes out by hand. Nothing goes on the floor, because a stack on the floor despawns.
  */
 public final class Wrecks {
+    /** Blocks a tick: 0.3 blocks a second, about a kilometre an hour, and only while it is loaded. */
+    private static final double DRIFT = 0.015;
+
     private Wrecks() {}
 
     /** Turns {@code shell} into a wreck in place: the same entity, so the same id and the same chunk. */
@@ -32,6 +35,13 @@ public final class Wrecks {
         shell.setHealth(shell.getMaxHealth());
         shell.setDeltaMovement(Vec3.ZERO);
         Links.note(shell);
+    }
+
+    /** A main body goes on moving a little. The way it died has nothing to do with it: a wreck that flew off at speed could never be found. */
+    static void setDrifting(BodyHost wreck) {
+        var random = wreck.getRandom();
+        Vec3 way = new Vec3(random.nextDouble() - 0.5, random.nextDouble() - 0.5, random.nextDouble() - 0.5);
+        wreck.setDrift(way.lengthSqr() < 1.0e-4 ? new Vec3(DRIFT, 0.0, 0.0) : way.normalize().scale(DRIFT));
     }
 
     /** Its owner gives up an idle shell: it becomes a wreck to loot like any other. Nothing else ends a parked shell. */

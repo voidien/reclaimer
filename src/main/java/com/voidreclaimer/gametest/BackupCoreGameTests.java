@@ -154,7 +154,7 @@ public final class BackupCoreGameTests {
             ServerLevel space = player.serverLevel();
             try {
                 player.setData(ModAttachments.DEATH_MARKER,
-                        new com.voidreclaimer.core.DeathMarker(Optional.of(GlobalPos.of(space.dimension(), origin))));
+                        new com.voidreclaimer.core.DeathMarker(Optional.of(GlobalPos.of(space.dimension(), origin)), Optional.empty()));
                 for (int i = 0; i < 20; i++) {
                     player.doTick();
                 }

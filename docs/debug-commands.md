@@ -72,7 +72,7 @@ Writes to a projector with no computer. All start `holo <pos>`:
 | `scale <scale>` | Sets the size |
 | `source <source>` | Shows a data source |
 | `billboard <on>` | Turns to face the viewer, or not |
-| `model <id>`, `body`, `ship`, `map`, `globe <globe>` | What it shows |
+| `model <id>`, `body`, `ship`, `map`, `network`, `globe <globe>` | What it shows |
 | `clear` | Clears it |
 
 ### Readouts

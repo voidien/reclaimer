@@ -27,6 +27,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class ClientFlightController {
     /** Closer to the view than this is pointing at it, in degrees. */
     private static final float HEADING_SAME = 0.05f;
+    /** A hit this tick, waiting for the tick to end. */
+    private static net.minecraft.world.phys.Vec3 crash;
     private static final int HEADING_AGAIN_TICKS = 20;
     /** The last heading the server was told, or null if it thinks the body points at its view. */
     private static com.voidreclaimer.body.BodyHeading sentHeading;
@@ -66,6 +68,18 @@ public final class ClientFlightController {
         player.setSprinting(false);
     }
 
+    /** Installed as {@link ThrusterFlight#crashed}. It waits for the end of the tick: the move that reached the wall goes to the server first. */
+    public static void onCrash(net.minecraft.world.phys.Vec3 lost) {
+        crash = lost;
+    }
+
+    private static void reportCrash() {
+        if (crash != null) {
+            PacketDistributor.sendToServer(com.voidreclaimer.network.BodyCrashPayload.of(crash));
+            crash = null;
+        }
+    }
+
     /** Tells the server where a big body points while that isn't its view, once for each change and once more when it catches up. */
     private static void reportHeading(LocalPlayer player) {
         com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.of(player);
@@ -85,6 +99,7 @@ public final class ClientFlightController {
             return;
         }
         reportHeading(mc.player);
+        reportCrash();
         // Vanilla's "Move with WASD" tutorial waits for walking input, which thruster flight replaces, so it would
         // never finish. Its later steps (punch a tree, craft planks) don't fit the mod either: end it.
         if (mc.options.tutorialStep != TutorialSteps.NONE && ThrusterFlight.isActive(mc.player)) {

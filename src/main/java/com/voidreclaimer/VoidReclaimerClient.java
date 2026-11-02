@@ -42,11 +42,12 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterRenderers);
         modBus.addListener(VoidReclaimerClient::onRegisterItemColors);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
-        com.voidreclaimer.flight.ThrusterFlight.crashed = lost -> net.neoforged.neoforge.network.PacketDistributor.sendToServer(com.voidreclaimer.network.BodyCrashPayload.of(lost));
+        com.voidreclaimer.flight.ThrusterFlight.crashed = com.voidreclaimer.client.input.ClientFlightController::onCrash;
         com.voidreclaimer.network.HelmReadoutPayload.clientHandler = com.voidreclaimer.client.input.ClientPilotController::onReadout;
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
         BackupCoreBlock.screenOpener = pos -> Minecraft.getInstance().setScreen(new BackupCoreScreen(pos));
+        com.voidreclaimer.network.DeathShellsPayload.clientHandler = com.voidreclaimer.client.screen.DeathScreenCores::onShells;
         com.voidreclaimer.network.ShellListPayload.clientHandler = payload ->
                 Minecraft.getInstance().setScreen(new com.voidreclaimer.client.screen.ShellPickerScreen(payload));
     }
@@ -107,6 +108,7 @@ public final class VoidReclaimerClient {
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("tether"), TetherHudLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("planetary_grid"), com.voidreclaimer.client.hud.PlanetaryGridLayer::render);
         event.registerAbove(VanillaGuiLayers.HOTBAR, VoidReclaimer.id("module"), ModuleHudLayer::render);
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("signal_bars"), com.voidreclaimer.client.hud.SignalBarsLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("death_marker"), DeathMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("station_markers"), com.voidreclaimer.client.hud.StationMarkerLayer::render);
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, VoidReclaimer.id("dust_meter"), DustMeterLayer::render);

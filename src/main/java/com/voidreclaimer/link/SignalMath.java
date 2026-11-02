@@ -23,6 +23,9 @@ public record SignalMath(double seatRange, double relayRange, List<Double> dyson
         dysonRanges = List.copyOf(dysonRanges);
     }
 
+    /** How many bars the HUD has for a link. */
+    public static final int BARS = 4;
+
     public static SignalMath fromConfig() {
         return new SignalMath(
                 Config.LINK_SEAT_RANGE.get(),
@@ -47,6 +50,11 @@ public record SignalMath(double seatRange, double relayRange, List<Double> dyson
     public double seatRange(int dysonTier, boolean atStation) {
         double range = seatRange + dysonBonus(dysonTier);
         return atStation ? range * stationRange : range;
+    }
+
+    /** How many of the {@link #BARS} bars a signal of {@code strength} lights. None means it is lost; the weakest signal that holds still lights one. */
+    public static int bars(double strength) {
+        return strength <= 0.0 ? 0 : Math.min(BARS, (int) Math.ceil(strength * BARS));
     }
 
     /** A relay's range at {@code dysonTier}. */
