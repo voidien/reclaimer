@@ -62,14 +62,18 @@ public final class ShellRecovery {
     public static void request(ServerPlayer player, UUID shell, Consumer<Result> then) {
         LinkState state = Links.state(player);
         Optional<LinkState.KnownShell> known = state.known(shell).filter(LinkState.KnownShell::recoverable);
-        boolean waiting = WAITING.stream().anyMatch(entry -> entry.player().equals(player.getUUID()));
-        if (known.isEmpty() || state.linked() || state.outbox(shell).isPresent() || waiting) {
+        if (known.isEmpty() || state.linked() || state.outbox(shell).isPresent() || waiting(player)) {
             then.accept(Result.REFUSED);
             return;
         }
         LinkState.KnownShell entry = known.get();
         long until = player.server.getTickCount() + (long) LIMIT_TICKS;
         WAITING.add(new Waiting(player.getUUID(), shell, entry.epoch(), entry.at(), entry.oldCopy().get(), false, until, then));
+    }
+
+    /** Whether a recovery of {@code player}'s is on its way. */
+    public static boolean waiting(ServerPlayer player) {
+        return WAITING.stream().anyMatch(entry -> entry.player().equals(player.getUUID()));
     }
 
     @SubscribeEvent
