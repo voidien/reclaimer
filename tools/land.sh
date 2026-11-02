@@ -11,15 +11,17 @@ pr=${1:?usage: tools/land.sh PR_NUMBER}
 [ "$(gh pr view "$pr" --json isDraft -q .isDraft)" = "false" ] || { echo "PR $pr is a draft" >&2; exit 2; }
 
 # CI no longer stands between a branch and main, so this does. A docs-only PR has nothing to check.
+# The commit itself, from git: right after a push GitHub's API can still give the one before, which may have passed when this hasn't.
 git fetch -q origin "pull/$pr/head"
-if [ -n "$(gh pr diff "$pr" --name-only | grep -Ev '\.md$|^docs/|^art/' || true)" ] && ! tools/verified.sh "$(gh pr view "$pr" --json headRefOid -q .headRefOid)"; then
+head=$(git rev-parse FETCH_HEAD)
+if [ -n "$(gh pr diff "$pr" --name-only | grep -Ev '\.md$|^docs/|^art/' || true)" ] && ! tools/verified.sh "$head"; then
     echo "PR $pr has not passed tools/verify.sh here: run it on this branch, or on a stack above it" >&2
     exit 3
 fi
 
 # Not --delete-branch: that also removes any clean worktree on the branch, with its worlds and build, even one somebody is using.
 branch=$(gh pr view "$pr" --json headRefName -q .headRefName)
-gh pr merge "$pr" --merge || { echo "PR $pr did not merge" >&2; exit 1; }
+gh pr merge "$pr" --merge --match-head-commit "$head" || { echo "PR $pr did not merge" >&2; exit 1; }
 git push -q origin --delete "$branch" 2>/dev/null || echo "branch $branch is still on origin" >&2
 
 # Claude Code starts in the first worktree and loads its CLAUDE.md: a stale one means old rules.
