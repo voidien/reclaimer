@@ -18,6 +18,18 @@ class BodyLookTurnTest {
         assertEquals(z, nose.z, 1e-3f, "z");
     }
 
+    /** The common copy, for the boxes: a model and its boxes must never turn differently. */
+    @Test
+    void theBoxesTurnAsTheModelDoes() {
+        for (float yaw : new float[] {0f, 37f, -120f, 180f}) {
+            for (float pitch : new float[] {0f, 25f, -60f}) {
+                Vector3f model = BodyLook.turn(yaw, pitch, 0f).transform(new Vector3f(1f, 2f, 3f));
+                org.joml.Vector3d boxes = com.voidreclaimer.body.BodyBoxes.turn(yaw, pitch).transform(new org.joml.Vector3d(1, 2, 3));
+                assertNose((float) boxes.x, (float) boxes.y, (float) boxes.z, model);
+            }
+        }
+    }
+
     @Test
     void aBoneHiddenAloneKeepsItsChildren() {
         software.bernie.geckolib.cache.object.GeoBone bone = new software.bernie.geckolib.cache.object.GeoBone(null, "root", false, null, false, null);

@@ -4,6 +4,8 @@ The owner's decision (2026-11-01): every big body, meaning the Ship, Shuttle and
 
 This is the plan from the old PC's reading of the code and the Sable 2.0.6 jar. Nothing is built, nothing here has been run, and every cost is an estimate.
 
+**Built so far:** the data and the pure maths (`api.body.HitBox`, `Socket.boxes`, `body/BodyBoxes`) with the Titan and Shuttle lists. Nothing reads them yet, so a body flies as it did. The Ship's list waits for its measurement.
+
 ## How it works
 - **Hook:** `ThrusterFlight.travel`, between `step` and `move`, calls `BodyBoxes.resolve(player, velocity)`. No mixin is needed, and it can't clash with Sable's `@Redirect` on `collide`. Collision is client side today: `LivingEntityTravelMixin` runs only for the local player, and the server's `handleMovePlayer` re-runs `move` with the vanilla box only. Creative vanilla flight stays boxless.
 - **Own box test:** vanilla's `collideBoundingBox` sweeps axis-aligned boxes, so it can't handle boxes that turn. We write a pure box-against-box test of about 60 lines, unit-tested in `fastTest`. A world block is the same test with no pose, so blocks and ships share one path.
