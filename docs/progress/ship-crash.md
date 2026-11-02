@@ -1,0 +1,5 @@
+## Ships crash
+- A ship that loses more than 5 blocks a second along its way in one tick has hit something: the hull blocks that met the world's blocks, and those world blocks, break weakest first by the same rule as a body's crash, using the ship's mass, up to 32 a hit. The Helm and Station Core can go at high enough speed. The `crash_proof` tag and `ShipCrashEvent` keep a block.
+- It reads a ship's speed each tick (`ship/ShipCrash`) and looks for what it hit only on an impact, so it costs next to nothing, and nothing touches Sable's collision callbacks.
+- **From the T14's review:** the first version gave every block Sable's callback. That let ships pass through solid blocks, because Sable's fragile callback drops the contact for anything that isn't fragile, and it turned off collider culling. Tests now check that a crashing ship stops at the wall.
+- **Known issues:** a ship hitting another ship breaks nothing yet, and a block on a ship holding a constraint is not treated specially (Sable #1636): list such blocks in `crash_proof`.

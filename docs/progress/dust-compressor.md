@@ -1,0 +1,4 @@
+## Dust Compressor
+- Three utility modules that hold more of every dust kind with no inventory rows: Mk I +600, Mk II +1200, Mk III +2400. A Ship with its storage mounts full holds 1400, so with a Mk I it can now pay a Titan Core Kit's 1650 metallic.
+- **Defaults chosen (safest, reversible):** the owner gave the +600. The higher tiers double it, each needs the matching core (Mk II, III, IV), and they unlock at Expansion, the Starship milestone and the Titan's unlock. Prices (60/60/40/40, 140/140/90/90, 320/320/200/200) and masses are placeholders. The bonus for one chosen kind is its own PR, because a body's dust capacity is one number for every kind today.
+- Placeholder art: `textures/item/dust_compressor_mk1.png` to `mk3.png`. There are no module models, so they don't show on a body yet.
