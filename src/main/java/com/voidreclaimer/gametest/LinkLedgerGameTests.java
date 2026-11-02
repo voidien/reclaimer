@@ -455,10 +455,8 @@ public final class LinkLedgerGameTests {
             helper.assertTrue(ended.get() == ShellRecovery.Result.REFUSED, "ran with an outbox: " + ended.get());
             noOutbox(player, id);
             com.voidreclaimer.network.RecoverShellPayload.apply(player, player.blockPosition().above(40), id);
-            helper.runAfterDelay(30, () -> {
-                helper.assertTrue(known(player, id).oldCopy().isPresent(), "a request with no seat did something");
-                LinkOutboxGameTests.finish(helper, player, level, id);
-            });
+            helper.assertFalse(ShellRecovery.waiting(player), "a request with no seat did something");
+            LinkOutboxGameTests.finish(helper, player, level, id);
         });
     }
 
