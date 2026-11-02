@@ -3,6 +3,38 @@
     "#void_reclaimer:asteroid_blocks",
     "void_reclaimer:portal_frame",
     "void_reclaimer:spire_column",
-    "void_reclaimer:launch_pad"
+    "void_reclaimer:launch_pad",
+    {
+      "id": "simulated:docking_connector",
+      "required": false
+    },
+    {
+      "id": "simulated:paired_docking_connector",
+      "required": false
+    },
+    {
+      "id": "simulated:merging_glue",
+      "required": false
+    },
+    {
+      "id": "simulated:physics_assembler",
+      "required": false
+    },
+    {
+      "id": "simulated:rope_connector",
+      "required": false
+    },
+    {
+      "id": "simulated:rope_winch",
+      "required": false
+    },
+    {
+      "id": "simulated:swivel_bearing",
+      "required": false
+    },
+    {
+      "id": "simulated:swivel_bearing_link_block",
+      "required": false
+    }
   ]
 }

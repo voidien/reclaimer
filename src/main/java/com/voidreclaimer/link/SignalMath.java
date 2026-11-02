@@ -52,6 +52,11 @@ public record SignalMath(double seatRange, double relayRange, List<Double> dyson
         return atStation ? range * stationRange : range;
     }
 
+    /** {@code strength} once a storm has taken {@code loss} of it. A strong link gets through thinner, and a weak one is lost. */
+    public static double underStorm(double strength, double loss) {
+        return Math.max(0.0, strength - Math.max(0.0, loss));
+    }
+
     /** How many of the {@link #BARS} bars a signal of {@code strength} lights. None means it is lost; the weakest signal that holds still lights one. */
     public static int bars(double strength) {
         return strength <= 0.0 ? 0 : Math.min(BARS, (int) Math.ceil(strength * BARS));

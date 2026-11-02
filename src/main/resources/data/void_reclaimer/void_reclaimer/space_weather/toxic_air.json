@@ -1,0 +1,7 @@
+{
+  "dimensions": ["void_reclaimer:ruined_earth"],
+  "always": true,
+  "exposure": "void_reclaimer:toxic_air",
+  "effects": [{"type": "void_reclaimer:wear", "strength": 0.000167}],
+  "name": {"translate": "weather.void_reclaimer.toxic_air"}
+}

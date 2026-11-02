@@ -1,0 +1,3 @@
+## The debris belt around Earth
+- A band of rocks over Earth from y 180 up, thinning with each sector restored and gone on a healed planet. A body now comes out of the portal on the far side of the planet at y 300, as the owner chose, and fights its way down, with a message telling it to keep its thrusters powered, since fall damage applies without power, and that the way back is the gate in the middle. Ships and items still arrive at the gate.
+- **Decided alone:** it isn't weather, because it is always there, so it is its own small class on the same rocks. A Drone's safe descent is its own hover: there is no landing module yet.

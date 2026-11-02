@@ -28,9 +28,11 @@ public final class BuiltinWeather {
         EXPOSURES.register("everywhere", () -> player -> 1f);
         EXPOSURES.register("open_sky", () -> player -> EnergyTicker.sunExposure(player) > 0f ? 1f : 0f);
         EXPOSURES.register("sun_line", () -> player -> sunLine(player) ? 1f : 0f);
+        EXPOSURES.register("toxic_air", () -> com.voidreclaimer.earth.AcidDrizzle::exposure);
         EFFECTS.register("wear", () -> BuiltinWeather::wear);
         EFFECTS.register("damage", () -> BuiltinWeather::damage);
         EFFECTS.register("energy", () -> BuiltinWeather::energy);
+        EFFECTS.register("rocks", () -> BuiltinWeather::rocks);
     }
 
     private BuiltinWeather() {}
@@ -60,6 +62,15 @@ public final class BuiltinWeather {
     /** {@code amount} is a share of the body's health under its plating each second. */
     private static void damage(ServerPlayer player, float amount) {
         player.hurt(player.serverLevel().damageSources().magic(), amount * Bodies.healthUnderPlating(player));
+    }
+
+    /** {@code amount} rocks a second at this body, a fraction being a chance of one. */
+    private static void rocks(ServerPlayer player, float amount) {
+        int whole = (int) amount;
+        int rocks = whole + (player.getRandom().nextFloat() < amount - whole ? 1 : 0);
+        for (int rock = 0; rock < rocks; rock++) {
+            DebrisRock.aimAt(player);
+        }
     }
 
     /** {@code amount} is a share of the body's energy store each second. */

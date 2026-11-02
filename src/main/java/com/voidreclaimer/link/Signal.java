@@ -38,7 +38,16 @@ public final class Signal {
     public static RelayGraph.Reading read(MinecraftServer server, LinkState.Place seat, LinkState.Place target) {
         RelayGraph.Node node = new RelayGraph.Node(new RelayGraph.Place(seat.dimension(), seat.position()), range(server, seat));
         double band = SignalMath.fromConfig().staticBand(Links.atStation(server, seat));
-        return new RelayGraph(relays(server), List.of()).signal(node, new RelayGraph.Place(target.dimension(), target.position()), band);
+        RelayGraph.Reading reading = new RelayGraph(relays(server), List.of()).signal(node, new RelayGraph.Place(target.dimension(), target.position()), band);
+        return reading.reachable() ? underStorm(server, target, reading) : reading;
+    }
+
+    /** A storm where the far end is thins the signal, and a link it takes down to nothing is lost, with the usual warning first. */
+    private static RelayGraph.Reading underStorm(MinecraftServer server, LinkState.Place target, RelayGraph.Reading reading) {
+        ServerLevel level = server.getLevel(target.dimension());
+        double loss = level == null ? 0.0 : com.voidreclaimer.weather.SpaceWeatherTicker.signalLoss(level);
+        double strength = SignalMath.underStorm(reading.strength(), loss);
+        return loss <= 0.0 ? reading : strength > 0.0 ? new RelayGraph.Reading(true, strength, reading.hops()) : RelayGraph.Reading.NONE;
     }
 
     /** How far a relay reaches now, in blocks. */

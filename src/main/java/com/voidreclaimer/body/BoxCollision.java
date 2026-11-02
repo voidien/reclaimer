@@ -135,6 +135,26 @@ public final class BoxCollision {
         }
     }
 
+    /** The first body on the line from {@code from} to {@code to}, by its hit boxes, or its vanilla box if it has none; null if none. */
+    @javax.annotation.Nullable
+    public static LivingEntity bodyOnLine(Level level, Vec3 from, Vec3 to) {
+        AABB line = new AABB(from, to);
+        LivingEntity first = null;
+        double nearest = Double.MAX_VALUE;
+        for (LivingEntity body : level.getEntitiesOfClass(LivingEntity.class, line.inflate(longestReach(level.registryAccess())), BoxCollision::isBody)) {
+            List<BodyBoxes.Box> boxes = boxes(body);
+            List<AABB> shapes = boxes.isEmpty() ? List.of(body.getBoundingBox()) : boxes.stream().map(BodyBoxes.Box::bounds).toList();
+            for (AABB shape : shapes) {
+                double along = shape.contains(from) ? 0.0 : shape.clip(from, to).map(from::distanceToSqr).orElse(Double.MAX_VALUE);
+                if (along < nearest) {
+                    nearest = along;
+                    first = body;
+                }
+            }
+        }
+        return first;
+    }
+
     /** Every box of the big bodies near {@code at}, as plain bounds: what something small should keep out of. */
     public static List<AABB> bigBodiesNear(Level level, AABB at) {
         List<AABB> boxes = new ArrayList<>();

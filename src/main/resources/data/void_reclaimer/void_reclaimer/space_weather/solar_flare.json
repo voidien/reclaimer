@@ -1,0 +1,15 @@
+{
+  "dimensions": ["void_reclaimer:deep_space"],
+  "weight": 3,
+  "milestone": "void_reclaimer:expansion",
+  "warning_seconds": 45,
+  "min_seconds": 20,
+  "max_seconds": 45,
+  "exposure": "void_reclaimer:sun_line",
+  "effects": [
+    {"type": "void_reclaimer:damage", "strength": 0.05},
+    {"type": "void_reclaimer:energy", "strength": 0.02}
+  ],
+  "color": 16755200,
+  "name": {"translate": "weather.void_reclaimer.solar_flare"}
+}

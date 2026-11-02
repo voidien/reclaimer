@@ -77,10 +77,12 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
             SectionStats section = installed.stats();
             float e = installed.efficiency();
             mass += section.mass();
-            budget += section.massBudget() * e;
+            // A worn-out section still carries and gathers: a body that couldn't lift itself or take in dust would be stranded in all but name.
+            float carrying = Math.max(e, 1f - Wear.MAX_LOSS);
+            budget += section.massBudget() * carrying;
             health += section.maxHealth() * e;
             reach += section.reach() * e;
-            intake += section.dustIntake() * e;
+            intake += section.dustIntake() * carrying;
             rows += section.baseRows();
             stability += section.stability() * e;
             turnRate += section.turnRate() * e;
@@ -92,9 +94,11 @@ public record BodyStats(ResourceKey<SizeClass> size, double scale, int sizeRank,
         float solarRate = 1f;
         int coreTier = 0;
         float dustCapacity = 0f;
+        // Wear leaves the last thrusters a little life, but a save can hold them at nothing, and then the body limps on what it has.
+        boolean limping = modules.stream().noneMatch(installed -> installed.efficiency() > 0f && installed.stats().thruster().isPresent());
         for (Installed<ModuleStats> installed : modules) {
             ModuleStats module = installed.stats();
-            float e = installed.efficiency();
+            float e = limping && module.thruster().isPresent() ? 1f - Wear.MAX_LOSS : installed.efficiency();
             mass += module.mass();
             if (module.thruster().isPresent()) {
                 ModuleStats.Thruster t = module.thruster().get();

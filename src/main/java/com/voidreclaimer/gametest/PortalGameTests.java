@@ -222,18 +222,22 @@ public final class PortalGameTests {
                                 "return gate too small for the Ship: " + gate);
                         BlockPos gatePane = gate.rect().at(gate.width() / 2, 1);
                         helper.assertTrue(earth.getBlockState(gatePane).is(ModBlocks.ATMOSPHERIC_PORTAL.get()), "the return gate is not lit");
-                        helper.assertTrue(player.getY() >= gate.bottomLeft().getY() - 0.01 && Math.abs(player.getX() - gate.rect().centerBottom().x) < 1
-                                        && player.getZ() > gate.bottomLeft().getZ() + 1.5 && player.getZ() < gate.bottomLeft().getZ() + 5,
+                        // A body comes out over the far side of the planet, above the debris belt, not at the gate.
+                        helper.assertTrue(player.getY() >= com.voidreclaimer.Config.EARTH_BELT_FLOOR.get() && Math.abs(player.getX() - gate.rect().centerBottom().x) < 1
+                                        && player.getZ() > com.voidreclaimer.earth.RuinedTerrain.HALF / 2,
                                 "arrived in the wrong place: " + player.position());
                         helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) > 0, "no gravity on ruined Earth");
                         BlockPos back = gatePane;
                         // A real client acknowledges the dimension change; until then the server holds the player's ticking.
                         player.hasChangedDimension();
+                        // The body came out on the far side of the planet, so nothing holds the gate's chunk any more.
+                        earth.setChunkForced(back.getX() >> 4, back.getZ() >> 4, true);
                         // Standing in a portal during its cooldown keeps the cooldown going, so wait it out where we landed.
                         until(helper, "portal cooldown", player, 100, () -> player.getPortalCooldown() == 0, player::doTick, () -> {
                             player.teleportTo(back.getX() + 0.5, back.getY(), back.getZ() + 0.5);
                             until(helper, "trip back", player, 100, () -> player.level().dimension() == ModDimensions.DEEP_SPACE, () -> standIn(player, back), () -> {
                                 try {
+                                    earth.setChunkForced(back.getX() >> 4, back.getZ() >> 4, false);
                                     helper.assertTrue(player.position().distanceTo(Vec3.atBottomCenterOf(pane).add(0, -1, 0)) < 6,
                                             "came back far from the portal: " + player.position());
                                     helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) == 0.0, "gravity on in deep space");

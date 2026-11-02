@@ -97,6 +97,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.ION_THRUSTER.get(), "Ion Thruster");
         add(ModItems.HELM.get(), "Helm");
         add("entity.void_reclaimer.helm_seat", "Helm Seat");
+        add("entity.void_reclaimer.debris_rock", "Debris Rock");
         add(ModItems.STATION_CORE.get(), "Station Core");
         add(ModItems.HOLO_PROJECTOR.get(), "Holo Projector");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
@@ -300,6 +301,11 @@ public final class ModLangProvider extends LanguageProvider {
         add("hud.void_reclaimer.weather.warning", "%s in %s s: take cover");
         add("hud.void_reclaimer.weather.active", "%s, %s s left");
         add("hud.void_reclaimer.weather.unnamed", "Storm");
+        add("weather.void_reclaimer.solar_flare", "Solar flare");
+        add("weather.void_reclaimer.ion_storm", "Ion storm");
+        add("weather.void_reclaimer.debris_storm", "Debris storm");
+        add("weather.void_reclaimer.toxic_air", "Toxic air");
+        add("message.void_reclaimer.portal.descent", "Through the portal, over the far side of Earth, above the debris belt. Thrusters powered, dampener on, and a Mech engages them first. Ease off the way down before the ground: a landing at speed is a crash. The way back is the gate at the planet's centre.");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");

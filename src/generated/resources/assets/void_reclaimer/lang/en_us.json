@@ -229,6 +229,7 @@
   "dust.void_reclaimer.metallic": "Metallic",
   "dust.void_reclaimer.silicate": "Silicate",
   "entity.void_reclaimer.body_host": "Remote Shell",
+  "entity.void_reclaimer.debris_rock": "Debris Rock",
   "entity.void_reclaimer.helm_seat": "Helm Seat",
   "entity.void_reclaimer.helper_drone": "Helper Drone",
   "entity.void_reclaimer.test_starship": "Test Starship",
@@ -554,6 +555,7 @@
   "message.void_reclaimer.nanite.no_power": "Nanites offline: low power.",
   "message.void_reclaimer.nanite.range": "Nanite build distance: %s",
   "message.void_reclaimer.no_planetary_anchor": "No planetary anchor detected. This device needs gravity to function.",
+  "message.void_reclaimer.portal.descent": "Through the portal, over the far side of Earth, above the debris belt. Thrusters powered, dampener on, and a Mech engages them first. Ease off the way down before the ground: a landing at speed is a crash. The way back is the gate at the planet's centre.",
   "message.void_reclaimer.portal.stays_in_orbit": "This body is too big for the portal. Take a Shuttle down.",
   "message.void_reclaimer.power_restored": "Power restored. Systems online.",
   "message.void_reclaimer.rcs_lock_off": "RCS lock: OFF. The ship keeps spinning until you stop it.",
@@ -917,5 +919,9 @@
   "tooltip.void_reclaimer.section.rows": "+%s rows",
   "tooltip.void_reclaimer.section.stability": "stability +%s",
   "tooltip.void_reclaimer.section.turn": "turn +%s",
-  "tooltip.void_reclaimer.section.wear": "wear resistance %s"
+  "tooltip.void_reclaimer.section.wear": "wear resistance %s",
+  "weather.void_reclaimer.debris_storm": "Debris storm",
+  "weather.void_reclaimer.ion_storm": "Ion storm",
+  "weather.void_reclaimer.solar_flare": "Solar flare",
+  "weather.void_reclaimer.toxic_air": "Toxic air"
 }

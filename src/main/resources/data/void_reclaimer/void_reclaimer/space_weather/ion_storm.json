@@ -1,0 +1,13 @@
+{
+  "dimensions": ["void_reclaimer:deep_space", "void_reclaimer:ruined_earth"],
+  "weight": 3,
+  "milestone": "void_reclaimer:expansion",
+  "warning_seconds": 30,
+  "min_seconds": 120,
+  "max_seconds": 300,
+  "exposure": "void_reclaimer:everywhere",
+  "signal_loss": 0.6,
+  "scrambles": true,
+  "color": 8388863,
+  "name": {"translate": "weather.void_reclaimer.ion_storm"}
+}

@@ -71,7 +71,19 @@ public final class SectionCareGameTests {
 
             Bodies.store(player, Bodies.data(player).withSection(ARM, Wear.withCondition(Bodies.data(player).section(ARM), 0f)));
             double acceleration = FlightStats.of(player).acceleration();
-            helper.assertTrue(Math.abs(acceleration - 0.03 * 0.75) < 1e-6, "worn-out arm should lose 25%: " + acceleration);
+            helper.assertTrue(acceleration > 0.0 && acceleration < 0.03 * 0.76, "the last thruster limps on, at three quarters: " + acceleration);
+
+            Bodies.store(player, Bodies.data(player).withSection(ARM, Wear.withCondition(Bodies.data(player).section(ARM), Wear.FLOOR_FROM_USE + 0.005f)));
+            for (int i = 0; i < 1200 * 5; i++) {
+                Wear.onThrustTick(player);
+            }
+            helper.assertTrue(Wear.condition(Bodies.data(player).section(ARM)) >= Wear.FLOOR_FROM_USE - 1e-6f, "thrust wore a section right out");
+            for (int i = 0; i < 400; i++) {
+                Wear.add(player, ARM, 0.05f);
+            }
+            helper.assertTrue(Wear.condition(Bodies.data(player).section(ARM)) >= Wear.FLOOR_FROM_USE - 1e-6f, "the air wore out the body's last thruster section");
+            double nearlyOut = FlightStats.of(player).acceleration();
+            helper.assertTrue(nearlyOut > 0.03 * 0.74, "a nearly worn-out arm should lose about 25%: " + nearlyOut);
 
             player.setGameMode(GameType.CREATIVE);
             Bodies.store(player, Bodies.data(player).withSection(ARM, Wear.withCondition(Bodies.data(player).section(ARM), 1f)));

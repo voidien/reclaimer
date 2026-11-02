@@ -20,7 +20,11 @@ public final class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.KINETIC_DRIVE_BASE.get(), ModBlocks.PAYLOAD_CHAMBER.get(), ModBlocks.MAGNETIC_BARREL_NOZZLE.get(), ModBlocks.QUANTUM_RECEIVER.get(),
                 ModBlocks.LAUNCH_CONTROLLER.get(), ModBlocks.LAUNCH_PAD.get(), ModBlocks.SPIRE_COLUMN.get());
         // Rock needs a drill, and these hold up a working machine or a way home.
-        tag(ModBlocks.CRASH_PROOF).addTag(ModBlocks.ASTEROID_BLOCKS).add(ModBlocks.PORTAL_FRAME.get(), ModBlocks.SPIRE_COLUMN.get(), ModBlocks.LAUNCH_PAD.get());
+        var crashProof = tag(ModBlocks.CRASH_PROOF).addTag(ModBlocks.ASTEROID_BLOCKS).add(ModBlocks.PORTAL_FRAME.get(), ModBlocks.SPIRE_COLUMN.get(), ModBlocks.LAUNCH_PAD.get());
+        // These hold a constraint between ships, and nothing has shown what breaking one under load does.
+        for (String block : com.voidreclaimer.body.CrashRules.HOLDS_A_CONSTRAINT) {
+            crashProof.addOptional(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("simulated", block));
+        }
         // Create's wrench picks these up whole.
         tag(net.minecraft.tags.BlockTags.create(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "wrench_pickup")))
                 .add(ModBlocks.CHEMICAL_THRUSTER.get(), ModBlocks.ELECTROLYZER.get(), ModBlocks.SPINNER.get(), ModBlocks.CLOUD_SIPHON.get(),

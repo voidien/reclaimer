@@ -55,6 +55,17 @@ public final class BodyCrash {
         }
     }
 
+    /** Something flew into a still body at {@code speed} blocks a second, taking {@code share} of its health: a part can soften this as it can a crash. */
+    public static void struck(ServerPlayer player, double speed, double share) {
+        if (!player.isAlive() || player.isCreative() || player.isSpectator()) {
+            return;
+        }
+        BodyCrashEvent event = new BodyCrashEvent(player, speed, (float) (share * Bodies.healthUnderPlating(player)), false);
+        if (!NeoForge.EVENT_BUS.post(event).isCanceled() && event.getDamage() > 0f) {
+            player.hurt(player.serverLevel().damageSources().flyIntoWall(), event.getDamage());
+        }
+    }
+
     /** A fall vanilla will charge for is not charged again. */
     private static Vec3 onlyTheHit(ServerPlayer player, Vec3 lost) {
         return lost.y < 0.0 && ServerFlightHandler.fallHurts(player) ? new Vec3(lost.x, 0.0, lost.z) : lost;
@@ -79,5 +90,10 @@ public final class BodyCrash {
         BlockState state = level.getBlockState(pos);
         float hardness = state.getDestroySpeed(level, pos);
         return hardness >= 0f && hardness <= hardest && !state.is(ModBlocks.CRASH_PROOF);
+    }
+
+    /** Whether something hitting the block at {@code pos} as hard as {@code hardest} breaks it. */
+    public static boolean canBreak(ServerLevel level, BlockPos pos, double hardest) {
+        return !level.getBlockState(pos).isAir() && breaks(level, pos, hardest);
     }
 }

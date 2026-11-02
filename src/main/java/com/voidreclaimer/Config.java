@@ -18,6 +18,7 @@ public final class Config {
 
     public static final ModConfigSpec.DoubleValue HELM_SPEED_CAP;
     public static final ModConfigSpec.BooleanValue WEATHER_ENABLED;
+    public static final ModConfigSpec.DoubleValue WEATHER_ROCK_DAMAGE;
     public static final ModConfigSpec.DoubleValue WEATHER_GAP_MIN_HOURS;
     public static final ModConfigSpec.DoubleValue WEATHER_GAP_MAX_HOURS;
     public static final ModConfigSpec.DoubleValue CRASH_SAFE_SPEED;
@@ -183,7 +184,10 @@ public final class Config {
     public static final ModConfigSpec.IntValue HOLO_MAP_RADIUS;
     public static final ModConfigSpec.IntValue HOLO_MAP_REFRESH_TICKS;
     public static final ModConfigSpec.BooleanValue EARTH_ACID_DRIZZLE;
-    public static final ModConfigSpec.DoubleValue EARTH_ACID_WEAR;
+    public static final ModConfigSpec.IntValue EARTH_ARRIVAL_HEIGHT;
+    public static final ModConfigSpec.IntValue EARTH_ARRIVAL_EDGE;
+    public static final ModConfigSpec.IntValue EARTH_BELT_FLOOR;
+    public static final ModConfigSpec.DoubleValue EARTH_BELT_ROCKS;
     public static final ModConfigSpec.IntValue SPIRE_PULSE_TICKS;
     public static final ModConfigSpec.IntValue SPIRE_CATALYSTS;
     public static final ModConfigSpec.IntValue SPIRE_WATER;
@@ -319,9 +323,10 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("Space weather. Each kind is a datapack file in void_reclaimer/space_weather.").push("weather");
-        WEATHER_ENABLED = BUILDER.comment("Whether storms come at all.").define("enabled", true);
+        WEATHER_ENABLED = BUILDER.comment("Whether space weather happens at all: storms, and the kinds that never stop, like Earth's toxic air.").define("enabled", true);
         WEATHER_GAP_MIN_HOURS = BUILDER.comment("The shortest gap between storms in a level, in hours of play there.").defineInRange("gapMinHours", 2.0, 0.01, 1000.0);
         WEATHER_GAP_MAX_HOURS = BUILDER.comment("The longest gap between storms in a level, in hours of play there.").defineInRange("gapMaxHours", 3.0, 0.01, 1000.0);
+        WEATHER_ROCK_DAMAGE = BUILDER.comment("The share of a body's health one debris rock takes.").defineInRange("rockDamage", 0.04, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Crashes: a body flying into something.").push("crash");
@@ -350,10 +355,12 @@ public final class Config {
         EARTH_WIND_SPEED = BUILDER
                 .comment("Top speed of the wind over ruined Earth, in blocks per second; it drifts ships and the flying body (the dampener holds). 0 switches it off.")
                 .defineInRange("windSpeed", 1.5, 0.0, 20.0);
+        EARTH_ARRIVAL_HEIGHT = BUILDER.comment("How high a body comes out of the portal, above the debris belt.").defineInRange("arrivalHeight", 300, -64, 319);
+        EARTH_ARRIVAL_EDGE = BUILDER.comment("How far in from the far edge of the planet a body comes out of the portal, the gate being in the middle.").defineInRange("arrivalEdge", 48, 0, 512);
+        EARTH_BELT_FLOOR = BUILDER.comment("The bottom of the debris belt around Earth.").defineInRange("beltFloor", 180, -64, 320);
+        EARTH_BELT_ROCKS = BUILDER.comment("Rocks a second at a body in the belt over a ruined planet. It thins as sectors are restored.").defineInRange("beltRocks", 0.5, 0.0, 20.0);
         EARTH_ACID_DRIZZLE = BUILDER.comment("Acid Drizzle falls on ruined Earth outside restored sectors, and slowly wears body sections under the open sky.")
                 .define("acidDrizzle", true);
-        EARTH_ACID_WEAR = BUILDER.comment("Condition each section loses per minute in full Acid Drizzle (1.0 = all of it). Less as the planet heals. It never breaks a section.")
-                .defineInRange("acidWearPerMinute", 0.003, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.comment("Dust Sensor.").push("sensor");

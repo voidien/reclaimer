@@ -58,6 +58,31 @@ class BodyStatsTest {
     }
 
     @Test
+    void aWornOutBodyStillCarriesItselfAndGathers() {
+        List<BodyStats.Installed<SectionStats>> sections = DRONE_SECTIONS.stream().map(section -> new BodyStats.Installed<>(section, 0f)).toList();
+        BodyStats fresh = drone(List.of(CORE_MK1, THRUSTER_MK1));
+        BodyStats worn = BodyStats.computeWorn(BuiltinBodies.DRONE_SIZE, DRONE, sections,
+                List.of(new BodyStats.Installed<>(CORE_MK1, 0f), new BodyStats.Installed<>(THRUSTER_MK1, 0.75f)));
+        assertEquals(0.75, worn.flight().maxSpeed() / fresh.flight().maxSpeed(), 1e-6, "the last thruster keeps three quarters of its speed");
+        assertEquals(0.75, worn.flight().acceleration() / fresh.flight().acceleration(), 1e-6, "and no overload takes the rest");
+        assertEquals(0.75, worn.dustIntake() / fresh.dustIntake(), 1e-6);
+    }
+
+    @Test
+    void thrustersWornToNothingStillLimp() {
+        List<BodyStats.Installed<SectionStats>> sections = DRONE_SECTIONS.stream().map(section -> new BodyStats.Installed<>(section, 0f)).toList();
+        BodyStats worn = BodyStats.computeWorn(BuiltinBodies.DRONE_SIZE, DRONE, sections,
+                List.of(new BodyStats.Installed<>(CORE_MK1, 0f), new BodyStats.Installed<>(THRUSTER_MK1, 0f)));
+        assertEquals(0.75, worn.flight().maxSpeed() / drone(List.of(CORE_MK1, THRUSTER_MK1)).flight().maxSpeed(), 1e-6);
+
+        List<BodyStats.Installed<SectionStats>> sound = DRONE_SECTIONS.stream().map(section -> new BodyStats.Installed<>(section, 1f)).toList();
+        BodyStats oneLeft = BodyStats.computeWorn(BuiltinBodies.DRONE_SIZE, DRONE, sound, List.of(new BodyStats.Installed<>(CORE_MK1, 1f),
+                new BodyStats.Installed<>(THRUSTER_MK1, 0f), new BodyStats.Installed<>(THRUSTER_MK1, 1f)));
+        assertEquals(drone(List.of(CORE_MK1, THRUSTER_MK1, THRUSTER_MK1)).flight().acceleration() / 2.0, oneLeft.flight().acceleration(), 1e-6,
+                "a worn-out thruster gives nothing while another still works");
+    }
+
+    @Test
     void starterBodyKeepsThePhaseTwoHandling() {
         BodyStats stats = drone(List.of(CORE_MK1, THRUSTER_MK1));
         assertEquals(1.0, stats.mass(), 1e-6);

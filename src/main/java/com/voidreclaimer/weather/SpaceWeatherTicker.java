@@ -25,8 +25,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * Runs each level's weather, once a second. A level with nobody in it has no weather to speak of, so its clock stops. Each kind is a file
- * in {@code void_reclaimer:space_weather}: this only keeps time and hands each exposed body to the kind's effects.
+ * Runs each level's weather, once a second. A level with nobody in it waits for its next storm, but one already on its way runs out: a link
+ * lost to a storm can't be made again until the storm is over, and the storm can't wait for someone to come back. Each kind is a file in {@code void_reclaimer:space_weather}: this only keeps time and hands each exposed body to the kind's effects.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
 public final class SpaceWeatherTicker {
@@ -38,6 +38,17 @@ public final class SpaceWeatherTicker {
 
     public static WeatherState of(ServerLevel level) {
         return level.getData(ModAttachments.WEATHER);
+    }
+
+    /** What is here now, not what is on its way. */
+    public static Optional<SpaceWeather> active(ServerLevel level) {
+        WeatherState state = of(level);
+        return state.active() ? state.weather().flatMap(registry(level)::getOptional) : Optional.empty();
+    }
+
+    /** How much of a remote link's signal the weather in {@code level} is taking now. */
+    public static double signalLoss(ServerLevel level) {
+        return active(level).map(weather -> (double) weather.signalLoss() * of(level).strength()).orElse(0.0);
     }
 
     public static Registry<SpaceWeather> registry(ServerLevel level) {
@@ -52,8 +63,26 @@ public final class SpaceWeatherTicker {
                     if (of(level).weather().isPresent()) {
                         stop(level);
                     }
-                } else if (!level.players().isEmpty()) {
+                } else if (!level.players().isEmpty() || of(level).weather().isPresent()) {
                     second(level);
+                }
+            }
+        }
+    }
+
+    /** One second of the kind {@code id}, which never stops, on {@code player}: for a test that wants a body of its own. */
+    public static void alwaysOn(ServerPlayer player, ResourceLocation id) {
+        ServerLevel level = player.serverLevel();
+        registry(level).getOptional(id).filter(weather -> weather.dimensions().contains(level.dimension()))
+                .ifPresent(weather -> reach(id, weather, player, 1f));
+    }
+
+    private static void always(ServerLevel level) {
+        for (var entry : registry(level).entrySet()) {
+            SpaceWeather weather = entry.getValue();
+            if (weather.always() && weather.dimensions().contains(level.dimension())) {
+                for (ServerPlayer player : List.copyOf(level.players())) {
+                    reach(entry.getKey().location(), weather, player, 1f);
                 }
             }
         }
@@ -61,6 +90,7 @@ public final class SpaceWeatherTicker {
 
     /** One second of {@code level}'s weather. */
     public static void second(ServerLevel level) {
+        always(level);
         WeatherState before = of(level);
         RandomSource random = level.getRandom();
         WeatherState after = WeatherClock.second(before, candidates(level), () -> gap(random), random::nextInt);
@@ -82,7 +112,9 @@ public final class SpaceWeatherTicker {
                 NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Started(level, id.get(), weather.get()));
             }
             if (after.active()) {
-                reach(level, id.get(), weather.get(), after);
+                for (ServerPlayer player : List.copyOf(level.players())) {
+                    reach(id.get(), weather.get(), player, after.strength());
+                }
             }
             if (before.active() && !after.active()) {
                 NeoForge.EVENT_BUS.post(new SpaceWeatherEvent.Ended(level, id.get(), weather.get()));
@@ -90,26 +122,24 @@ public final class SpaceWeatherTicker {
         }
     }
 
-    private static void reach(ServerLevel level, ResourceLocation id, SpaceWeather weather, WeatherState state) {
+    private static void reach(ResourceLocation id, SpaceWeather weather, ServerPlayer player, float strength) {
         WeatherExposureType exposure = ModRegistries.WEATHER_EXPOSURE_TYPES.get(weather.exposure());
         if (exposure == null) {
             missing(weather.exposure());
             return;
         }
-        for (ServerPlayer player : List.copyOf(level.players())) {
-            if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
-                continue;
-            }
-            float share = exposure.exposure(player);
-            SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(level, id, weather, player, share);
-            if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
-                for (SpaceWeather.Effect effect : weather.effects()) {
-                    WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
-                    if (type == null) {
-                        missing(effect.type());
-                    } else if (player.isAlive()) {
-                        type.second(player, effect.strength() * state.strength() * event.getShare());
-                    }
+        if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
+            return;
+        }
+        float share = exposure.exposure(player);
+        SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(player.serverLevel(), id, weather, player, share);
+        if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
+            for (SpaceWeather.Effect effect : weather.effects()) {
+                WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
+                if (type == null) {
+                    missing(effect.type());
+                } else if (player.isAlive()) {
+                    type.second(player, effect.strength() * strength * event.getShare());
                 }
             }
         }
@@ -128,7 +158,7 @@ public final class SpaceWeatherTicker {
         Registry<SpaceWeather> registry = registry(level);
         for (var entry : registry.entrySet()) {
             SpaceWeather weather = entry.getValue();
-            if (weather.dimensions().contains(level.dimension()) && weather.milestone().map(milestone -> reached(level, milestone)).orElse(true)) {
+            if (!weather.always() && weather.dimensions().contains(level.dimension()) && weather.milestone().map(milestone -> reached(level, milestone)).orElse(true)) {
                 candidates.add(candidate(entry.getKey().location(), weather));
             }
         }

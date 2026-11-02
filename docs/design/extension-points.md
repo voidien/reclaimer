@@ -44,7 +44,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:crash_proof` | Block tag | Blocks no crash breaks |
 | `void_reclaimer:space_weather` | Synced datapack registry | A kind of bad weather: where, how often, how long, what shelters a body and what it does |
 | `void_reclaimer:weather_exposure_type` | Code registry | What shelters a body: `everywhere`, `open_sky`, `sun_line` built in |
-| `void_reclaimer:weather_effect_type` | Code registry | What weather does each second: `wear`, `damage`, `energy` built in |
+| `void_reclaimer:weather_effect_type` | Code registry | What weather does each second: `wear`, `damage`, `energy`, `rocks` built in |
 | `SpaceWeatherEvent` | Event | `Warning` (cancellable), `Started`, `Ended`, and `Exposed` (cancellable, with a share a part can reduce) |
 | `ShipCrashEvent` | Event | A ship's hit is about to break a block, on the server, once for each block. Cancel it to keep the block |
 | `RockFractureEvent` | Event | Too much drilling is about to split a rock, with the blocks that would come away. Cancel it to keep them |

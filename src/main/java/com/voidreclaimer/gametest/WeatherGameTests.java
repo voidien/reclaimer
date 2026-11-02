@@ -69,6 +69,43 @@ public final class WeatherGameTests {
         });
     }
 
+    /** Both ship with the mod, wait for the Expansion milestone, and are read from their files. */
+    @GameTest(template = "empty")
+    public static void theFlareAndTheIonStormAreThereAndWaitForTheirMilestone(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        var registry = SpaceWeatherTicker.registry(space);
+        var flare = registry.get(VoidReclaimer.id("solar_flare"));
+        var ion = registry.get(VoidReclaimer.id("ion_storm"));
+        helper.assertTrue(flare != null && flare.exposure().equals(VoidReclaimer.id("sun_line")), "no flare, or one that ignores cover");
+        helper.assertTrue(flare.milestone().filter(VoidReclaimer.id("expansion")::equals).isPresent(), "the flare comes before the Expansion milestone");
+        helper.assertTrue(ion != null && ion.signalLoss() > 0f && ion.scrambles(), "no ion storm, or one that leaves signals alone");
+        helper.assertTrue(ion.dimensions().contains(com.voidreclaimer.earth.RuinedEarth.DIMENSION), "no ion storms on Earth");
+        helper.succeed();
+    }
+
+    /** An ion storm thins a link, and one with little signal to start with is lost. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_ion")
+    public static void anIonStormThinsAStrongLinkAndLosesAWeakOne(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        var server = space.getServer();
+        var dimension = space.dimension();
+        var seat = new com.voidreclaimer.link.LinkState.Place(dimension, new net.minecraft.world.phys.Vec3(105_000.5, 80, 0.5), 0f, 0f);
+        double range = com.voidreclaimer.link.Signal.range(server, seat);
+        var near = new com.voidreclaimer.link.LinkState.Place(dimension, seat.position().add(4.0, 0.0, 0.0), 0f, 0f);
+        var far = new com.voidreclaimer.link.LinkState.Place(dimension, seat.position().add(range * 0.97, 0.0, 0.0), 0f, 0f);
+        double clear = com.voidreclaimer.link.Signal.read(server, seat, near).strength();
+        helper.assertTrue(com.voidreclaimer.link.Signal.read(server, seat, far).reachable(), "the far end is out of range before the storm");
+        space.setData(ModAttachments.WEATHER, new WeatherState(java.util.Optional.of(VoidReclaimer.id("ion_storm")), 0, 100, 1f, -1));
+        try {
+            var storm = com.voidreclaimer.link.Signal.read(server, seat, near);
+            helper.assertTrue(storm.reachable() && storm.strength() < clear, "a storm left the signal at " + storm.strength());
+            helper.assertFalse(com.voidreclaimer.link.Signal.read(server, seat, far).reachable(), "a weak link came through");
+        } finally {
+            space.setData(ModAttachments.WEATHER, WeatherState.NONE);
+        }
+        helper.succeed();
+    }
+
     /** A storm started over another ends that one first, and a kind with no warning still says it has started. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_restart")
     public static void aStormStartedOverAnotherEndsIt(GameTestHelper helper) {
@@ -84,6 +121,148 @@ public final class WeatherGameTests {
                     "the events were " + TestEventListeners.WEATHER_LOG);
             SpaceWeatherTicker.stop(space);
             space.setData(ModAttachments.WEATHER, WeatherState.NONE);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    private static void flyUntilItEnds(com.voidreclaimer.weather.DebrisRock rock) {
+        for (int tick = 0; tick < 60 && !rock.isRemoved(); tick++) {
+            rock.tickCount++;
+            rock.tick();
+        }
+    }
+
+    /** A rock chips a body by its hit boxes, well away from its vanilla box. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDebrisRockChipsABody(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_400, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            player.setHealth(player.getMaxHealth());
+            player.setYRot(0f);
+            player.setXRot(0f);
+            TestPlayers.endSpawnProtection(player);
+            var rock = com.voidreclaimer.weather.DebrisRock.launch(space, new net.minecraft.world.phys.Vec3(origin.getX() + 0.5, origin.getY() + 13.0, origin.getZ() + 44.0),
+                    new net.minecraft.world.phys.Vec3(0.0, 0.0, -1.0));
+            flyUntilItEnds(rock);
+            helper.assertTrue(rock.isRemoved(), "the rock flew on");
+            helper.assertTrue(rock.getZ() > origin.getZ() + 15.0, "it reached " + rock.getZ() + ", past the saucer");
+            float lost = player.getMaxHealth() - player.getHealth();
+            helper.assertTrue(lost > 0f && lost < player.getMaxHealth() * 0.1f, "it took " + lost + " of " + player.getMaxHealth());
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** A rock breaks a weak block and stops at a strong one, and leaves no block of its own. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDebrisRockBreaksGlassAndStopsAtStone(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_800, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            BlockPos glass = origin.offset(0, 0, 4);
+            BlockPos stone = origin.offset(0, 0, 8);
+            space.setBlock(glass, Blocks.GLASS.defaultBlockState(), 3);
+            space.setBlock(stone, Blocks.STONE.defaultBlockState(), 3);
+            var from = net.minecraft.world.phys.Vec3.atCenterOf(origin);
+            // The slowest rock of a storm still breaks glass, and the fastest stops at stone.
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, new net.minecraft.world.phys.Vec3(0.0, 0.0, 0.9)));
+            helper.assertTrue(space.getBlockState(glass).isAir(), "the rock left the glass");
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.5)));
+            helper.assertTrue(space.getBlockState(stone).is(Blocks.STONE), "the rock broke stone");
+            space.setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
+            space.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(origin).inflate(16)).forEach(net.minecraft.world.entity.Entity::discard);
+            helper.succeed();
+        });
+    }
+
+    /** A wall a body hides behind stops a rock, however close the body is to it. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aWallCoversABodyFromRocks(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_800, 300, 400);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 4.5);
+            TestPlayers.endSpawnProtection(player);
+            BlockPos wall = origin.offset(0, 0, 3);
+            space.setBlock(wall, Blocks.OBSIDIAN.defaultBlockState(), 3);
+            space.setBlock(wall.above(), Blocks.OBSIDIAN.defaultBlockState(), 3);
+            float health = player.getHealth();
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, net.minecraft.world.phys.Vec3.atCenterOf(origin), new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.5)));
+            helper.assertTrue(player.getHealth() == health, "a rock came through the wall: " + health + " to " + player.getHealth());
+            space.setBlock(wall, Blocks.AIR.defaultBlockState(), 3);
+            space.setBlock(wall.above(), Blocks.AIR.defaultBlockState(), 3);
+            helper.succeed();
+        });
+    }
+
+    /** A storm a link was lost to has to end with nobody there, or the link could never be made again. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "emptyLevelStorm")
+    public static void aStormRunsOutInALevelWithNobodyInIt(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        var id = com.voidreclaimer.VoidReclaimer.id("ion_storm");
+        earth.setData(com.voidreclaimer.registry.ModAttachments.WEATHER, new com.voidreclaimer.weather.WeatherState(java.util.Optional.of(id), 0, 2, 1f, 100));
+        helper.assertTrue(earth.players().isEmpty(), "a body in the level");
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(com.voidreclaimer.weather.SpaceWeatherTicker.of(earth).weather().isEmpty(), "the storm is still there: " + com.voidreclaimer.weather.SpaceWeatherTicker.of(earth));
+            helper.succeed();
+        });
+    }
+
+    /** However long a storm runs, the rocks around a body stay few. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aStormKeepsItsRocksFew(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(106_200, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            for (int rock = 0; rock < 200; rock++) {
+                com.voidreclaimer.weather.DebrisRock.aimAt(player);
+            }
+            var rocks = space.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, player.getBoundingBox().inflate(64.0));
+            helper.assertTrue(rocks.size() <= 24, rocks.size() + " rocks around one body");
+            helper.assertTrue(!rocks.isEmpty(), "no rocks");
+            helper.assertFalse(rocks.get(0).shouldBeSaved(), "a rock would be saved");
+            rocks.forEach(net.minecraft.world.entity.Entity::discard);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** High over Earth rocks come at a body, and lower down they don't. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theDebrisBeltThrowsRocksOnlyHighOverEarth(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        BlockPos spot = new BlockPos(60_000, 250, 60_000);
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dz = -5; dz <= 5; dz++) {
+                earth.setChunkForced((spot.getX() >> 4) + dx, (spot.getZ() >> 4) + dz, true);
+            }
+        }
+        helper.runAfterDelay(5, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 106_600.5, 300, 0.5);
+            player.teleportTo(earth, spot.getX() + 0.5, 100, spot.getZ() + 0.5, 0f, 0f);
+            var around = player.getBoundingBox().inflate(80.0, 400.0, 80.0);
+            for (int second = 0; second < 40; second++) {
+                com.voidreclaimer.earth.DebrisBelt.second(player);
+            }
+            int low = earth.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, around).size();
+            helper.assertTrue(low == 0, low + " rocks below the belt");
+            player.teleportTo(earth, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 0f, 0f);
+            for (int second = 0; second < 40; second++) {
+                com.voidreclaimer.earth.DebrisBelt.second(player);
+            }
+            var rocks = earth.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, player.getBoundingBox().inflate(80.0));
+            helper.assertTrue(!rocks.isEmpty(), "no rocks in the belt");
+            rocks.forEach(net.minecraft.world.entity.Entity::discard);
+            for (int dx = -5; dx <= 5; dx++) {
+                for (int dz = -5; dz <= 5; dz++) {
+                    earth.setChunkForced((spot.getX() >> 4) + dx, (spot.getZ() >> 4) + dz, false);
+                }
+            }
             TestPlayers.remove(player);
             helper.succeed();
         });

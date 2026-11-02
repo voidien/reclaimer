@@ -55,6 +55,17 @@ public final class AeronauticsGameTests {
 
     private AeronauticsGameTests() {}
 
+    /** The tag names these blocks without knowing they exist, so a rename in Simulated would quietly leave a constraint breakable. */
+    @GameTest(template = "empty")
+    public static void constraintBlocksCantBeBrokenByAHit(GameTestHelper helper) {
+        for (String block : com.voidreclaimer.body.CrashRules.HOLDS_A_CONSTRAINT) {
+            var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("simulated", block);
+            helper.assertTrue(net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(id), "no block " + id);
+            helper.assertTrue(net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(id).defaultBlockState().is(com.voidreclaimer.registry.ModBlocks.CRASH_PROOF), id + " can be broken");
+        }
+        helper.succeed();
+    }
+
     /** The shipped dimension_physics file keeps a platform from falling in deep space. */
     @GameTest(template = "empty", timeoutTicks = 300)
     public static void platformStaysPutInDeepSpace(GameTestHelper helper) {
