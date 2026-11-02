@@ -299,8 +299,11 @@ public final class StationGameTests {
         });
     }
 
-    /** A ship's blocks are far away in its plot, so nothing near the body says it is there: a big body has to find it, level or turned. */
-    @GameTest(template = "empty", timeoutTicks = 900)
+    /**
+     * A ship's blocks are far away in its plot, so nothing near the body says it is there: a big body has to find it, level or turned.
+     * Its own batch: {@code sable teleport @e} and {@code sable remove @e} reach every ship in the level, and would take the other tests'.
+     */
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "body_at_a_ship")
     public static void aBigBodyStopsAtAShip(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
