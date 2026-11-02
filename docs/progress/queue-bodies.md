@@ -1,0 +1,2 @@
+## Items can't travel through the Replicator queue
+- The owner's call. A job that took items remembers which body paid (`ReplicatorJob.paidBy`), and only that body can cancel it, so queueing in a shell and cancelling at home no longer moves items for free. If the paying shell has gone or is a wreck, any body can cancel, so a job can't be stuck for good. Jobs with no items cancel anywhere. Finished results and the output still follow the mind. Tests: `onlyTheBodyThatPaidCanCancelAJobThatTookItems`, `aCancelFromAnotherBodyIsRefused`.

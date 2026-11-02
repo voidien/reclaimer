@@ -243,6 +243,38 @@ public final class ReplicatorGameTests {
         return player.getInventory().countItem(item);
     }
 
+    /** Queue in a shell, wake at home and cancel: that would carry the items any distance for nothing, so only the body that paid can. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aCancelFromAnotherBodyIsRefused(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(47_800, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            var shell = com.voidreclaimer.link.BodyHost.spawn(player.serverLevel(), player.position().add(0, 0, 4), com.voidreclaimer.link.HostRole.SHELL,
+                    com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE), player.getUUID());
+            var id = shell.getUUID();
+            helper.assertTrue(com.voidreclaimer.link.Links.link(player, shell) == com.voidreclaimer.link.Links.Result.LINKED, "no link");
+            player.getInventory().clearContent();
+            Replicator.store(player, Replicator.data(player).withUnlocked(Milestones.AWAKENING));
+            player.setData(ModAttachments.DUST, DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued in the shell");
+
+            helper.assertTrue(com.voidreclaimer.link.Links.wake(player) == com.voidreclaimer.link.Links.Result.WOKEN, "no wake");
+            helper.assertFalse(Replicator.cancel(player, 0), "the main body cancelled a job its shell paid for");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 0, "the items came home for free");
+            helper.assertTrue(Replicator.data(player).jobs().size() == 1, "a refused cancel lost the job");
+
+            var back = (com.voidreclaimer.link.BodyHost) player.serverLevel().getEntity(id);
+            helper.assertTrue(com.voidreclaimer.link.Links.link(player, back) == com.voidreclaimer.link.Links.Result.LINKED, "no second link");
+            helper.assertTrue(Replicator.cancel(player, 0), "the shell that paid could not cancel");
+            helper.assertTrue(held(player, net.minecraft.world.item.Items.IRON_INGOT) == 3, "the items did not come back to the shell");
+            com.voidreclaimer.link.Links.wake(player);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** The extension point: a recipe's {@code inputs} are taken with the dust, by item or tag, and a cancel gives back the same items. */
     @GameTest(template = "empty")
     public static void aRecipeTakesItemsAndACancelGivesTheSameOnesBack(GameTestHelper helper) {
@@ -296,7 +328,7 @@ public final class ReplicatorGameTests {
             helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued the third time");
             ReplicatorData data = Replicator.data(player);
             ReplicatorJob job = data.jobs().get(0);
-            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.total() - 1, job.total()))));
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.paidBy(), job.total() - 1, job.total()))));
             player.doTick();
             player.doTick();
             helper.assertTrue(held(player, net.minecraft.world.item.Items.DIAMOND) == 1, "no result");
@@ -318,7 +350,7 @@ public final class ReplicatorGameTests {
             // Skip to the last tick of the 80 s job.
             ReplicatorData data = Replicator.data(player);
             ReplicatorJob job = data.jobs().get(0);
-            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(),
+            Replicator.store(player, data.withJobs(List.of(new ReplicatorJob(job.recipe(), job.results(), job.paid(), job.items(), job.paidBy(),
                     job.total() - 1, job.total()))));
             player.doTick();
             player.doTick();
