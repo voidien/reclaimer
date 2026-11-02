@@ -1,0 +1,2 @@
+## Titan separation, part 1: two bodies in one
+- A chassis can now be a part of a bigger body (`half_of`, the rig it is drawn with). `titan_drive` is the neck and all that hangs from it, and `BodySplit` parts a body in two and puts it back, keeping every part. The saucer gets two thruster mounts of its own, since all of a Titan's engines were on the drive half. There is no way to split in the game yet: that is the next PR.

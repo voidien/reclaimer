@@ -1,0 +1,294 @@
+{
+  "cockpit": {
+    "forward": 1.7,
+    "up": 0.5
+  },
+  "core_socket": "neck",
+  "half_of": "titan",
+  "size_class": "void_reclaimer:titan",
+  "sockets": [
+    {
+      "accepts": [
+        "void_reclaimer:titan_neck"
+      ],
+      "area": "hull",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            1.375,
+            0.1
+          ],
+          "size": [
+            0.375,
+            0.375,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            0.0,
+            0.65625,
+            -2.125
+          ],
+          "size": [
+            1.25,
+            1.3125,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            0.0,
+            0.65625,
+            -0.875
+          ],
+          "size": [
+            1.25,
+            1.3125,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            0.0,
+            0.65625,
+            0.125
+          ],
+          "size": [
+            1.25,
+            1.3125,
+            1.25
+          ]
+        }
+      ],
+      "id": "neck",
+      "pivot": [
+        0.0,
+        17.6,
+        -6.4
+      ],
+      "required": true
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_deflector"
+      ],
+      "area": "hull",
+      "id": "deflector",
+      "pivot": [
+        0.0,
+        10.0,
+        9.6
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_bay_door"
+      ],
+      "area": "cargo",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            0.6875,
+            -2.9375
+          ],
+          "size": [
+            0.75,
+            0.625,
+            0.375
+          ]
+        }
+      ],
+      "id": "bay_door",
+      "pivot": [
+        0.0,
+        6.0,
+        -48.0
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_pylon"
+      ],
+      "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            -0.59375,
+            1.3625,
+            -2.0
+          ],
+          "size": [
+            0.5625,
+            0.7125,
+            0.5
+          ]
+        },
+        {
+          "at": [
+            -1.15625,
+            2.075,
+            -2.0
+          ],
+          "size": [
+            0.5625,
+            0.7125,
+            0.5
+          ]
+        }
+      ],
+      "id": "pylon_l",
+      "pivot": [
+        6.4,
+        17.6,
+        -32.0
+      ]
+    },
+    {
+      "parent": "neck",
+      "accepts": [
+        "void_reclaimer:titan_pylon"
+      ],
+      "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            0.59375,
+            1.3625,
+            -2.0
+          ],
+          "size": [
+            0.5625,
+            0.7125,
+            0.5
+          ]
+        },
+        {
+          "at": [
+            1.15625,
+            2.075,
+            -2.0
+          ],
+          "size": [
+            0.5625,
+            0.7125,
+            0.5
+          ]
+        }
+      ],
+      "id": "pylon_r",
+      "pivot": [
+        -6.4,
+        17.6,
+        -32.0
+      ]
+    },
+    {
+      "parent": "pylon_l",
+      "accepts": [
+        "void_reclaimer:titan_nacelle"
+      ],
+      "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            -1.375,
+            2.375,
+            -3.3125
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            -1.375,
+            2.375,
+            -2.125
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            -1.375,
+            2.375,
+            -0.9375
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        }
+      ],
+      "id": "nacelle_l",
+      "pivot": [
+        22.0,
+        38.0,
+        -34.0
+      ]
+    },
+    {
+      "parent": "pylon_r",
+      "accepts": [
+        "void_reclaimer:titan_nacelle"
+      ],
+      "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            1.375,
+            2.375,
+            -3.3125
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            1.375,
+            2.375,
+            -2.125
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        },
+        {
+          "at": [
+            1.375,
+            2.375,
+            -0.9375
+          ],
+          "size": [
+            0.625,
+            0.625,
+            1.25
+          ]
+        }
+      ],
+      "id": "nacelle_r",
+      "pivot": [
+        -22.0,
+        38.0,
+        -34.0
+      ]
+    }
+  ]
+}

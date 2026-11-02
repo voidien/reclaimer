@@ -35,6 +35,11 @@ public final class BodyLook {
         return DEFAULT_RIG;
     }
 
+    /** The rig for a body on {@code chassis}, whose core section is {@code core}: a part of a bigger body is drawn with that body's rig. */
+    public static String rig(com.voidreclaimer.api.body.Chassis chassis, @Nullable com.voidreclaimer.api.body.SectionStats core) {
+        return chassis.halfOf().orElseGet(() -> rig(core == null ? null : core.chassis().orElse(null)));
+    }
+
     /** Whether the rig turns with the look pitch (flyers nose up and down; the upright Mech only turns). */
     public static boolean pitches(String rig) {
         return !"mech".equals(rig);

@@ -94,6 +94,8 @@ public final class BuiltinBodies {
     public static final ResourceKey<Chassis> MECH = chassisKey("mech");
     public static final ResourceKey<Chassis> SHIP = chassisKey("ship");
     public static final ResourceKey<Chassis> TITAN = chassisKey("titan");
+    /** A Titan's drive half on its own: the neck and all that hangs from it, flying apart from the saucer. */
+    public static final ResourceKey<Chassis> TITAN_DRIVE = chassisKey("titan_drive");
     /** A smaller, faster layout with its own size class: a shuttle, about 17 blocks long at scale 2. */
     public static final ResourceKey<Chassis> SHUTTLE = chassisKey("shuttle");
 
@@ -103,6 +105,18 @@ public final class BuiltinBodies {
     public static final Map<ResourceKey<Chassis>, Chassis> CHASSIS = chassis();
 
     private BuiltinBodies() {}
+
+    private static Chassis driveHalf(List<Socket> titan) {
+        List<Socket> drive = new ArrayList<>();
+        for (Socket socket : titan) {
+            if (socket.id().equals("neck")) {
+                drive.add(new Socket(socket.id(), socket.accepts(), true, java.util.Optional.empty(), socket.pivot(), socket.area(), socket.mirror(), socket.boxes()));
+            } else if (socket.parent().filter(parent -> !parent.equals("saucer")).isPresent()) {
+                drive.add(socket);
+            }
+        }
+        return new Chassis(TITAN_SIZE, "neck", List.copyOf(drive), new Chassis.Cockpit(1.7f, 0.5f, 0f)).asHalfOf("titan");
+    }
 
     private static Map<ResourceKey<Chassis>, Chassis> chassis() {
         Map<ResourceKey<Chassis>, Chassis> map = new LinkedHashMap<>();
@@ -207,6 +221,7 @@ public final class BuiltinBodies {
         titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE).withBoxes(titanBox(11, 19, -26.5, 5, 5, 10),
                 titanBox(11, 19, -17, 5, 5, 10), titanBox(11, 19, -7.5, 5, 5, 10)));
         map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan), new Chassis.Cockpit(1.7f, 0.5f, 0f)));
+        map.put(TITAN_DRIVE, driveHalf(titan));
         return Map.copyOf(map);
     }
 

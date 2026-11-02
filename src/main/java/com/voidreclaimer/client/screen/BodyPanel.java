@@ -616,7 +616,7 @@ final class BodyPanel {
     /** A body drawn as one model has no sections to paint: one tint over all of it stands in for casing and accent. */
     private static boolean wholeModel(BodyView view) {
         var core = com.voidreclaimer.body.Parts.section(view.data().core());
-        return BodyRigSpec.Loader.get(BodyLook.rig(core == null ? null : core.chassis().orElse(null))) != null;
+        return BodyRigSpec.Loader.get(BodyLook.rig(view.chassis(), core)) != null;
     }
 
     private void renderCosmetics(GuiGraphics graphics, LocalPlayer player, BodyView view, boolean overloaded, int mouseX, int mouseY) {

@@ -50,7 +50,7 @@ public final class BodyBounds {
     /** The box round a body as it is drawn: a whole model, or a composed rig with each fitted section's own model at its bone. */
     public static float[] box(BodyView view) {
         SectionStats core = Parts.section(view.data().core());
-        String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
+        String rig = BodyLook.rig(view.chassis(), core);
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
         BakedGeoModel model = GeckoLibCache.getBakedModels().get(spec != null ? spec.model() : VoidReclaimer.id("geo/body/" + rig + ".geo.json"));
         if (model == null) {

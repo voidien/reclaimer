@@ -46,10 +46,11 @@ public final class BodyRules {
             return Check.NO_SUCH_SOCKET;
         }
         boolean coreSocket = socketId.equals(view.chassis().coreSocket());
-        if (coreSocket != section.isCore() || !coreSocket && !socket.accepts(section.socketType())) {
+        boolean half = view.chassis().halfOf().isPresent();
+        if (half ? !socket.accepts(section.socketType()) : coreSocket != section.isCore() || !coreSocket && !socket.accepts(section.socketType())) {
             return Check.WRONG_SOCKET;
         }
-        if (coreSocket && view.layouts().apply(section.chassis().get()) == null) {
+        if (coreSocket && !half && view.layouts().apply(section.chassis().get()) == null) {
             return Check.UNKNOWN_CHASSIS;
         }
         if (section.tier() > view.stats().coreTier()) {
@@ -181,7 +182,8 @@ public final class BodyRules {
             SectionStats section = Parts.section(stack);
             boolean core = socketId.equals(chassis.coreSocket());
             boolean fits = socket != null && section != null
-                    && (core ? section.isCore() : !section.isCore() && socket.accepts(section.socketType()));
+                    && (chassis.halfOf().isPresent() ? socket.accepts(section.socketType())
+                            : core ? section.isCore() : !section.isCore() && socket.accepts(section.socketType()));
             if (fits) {
                 sections.put(socketId, stack);
             } else {

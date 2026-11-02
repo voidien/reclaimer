@@ -27,9 +27,11 @@ import net.minecraft.resources.ResourceLocation;
  * @param cockpit    where the first-person camera sits and whether the vanilla hand is hidden (big ships); none keeps the player's eyes
  * @param walks      true for bodies with legs (the Mech): where gravity is back they walk like a normal player and fire
  *                   their thrusters only when asked (Space); every other body flies on thrusters all the time
+ * @param halfOf     set on a part of a bigger body that can fly apart from it, naming the art rig it is drawn with: a body on this layout
+ *                   is the sections it has, with no core section to name it, so it goes by the section in {@code coreSocket}
  */
 public record Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Optional<Component> name,
-                      Optional<Cockpit> cockpit, boolean walks) {
+                      Optional<Cockpit> cockpit, boolean walks, Optional<String> halfOf) {
     /**
      * First-person camera offset from the eyes, in blocks at scale 1 (multiplied by the body's scale): {@code forward} along the view,
      * {@code up} and {@code right} across it. A chassis with a cockpit also hides the first-person hand.
@@ -48,8 +50,20 @@ public record Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<
             Socket.CODEC.listOf().fieldOf("sockets").forGetter(Chassis::sockets),
             ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(Chassis::name),
             Cockpit.CODEC.optionalFieldOf("cockpit").forGetter(Chassis::cockpit),
-            Codec.BOOL.optionalFieldOf("walks", false).forGetter(Chassis::walks)
+            Codec.BOOL.optionalFieldOf("walks", false).forGetter(Chassis::walks),
+            Codec.STRING.optionalFieldOf("half_of").forGetter(Chassis::halfOf)
     ).apply(instance, Chassis::new)).validate(Chassis::validate);
+
+    /** A whole body. */
+    public Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Optional<Component> name,
+                   Optional<Cockpit> cockpit, boolean walks) {
+        this(sizeClass, coreSocket, sockets, name, cockpit, walks, Optional.empty());
+    }
+
+    /** The same layout as a part of a body drawn with the rig {@code rig}. */
+    public Chassis asHalfOf(String rig) {
+        return new Chassis(sizeClass, coreSocket, sockets, name, cockpit, walks, Optional.of(rig));
+    }
 
     /** A chassis that flies on thrusters all the time (the form before {@code walks} existed). */
     public Chassis(ResourceKey<SizeClass> sizeClass, String coreSocket, List<Socket> sockets, Optional<Component> name,

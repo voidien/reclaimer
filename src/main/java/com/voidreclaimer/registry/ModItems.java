@@ -159,8 +159,8 @@ public final class ModItems {
     // ---- Titan sections (tier 4; the saucer is the core section) -----------------------------------------
 
     public static final DeferredItem<SectionItem> TITAN_SAUCER = section("titan_saucer", BuiltinBodies.TITAN_SAUCER, 4,
-            s -> s.mass(10f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 3).mount(ModuleKind.STORAGE, 2)
-                    .mount(ModuleKind.COSMETIC, 1).mount(ModuleKind.TOOL, 2).chassis(BuiltinBodies.TITAN));
+            s -> s.mass(9f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 3).mount(ModuleKind.STORAGE, 2)
+                    .mount(ModuleKind.COSMETIC, 1).mount(ModuleKind.TOOL, 2).mount(ModuleKind.THRUSTER, 2).chassis(BuiltinBodies.TITAN));
     public static final DeferredItem<SectionItem> TITAN_NECK = section("titan_neck", BuiltinBodies.TITAN_NECK, 4,
             s -> s.mass(3f).budget(8f).health(20f).mount(ModuleKind.TOOL, 2));
     public static final DeferredItem<SectionItem> TITAN_BRIDGE = section("titan_bridge", BuiltinBodies.TITAN_BRIDGE, 4,

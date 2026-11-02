@@ -29,7 +29,7 @@ class BodyRigBonesTest {
             "drone", Set.of("probe"),
             "mech", Set.of("chest", "spine"),
             "shuttle", Set.of("body"),
-            "titan", Set.of("saucer"));
+            "titan", Set.of());
     /**
      * Found by this audit and not fixed yet; none today. A fix must take its entry out, and a new bone with no owner fails.
      */
