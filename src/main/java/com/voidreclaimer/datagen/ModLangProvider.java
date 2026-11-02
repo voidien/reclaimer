@@ -107,6 +107,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.SHUTTLE_SHELL.get(), "Remote Shell: Shuttle");
         add(ModItems.TITAN_SHELL.get(), "Remote Shell: Titan");
         add("message.void_reclaimer.ship_portal.crossed", "The ship came through the portal.");
+        add("message.void_reclaimer.portal.stays_in_orbit", "This body is too big for the portal. Take a Shuttle down.");
         add("message.void_reclaimer.ship_portal.too_big", "The ship does not fit through the gate.");
         add("message.void_reclaimer.ship_portal.blocked", "The far side of the portal is not clear for the ship.");
         add("message.void_reclaimer.ship_portal.no_way_back", "The portal leads nowhere for a ship.");

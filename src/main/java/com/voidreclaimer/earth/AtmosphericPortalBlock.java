@@ -80,7 +80,11 @@ public class AtmosphericPortalBlock extends Block implements Portal {
 
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (entity.canUsePortal(false)) {
+        if (PortalTravel.staysInOrbit(level, entity)) {
+            if (entity instanceof net.minecraft.world.entity.player.Player player) {
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.void_reclaimer.portal.stays_in_orbit"), true);
+            }
+        } else if (entity.canUsePortal(false)) {
             entity.setAsInsidePortal(this, pos);
         }
     }
