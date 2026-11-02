@@ -104,6 +104,8 @@ public final class WeatherGameTests {
             space.setData(ModAttachments.WEATHER, WeatherState.NONE);
         }
         helper.succeed();
+    }
+
     /** A storm started over another ends that one first, and a kind with no warning still says it has started. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_restart")
     public static void aStormStartedOverAnotherEndsIt(GameTestHelper helper) {

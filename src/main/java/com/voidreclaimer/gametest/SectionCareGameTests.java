@@ -78,6 +78,10 @@ public final class SectionCareGameTests {
                 Wear.onThrustTick(player);
             }
             helper.assertTrue(Wear.condition(Bodies.data(player).section(ARM)) >= Wear.FLOOR_FROM_USE - 1e-6f, "thrust wore a section right out");
+            for (int i = 0; i < 400; i++) {
+                Wear.add(player, ARM, 0.05f);
+            }
+            helper.assertTrue(Wear.condition(Bodies.data(player).section(ARM)) >= Wear.FLOOR_FROM_USE - 1e-6f, "the air wore out the body's last thruster section");
             double nearlyOut = FlightStats.of(player).acceleration();
             helper.assertTrue(nearlyOut > 0.03 * 0.74, "a nearly worn-out arm should lose about 25%: " + nearlyOut);
 

@@ -232,9 +232,12 @@ public final class PortalGameTests {
                         player.hasChangedDimension();
                         // Standing in a portal during its cooldown keeps the cooldown going, so wait it out where we landed.
                         until(helper, "portal cooldown", player, 100, () -> player.getPortalCooldown() == 0, player::doTick, () -> {
+                            // The body came out on the far side of the planet, so nothing holds the gate's chunk any more.
+                            earth.setChunkForced(back.getX() >> 4, back.getZ() >> 4, true);
                             player.teleportTo(back.getX() + 0.5, back.getY(), back.getZ() + 0.5);
                             until(helper, "trip back", player, 100, () -> player.level().dimension() == ModDimensions.DEEP_SPACE, () -> standIn(player, back), () -> {
                                 try {
+                                    earth.setChunkForced(back.getX() >> 4, back.getZ() >> 4, false);
                                     helper.assertTrue(player.position().distanceTo(Vec3.atBottomCenterOf(pane).add(0, -1, 0)) < 6,
                                             "came back far from the portal: " + player.position());
                                     helper.assertTrue(player.getAttributeValue(Attributes.GRAVITY) == 0.0, "gravity on in deep space");

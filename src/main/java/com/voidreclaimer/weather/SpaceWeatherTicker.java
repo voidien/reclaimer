@@ -124,7 +124,11 @@ public final class SpaceWeatherTicker {
 
     private static void reach(ResourceLocation id, SpaceWeather weather, ServerPlayer player, float strength) {
         WeatherExposureType exposure = ModRegistries.WEATHER_EXPOSURE_TYPES.get(weather.exposure());
-        if (exposure == null || player.isCreative() || player.isSpectator() || !player.isAlive()) {
+        if (exposure == null) {
+            missing(weather.exposure());
+            return;
+        }
+        if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
             return;
         }
         float share = exposure.exposure(player);
@@ -132,26 +136,10 @@ public final class SpaceWeatherTicker {
         if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
             for (SpaceWeather.Effect effect : weather.effects()) {
                 WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
-                if (type != null) {
+                if (type == null) {
+                    missing(effect.type());
+                } else if (player.isAlive()) {
                     type.second(player, effect.strength() * strength * event.getShare());
-        if (exposure == null) {
-            missing(weather.exposure());
-            return;
-        }
-        for (ServerPlayer player : List.copyOf(level.players())) {
-            if (player.isCreative() || player.isSpectator() || !player.isAlive()) {
-                continue;
-            }
-            float share = exposure.exposure(player);
-            SpaceWeatherEvent.Exposed event = new SpaceWeatherEvent.Exposed(level, id, weather, player, share);
-            if (share > 0f && !NeoForge.EVENT_BUS.post(event).isCanceled() && event.getShare() > 0f) {
-                for (SpaceWeather.Effect effect : weather.effects()) {
-                    WeatherEffectType type = ModRegistries.WEATHER_EFFECT_TYPES.get(effect.type());
-                    if (type == null) {
-                        missing(effect.type());
-                    } else if (player.isAlive()) {
-                        type.second(player, effect.strength() * state.strength() * event.getShare());
-                    }
                 }
             }
         }

@@ -107,9 +107,24 @@ public final class Wear {
         }
     }
 
-    /** Gathers wear on {@code socket}'s section, scaled by its wear resistance, and applies it in 1% steps. Anything that isn't the body's own use can wear a section right out. */
+    /**
+     * Gathers wear on {@code socket}'s section, scaled by its wear resistance, and applies it in 1% steps. Anything that isn't the body's own
+     * use can wear a section right out, except the last that can still move the body: with no thrust in deep space there is no way home.
+     */
     public static void add(ServerPlayer player, String socket, float amount) {
-        add(player, socket, amount, 0f);
+        add(player, socket, amount, lastThrust(player, socket) ? FLOOR_FROM_USE : 0f);
+    }
+
+    /** Whether {@code socket} carries a thruster and no other section with one has any life left. */
+    private static boolean lastThrust(ServerPlayer player, String socket) {
+        BodyData body = Bodies.data(player);
+        Set<String> sockets = new HashSet<>();
+        body.modules().forEach((mount, module) -> {
+            if (mount.kind() == ModuleKind.THRUSTER) {
+                sockets.add(mount.socket());
+            }
+        });
+        return sockets.contains(socket) && sockets.stream().noneMatch(other -> !other.equals(socket) && condition(body.section(other)) > 0f);
     }
 
     private static void add(ServerPlayer player, String socket, float amount, float floor) {
