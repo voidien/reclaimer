@@ -27,6 +27,9 @@ public final class BuiltinBodies {
     public static final ResourceKey<SizeClass> SHUTTLE_SIZE = sizeKey("shuttle");
     public static final ResourceKey<SizeClass> TITAN_SIZE = sizeKey("titan");
 
+    /** The same pods hold four times as much on a Titan, so it holds the most by a large margin: 5,000 of each dust with Mk II pods. */
+    private static final double TITAN_STORAGE = 4.0;
+
     public static final Map<ResourceKey<SizeClass>, SizeClass> SIZE_CLASSES = Map.of(
             DRONE_SIZE, new SizeClass(0.4, 0),
             MECH_SIZE, new SizeClass(1.2, 1, 1.4),
@@ -34,7 +37,7 @@ public final class BuiltinBodies {
             // The same rank as the Ship, so parts and unlocks treat it alike. The model is 8.5 blocks long at scale 1: about 17 at 2.
             SHUTTLE_SIZE, new SizeClass(2.0, 2, 4.0),
             // The Titan model is 8.4 blocks long at scale 1: at 8 it is about 67 blocks.
-            TITAN_SIZE, new SizeClass(8.0, 3, 2.0));
+            TITAN_SIZE, new SizeClass(8.0, 3, 2.0, TITAN_STORAGE));
 
     // ---- socket types (what sections are) -----------------------------------------------------------------
 

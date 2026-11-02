@@ -93,6 +93,17 @@ public final class ObtainabilityGameTests {
         return best;
     }
 
+    /** The same pods hold more on a bigger body, and the Titan holds the most by a large margin. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theTitanHoldsTheMostByALargeMargin(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        float titan = biggestCapacity(player);
+        float others = biggestCapacity(player, 3);
+        TestPlayers.remove(player);
+        helper.assertTrue(titan >= others * 2, "a Titan holds " + titan + " and the next biggest body " + others);
+        helper.succeed();
+    }
+
     /** A body built from its basic parts flies at full speed: going over budget is what better parts cost, not the starting point. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aBasicBodyFitsItsMassBudget(GameTestHelper helper) {

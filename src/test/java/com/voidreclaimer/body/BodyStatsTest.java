@@ -160,6 +160,15 @@ class BodyStatsTest {
     }
 
     @Test
+    void theSamePodsHoldMoreOnASizeClassThatSaysSo() {
+        ModuleStats pod = ModuleStats.storage(1, 0.2f, new ModuleStats.Storage(1, 100f));
+        float plain = BodyStats.compute(BuiltinBodies.DRONE_SIZE, new SizeClass(1.0, 0), DRONE_SECTIONS, List.of(CORE_MK1, pod)).dustCapacity();
+        assertTrue(plain > 0f, "the pod holds nothing, so this proves nothing");
+        float four = BodyStats.compute(BuiltinBodies.DRONE_SIZE, new SizeClass(1.0, 0, 1.0, 4.0), DRONE_SECTIONS, List.of(CORE_MK1, pod)).dustCapacity();
+        assertEquals(plain * 4f, four, 1e-3f);
+    }
+
+    @Test
     void theBuiltInClassesGiveTheOwnersSpeedsOnAMarkOneThruster() {
         Map<String, Double> wanted = Map.of("drone", 10.0, "mech", 14.0, "titan", 20.0, "ship", 30.0, "shuttle", 40.0);
         BuiltinBodies.SIZE_CLASSES.forEach((key, size) ->
