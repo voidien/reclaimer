@@ -79,7 +79,7 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 1. **Data:** `Socket.boxes`, the built-in lists, a pure `BodyBoxes` pose, a common copy of the turn maths, and unit tests. No behaviour change.
 2. **Debug view (done, `debug/BoxOverlay`):** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
 3. **Blocks (done, `body/BoxCollision`):** `BodyBoxes.resolve` as pure logic, with sub-steps of at most 0.5 block and the never-trap rule (done). Next, reading the blocks and calling it in `travel`, with the client checks.
-4. **Ships.**
+4. **Ships (done, `BoxCollision.ships`).**
 5. **Bodies.**
 6. **Heading:** `BodyHeading` (pure, done). Next, the renderer and sync. The Drone stays 1:1.
 7. **Turn test, push and stop:** `BodyBoxes.turnPush` and `BodyHeading.turn` (pure, done). Next, calling them in `travel`, with thrust following the heading.
