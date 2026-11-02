@@ -429,6 +429,25 @@ public final class CCPeripheralGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theRelayIsAPeripheral(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(60_400, 80, 0);
+        NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {
+            ServerLevel level = TestPlayers.deepSpace(helper);
+            var lua = new com.voidreclaimer.compat.cc.RelayPeripheral();
+            var relay = place(level, pos, ModBlocks.RELAY.get(), com.voidreclaimer.link.RelayBlockEntity.class);
+            requireMethods(helper, Lookup.of(level, pos), "Relay", "getRelayId", "isOnline", "getEnergy", "getEnergyCapacity", "getEnergyUse", "getRelayCount");
+            helper.assertTrue(relay.id().toString().equals(lua.getRelayId(relay)), "the relay's id");
+            helper.assertTrue(!lua.isOnline(relay) && lua.getEnergy(relay) == 0, "a fresh relay reads as running");
+            helper.assertTrue(lua.getEnergyCapacity(relay) == com.voidreclaimer.Config.LINK_RELAY_FE_BUFFER.get(), "the relay's buffer reads " + lua.getEnergyCapacity(relay));
+            helper.assertTrue(lua.getEnergyUse(relay) == com.voidreclaimer.Config.LINK_RELAY_FE_PER_TICK.get(), "the relay's use reads " + lua.getEnergyUse(relay));
+            relay.energy().receiveEnergy(500, false);
+            helper.assertTrue(lua.getEnergy(relay) == 500, "the relay's energy reads " + lua.getEnergy(relay));
+            level.removeBlock(pos, false);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void theDockingClampIsAPeripheral(GameTestHelper helper) {
         BlockPos pos = new BlockPos(60_800, 80, 0);
         NaniteGameTests.inLoadedArea(helper, pos, 2, () -> {

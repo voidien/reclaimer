@@ -52,6 +52,49 @@ public final class RestartGameTests {
         helper.succeed();
     }
 
+    private static final BlockPos RELAY_SPOT = new BlockPos(75_200, 80, 0);
+    private static final UUID FAR_RELAY = new UUID(75_200L, 1L);
+    private static final BlockPos FAR_RELAY_SPOT = new BlockPos(75_200, 80, 900_000);
+    private static final int RELAY_CHARGE = 1500;
+    private static final BlockPos SHIP_RELAY_SPOT = new BlockPos(75_204, 90, 4);
+
+    /** The list is on the level and the relay's id and energy are in its chunk: all of it has to come back, and agree. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aRelayListOutlivesARestartBeforeRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        NaniteGameTests.inLoadedArea(helper, RELAY_SPOT, 1, () -> {
+            space.setBlock(RELAY_SPOT, com.voidreclaimer.registry.ModBlocks.RELAY.get().defaultBlockState(), 3);
+            var relay = (com.voidreclaimer.link.RelayBlockEntity) space.getBlockEntity(RELAY_SPOT);
+            relay.energy().receiveEnergy(RELAY_CHARGE, false);
+            com.voidreclaimer.link.Relays.note(space, new com.voidreclaimer.link.RelayList.Entry(FAR_RELAY, FAR_RELAY_SPOT, Vec3.atCenterOf(FAR_RELAY_SPOT), true, java.util.Optional.empty()));
+            var server = space.getServer();
+            AeronauticsGameTests.command(server, space, SHIP_RELAY_SPOT, "setblock " + SHIP_RELAY_SPOT.getX() + " " + (SHIP_RELAY_SPOT.getY() - 1) + " " + SHIP_RELAY_SPOT.getZ() + " minecraft:iron_block");
+            space.setBlock(SHIP_RELAY_SPOT, com.voidreclaimer.registry.ModBlocks.RELAY.get().defaultBlockState(), 3);
+            var aboard = (com.voidreclaimer.link.RelayBlockEntity) space.getBlockEntity(SHIP_RELAY_SPOT);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.link.Relays.of(space).find(aboard.id()).isPresent(), "the relay meant for the ship never reached the list"))
+                    .thenExecute(() -> AeronauticsGameTests.command(server, space, SHIP_RELAY_SPOT, "sable assemble connected " + SHIP_RELAY_SPOT.getX() + " " + (SHIP_RELAY_SPOT.getY() - 1) + " " + SHIP_RELAY_SPOT.getZ()))
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.link.Relays.of(space).find(aboard.id()).filter(entry -> entry.ship().isPresent()).isPresent(), "the relay never went aboard"))
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.link.Relays.of(space).find(relay.id()).filter(com.voidreclaimer.link.RelayList.Entry::lit).isPresent(), "the relay never reached the list"))
+                    .thenSucceed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aRelayListOutlivesARestartAfterRestart(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        var list = com.voidreclaimer.link.Relays.of(space);
+        helper.assertTrue(list.find(FAR_RELAY).filter(entry -> entry.lit() && entry.block().equals(FAR_RELAY_SPOT)).isPresent(), "the list lost a relay it could not check: " + list);
+        helper.assertTrue(list.relays().stream().anyMatch(entry -> entry.ship().isPresent()), "a relay aboard a ship left the list when the server stopped: " + list);
+        var saved = list.relays().stream().filter(entry -> entry.block().equals(RELAY_SPOT)).findFirst();
+        helper.assertTrue(saved.isPresent(), "the list lost the relay at " + RELAY_SPOT + ": " + list);
+        var relay = (com.voidreclaimer.link.RelayBlockEntity) space.getChunk(RELAY_SPOT).getBlockEntity(RELAY_SPOT);
+        helper.assertTrue(relay != null, "the relay's block did not come back");
+        helper.assertTrue(relay.id().equals(saved.get().id()), "the relay came back as " + relay.id() + ", the list says " + saved.get().id());
+        helper.assertTrue(relay.storedEnergy() > 0 && relay.storedEnergy() < RELAY_CHARGE, "the relay came back with " + relay.storedEnergy() + " FE");
+        helper.succeed();
+    }
+
     private static final UUID LINKED_PLAYER = new UUID(7L, 7L);
     private static final BlockPos LINK_SPOT = new BlockPos(75_500, 80, 0);
 

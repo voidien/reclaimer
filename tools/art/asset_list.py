@@ -176,6 +176,8 @@ block('backup_core', 'block/backup_core.png', 'brass machine casing with a glowi
       tile='no', notes='All six faces use this one texture now (cube_all).')
 block('tether_anchor', 'block/tether_anchor.png', 'heavy andesite anchor block with a brass ring in the middle',
       tile='no', notes='All six faces use this one texture now.')
+block('relay', 'block/relay.png', 'dark andesite casing with a small unlit signal dish in the center', tile='no')
+block('relay_lit', 'block/relay_lit.png', 'the same andesite casing with the signal dish glowing cyan', tile='no')
 block('electrolyzer_side', 'block/electrolyzer_side.png', 'machine side: copper tank with glass window showing bubbling water',
       tile='no', model='Wants a real model: RD 3D blocky, Minecraft Java export. Leave the shaft hole on both ends (Create draws the turning shaft).')
 block('electrolyzer_end', 'block/electrolyzer_end.png', 'machine end face: andesite casing with a shaft hole in the middle', tile='no')

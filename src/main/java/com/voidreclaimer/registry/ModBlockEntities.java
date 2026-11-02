@@ -61,6 +61,8 @@ public final class ModBlockEntities {
 
     public static final Supplier<BlockEntityType<com.voidreclaimer.link.UplinkSeatBlockEntity>> UPLINK_SEAT = BLOCK_ENTITIES.register("uplink_seat",
             () -> BlockEntityType.Builder.of(com.voidreclaimer.link.UplinkSeatBlockEntity::new, ModBlocks.UPLINK_SEAT.get()).build(null));
+    public static final Supplier<BlockEntityType<com.voidreclaimer.link.RelayBlockEntity>> RELAY = BLOCK_ENTITIES.register("relay",
+            () -> BlockEntityType.Builder.of(com.voidreclaimer.link.RelayBlockEntity::new, ModBlocks.RELAY.get()).build(null));
 
     private ModBlockEntities() {}
 }

@@ -60,6 +60,11 @@ public final class ModBlockStateProvider extends BlockStateProvider {
         var uplinkSeat = models().cubeBottomTop("uplink_seat", modLoc("block/station_core_side"), modLoc("block/station_core_bottom"), modLoc("block/station_core_top"));
         simpleBlock(ModBlocks.UPLINK_SEAT.get(), uplinkSeat);
         simpleBlockItem(ModBlocks.UPLINK_SEAT.get(), uplinkSeat);
+        var relay = models().cubeAll("relay", modLoc("block/relay"));
+        var relayLit = models().cubeAll("relay_lit", modLoc("block/relay_lit"));
+        getVariantBuilder(ModBlocks.RELAY.get()).forAllStates(state -> net.neoforged.neoforge.client.model.generators.ConfiguredModel.builder()
+                .modelFile(state.getValue(com.voidreclaimer.link.RelayBlock.LIT) ? relayLit : relay).build());
+        simpleBlockItem(ModBlocks.RELAY.get(), relay);
         var holo = models().cubeBottomTop("holo_projector", modLoc("block/holo_projector_side"), modLoc("block/holo_projector_bottom"), modLoc("block/holo_projector_top"));
         horizontalBlock(ModBlocks.HOLO_PROJECTOR.get(), holo);
         simpleBlockItem(ModBlocks.HOLO_PROJECTOR.get(), holo);

@@ -101,6 +101,7 @@ public final class ModLangProvider extends LanguageProvider {
         add(ModItems.HOLO_PROJECTOR.get(), "Holo Projector");
         add(ModItems.DOCKING_CLAMP.get(), "Docking Clamp");
         add(ModItems.UPLINK_SEAT.get(), "Uplink Seat");
+        add(ModItems.RELAY.get(), "Relay");
         add(ModItems.DRONE_SHELL.get(), "Remote Shell: Drone");
         add(ModItems.MECH_SHELL.get(), "Remote Shell: Mech");
         add(ModItems.SHIP_SHELL.get(), "Remote Shell: Ship");
@@ -343,6 +344,8 @@ public final class ModLangProvider extends LanguageProvider {
         add("message.void_reclaimer.link.lost", "Shell lost. Its contents stay in the wreck. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.link.signal_lost", "Signal lost. The shell stays where it is. [Placeholder, lore text pending.]");
         add("message.void_reclaimer.uplink.no_shell", "No shell to link to");
+        add("message.void_reclaimer.relay.online", "Relay online: %s / %s FE, uses %s FE/t. Relays in this dimension: %s");
+        add("message.void_reclaimer.relay.dark", "Relay dark: %s / %s FE, needs %s FE/t. Relays in this dimension: %s");
         add("screen.void_reclaimer.uplink.title", "Uplink");
         add("screen.void_reclaimer.uplink.here", "Shell %s, %s blocks off");
         add("screen.void_reclaimer.uplink.elsewhere", "Shell %s, in %s");
@@ -731,6 +734,7 @@ public final class ModLangProvider extends LanguageProvider {
     /** One short gameplay hint per built-in Replicator recipe (not lore); a recipe's own {@code description} overrides it. */
     private void addReplicatorDescriptions() {
         add("replicator.void_reclaimer.description.uplink_seat", "Leave the main body here and run a Remote Shell from afar. The body stays on the seat and slowly charges.");
+        add("replicator.void_reclaimer.description.relay", "Passes an Uplink Seat's signal on. Runs on Forge Energy and goes dark without it. Right-click to read it.");
         add("replicator.void_reclaimer.description.drone_shell_cheap", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.drone_shell_reduced", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");
         add("replicator.void_reclaimer.description.drone_shell_parts", "A Drone body with nobody in it. Use it to set it down in front of you, then link to it from an Uplink Seat.");

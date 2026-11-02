@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "void_reclaimer:block/relay"
+    },
+    "lit=true": {
+      "model": "void_reclaimer:block/relay_lit"
+    }
+  }
+}
