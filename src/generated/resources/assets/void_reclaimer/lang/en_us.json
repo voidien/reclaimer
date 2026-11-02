@@ -543,6 +543,7 @@
   "message.void_reclaimer.nanite.no_power": "Nanites offline: low power.",
   "message.void_reclaimer.nanite.range": "Nanite build distance: %s",
   "message.void_reclaimer.no_planetary_anchor": "No planetary anchor detected. This device needs gravity to function.",
+  "message.void_reclaimer.portal.stays_in_orbit": "This body is too big for the portal. Take a Shuttle down.",
   "message.void_reclaimer.power_restored": "Power restored. Systems online.",
   "message.void_reclaimer.rcs_lock_off": "RCS lock: OFF. The ship keeps spinning until you stop it.",
   "message.void_reclaimer.rcs_lock_on": "RCS lock: ON. The ship holds its heading.",

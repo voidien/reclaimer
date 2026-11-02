@@ -1,0 +1,2 @@
+## Big bodies stay in orbit
+- The owner's call on the hit box page. A Ship or Titan body can't go down to Earth, and the portal says to take a Shuttle. A size class's `stays_in_orbit` sets it, so a datapack can change it. It only stops the way down, so nobody is stranded. It has to land before hit boxes collide with blocks, or those bodies would just hit the frame. Ship blocks crossing a gate are a separate thing and don't change. Test: `bigBodiesStayInOrbitAndAShuttleGoesDown`.

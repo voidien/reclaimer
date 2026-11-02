@@ -171,6 +171,30 @@ public final class PortalGameTests {
         player.doTick();
     }
 
+    /** A Ship or Titan stays in orbit; a Shuttle fits. On Earth nothing is held back, so a body can't be stranded there. */
+    @GameTest(template = "empty")
+    public static void bigBodiesStayInOrbitAndAShuttleGoesDown(GameTestHelper helper) {
+        var player = TestPlayers.survivalInDeepSpace(helper, 0.5, 80, 0.5);
+        var pane = com.voidreclaimer.registry.ModBlocks.ATMOSPHERIC_PORTAL.get().defaultBlockState();
+        var pos = player.blockPosition();
+        var space = player.serverLevel();
+        for (var key : java.util.List.of(com.voidreclaimer.body.BuiltinBodies.SHIP, com.voidreclaimer.body.BuiltinBodies.TITAN)) {
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(key));
+            pane.entityInside(space, pos, player);
+            helper.assertTrue(player.portalProcess == null, key.location().getPath() + " started through the portal");
+        }
+        helper.assertFalse(com.voidreclaimer.earth.PortalTravel.staysInOrbit(helper.getLevel().getServer().getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION), player), "a Titan is stuck on Earth");
+        for (var key : java.util.List.of(com.voidreclaimer.body.BuiltinBodies.SHUTTLE, com.voidreclaimer.body.BuiltinBodies.MECH, com.voidreclaimer.body.BuiltinBodies.DRONE)) {
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(key));
+            player.portalProcess = null;
+            pane.entityInside(space, pos, player);
+            helper.assertTrue(player.portalProcess != null, key.location().getPath() + " was held back");
+        }
+        player.portalProcess = null;
+        TestPlayers.remove(player);
+        helper.succeed();
+    }
+
     @GameTest(template = "empty", timeoutTicks = 600)
     public static void aPlayerTravelsToTheReturnGateAndBack(GameTestHelper helper) {
         ServerLevel space = TestPlayers.deepSpace(helper);

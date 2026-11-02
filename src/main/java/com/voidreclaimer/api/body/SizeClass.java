@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
  * @param speedFactor multiplies the top speed of the body's best thruster, so a big body covers ground to match its size
  * @param maxSpeed    the most any body of this class can reach, in blocks a second, however good its thrusters
  */
-public record SizeClass(double scale, int rank, Optional<Component> name, double speedFactor, double maxSpeed, double storageFactor) {
+public record SizeClass(double scale, int rank, Optional<Component> name, double speedFactor, double maxSpeed, double storageFactor, boolean staysInOrbit) {
     public static final double DEFAULT_MAX_SPEED = 40.0;
 
 
@@ -26,7 +26,8 @@ public record SizeClass(double scale, int rank, Optional<Component> name, double
             ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(SizeClass::name),
             Codec.doubleRange(0.01, 100.0).optionalFieldOf("speed_factor", 1.0).forGetter(SizeClass::speedFactor),
             Codec.doubleRange(0.01, 150.0).optionalFieldOf("max_speed", DEFAULT_MAX_SPEED).forGetter(SizeClass::maxSpeed),
-            Codec.doubleRange(0.01, 100.0).optionalFieldOf("storage_factor", 1.0).forGetter(SizeClass::storageFactor)
+            Codec.doubleRange(0.01, 100.0).optionalFieldOf("storage_factor", 1.0).forGetter(SizeClass::storageFactor),
+            Codec.BOOL.optionalFieldOf("stays_in_orbit", false).forGetter(SizeClass::staysInOrbit)
     ).apply(instance, SizeClass::new));
 
     public SizeClass(double scale, int rank) {
@@ -34,15 +35,20 @@ public record SizeClass(double scale, int rank, Optional<Component> name, double
     }
 
     public SizeClass(double scale, int rank, double speedFactor) {
-        this(scale, rank, Optional.empty(), speedFactor, DEFAULT_MAX_SPEED, 1.0);
+        this(scale, rank, Optional.empty(), speedFactor, DEFAULT_MAX_SPEED, 1.0, false);
     }
 
     public SizeClass(double scale, int rank, double speedFactor, double storageFactor) {
-        this(scale, rank, Optional.empty(), speedFactor, DEFAULT_MAX_SPEED, storageFactor);
+        this(scale, rank, Optional.empty(), speedFactor, DEFAULT_MAX_SPEED, storageFactor, false);
     }
 
     public SizeClass(double scale, int rank, Optional<Component> name, double speedFactor, double maxSpeed) {
-        this(scale, rank, name, speedFactor, maxSpeed, 1.0);
+        this(scale, rank, name, speedFactor, maxSpeed, 1.0, false);
+    }
+
+    /** The same size, too big for a portal: bodies of this size stay in orbit and send a Shuttle down. */
+    public SizeClass inOrbit() {
+        return new SizeClass(scale, rank, name, speedFactor, maxSpeed, storageFactor, true);
     }
 
     public Component displayName(ResourceLocation id) {

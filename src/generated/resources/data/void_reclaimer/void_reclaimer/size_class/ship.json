@@ -1,5 +1,6 @@
 {
   "rank": 2,
   "scale": 3.0,
-  "speed_factor": 3.0
+  "speed_factor": 3.0,
+  "stays_in_orbit": true
 }
