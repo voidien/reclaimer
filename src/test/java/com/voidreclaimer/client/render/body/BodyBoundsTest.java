@@ -29,34 +29,35 @@ class BodyBoundsTest {
         return bone;
     }
 
+    /** The cache knows a model by its bones, so each test names its own. */
     private static float[] box(GeoBone... bones) {
         return BodyBounds.box(new BakedGeoModel(List.of(bones), null));
     }
 
     @Test
     void aPlainCubeReachesItsCorners() {
-        float[] box = box(bone("hull", cube(Vec3.ZERO, Vec3.ZERO)));
+        float[] box = box(bone("plain", cube(Vec3.ZERO, Vec3.ZERO)));
         assertEquals(-1f, box[0], 1e-4f);
         assertEquals(1f, box[3], 1e-4f);
     }
 
     @Test
     void aTurnedCubeReachesFurtherThanItsCorners() {
-        float[] box = box(bone("hull", cube(Vec3.ZERO, new Vec3(0, Math.PI / 4, 0))));
+        float[] box = box(bone("turned", cube(Vec3.ZERO, new Vec3(0, Math.PI / 4, 0))));
         assertEquals((float) Math.sqrt(2), box[3], 1e-4f, "an eighth of a turn puts a corner on the x axis");
         assertEquals(1f, box[4], 1e-4f, "a turn about y leaves the height alone");
     }
 
     @Test
     void aCubeTurnsAboutItsOwnPivotInPixels() {
-        float[] box = box(bone("hull", cube(new Vec3(16, 0, 0), new Vec3(0, Math.PI, 0))));
+        float[] box = box(bone("pivoted", cube(new Vec3(16, 0, 0), new Vec3(0, Math.PI, 0))));
         assertEquals(1f, box[0], 1e-4f, "half a turn about a pivot one block along lands one block further on");
         assertEquals(3f, box[3], 1e-4f);
     }
 
     @Test
     void anEffectIsNotPartOfTheBody() {
-        float[] box = box(bone("hull", cube(Vec3.ZERO, Vec3.ZERO)), bone("fx_flame", cube(new Vec3(160, 0, 0), new Vec3(0, Math.PI, 0))));
+        float[] box = box(bone("flamed", cube(Vec3.ZERO, Vec3.ZERO)), bone("fx_flame", cube(new Vec3(160, 0, 0), new Vec3(0, Math.PI, 0))));
         assertEquals(1f, box[3], 1e-4f, "the flame counted");
     }
 }

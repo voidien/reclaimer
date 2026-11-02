@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  * Everything is in blocks at the body's scale, on the pilot's axes: right, up, forward.
  *
  * <p>The Ship has no one model: its keel is the rig's own cubes, and each other section is its own model at its rig bone's pivot, as
- * {@code BodyPartsLayer} draws it. {@code BodyBounds} cannot stand in for this: it stops at each section's pivot, so a Ship reads 15.4
+ * {@code BodyPartsLayer} draws it. This reads the files, so it checks {@code BodyBounds} as well as the boxes: a Ship is 21.4 long,
  * blocks long and not its real 21.4.
  */
 class BodyBoxFitTest {

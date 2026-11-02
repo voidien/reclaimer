@@ -95,7 +95,7 @@ All start with `/vrphoto`, and they run on the client.
 | `overlay true\|false` | Ship, thruster, helper drone and rotation overlays, and big bodies' hit boxes: green free, red in a block, with a line for where the body points |
 | `paint all\|base\|accent` | Draws parts with one of their two passes |
 | `time freeze\|step\|slow\|normal` | Drives the server's tick manager |
-| `handling`, `handling all` | Mass, speeds, lengths a second, time to top speed and stopping distance, for your body or every built-in one |
+| `handling`, `handling all` | Mass, speeds, length as drawn, lengths a second, time to top speed and stopping distance, for your body or every built-in one |
 | `shot <name>` | A screenshot and its facts |
 | `sheet <name> [distance]` | Four views |
 | `reload` | Reloads resources |

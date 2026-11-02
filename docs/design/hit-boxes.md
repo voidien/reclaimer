@@ -74,7 +74,7 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 0. **Spike, done 2026-11-02, code not kept.** A client command probed a grid of points round the player through `SableCompanion.INSTANCE.getAllIntersecting` and `logicalPose().transformPositionInverse`, then read `level.getBlockState` at the plot position, against a real 5 x 5 ship made with `/sable assemble connected`:
    - No ship before assembly, one after. All 25 blocks read on a level ship, and again after a restart. On a ship tilted with `/sable teleport @e x y z 45 30`, 24 of 25 were hit by the world-aligned sample grid, which is the grid landing unevenly on a tilted plate.
    - About 0.2 µs a point at 15,625 points (2.5 to 3.5 ms) and 0.07 µs at 274,625 (18 ms). That covers looking up the block, so the estimate of 1,600 tests a tick stands.
-   - The Ship is about 21 long and 18 wide on the 16-block floor grid, which matches the rig pivots. `BodyBounds` and `/vrphoto handling` read 15.4 for it, because a composed rig's box only reaches each section's pivot plus a block.
+   - The Ship is about 21 long and 18 wide on the 16-block floor grid, which matches the rig pivots. `BodyBounds` read it short then; it now measures each section's model, and reads 21.4.
    - Not answered: whether a body resting on a deck jitters (`trackingSubLevel`). That needs real collision, so it falls to PR 4.
 1. **Data:** `Socket.boxes`, the built-in lists, a pure `BodyBoxes` pose, a common copy of the turn maths, and unit tests. No behaviour change.
 2. **Debug view (done, `debug/BoxOverlay`):** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
@@ -84,6 +84,10 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
 6. **Heading:** turning with weight, the renderer and sync. The Drone stays 1:1.
 7. **Turn test, push and stop.**
 8. **Server checks.**
+
+## For later
+- **If collision costs too much:** merge the Ship's tiny boxes first. 10 of its 29 are hardpoints and cargo bays, at the cost of a removed part keeping its box. Measure with real timings before doing this.
+- **Titan separation:** boxes follow sockets, so they split cleanly, except the hull's three, which live on `neck` because the rig's `root` does. The drive half needs those to go with it.
 
 ## Not confirmed
 What `OrientedBoundingBox3d.sat` returns, jitter on a deck, `MergedMassTracker`, how `ShipOverlay` is wired in, and timings for the full collision pass.
