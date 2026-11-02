@@ -49,6 +49,11 @@ public final class ModItems {
     public static final DeferredItem<ModuleItem> STORAGE_MK1 = module("storage_mk1", ModuleStats.storage(1, 0.2f, new ModuleStats.Storage(1, 100f)));
     public static final DeferredItem<ModuleItem> STORAGE_MK2 = module("storage_mk2", ModuleStats.storage(2, 0.5f, new ModuleStats.Storage(2, 300f)));
 
+    /** Dust storage with no inventory rows, in a utility mount. A Mk I is what lets a Ship with full storage hold a Titan Core Kit's price. */
+    public static final DeferredItem<ModuleItem> DUST_COMPRESSOR_MK1 = module("dust_compressor_mk1", ModuleStats.utility(2, 0.5f, new ModuleStats.Storage(0, 600f)));
+    public static final DeferredItem<ModuleItem> DUST_COMPRESSOR_MK2 = module("dust_compressor_mk2", ModuleStats.utility(3, 1.0f, new ModuleStats.Storage(0, 1200f)));
+    public static final DeferredItem<ModuleItem> DUST_COMPRESSOR_MK3 = module("dust_compressor_mk3", ModuleStats.utility(4, 2.0f, new ModuleStats.Storage(0, 2400f)));
+
     /** Cosmetic modules: no stats; drawn in Phase 5b. */
     public static final DeferredItem<ModuleItem> BRASS_TRIM = module("brass_trim", ModuleStats.simple(ModuleKind.COSMETIC, 1, 0f));
     public static final DeferredItem<ModuleItem> COGWHEEL_CROWN = module("cogwheel_crown", ModuleStats.simple(ModuleKind.COSMETIC, 1, 0f));

@@ -9,6 +9,7 @@ import com.voidreclaimer.body.BodyData;
 import com.voidreclaimer.body.BodyRules;
 import com.voidreclaimer.body.BodyView;
 import com.voidreclaimer.body.BuiltinBodies;
+import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.registry.ModDataComponents;
 import com.voidreclaimer.registry.ModItems;
 import java.util.List;
@@ -57,6 +58,41 @@ public final class UtilityModuleGameTests {
                 BodyData read = BodyData.CODEC.parse(ops, saved).getOrThrow();
                 helper.assertTrue(!read.module(mount).isEmpty(), "a utility module did not survive a save on " + chassis.location());
             });
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** It adds to what a body holds of every kind and adds no rows, its tier is the core's business, and a full Ship can now pay for a Titan's kit. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDustCompressorStoresDustAndAddsNoRows(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(185_408, 300, 8);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP));
+            BodyView bare = Bodies.view(player);
+            float holds = DustData.capacity(player);
+            BodyData.Mount mount = bare.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            ItemStack mk1 = new ItemStack(ModItems.DUST_COMPRESSOR_MK1.get());
+            helper.assertTrue(BodyRules.canInstallModule(bare, mount, mk1) == BodyRules.Check.OK, "a Compressor did not fit a Ship");
+            Bodies.store(player, bare.data().withModule(mount, mk1));
+            helper.assertTrue(DustData.capacity(player) == holds + 600f, "a Ship with a Mk I holds " + DustData.capacity(player) + ", not " + (holds + 600f));
+            Bodies.store(player, bare.data().withModule(mount, new ItemStack(ModItems.DUST_COMPRESSOR_MK3.get())));
+            helper.assertTrue(DustData.capacity(player) == holds + 2400f, "a Ship with a Mk III holds " + DustData.capacity(player));
+
+            // A Ship with its storage mounts full holds 1400: short of a Titan Core Kit's 1650 metallic until it has a Compressor.
+            Bodies.store(player, Bodies.preset(BuiltinBodies.SHIP, true));
+            helper.assertTrue(DustData.capacity(player) < 1650f, "a full Ship could already pay for the kit: " + DustData.capacity(player));
+            Bodies.store(player, Bodies.data(player).withModule(mount, mk1));
+            helper.assertTrue(DustData.capacity(player) >= 1650f, "a full Ship with a Mk I can't hold a Titan Core Kit's price: " + DustData.capacity(player));
+
+            Bodies.store(player, Bodies.starter());
+            BodyView drone = Bodies.view(player);
+            BodyData.Mount small = drone.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            helper.assertTrue(BodyRules.canInstallModule(drone, small, mk1) == BodyRules.Check.TIER_TOO_HIGH, "a Core Mk I took a Mk II part");
+            // A Drone, because a Ship is at the row limit already and more rows couldn't show.
+            Bodies.store(player, drone.data().withModule(small, mk1));
+            helper.assertTrue(Bodies.stats(player).rows() == drone.stats().rows(), "a Compressor added inventory rows");
             TestPlayers.remove(player);
             helper.succeed();
         });

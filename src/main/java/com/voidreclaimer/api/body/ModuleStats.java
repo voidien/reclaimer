@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * A body module (the {@code void_reclaimer:module} data component, a default component on module items). Modules go
- * into the mounts sections offer. Only the spec matching {@link #kind} is used.
+ * into the mounts sections offer. A kind has the spec it expects; a utility module does what the specs it carries say.
  *
  * @param kind    which mounts it goes in
  * @param tier    the body's core must be at least this tier (a core's own tier is what it allows)
@@ -51,6 +51,11 @@ public record ModuleStats(ModuleKind kind, int tier, float mass, Optional<Resour
 
     public static ModuleStats storage(int tier, float mass, Storage storage) {
         return new ModuleStats(ModuleKind.STORAGE, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty());
+    }
+
+    /** A utility module that adds dust or inventory storage, like a storage pod but in a utility mount. */
+    public static ModuleStats utility(int tier, float mass, Storage storage) {
+        return new ModuleStats(ModuleKind.UTILITY, tier, mass, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(storage), Optional.empty());
     }
 
     public static ModuleStats collector(int tier, float mass, Collector collector) {
