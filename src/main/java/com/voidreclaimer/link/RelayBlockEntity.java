@@ -66,11 +66,16 @@ public class RelayBlockEntity extends BlockEntity {
         return level instanceof ServerLevel server ? Relays.of(server).relays().size() : 0;
     }
 
+    /** How far it reaches now, in blocks, while it has power. */
+    public double range() {
+        return level == null || level.getServer() == null ? 0.0 : Signal.relayRange(level.getServer());
+    }
+
     /** What a right-click says. */
     public Component readout() {
         boolean lit = isLit();
         return Component.translatable(lit ? "message.void_reclaimer.relay.online" : "message.void_reclaimer.relay.dark",
-                stored, energyCapacity(), energyPerTick(), relaysInLevel()).withStyle(lit ? ChatFormatting.AQUA : ChatFormatting.RED);
+                stored, energyCapacity(), energyPerTick(), relaysInLevel(), (long) range()).withStyle(lit ? ChatFormatting.AQUA : ChatFormatting.RED);
     }
 
     static void serverTick(Level level, BlockPos pos, BlockState state, RelayBlockEntity relay) {
