@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# The checks to run before a merge, chosen from what this branch changed, one suite at a
-# time. One line per check; the full log of a failure is in build/verify-<check>.log. Exit status 0 means push.
+# The checks to run before a merge, chosen from what this branch changed. The GameTest suites run side by side where the machine
+# has room (tools/test-slots.sh). One line per check; the full log of a failure is in build/verify-<check>.log. Exit status 0 means push.
 #
 #   tools/verify.sh          what this branch needs
 #   tools/verify.sh all      everything, whatever changed
@@ -27,6 +27,7 @@ run() { # name command...
         grep -aE "failed at|error:|What went wrong" "build/verify-$name.log" | grep -v "DEBUG\|WARN" | cut -c1-200 | head -5
         if grep -aq "exit value 134\|fatal error has been detected" "build/verify-$name.log"; then echo "      the JVM crashed, not a test: run it again (HANDOFF.md, \"JVM crash\")"; fi
         failed=1
+        return 1
     fi
 }
 
@@ -40,8 +41,17 @@ if [ "${1:-}" = "all" ] || [ -n "$code" ]; then
     run build ./gradlew build
 fi
 if [ "${1:-}" = "all" ] || [ -n "$server" ]; then
-    run main tools/gametest.sh main
-    run aero tools/gametest.sh aero
+    if [ "$(tools/test-slots.sh)" -gt 1 ]; then
+        run main tools/gametest.sh main &
+        main=$!
+        run aero tools/gametest.sh aero &
+        aero=$!
+        wait "$main" || failed=1
+        wait "$aero" || failed=1
+    else
+        run main tools/gametest.sh main
+        run aero tools/gametest.sh aero
+    fi
 else
     echo "skip  GameTests: nothing here reaches the server (CI runs them on main after the merge)"
 fi

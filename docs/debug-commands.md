@@ -150,6 +150,7 @@ Behind it: `xt.py` (raw X events), `client.sh` (helpers to source), `bootstrap_w
 | `tools/gametest.sh main\|aero [filter]` | Runs GameTests, prints failures and kills the server |
 | `tools/restart-test.sh main\|aero <name>` | Runs a test that spans a restart, on a fresh world |
 | `tools/verify.sh [all]` | The checks a branch needs before it merges |
+| `tools/test-slots.sh` | How many GameTest servers this machine runs at once (`VR_GAMETEST_SLOTS` overrides it) |
 | `tools/verified.sh` | Records and reads which commits passed |
 | `tools/test_verified.sh` | Tests that record |
 | `tools/pr.sh "title" "body"` | Opens a PR against `main` |

@@ -21,10 +21,21 @@ esac
 log=build/gametest-$suite.log
 mkdir -p build
 
-# One test server at a time across every checkout on this machine: each is a 6 GB JVM, and JVMs side by side have crashed here far
-# more often than one alone. Waits its turn. Gradle gets fd 9 closed below: a daemon it starts would hold the lock for hours.
-exec 9>/tmp/void-reclaimer-gametest.lock
-flock 9
+# One server per world, and no more servers across every checkout than this machine runs at once (tools/test-slots.sh). Waits its
+# turn. Gradle gets these locks closed below: a daemon it starts would hold them for hours.
+exec 8>"build/gametest-$suite.lock"
+flock 8
+slots=$(tools/test-slots.sh)
+slot() {
+  while :; do
+    for n in $(seq 1 "$slots"); do
+      exec 9>"/tmp/void-reclaimer-gametest-$n.lock"
+      if flock -n 9; then return; fi
+    done
+    sleep 1
+  done
+}
+slot
 
 # The JVM and nothing else: a pattern like `grep gameTest` also matches the shell running this script.
 # Only this checkout's and this suite's: another worktree or the other suite may be running at the same time.
@@ -33,9 +44,9 @@ killjvm() { ps -eo pid,args | awk -v root="$PWD/build/moddev/$run" '$2 ~ /\/bin\
 killjvm
 : > "$log"
 if [ -n "$filter" ]; then
-  ./gradlew "$task" -PgametestFilter="$filter" > "$log" 2>&1 9>&- &
+  ./gradlew "$task" -PgametestFilter="$filter" > "$log" 2>&1 8>&- 9>&- &
 else
-  ./gradlew "$task" > "$log" 2>&1 9>&- &
+  ./gradlew "$task" > "$log" 2>&1 8>&- 9>&- &
 fi
 gradle=$!
 for _ in $(seq 1 450); do
