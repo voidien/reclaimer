@@ -83,6 +83,6 @@ public final class BodyTurning {
     private static List<BodyBoxes.Box> blocksFor(Player player, BodyView body, BodyHeading now, BodyHeading next) {
         List<BodyBoxes.Box> both = new ArrayList<>(place(player, body, now));
         both.addAll(place(player, body, next));
-        return BoxCollision.blocksNear(player.level(), both, Vec3.ZERO, BodyBoxes.MOST_PUSH);
+        return BoxCollision.solidsNear(player, both, Vec3.ZERO, BodyBoxes.MOST_PUSH);
     }
 }

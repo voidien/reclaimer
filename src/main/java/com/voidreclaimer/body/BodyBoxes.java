@@ -71,7 +71,7 @@ public final class BodyBoxes {
         }
 
         /** The smallest box along the world's axes that holds this one. */
-        private AABB bounds() {
+        AABB bounds() {
             Vector3d[] axes = axes();
             double x = reach(axes, WORLD_X);
             double y = reach(axes, WORLD_Y);
@@ -79,6 +79,15 @@ public final class BodyBoxes {
             return new AABB(middle.x() - x, middle.y() - y, middle.z() - z, middle.x() + x, middle.y() + y, middle.z() + z);
         }
     }
+
+    /**
+     * A tick's move after what stopped it.
+     *
+     * @param move  how far the body goes this tick
+     * @param speed what it keeps: all it wanted, less the part going into what it hit. A hit a little way ahead takes the whole of that
+     *              part, not just what was left of the tick, so one crash is one loss of speed
+     */
+    public record Moved(Vec3 move, Vec3 speed) {}
 
     /** One of a body's boxes this tick: the blocks it can reach, and how deep in one of them it started. */
     private record Moving(Box box, List<Box> near, double deepest) {}
@@ -119,6 +128,18 @@ public final class BodyBoxes {
             }
         }
         return boxes;
+    }
+
+    /** How far {@code chassis}'s furthest box reaches from its feet, at scale 1. */
+    public static double reach(Chassis chassis) {
+        double furthest = 0.0;
+        for (Socket socket : chassis.sockets()) {
+            for (HitBox box : socket.boxes()) {
+                double middle = new Vector3d(box.at().x, box.at().y, box.at().z).length();
+                furthest = Math.max(furthest, middle + new Vector3d(box.size().x, box.size().y, box.size().z).length() / 2.0);
+            }
+        }
+        return furthest;
     }
 
     /** A box's eight corners in the world. The bits of each index pick its side on the box's own axes, as {@code DebugShapes.box} wants. */
@@ -176,13 +197,19 @@ public final class BodyBoxes {
      * @param velocity what it wants to move this tick, in blocks
      */
     public static Vec3 resolve(List<Box> body, List<Box> blocks, Vec3 velocity) {
+        return move(body, blocks, velocity).move();
+    }
+
+    /** {@link #resolve}, and what the body keeps of its speed. */
+    public static Moved move(List<Box> body, List<Box> blocks, Vec3 velocity) {
         double length = velocity.length();
         if (length <= STILL) {
-            return velocity;
+            return new Moved(velocity, velocity);
         }
         List<Moving> boxes = moving(body, body, blocks, length);
         Vector3d left = new Vector3d(velocity.x, velocity.y, velocity.z);
         Vector3d moved = new Vector3d();
+        Vector3d kept = new Vector3d(velocity.x, velocity.y, velocity.z);
         int slides = 0;
         while (slides < SLIDES && left.length() > STILL) {
             Vector3d step = new Vector3d(left);
@@ -197,10 +224,11 @@ public final class BodyBoxes {
                 moved.fma(contact.time(), step);
                 left.fma(-contact.time(), step);
                 left.fma(-left.dot(contact.axis()), contact.axis());
+                kept.fma(-kept.dot(contact.axis()), contact.axis());
                 slides++;
             }
         }
-        return slides == 0 ? velocity : new Vec3(moved.x, moved.y, moved.z);
+        return slides == 0 ? new Moved(velocity, velocity) : new Moved(new Vec3(moved.x, moved.y, moved.z), new Vec3(kept.x, kept.y, kept.z));
     }
 
     /**
