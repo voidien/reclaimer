@@ -1,0 +1,5 @@
+## Space weather: the shared system
+- One datapack registry, `void_reclaimer:space_weather`, with two code registries for what shelters a body and what weather does, so a hazard is one file and at most one small effect. A level's clock runs only while someone is there, 2 to 3 hours between storms by default, then a warning and the storm, shown on the HUD. `SpaceWeatherEvent` says when each step happens and lets a part reduce or stop what reaches a body. `/void_reclaimer weather status|start|stop`.
+- No kind of weather ships yet: the hazards come next, each in its own PR. Test pack: `test_storm`, `test_cover`.
+- Rock or a hull between a body and the sun counts as cover (`sun_line`), through `level.clip`, which Sable carries onto ships. Deep space's sun for this is where the sky draws it (`space/DeepSpaceSun`), near the zenith.
+- From the T14's review: starting a storm over another ends that one first and honours a listener's no, a kind with no warning says it has started, turning weather off clears it, and a file naming an effect that doesn't exist is logged once.

@@ -33,6 +33,33 @@ public final class TestEventListeners {
     /** Finished Replicator jobs also deliver a diamond. */
     public static final String BONUS_OUTPUT = "vr_test_bonus_output";
 
+    /** Weather does not reach this player. */
+    public static final String NO_WEATHER = "vr_test_no_weather";
+    /** What weather did, by id, for every level. */
+    static final java.util.List<String> WEATHER_LOG = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    @SubscribeEvent
+    static void onWeatherWarning(com.voidreclaimer.api.event.SpaceWeatherEvent.Warning event) {
+        WEATHER_LOG.add("warning " + event.getId());
+    }
+
+    @SubscribeEvent
+    static void onWeatherStarted(com.voidreclaimer.api.event.SpaceWeatherEvent.Started event) {
+        WEATHER_LOG.add("started " + event.getId());
+    }
+
+    @SubscribeEvent
+    static void onWeatherEnded(com.voidreclaimer.api.event.SpaceWeatherEvent.Ended event) {
+        WEATHER_LOG.add("ended " + event.getId());
+    }
+
+    @SubscribeEvent
+    static void onWeatherExposed(com.voidreclaimer.api.event.SpaceWeatherEvent.Exposed event) {
+        if (event.getPlayer().getTags().contains(NO_WEATHER)) {
+            event.setCanceled(true);
+        }
+    }
+
     /** A crash does nothing. */
     public static final String NO_CRASH = "vr_test_no_crash";
 

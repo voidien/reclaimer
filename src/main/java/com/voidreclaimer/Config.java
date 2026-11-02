@@ -17,6 +17,9 @@ public final class Config {
     public static final ModConfigSpec.IntValue SPAWN_Z;
 
     public static final ModConfigSpec.DoubleValue HELM_SPEED_CAP;
+    public static final ModConfigSpec.BooleanValue WEATHER_ENABLED;
+    public static final ModConfigSpec.DoubleValue WEATHER_GAP_MIN_HOURS;
+    public static final ModConfigSpec.DoubleValue WEATHER_GAP_MAX_HOURS;
     public static final ModConfigSpec.DoubleValue CRASH_SAFE_SPEED;
     public static final ModConfigSpec.DoubleValue CRASH_AT_TOP_SPEED;
     public static final ModConfigSpec.BooleanValue CRASH_BREAKS_BLOCKS;
@@ -309,6 +312,12 @@ public final class Config {
                 .defineInRange("seatCharge", 0.5, 0.0, 1000.0);
         LINK_STATION_CHARGE = BUILDER.comment("A seat within station range of a Station Core charges this many times faster (1 = no bonus).")
                 .defineInRange("stationCharge", 2.0, 1.0, 100.0);
+        BUILDER.pop();
+
+        BUILDER.comment("Space weather. Each kind is a datapack file in void_reclaimer/space_weather.").push("weather");
+        WEATHER_ENABLED = BUILDER.comment("Whether storms come at all.").define("enabled", true);
+        WEATHER_GAP_MIN_HOURS = BUILDER.comment("The shortest gap between storms in a level, in hours of play there.").defineInRange("gapMinHours", 2.0, 0.01, 1000.0);
+        WEATHER_GAP_MAX_HOURS = BUILDER.comment("The longest gap between storms in a level, in hours of play there.").defineInRange("gapMaxHours", 3.0, 0.01, 1000.0);
         BUILDER.pop();
 
         BUILDER.comment("Crashes: a body flying into something.").push("crash");

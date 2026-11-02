@@ -30,6 +30,12 @@ public final class ModRegistries {
     public static final Registry<com.voidreclaimer.api.holo.HoloReadout<?>> HOLO_READOUTS =
             new RegistryBuilder<>(VoidReclaimerRegistries.HOLO_READOUT).create();
 
+    public static final Registry<com.voidreclaimer.api.weather.WeatherExposureType> WEATHER_EXPOSURE_TYPES =
+            new RegistryBuilder<>(VoidReclaimerRegistries.WEATHER_EXPOSURE_TYPE).create();
+
+    public static final Registry<com.voidreclaimer.api.weather.WeatherEffectType> WEATHER_EFFECT_TYPES =
+            new RegistryBuilder<>(VoidReclaimerRegistries.WEATHER_EFFECT_TYPE).create();
+
     private ModRegistries() {}
 
     public static void register(IEventBus modBus) {
@@ -38,12 +44,16 @@ public final class ModRegistries {
         MilestoneCriteria.TYPES.register(modBus);
         ToolModules.TYPES.register(modBus);
         com.voidreclaimer.display.ReadoutKinds.KINDS.register(modBus);
+        com.voidreclaimer.weather.BuiltinWeather.EXPOSURES.register(modBus);
+        com.voidreclaimer.weather.BuiltinWeather.EFFECTS.register(modBus);
     }
 
     private static void onNewRegistries(NewRegistryEvent event) {
         event.register(MILESTONE_CRITERION_TYPES);
         event.register(HOLO_READOUTS);
         event.register(TOOL_MODULE_TYPES);
+        event.register(WEATHER_EXPOSURE_TYPES);
+        event.register(WEATHER_EFFECT_TYPES);
     }
 
     private static void onNewDatapackRegistries(DataPackRegistryEvent.NewRegistry event) {
@@ -55,6 +65,7 @@ public final class ModRegistries {
         event.dataPackRegistry(VoidReclaimerRegistries.TRAIL, Trail.CODEC, Trail.CODEC);
         event.dataPackRegistry(VoidReclaimerRegistries.SIZE_CLASS, SizeClass.CODEC, SizeClass.CODEC);
         event.dataPackRegistry(VoidReclaimerRegistries.CHASSIS, Chassis.CODEC, Chassis.CODEC);
+        event.dataPackRegistry(VoidReclaimerRegistries.SPACE_WEATHER, com.voidreclaimer.api.weather.SpaceWeather.CODEC, com.voidreclaimer.api.weather.SpaceWeather.CODEC);
         // Server only: the pulse runs on the server, so this one is not synced.
         event.dataPackRegistry(VoidReclaimerRegistries.TERRAFORM_PROFILE, com.voidreclaimer.api.terraform.TerraformProfile.CODEC);
     }

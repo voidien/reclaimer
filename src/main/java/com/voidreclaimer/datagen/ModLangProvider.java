@@ -297,6 +297,9 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.shell.away", "In another dimension");
         add("message.void_reclaimer.respawn.shell_failed", "That shell can't be reached. You woke in a new Drone.");
         add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
+        add("hud.void_reclaimer.weather.warning", "%s in %s s: take cover");
+        add("hud.void_reclaimer.weather.active", "%s, %s s left");
+        add("hud.void_reclaimer.weather.unnamed", "Storm");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");

@@ -22,6 +22,7 @@ src/main/java/com/voidreclaimer/
 ├── nanite/                       Phase 4: Nanite Swarm (build in empty space)
 ├── tether/                       Phase 4: Tether Anchor leash and recall
 ├── core/                         Phase 4: Backup Cores, respawn choice, death marker
+├── weather/                      Space weather: the clock, the runner, the built-in exposures and effects
 ├── api/                          public API: registry keys, registry element types, extension interfaces, events
 ├── body/                         Phase 5: BodyData attachment (sections per socket, modules per mount), BodyView,
 │   │                             BodyStats, BodyRules, BodyMigration, BuiltinBodies, Bodies (server),

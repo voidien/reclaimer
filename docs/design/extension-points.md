@@ -41,6 +41,10 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:config_choice` | Recipe condition (`machine.ConfigChoiceCondition`) | `key`, `value`: the recipe loads only at that setting of a config choice (`shellPrices`) |
 | `BodyCrashEvent` | Event | A body flew into something, on the server, before any harm. Cancel it, change the damage, or say whether blocks break |
 | `void_reclaimer:crash_proof` | Block tag | Blocks no crash breaks |
+| `void_reclaimer:space_weather` | Synced datapack registry | A kind of bad weather: where, how often, how long, what shelters a body and what it does |
+| `void_reclaimer:weather_exposure_type` | Code registry | What shelters a body: `everywhere`, `open_sky`, `sun_line` built in |
+| `void_reclaimer:weather_effect_type` | Code registry | What weather does each second: `wear`, `damage`, `energy` built in |
+| `SpaceWeatherEvent` | Event | `Warning` (cancellable), `Started`, `Ended`, and `Exposed` (cancellable, with a share a part can reduce) |
 | `ShipCrashEvent` | Event | A ship's hit is about to break a block, on the server, once for each block. Cancel it to keep the block |
 | `MainBodyWreckedEvent` | Event | A main body was destroyed and left as a wreck, with the wreck's id. The player already wears a new starter body |
 | `BodyCollisionEvent` | Event | A body hit something in flight: a big body by its hit boxes, or a smaller one against a big body. One crash is one event, with the speed it had, the speed it kept and the part lost. Fires on the client that flies the body |
