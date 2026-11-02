@@ -66,7 +66,7 @@ public final class RuinedEarthChunkGenerator extends BarrenChunkGenerator {
 
     /**
      * Fills the planet columns of {@code chunk}, which is new and has no light yet. Blocks go straight into their sections, as vanilla's
-     * noise generator does: {@code chunk.setBlockState} also updates four heightmaps a block, and here only the top of a column counts.
+     * noise generator does: {@code chunk.setBlockState} also updates two heightmaps a block, and here only the top of a column counts.
      * Public for tests.
      */
     public static void fillTerrain(long seed, ChunkAccess chunk) {
@@ -83,7 +83,7 @@ public final class RuinedEarthChunkGenerator extends BarrenChunkGenerator {
                 if (!RuinedTerrain.onPlanet(x, z)) {
                     continue;
                 }
-                int top = RuinedTerrain.surfaceY(seed, x, z);
+                int top = Math.min(RuinedTerrain.surfaceY(seed, x, z), chunk.getMaxBuildHeight() - 1);
                 for (int y = minY; y <= top; y++) {
                     BlockState state = y == minY ? bedrock : y > top - SLAG_DEPTH ? slag : stone;
                     LevelChunkSection section = chunk.getSection(chunk.getSectionIndex(y));

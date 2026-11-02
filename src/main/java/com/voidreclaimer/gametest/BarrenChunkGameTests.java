@@ -8,6 +8,8 @@ import com.voidreclaimer.earth.RuinedEarth;
 import com.voidreclaimer.space.BarrenChunkGenerator;
 import com.voidreclaimer.space.ModDimensions;
 import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -70,6 +72,24 @@ public final class BarrenChunkGameTests {
         for (int i = 0; i < sections.length; i++) {
             Holder<Biome> found = sections[i].getNoiseBiome(1, i % 4, 2);
             helper.assertTrue(found.is(ModDimensions.DEEP_SPACE_BIOME), "section " + i + " read back as " + found.getRegisteredName());
+        }
+        helper.succeed();
+    }
+
+    /** A section that starts with one biome takes a Terraformer's rewrite like any other, half a chunk of it, and saves that. */
+    @GameTest(template = "empty")
+    public static void aFreshSectionTakesAPartRewriteOfItsBiomes(GameTestHelper helper) {
+        ServerLevel level = TestPlayers.deepSpace(helper);
+        LevelChunk chunk = level.getChunk(CHUNK_X, 21_012);
+        Holder<Biome> plains = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
+        int top = chunk.getSectionsCount() - 1;
+        chunk.getSection(top).fillBiomesFromNoise((x, y, z, sampler) -> (x & 3) < 2 ? plains : chunk.getSection(0).getNoiseBiome(0, 0, 0), null,
+                QuartPos.fromBlock(chunk.getPos().getMinBlockX()), QuartPos.fromSection(chunk.getSectionYFromSectionIndex(top)), QuartPos.fromBlock(chunk.getPos().getMinBlockZ()));
+        RegionStorageInfo storage = new RegionStorageInfo(level.getServer().getWorldData().getLevelName(), level.dimension(), "chunk");
+        LevelChunkSection back = ChunkSerializer.read(level, level.getPoiManager(), storage, chunk.getPos(), ChunkSerializer.write(level, chunk)).getSection(top);
+        for (LevelChunkSection section : new LevelChunkSection[] {chunk.getSection(top), back}) {
+            helper.assertTrue(section.getNoiseBiome(0, 1, 2).is(Biomes.PLAINS), "the rewritten half is " + section.getNoiseBiome(0, 1, 2).getRegisteredName());
+            helper.assertTrue(section.getNoiseBiome(3, 1, 2).is(ModDimensions.DEEP_SPACE_BIOME), "the half left alone is " + section.getNoiseBiome(3, 1, 2).getRegisteredName());
         }
         helper.succeed();
     }

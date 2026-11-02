@@ -18,7 +18,6 @@ import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 /**
  * A flat generator with one biome and usually nothing to decorate, as deep space and ruined Earth are. For every section vanilla starts
@@ -37,7 +36,7 @@ public abstract class BarrenChunkGenerator extends FlatLevelSource {
     @Override
     public CompletableFuture<ChunkAccess> createBiomes(RandomState randomState, Blender blender, StructureManager structureManager,
                                                        ChunkAccess chunk) {
-        IdMap<Holder<Biome>> ids = ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.BIOME).asHolderIdMap();
+        IdMap<Holder<Biome>> ids = structureManager.registryAccess().registryOrThrow(Registries.BIOME).asHolderIdMap();
         Holder<Biome> biome = settings().getBiome();
         for (LevelChunkSection section : chunk.getSections()) {
             ((LevelChunkSectionAccessor) section).void_reclaimer$setBiomes(new PalettedContainer<>(ids, biome, PalettedContainer.Strategy.SECTION_BIOMES));
