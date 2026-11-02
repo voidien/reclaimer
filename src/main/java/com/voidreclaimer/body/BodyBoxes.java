@@ -16,8 +16,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 /**
- * Where a big body's boxes are in the world, whether two boxes overlap, and how far a body can move among blocks. Pure, so it can be
- * unit tested. Nothing moves or stops a body yet: flight does not read this.
+ * Where a big body's boxes are in the world, whether two boxes overlap, how far a body can move among blocks, and whether it can turn
+ * among them. Pure, so it can be unit tested.
  *
  * <p>A body's own axes are right +X, up +Y and forward -Z, turned about its feet, as {@code BodyLook.turn} turns the model. A box
  * stays aligned with the body, so a world block or anything else that does not turn is a box with no turn at all.
@@ -33,6 +33,13 @@ public final class BodyBoxes {
     private static final int SLIDES = 8;
     /** A move or a speed along an axis below this is no move. */
     private static final double STILL = 1.0E-12;
+    /** The furthest a turn can push a body in a tick, in blocks: more than this and the server's speed check could see it. */
+    public static final double MOST_PUSH = 0.25;
+    /** How many pushes a turn can take to get clear. */
+    private static final int PUSHES = 4;
+    /** Two pushes this far apart, as the cosine of the angle, are from opposite sides: the body is wedged, and no more pushes will help. */
+    private static final double OPPOSITE = -0.5;
+    private static final Vector3dc NOT_MOVED = new Vector3d();
     private static final Quaterniondc NO_TURN = new Quaterniond();
     private static final Vector3dc WORLD_X = new Vector3d(1, 0, 0);
     private static final Vector3dc WORLD_Y = new Vector3d(0, 1, 0);
@@ -131,23 +138,29 @@ public final class BodyBoxes {
      * some axis has a gap between them, and only 15 axes need looking at: the three of each box, and the crosses of those.
      */
     public static Optional<Vector3d> push(Box moving, Box fixed) {
-        Vector3d[] ours = moving.axes();
-        Vector3d[] theirs = fixed.axes();
-        Vector3d apart = new Vector3d(fixed.middle()).sub(moving.middle());
-        Vector3d best = null;
+        Vector3d out = new Vector3d();
+        double depth = depth(moving, NOT_MOVED, fixed, Axes.between(moving, fixed, null), out);
+        return depth > 0.0 ? Optional.of(out.mul(depth)) : Optional.empty();
+    }
+
+    /** How deep {@code moving}, shifted {@code by}, is in {@code fixed}, with the way out in {@code out}, or 0 if they only touch or are apart. */
+    private static double depth(Box moving, Vector3dc by, Box fixed, Axes axes, Vector3d out) {
+        double apartX = fixed.middle().x() - moving.middle().x() - by.x();
+        double apartY = fixed.middle().y() - moving.middle().y() - by.y();
+        double apartZ = fixed.middle().z() - moving.middle().z() - by.z();
         double least = Double.MAX_VALUE;
-        for (Vector3d axis : candidates(ours, theirs)) {
-            double along = apart.dot(axis);
-            double overlap = moving.reach(ours, axis) + fixed.reach(theirs, axis) - Math.abs(along);
+        for (Vector3d axis : axes.all()) {
+            double along = axis.dot(apartX, apartY, apartZ);
+            double overlap = moving.reach(axes.ours(), axis) + fixed.reach(axes.theirs(), axis) - Math.abs(along);
             if (overlap <= TOUCHING) {
-                return Optional.empty();
+                return 0.0;
             }
             if (overlap < least) {
                 least = overlap;
-                best = new Vector3d(axis).mul(along > 0.0 ? -overlap : overlap);
+                out.set(axis).mul(along > 0.0 ? -1.0 : 1.0);
             }
         }
-        return Optional.ofNullable(best);
+        return least;
     }
 
     /**
@@ -167,7 +180,7 @@ public final class BodyBoxes {
         if (length <= STILL) {
             return velocity;
         }
-        List<Moving> boxes = moving(body, blocks, length);
+        List<Moving> boxes = moving(body, body, blocks, length);
         Vector3d left = new Vector3d(velocity.x, velocity.y, velocity.z);
         Vector3d moved = new Vector3d();
         int slides = 0;
@@ -190,41 +203,36 @@ public final class BodyBoxes {
         return slides == 0 ? velocity : new Vec3(moved.x, moved.y, moved.z);
     }
 
-    /** Each box with what it can reach this tick. A slide only shortens a move, so nothing past the length of it matters. */
-    private static List<Moving> moving(List<Box> body, List<Box> blocks, double length) {
+    /**
+     * Each box of {@code to} with the blocks within {@code reach} of it, and how deep the same box of {@code from} is: {@code from} is
+     * where the tick starts, and a move and a turn can both go no deeper than that.
+     */
+    private static List<Moving> moving(List<Box> from, List<Box> to, List<Box> blocks, double reach) {
         List<AABB> bounds = blocks.stream().map(Box::bounds).toList();
         List<Moving> boxes = new ArrayList<>();
+        Vector3d out = new Vector3d();
         Axes axes = null;
-        for (Box box : body) {
-            AABB reach = box.bounds().inflate(length);
+        for (int i = 0; i < to.size(); i++) {
+            Box start = from.get(i);
+            AABB started = start.bounds();
+            AABB around = to.get(i).bounds().inflate(reach);
             List<Box> near = new ArrayList<>();
             double deepest = 0.0;
-            for (int i = 0; i < blocks.size(); i++) {
-                if (reach.intersects(bounds.get(i))) {
-                    near.add(blocks.get(i));
-                    axes = Axes.between(box, blocks.get(i), axes);
-                    deepest = Math.max(deepest, depth(box, blocks.get(i), axes));
+            for (int j = 0; j < blocks.size(); j++) {
+                Box block = blocks.get(j);
+                if (around.intersects(bounds.get(j))) {
+                    near.add(block);
+                }
+                if (started.intersects(bounds.get(j))) {
+                    axes = Axes.between(start, block, axes);
+                    deepest = Math.max(deepest, depth(start, NOT_MOVED, block, axes, out));
                 }
             }
             if (!near.isEmpty()) {
-                boxes.add(new Moving(box, near, deepest));
+                boxes.add(new Moving(to.get(i), near, deepest));
             }
         }
         return boxes;
-    }
-
-    /** How deep {@code moving} is in {@code fixed}: the length of {@link #push}, without working out the axes for every block. */
-    private static double depth(Box moving, Box fixed, Axes axes) {
-        Vector3d apart = new Vector3d(fixed.middle()).sub(moving.middle());
-        double least = Double.MAX_VALUE;
-        for (Vector3d axis : axes.all()) {
-            double overlap = moving.reach(axes.ours(), axis) + fixed.reach(axes.theirs(), axis) - Math.abs(apart.dot(axis));
-            if (overlap <= TOUCHING) {
-                return 0.0;
-            }
-            least = Math.min(least, overlap);
-        }
-        return least;
     }
 
     @Nullable
@@ -281,6 +289,57 @@ public final class BodyBoxes {
             }
         }
         return last == null ? null : new Contact(closes, last);
+    }
+
+    /**
+     * What it takes for a body to turn: {@link Vec3#ZERO} if nothing is in the way, the push that clears it, or nothing if it can't
+     * turn that far. As with {@link #resolve}, a box can go no deeper into anything than it was, so a body already inside something
+     * can turn out of it.
+     *
+     * <p>The pushes are taken one at a time, deepest first, each looking at where the last one left the body. Adding them up at once
+     * would count one wall once for every block of it. Two pushes that undo each other mean it is wedged.
+     *
+     * @param now    the body's boxes where they are
+     * @param next   the same boxes, in the same order, at the next heading
+     * @param blocks all that can stop it, out to {@link #MOST_PUSH} from {@code next}
+     */
+    public static Optional<Vec3> turnPush(List<Box> now, List<Box> next, List<Box> blocks) {
+        List<Moving> boxes = moving(now, next, blocks, MOST_PUSH);
+        Vector3d pushed = new Vector3d();
+        for (int i = 0; i <= PUSHES; i++) {
+            Vector3d push = deepestPush(boxes, pushed);
+            if (push == null) {
+                return Optional.of(i == 0 ? Vec3.ZERO : new Vec3(pushed.x, pushed.y, pushed.z));
+            }
+            if (pushed.dot(push) < OPPOSITE * pushed.length() * push.length()) {
+                return Optional.empty();
+            }
+            pushed.add(push);
+            if (pushed.length() > MOST_PUSH) {
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** The longest way any box, shifted {@code by}, has to go to be no deeper in a block than it started, or null if none has to. */
+    @Nullable
+    private static Vector3d deepestPush(List<Moving> boxes, Vector3dc by) {
+        Vector3d deepest = null;
+        double most = TOUCHING;
+        Vector3d out = new Vector3d();
+        Axes axes = null;
+        for (Moving box : boxes) {
+            for (Box block : box.near()) {
+                axes = Axes.between(box.box(), block, axes);
+                double extra = depth(box.box(), by, block, axes, out) - box.deepest();
+                if (extra > most) {
+                    most = extra;
+                    deepest = new Vector3d(out).mul(extra);
+                }
+            }
+        }
+        return deepest;
     }
 
     private static List<Vector3d> candidates(Vector3d[] ours, Vector3d[] theirs) {
