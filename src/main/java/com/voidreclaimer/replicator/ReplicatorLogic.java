@@ -27,6 +27,28 @@ public final class ReplicatorLogic {
         return job.items().isEmpty() || job.paidBy().equals(body) || job.paidBy().filter(bodyGone).isPresent();
     }
 
+    /** What a body that has gone leaves: the queue and dust without its jobs, and the items those jobs took. */
+    public record Lost(ReplicatorData data, DustData dust, List<ItemStack> items) {}
+
+    /**
+     * A body has gone, so the jobs it paid for with items end. The items go where the body's other things go, and the dust comes back,
+     * because dust belongs to the mind. Jobs that took no items carry on: they can be finished or cancelled by any body.
+     */
+    public static Lost loseBody(ReplicatorData data, DustData dust, Optional<UUID> body, float capacity) {
+        List<ReplicatorJob> kept = new ArrayList<>();
+        List<ItemStack> items = new ArrayList<>();
+        DustData left = dust;
+        for (ReplicatorJob job : data.jobs()) {
+            if (!job.items().isEmpty() && job.paidBy().equals(body)) {
+                items.addAll(job.items());
+                left = job.paid().giveTo(left, capacity);
+            } else {
+                kept.add(job);
+            }
+        }
+        return new Lost(items.isEmpty() ? data : data.withJobs(kept), left, items);
+    }
+
     /** Outcome of queueing: the result code and, when queued, the new data and dust. */
     public record Queued(QueueResult result, ReplicatorData data, DustData dust) {}
 

@@ -275,6 +275,62 @@ public final class ReplicatorGameTests {
         });
     }
 
+    /** Queued items are carried things: a death drops them with the rest, and the dust comes back. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aDyingBodyDropsWhatItsJobsTook(GameTestHelper helper) {
+        net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(48_100, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            player.getInventory().clearContent();
+            Replicator.store(player, ReplicatorData.EMPTY.withUnlocked(Milestones.AWAKENING));
+            player.setData(ModAttachments.DUST, DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued");
+            player.hurt(player.serverLevel().damageSources().genericKill(), Float.MAX_VALUE);
+            var drops = player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(origin).inflate(8));
+            int ingots = drops.stream().filter(drop -> drop.getItem().is(net.minecraft.world.item.Items.IRON_INGOT)).mapToInt(drop -> drop.getItem().getCount()).sum();
+            helper.assertTrue(ingots == 3, ingots + " of 3 ingots dropped");
+            helper.assertTrue(Replicator.data(player).jobs().isEmpty(), "the job outlived the items it took");
+            helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "the dust did not come back");
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** A shell that dies with a job running leaves those items in its wreck, like everything else it carried. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aWreckKeepsWhatItsShellsJobsTook(GameTestHelper helper) {
+        net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(48_300, 80, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 1, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            var level = player.serverLevel();
+            var shell = com.voidreclaimer.link.BodyHost.spawn(level, player.position().add(0, 0, 4), com.voidreclaimer.link.HostRole.SHELL,
+                    com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE), player.getUUID());
+            var id = shell.getUUID();
+            helper.assertTrue(com.voidreclaimer.link.Links.link(player, shell) == com.voidreclaimer.link.Links.Result.LINKED, "no link");
+            player.getInventory().clearContent();
+            Replicator.store(player, ReplicatorData.EMPTY.withUnlocked(Milestones.AWAKENING));
+            player.setData(ModAttachments.DUST, DustData.of(10, 0, 0, 0));
+            player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
+            player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
+            helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued in the shell");
+            player.hurt(level.damageSources().genericKill(), Float.MAX_VALUE);
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertFalse(com.voidreclaimer.link.Links.state(player).linked(), "still in the shell"))
+                    .thenExecute(() -> {
+                        var wreck = (com.voidreclaimer.link.BodyHost) level.getEntity(id);
+                        helper.assertTrue(wreck != null && wreck.role() == com.voidreclaimer.link.HostRole.WRECK, "no wreck");
+                        var carried = com.voidreclaimer.debug.ItemCensus.of(com.voidreclaimer.link.BodySnapshot.of(wreck), player.registryAccess());
+                        var ingot = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(net.minecraft.world.item.Items.IRON_INGOT);
+                        helper.assertTrue(carried.counts().getOrDefault(ingot, 0) == 3, "the wreck holds " + carried.counts().getOrDefault(ingot, 0) + " of 3 ingots");
+                        helper.assertTrue(Replicator.data(player).jobs().isEmpty(), "the job outlived its shell");
+                        helper.assertTrue(Math.abs(player.getData(ModAttachments.DUST).get(DustKinds.METALLIC) - 10f) < 1e-4, "the dust did not come back");
+                        LinkOutboxGameTests.finish(helper, player, level, id);
+                    });
+        });
+    }
+
     /** The extension point: a recipe's {@code inputs} are taken with the dust, by item or tag, and a cancel gives back the same items. */
     @GameTest(template = "empty")
     public static void aRecipeTakesItemsAndACancelGivesTheSameOnesBack(GameTestHelper helper) {

@@ -84,6 +84,30 @@ public final class Replicator {
                 .map(known -> known.gone() || known.wrecked()).orElse(true);
     }
 
+    /**
+     * {@code body} has gone: its jobs that took items end, the dust comes back, and the items are returned for the caller to put where
+     * that body's other things went. A shell's go in its wreck; the main body's drop with its inventory, and will go in its wreck too.
+     */
+    public static List<ItemStack> bodyLost(ServerPlayer player, Optional<UUID> body) {
+        ReplicatorLogic.Lost lost = ReplicatorLogic.loseBody(data(player), player.getData(ModAttachments.DUST), body, DustData.capacity(player));
+        if (!lost.items().isEmpty()) {
+            store(player, lost.data());
+            player.setData(ModAttachments.DUST, lost.dust());
+            player.syncData(ModAttachments.DUST);
+        }
+        return lost.items();
+    }
+
+    /** The main body's queued items drop with its inventory, and stay in the queue when the game keeps inventories. */
+    @SubscribeEvent
+    static void onDrops(net.neoforged.neoforge.event.entity.living.LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !player.serverLevel().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY)) {
+            for (ItemStack item : bodyLost(player, Optional.empty())) {
+                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(player.serverLevel(), player.getX(), player.getEyeY(), player.getZ(), item));
+            }
+        }
+    }
+
     public static boolean cancel(ServerPlayer player, int index) {
         ReplicatorData before = data(player);
         if (index >= 0 && index < before.jobs().size()

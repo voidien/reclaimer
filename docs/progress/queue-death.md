@@ -1,0 +1,2 @@
+## Queued items don't escape death
+- A queued job's items used to survive a death with the mind. Now a body's jobs that took items end when it dies: the main body's items drop with its inventory, unless `keepInventory` is on, and a shell's go in its wreck, for every way a shell is wrecked. The dust comes back, and jobs with no items carry on. The owner's yes, from the old PC's review. Tests: `aDyingBodyDropsWhatItsJobsTook`, `aWreckKeepsWhatItsShellsJobsTook`, `aLostBodyTakesOnlyItsOwnJobsThatTookItems`.
