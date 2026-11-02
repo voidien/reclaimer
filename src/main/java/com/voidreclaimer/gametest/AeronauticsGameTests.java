@@ -1073,7 +1073,7 @@ public final class AeronauticsGameTests {
     /** At speed the wall's glass goes where the ship hit it, and the obsidian behind it stays. */
     @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
     public static void aShipCrashBreaksTheWeakBlocksItHits(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(91_000, 200, 3_000);
+        BlockPos pos = new BlockPos(158_000, 200, 3_000);
         ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
         BlockPos from = pos.offset(-3, -3, -12), to = pos.offset(3, 3, -12);
         crashShip(helper, pos, 18.0, () -> {
@@ -1088,7 +1088,7 @@ public final class AeronauticsGameTests {
     /** However hard it hits, a ship stops at a wall: its blocks and the wall's stay solid to each other. */
     @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
     public static void aCrashingShipStopsAtTheObsidianBehindTheGlass(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(91_800, 200, 3_000);
+        BlockPos pos = new BlockPos(158_800, 200, 3_000);
         ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
         crashShip(helper, pos, 18.0, () -> {
             var ship = shipNamed(space, pos);
@@ -1101,7 +1101,7 @@ public final class AeronauticsGameTests {
     /** Under the safe speed a ship bumps and everything stays. */
     @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
     public static void aGentleShipBumpBreaksNothing(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(91_400, 200, 3_000);
+        BlockPos pos = new BlockPos(158_400, 200, 3_000);
         ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
         crashShip(helper, pos, 4.0, () -> {
             int glass = count(space, pos.offset(-3, -3, -12), pos.offset(3, 3, -12), net.minecraft.world.level.block.Blocks.GLASS);
