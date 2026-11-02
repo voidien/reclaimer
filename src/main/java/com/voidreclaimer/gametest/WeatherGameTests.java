@@ -106,6 +106,79 @@ public final class WeatherGameTests {
         helper.succeed();
     }
 
+    private static void flyUntilItEnds(com.voidreclaimer.weather.DebrisRock rock) {
+        for (int tick = 0; tick < 60 && !rock.isRemoved(); tick++) {
+            rock.tickCount++;
+            rock.tick();
+        }
+    }
+
+    /** A rock chips a body by its hit boxes, well away from its vanilla box. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDebrisRockChipsABody(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_400, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            player.setHealth(player.getMaxHealth());
+            player.setYRot(0f);
+            player.setXRot(0f);
+            TestPlayers.endSpawnProtection(player);
+            var rock = com.voidreclaimer.weather.DebrisRock.launch(space, new net.minecraft.world.phys.Vec3(origin.getX() + 0.5, origin.getY() + 13.0, origin.getZ() + 44.0),
+                    new net.minecraft.world.phys.Vec3(0.0, 0.0, -1.0));
+            flyUntilItEnds(rock);
+            helper.assertTrue(rock.isRemoved(), "the rock flew on");
+            helper.assertTrue(rock.getZ() > origin.getZ() + 15.0, "it reached " + rock.getZ() + ", past the saucer");
+            float lost = player.getMaxHealth() - player.getHealth();
+            helper.assertTrue(lost > 0f && lost < player.getMaxHealth() * 0.1f, "it took " + lost + " of " + player.getMaxHealth());
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    /** A rock breaks a weak block and stops at a strong one, and leaves no block of its own. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDebrisRockBreaksGlassAndStopsAtStone(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(105_800, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            BlockPos glass = origin.offset(0, 0, 4);
+            BlockPos stone = origin.offset(0, 0, 8);
+            space.setBlock(glass, Blocks.GLASS.defaultBlockState(), 3);
+            space.setBlock(stone, Blocks.STONE.defaultBlockState(), 3);
+            var from = net.minecraft.world.phys.Vec3.atCenterOf(origin);
+            var speed = new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.0);
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, speed));
+            helper.assertTrue(space.getBlockState(glass).isAir(), "the rock left the glass");
+            flyUntilItEnds(com.voidreclaimer.weather.DebrisRock.launch(space, from, speed));
+            helper.assertTrue(space.getBlockState(stone).is(Blocks.STONE), "the rock broke stone");
+            space.setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
+            space.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(origin).inflate(16)).forEach(net.minecraft.world.entity.Entity::discard);
+            helper.succeed();
+        });
+    }
+
+    /** However long a storm runs, the rocks around a body stay few. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aStormKeepsItsRocksFew(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(106_200, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            for (int rock = 0; rock < 200; rock++) {
+                com.voidreclaimer.weather.DebrisRock.aimAt(player);
+            }
+            var rocks = space.getEntitiesOfClass(com.voidreclaimer.weather.DebrisRock.class, player.getBoundingBox().inflate(64.0));
+            helper.assertTrue(rocks.size() <= 24, rocks.size() + " rocks around one body");
+            helper.assertTrue(!rocks.isEmpty(), "no rocks");
+            helper.assertFalse(rocks.get(0).shouldBeSaved(), "a rock would be saved");
+            rocks.forEach(net.minecraft.world.entity.Entity::discard);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** A listener can spare a body, as a shielding part will. */
     @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_spare")
     public static void anAddonCanSpareABody(GameTestHelper helper) {

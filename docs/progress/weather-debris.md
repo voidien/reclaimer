@@ -1,0 +1,2 @@
+## Debris storms
+- Rocks fly at a body from 32 to 48 blocks off, at most 24 around one body, for a minute or two. They are unsaved entities, never real blocks, on the hit box code: a rock takes 4% of a body's health and breaks a block only if it is weak enough by the crash rule, so glass goes and stone stands. `BodyCrashEvent` covers it, which is where a Deflector will stop one. A parked shell takes no harm, and rocks come only near a player. Placeholder look: a cobblestone item.

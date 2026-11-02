@@ -1,0 +1,12 @@
+{
+  "dimensions": ["void_reclaimer:deep_space"],
+  "weight": 2,
+  "milestone": "void_reclaimer:expansion",
+  "warning_seconds": 30,
+  "min_seconds": 60,
+  "max_seconds": 120,
+  "exposure": "void_reclaimer:everywhere",
+  "effects": [{"type": "void_reclaimer:rocks", "strength": 1.0}],
+  "color": 12566463,
+  "name": {"translate": "weather.void_reclaimer.debris_storm"}
+}

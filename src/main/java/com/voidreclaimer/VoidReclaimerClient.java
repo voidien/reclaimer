@@ -78,6 +78,7 @@ public final class VoidReclaimerClient {
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.TEST_STARSHIP.get(), com.voidreclaimer.client.render.TestStarshipRenderer::new);
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.HELM_SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.HELPER_DRONE.get(), com.voidreclaimer.client.render.HelperDroneRenderer::new);
+        event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.DEBRIS_ROCK.get(), context -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(context, 3.0f, true));
         event.registerEntityRenderer(com.voidreclaimer.registry.ModEntities.BODY_HOST.get(), com.voidreclaimer.client.render.body.BodyHostRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.HELM.get(), com.voidreclaimer.client.render.HelmRenderer::new);
         event.registerBlockEntityRenderer(com.voidreclaimer.registry.ModBlockEntities.LAUNCH_CONTROLLER.get(), com.voidreclaimer.client.render.LaunchComplexRenderer::new);

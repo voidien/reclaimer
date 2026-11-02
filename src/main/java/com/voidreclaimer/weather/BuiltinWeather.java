@@ -31,6 +31,7 @@ public final class BuiltinWeather {
         EFFECTS.register("wear", () -> BuiltinWeather::wear);
         EFFECTS.register("damage", () -> BuiltinWeather::damage);
         EFFECTS.register("energy", () -> BuiltinWeather::energy);
+        EFFECTS.register("rocks", () -> BuiltinWeather::rocks);
     }
 
     private BuiltinWeather() {}
@@ -57,6 +58,15 @@ public final class BuiltinWeather {
     /** {@code amount} is a share of the body's health each second. */
     private static void damage(ServerPlayer player, float amount) {
         player.hurt(player.serverLevel().damageSources().magic(), amount * player.getMaxHealth());
+    }
+
+    /** {@code amount} rocks a second at this body, a fraction being a chance of one. */
+    private static void rocks(ServerPlayer player, float amount) {
+        int whole = (int) amount;
+        int rocks = whole + (player.getRandom().nextFloat() < amount - whole ? 1 : 0);
+        for (int rock = 0; rock < rocks; rock++) {
+            DebrisRock.aimAt(player);
+        }
     }
 
     /** {@code amount} is a share of the body's energy store each second. */

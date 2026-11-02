@@ -38,5 +38,11 @@ public final class ModEntities {
                     .sized(0.6f, 1.8f).noSummon().fireImmune().clientTrackingRange(10).updateInterval(2)
                     .build(VoidReclaimer.id("body_host").toString()));
 
+    /** A rock in a debris storm: never saved, and it ends at the first thing it meets. */
+    public static final Supplier<EntityType<com.voidreclaimer.weather.DebrisRock>> DEBRIS_ROCK = ENTITY_TYPES.register("debris_rock",
+            () -> EntityType.Builder.<com.voidreclaimer.weather.DebrisRock>of(com.voidreclaimer.weather.DebrisRock::new, MobCategory.MISC)
+                    .sized(0.6f, 0.6f).noSave().noSummon().clientTrackingRange(8).updateInterval(1)
+                    .build(VoidReclaimer.id("debris_rock").toString()));
+
     private ModEntities() {}
 }

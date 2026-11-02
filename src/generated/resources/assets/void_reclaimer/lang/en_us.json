@@ -228,6 +228,7 @@
   "dust.void_reclaimer.metallic": "Metallic",
   "dust.void_reclaimer.silicate": "Silicate",
   "entity.void_reclaimer.body_host": "Remote Shell",
+  "entity.void_reclaimer.debris_rock": "Debris Rock",
   "entity.void_reclaimer.helm_seat": "Helm Seat",
   "entity.void_reclaimer.helper_drone": "Helper Drone",
   "entity.void_reclaimer.test_starship": "Test Starship",
@@ -904,6 +905,7 @@
   "tooltip.void_reclaimer.section.stability": "stability +%s",
   "tooltip.void_reclaimer.section.turn": "turn +%s",
   "tooltip.void_reclaimer.section.wear": "wear resistance %s",
+  "weather.void_reclaimer.debris_storm": "Debris storm",
   "weather.void_reclaimer.ion_storm": "Ion storm",
   "weather.void_reclaimer.solar_flare": "Solar flare"
 }
