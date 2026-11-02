@@ -90,6 +90,7 @@
   "body.void_reclaimer.kind.storage": "Storage",
   "body.void_reclaimer.kind.thruster": "Thruster",
   "body.void_reclaimer.kind.tool": "Tool",
+  "body.void_reclaimer.kind.utility": "Utility",
   "body.void_reclaimer.missing": "%s sections missing",
   "body.void_reclaimer.no_parts": "Nothing matching in your inventory.",
   "body.void_reclaimer.overloaded": "Too heavy: slower, hungrier",

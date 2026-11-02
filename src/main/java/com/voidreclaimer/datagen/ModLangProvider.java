@@ -524,6 +524,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("body.void_reclaimer.kind.sensor", "Sensor");
         add("body.void_reclaimer.kind.tool", "Tool");
         add("body.void_reclaimer.kind.cosmetic", "Cosmetic");
+        add("body.void_reclaimer.kind.utility", "Utility");
 
         // ---- sections ----
         add(ModItems.DRONE_HULL.get(), "Drone Hull");

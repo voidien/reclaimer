@@ -57,7 +57,7 @@ public final class ModItems {
 
     /** The Drone's core section; was the Drone frame. Its sections weigh 0.5 in all, like the old frame. */
     public static final DeferredItem<SectionItem> DRONE_HULL = section("drone_hull", BuiltinBodies.DRONE_HULL, 1,
-            s -> s.mass(0.2f).budget(2.2f).health(12f).intake(1f).rows(1).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 1)
+            s -> s.mass(0.2f).budget(2.2f).health(12f).intake(1f).rows(1).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 1).mount(ModuleKind.STORAGE, 1)
                     .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.DRONE));
     public static final DeferredItem<SectionItem> SENSOR_DOME = section("sensor_dome", BuiltinBodies.SENSOR_DOME, 1,
             s -> s.mass(0.05f).mount(ModuleKind.SENSOR, 1));
@@ -72,7 +72,7 @@ public final class ModItems {
 
     /** The Mech's core section; was the Mech frame. A full Mech adds up to about the old frame's stats. */
     public static final DeferredItem<SectionItem> MECH_TORSO = section("mech_torso", BuiltinBodies.MECH_TORSO, 2,
-            s -> s.mass(0.8f).budget(3.5f).health(8f).intake(1.5f).rows(2).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+            s -> s.mass(0.8f).budget(3.5f).health(8f).intake(1.5f).rows(2).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 1).mount(ModuleKind.STORAGE, 2)
                     .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.MECH));
     public static final DeferredItem<SectionItem> MECH_PELVIS = section("mech_pelvis", BuiltinBodies.PELVIS, 2,
             s -> s.mass(0.2f).budget(0.5f).health(2f).stability(0.1f).mount(ModuleKind.COSMETIC, 1));
@@ -99,7 +99,7 @@ public final class ModItems {
 
     /** The Ship's core section; was the Ship frame. */
     public static final DeferredItem<SectionItem> SHIP_KEEL = section("ship_keel", BuiltinBodies.SHIP_KEEL, 3,
-            s -> s.mass(2f).budget(11f).health(14f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.COSMETIC, 1)
+            s -> s.mass(2f).budget(11f).health(14f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 2).mount(ModuleKind.COSMETIC, 1)
                     .mount(ModuleKind.STORAGE, 1).chassis(BuiltinBodies.SHIP));
     public static final DeferredItem<SectionItem> SHIP_BOW = section("ship_bow", BuiltinBodies.BOW, 3,
             s -> s.mass(0.5f).budget(1f).health(2f).intake(0.5f));
@@ -131,7 +131,7 @@ public final class ModItems {
     // ---- Shuttle sections (tier 3; the hull is the core section; a second Ship-class layout) --------------
 
     public static final DeferredItem<SectionItem> SHUTTLE_HULL = section("shuttle_hull", BuiltinBodies.SHUTTLE_HULL, 3,
-            s -> s.mass(1.8f).budget(9f).health(12f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+            s -> s.mass(1.8f).budget(9f).health(12f).intake(2f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 2).mount(ModuleKind.STORAGE, 2)
                     .mount(ModuleKind.COSMETIC, 1).chassis(BuiltinBodies.SHUTTLE));
     public static final DeferredItem<SectionItem> SHUTTLE_NOSE = section("shuttle_nose", BuiltinBodies.SHUTTLE_NOSE, 3,
             s -> s.mass(0.4f).budget(1f).health(2f).intake(0.5f));
@@ -151,7 +151,7 @@ public final class ModItems {
     // ---- Titan sections (tier 4; the saucer is the core section) -----------------------------------------
 
     public static final DeferredItem<SectionItem> TITAN_SAUCER = section("titan_saucer", BuiltinBodies.TITAN_SAUCER, 4,
-            s -> s.mass(10f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.STORAGE, 2)
+            s -> s.mass(10f).budget(55f).health(70f).intake(8f).rows(3).mount(ModuleKind.CORE, 1).mount(ModuleKind.UTILITY, 3).mount(ModuleKind.STORAGE, 2)
                     .mount(ModuleKind.COSMETIC, 1).mount(ModuleKind.TOOL, 2).chassis(BuiltinBodies.TITAN));
     public static final DeferredItem<SectionItem> TITAN_NECK = section("titan_neck", BuiltinBodies.TITAN_NECK, 4,
             s -> s.mass(3f).budget(8f).health(20f).mount(ModuleKind.TOOL, 2));
