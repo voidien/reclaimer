@@ -45,8 +45,6 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
     private static final float SKY_RADIUS = 100f;
     /** Vanilla's sun is 30; a smaller disc reads as farther away. */
     private static final float SUN_HALF_SIZE = 9f;
-    private static final float SUN_TILT_X_DEGREES = 12f;
-    private static final float SUN_TILT_Z_DEGREES = -8f;
 
     private VertexBuffer starBuffer;
 
@@ -110,8 +108,8 @@ public final class DeepSpaceEffects extends DimensionSpecialEffects {
         RenderSystem.setShaderColor(tint[0], tint[1], tint[2], tint[3]);
         Matrix4f view = new Matrix4f(pose.last().pose());
         pose.pushPose();
-        pose.mulPose(Axis.XP.rotationDegrees(SUN_TILT_X_DEGREES));
-        pose.mulPose(Axis.ZP.rotationDegrees(SUN_TILT_Z_DEGREES));
+        pose.mulPose(Axis.XP.rotationDegrees(com.voidreclaimer.space.DeepSpaceSun.TILT_X_DEGREES));
+        pose.mulPose(Axis.ZP.rotationDegrees(com.voidreclaimer.space.DeepSpaceSun.TILT_Z_DEGREES));
         Matrix4f sun = pose.last().pose();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, SUN_TEXTURE);

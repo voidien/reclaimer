@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 40.0,
+    "void_reclaimer:ice": 40.0,
+    "void_reclaimer:metallic": 60.0,
+    "void_reclaimer:silicate": 60.0
+  },
+  "milestone": "void_reclaimer:expansion",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:dust_compressor_mk1"
+  },
+  "ticks": 1800
+}

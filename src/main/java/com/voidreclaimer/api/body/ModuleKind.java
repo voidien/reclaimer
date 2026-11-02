@@ -20,7 +20,9 @@ public enum ModuleKind implements StringRepresentable {
     STORAGE("storage"),
     SENSOR("sensor"),
     TOOL("tool"),
-    COSMETIC("cosmetic");
+    COSMETIC("cosmetic"),
+    /** Always on, once fitted: dust storage, armour and the like. Last, because the network sends a kind by its place in this list. */
+    UTILITY("utility");
 
     public static final Codec<ModuleKind> CODEC = StringRepresentable.fromEnum(ModuleKind::values);
     private static final IntFunction<ModuleKind> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
