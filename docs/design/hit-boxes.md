@@ -78,7 +78,7 @@ On `Socket`, so a removed section loses its boxes, and the chassis is already sy
    - Not answered: whether a body resting on a deck jitters (`trackingSubLevel`). That needs real collision, so it falls to PR 4.
 1. **Data:** `Socket.boxes`, the built-in lists, a pure `BodyBoxes` pose, a common copy of the turn maths, and unit tests. No behaviour change.
 2. **Debug view (done, `debug/BoxOverlay`):** in the `overlay` group (`O`, `/vrphoto overlay`). `DebugShapes.box` takes eight corners, so turned boxes draw correctly. Green free, red touching, plus a heading line. Update `docs/debug-commands.md`. It comes early because it proves the data before anything can block a player.
-3. **Blocks:** `BodyBoxes.resolve` as pure logic, with sub-steps of at most 0.5 block and the never-trap rule (done). Next, reading the blocks and calling it in `travel`, with the client checks.
+3. **Blocks (done, `body/BoxCollision`):** `BodyBoxes.resolve` as pure logic, with sub-steps of at most 0.5 block and the never-trap rule (done). Next, reading the blocks and calling it in `travel`, with the client checks.
 4. **Ships.**
 5. **Bodies.**
 6. **Heading:** turning with weight, the renderer and sync. The Drone stays 1:1.

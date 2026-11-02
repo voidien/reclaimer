@@ -52,7 +52,8 @@ public final class BoxOverlay {
         }
         Vector3d forward = BodyBoxes.turn(entity.getYRot(), entity.getXRot()).transform(new Vector3d(0, 0, -HEADING_LENGTH * scale));
         shapes.arrow(entity.position(), new Vec3(forward.x, forward.y, forward.z), HEADING);
-        facts.add(String.format(Locale.ROOT, "%s: %d boxes, %d in a block", entity.getName().getString(), boxes.size(), touching));
+        facts.add(String.format(Locale.ROOT, "%s: %d boxes, %d in a block, last check %d blocks, %d us", entity.getName().getString(), boxes.size(), touching,
+                com.voidreclaimer.body.BoxCollision.lastBlocks(), com.voidreclaimer.body.BoxCollision.lastMicros()));
     }
 
     private static boolean inBlock(ServerLevel level, BodyBoxes.Box box) {
