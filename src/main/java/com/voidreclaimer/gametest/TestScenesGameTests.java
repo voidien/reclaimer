@@ -21,6 +21,36 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class TestScenesGameTests {
     private TestScenesGameTests() {}
 
+    /** The view jumps a quarter turn: a Titan's nose follows slowly and thrust goes with it, and a Mech is there at once. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aBigBodyTurnsWithWeightAndThrustFollowsTheNose(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(94_800, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 2, () -> {
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            player.setYRot(0f);
+            player.setXRot(0f);
+            com.voidreclaimer.body.BodyTurning.turn(player);
+            player.setYRot(90f);
+            for (int tick = 0; tick < 10; tick++) {
+                player.tickCount++;
+                com.voidreclaimer.body.BodyTurning.turn(player);
+            }
+            float turned = com.voidreclaimer.body.BodyTurning.of(player).yaw();
+            helper.assertTrue(turned > 1f && turned < 30f, "half a second after a quarter turn the Titan has turned " + turned);
+            var input = com.voidreclaimer.flight.FlightInput.of(true, false, false, false, false, false);
+            var thrust = com.voidreclaimer.flight.ThrusterFlight.step(player, net.minecraft.world.phys.Vec3.ZERO, input);
+            helper.assertTrue(thrust.z > Math.abs(thrust.x), "thrust went along the view, not the nose: " + thrust);
+
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.MECH));
+            player.tickCount++;
+            com.voidreclaimer.body.BodyTurning.turn(player);
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of(player).yaw() == 90f, "a Mech lags its view");
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** A Titan's nose stops at a wall its vanilla box is nowhere near; the same flight is free for a Drone, and past a section that has gone. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aBigBodyStopsAtAWallItsVanillaBoxWouldMiss(GameTestHelper helper) {

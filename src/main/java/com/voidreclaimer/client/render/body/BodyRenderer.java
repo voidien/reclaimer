@@ -401,11 +401,14 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
         BodyRigSpec spec = current == null ? null : current.spec();
         boolean pitches = spec != null ? spec.pitches() : BodyLook.pitches(rig);
-        float yaw = pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
-        poseStack.mulPose(BodyLook.turn(yaw, pitches ? entity.getViewXRot(partialTick) : 0f, spec == null ? 0f : spec.yaw()));
+        // A big body in flight points at its heading, which follows the view as its weight lets it.
+        com.voidreclaimer.body.BodyHeading heading = pitches && entity instanceof net.minecraft.world.entity.player.Player player ? com.voidreclaimer.body.BodyTurning.at(player, partialTick) : null;
+        float yaw = heading != null ? heading.yaw() : pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
+        float pitch = heading != null ? heading.pitch() : pitches ? entity.getViewXRot(partialTick) : 0f;
+        poseStack.mulPose(BodyLook.turn(yaw, pitch, spec == null ? 0f : spec.yaw()));
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
-            applyLean(poseStack, entity, lean, pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot), partialTick, nativeScale);
+            applyLean(poseStack, entity, lean, yaw, partialTick, nativeScale);
         }
     }
 

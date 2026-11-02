@@ -40,6 +40,7 @@ public final class BoxOverlay {
         BodyView view = Bodies.view(entity);
         BodyData data = view.data();
         double scale = view.stats().scale();
+        // The heading lives on the client that flies the body, so these show where it looks; the server hears the heading in step 8.
         List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), entity.position(), entity.getYRot(), entity.getXRot(), scale);
         if (boxes.isEmpty()) {
             return;

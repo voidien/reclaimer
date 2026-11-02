@@ -64,7 +64,8 @@ public final class ClientBodyController {
         if (!thrusting) {
             return;
         }
-        Vec3 thrust = FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input);
+        com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.of(player);
+        Vec3 thrust = FlightPhysics.thrustDirection(heading.pitch(), heading.yaw(), input);
         if (thrust.lengthSqr() < 1.0E-6) {
             return;
         }

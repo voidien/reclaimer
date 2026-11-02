@@ -16,6 +16,9 @@ public final class Config {
     public static final ModConfigSpec.IntValue SPAWN_Y;
     public static final ModConfigSpec.IntValue SPAWN_Z;
 
+    public static final ModConfigSpec.DoubleValue BODY_TURN_FACTOR;
+    public static final ModConfigSpec.DoubleValue BODY_TURN_SLOWEST;
+    public static final ModConfigSpec.DoubleValue BODY_TURN_FASTEST;
     public static final ModConfigSpec.DoubleValue BOUNDARY_MARGIN;
     public static final ModConfigSpec.DoubleValue BOUNDARY_PUSH;
 
@@ -184,6 +187,16 @@ public final class Config {
         SPAWN_X = BUILDER.defineInRange("x", 0, -29_000_000, 29_000_000);
         SPAWN_Y = BUILDER.defineInRange("y", 64, -2000, 2000);
         SPAWN_Z = BUILDER.defineInRange("z", 0, -29_000_000, 29_000_000);
+        BUILDER.pop();
+
+        BUILDER.comment("How big bodies turn with weight. The view turns at once and the body follows.").push("bodyTurning");
+        BODY_TURN_FACTOR = BUILDER
+                .comment("Degrees a second for each unit of the body's turn rate per unit of its mass. Higher turns faster.")
+                .defineInRange("factor", com.voidreclaimer.body.BodyHeading.TURN_FACTOR, 1.0, 100_000.0);
+        BODY_TURN_SLOWEST = BUILDER.comment("Degrees a second for a body with nothing to help it turn.")
+                .defineInRange("slowest", com.voidreclaimer.body.BodyHeading.SLOWEST_TURN, 0.1, 720.0);
+        BODY_TURN_FASTEST = BUILDER.comment("Degrees a second for the lightest big body.")
+                .defineInRange("fastest", com.voidreclaimer.body.BodyHeading.FASTEST_TURN, 0.1, 720.0);
         BUILDER.pop();
 
         BUILDER.comment("Soft push-back near the top and bottom of deep space.").push("boundary");

@@ -125,7 +125,7 @@ public final class BodyAnimatable implements GeoReplacedEntity {
             motion.previousSpeed = motion.speed;
             motion.speed = step.length();
             motion.tick = wearer.tickCount;
-            float yaw = wearer.getYRot();
+            float yaw = wearer instanceof net.minecraft.world.entity.player.Player player ? com.voidreclaimer.body.BodyTurning.of(player).yaw() : wearer.getYRot();
             BodyLook.Pose now = BodyLook.pose(motion.speed, motion.previousSpeed, lowPower(wearer),
                     BodyLook.forward(step.x, step.z, yaw), BodyLook.lateral(step.x, step.z, yaw), thrusting(wearer));
             if (now != motion.pose && (wearer.tickCount >= motion.heldUntil || now == BodyLook.Pose.LOW_POWER)) {

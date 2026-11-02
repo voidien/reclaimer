@@ -1,0 +1,3 @@
+## Big bodies turn with weight
+- Steps 6 and 7 of `docs/design/hit-boxes.md`. The view turns at once and a Ship, Shuttle or Titan follows as fast as its parts and mass let it (`body/BodyTurning`), thrust goes where the nose points, and a turn into something pushes the body away, then stops. The model and cockpit follow the heading, and a small marker on the HUD shows where the nose is while it catches up. The numbers are a first guess, in the `bodyTurning` config: half a turn takes a Ship about 2.8 s and a Titan about 7.4 s. Test: `aBigBodyTurnsWithWeightAndThrustFollowsTheNose`.
+- **Known issues:** the heading lives on the client that flies, so other players and the overlay see the view until step 8. A Helm pilot's ship is unchanged.
