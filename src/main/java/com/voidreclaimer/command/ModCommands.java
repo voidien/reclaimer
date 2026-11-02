@@ -215,6 +215,21 @@ public final class ModCommands {
         register(event.getDispatcher());
     }
 
+    private static int weatherStatus(CommandSourceStack source) {
+        var state = com.voidreclaimer.weather.SpaceWeatherTicker.of(source.getLevel());
+        source.sendSuccess(() -> Component.literal(state.weather().map(id -> id + (state.warning() ? ", starts in " + state.warningLeft() + " s" : ", ends in " + state.activeLeft() + " s")
+                + ", strength " + state.strength()).orElse("Calm, next in " + state.nextIn() + " s")), false);
+        return 1;
+    }
+
+    private static int weatherStart(CommandSourceStack source, net.minecraft.resources.ResourceLocation id) {
+        if (!com.voidreclaimer.weather.SpaceWeatherTicker.start(source.getLevel(), id)) {
+            source.sendFailure(Component.literal("No such weather: " + id));
+            return 0;
+        }
+        return 1;
+    }
+
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal(VoidReclaimer.MOD_ID)
                 .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -260,6 +275,17 @@ public final class ModCommands {
                         .then(Commands.literal("wake")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(ctx -> linkWake(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))))
+                .then(Commands.literal("weather")
+                        .then(Commands.literal("status").executes(ctx -> weatherStatus(ctx.getSource())))
+                        .then(Commands.literal("stop").executes(ctx -> {
+                            com.voidreclaimer.weather.SpaceWeatherTicker.stop(ctx.getSource().getLevel());
+                            return 1;
+                        }))
+                        .then(Commands.literal("start")
+                                .then(Commands.argument("id", net.minecraft.commands.arguments.ResourceLocationArgument.id())
+                                        .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggestResource(
+                                                com.voidreclaimer.weather.SpaceWeatherTicker.registry(ctx.getSource().getLevel()).keySet(), builder))
+                                        .executes(ctx -> weatherStart(ctx.getSource(), net.minecraft.commands.arguments.ResourceLocationArgument.getId(ctx, "id"))))))
                 .then(Commands.literal("scene")
                         .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
                                 .suggests((ctx, builder) -> net.minecraft.commands.SharedSuggestionProvider.suggest(

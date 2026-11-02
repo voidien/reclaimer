@@ -122,6 +122,13 @@ public final class ModAttachments {
                     .serialize(com.voidreclaimer.earth.PortalPanes.CODEC)
                     .build());
 
+    /** A level's weather. Saved with the level and synced to every client in it. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.weather.WeatherState>> WEATHER = ATTACHMENT_TYPES.register("weather",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.weather.WeatherState.NONE)
+                    .serialize(com.voidreclaimer.weather.WeatherState.CODEC)
+                    .sync(com.voidreclaimer.weather.WeatherState.STREAM_CODEC)
+                    .build());
+
     /** Ruined Earth level only: which of the three skies is shown. Saved with the level and synced to every client in it. */
     public static final Supplier<AttachmentType<com.voidreclaimer.earth.SkyEra>> EARTH_SKY_ERA = ATTACHMENT_TYPES.register("earth_sky_era",
             () -> AttachmentType.builder(() -> com.voidreclaimer.earth.SkyEra.RUINED)

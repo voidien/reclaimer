@@ -36,6 +36,12 @@ public final class VoidReclaimerRegistries {
     public static final ResourceKey<Registry<Chassis>> CHASSIS = key("chassis");
     /** Datapack registry (server only): what a Terraforming Spire pulse turns ruined ground into. */
     public static final ResourceKey<Registry<com.voidreclaimer.api.terraform.TerraformProfile>> TERRAFORM_PROFILE = key("terraform_profile");
+    /** Synced datapack registry: kinds of bad weather. */
+    public static final ResourceKey<Registry<com.voidreclaimer.api.weather.SpaceWeather>> SPACE_WEATHER = key("space_weather");
+    /** Code registry: what shelters a body from weather. */
+    public static final ResourceKey<Registry<com.voidreclaimer.api.weather.WeatherExposureType>> WEATHER_EXPOSURE_TYPE = key("weather_exposure_type");
+    /** Code registry: what weather does to a body. */
+    public static final ResourceKey<Registry<com.voidreclaimer.api.weather.WeatherEffectType>> WEATHER_EFFECT_TYPE = key("weather_effect_type");
     /** Code registry: what tool modules do. */
     public static final ResourceKey<Registry<ToolModuleType>> TOOL_MODULE_TYPE = key("tool_module_type");
     /** Code registry: what a Holo Projector can show as a readout. */
