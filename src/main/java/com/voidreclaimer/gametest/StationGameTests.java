@@ -299,6 +299,41 @@ public final class StationGameTests {
         });
     }
 
+    /**
+     * A ship's blocks are far away in its plot, so nothing near the body says it is there: a big body has to find it, level or turned.
+     * Its own batch: {@code sable teleport @e} and {@code sable remove @e} reach every ship in the level, and would take the other tests'.
+     */
+    @GameTest(template = "empty", timeoutTicks = 900, batch = "body_at_a_ship")
+    public static void aBigBodyStopsAtAShip(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        BlockPos pos = new BlockPos(156_000, 230, 3_000);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            var player = TestPlayers.survivalInDeepSpace(helper, pos.getX() + 0.5, pos.getY() - 1.5, pos.getZ() - 8.0);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.SHUTTLE));
+            player.setYRot(0f);
+            player.setXRot(0f);
+            var ahead = new net.minecraft.world.phys.Vec3(0.0, 0.0, 2.0);
+            helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, ahead) == ahead, "something is in the way before the ship is there");
+            command(server, space, pos, "fill " + (pos.getX() - 3) + " " + (pos.getY() - 3) + " " + pos.getZ() + " " + (pos.getX() + 3) + " " + (pos.getY() + 3) + " " + pos.getZ() + " minecraft:iron_block");
+            command(server, space, pos, "sable assemble connected " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z < 2.0, "the Shuttle went through a ship ahead of it, " + shipsOver(space, pos, player)))
+                    .thenExecute(() -> command(server, space, pos, "sable teleport @e " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " 45 0"))
+                    .thenIdle(5)
+                    .thenExecute(() -> {
+                        double allowed = com.voidreclaimer.body.BoxCollision.resolve(player, new net.minecraft.world.phys.Vec3(0.0, 0.0, 8.0)).z;
+                        command(server, space, pos, "sable remove @e");
+                        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, false);
+                        TestPlayers.remove(player);
+                        helper.assertTrue(allowed < 8.0, "the Shuttle went through a ship turned 45 degrees");
+                        helper.succeed();
+                    });
+        });
+    }
+
     /** Sky light cannot see a ship's hull either: a body in a ship's shade gets no more sun than one in a cave. */
     @GameTest(template = "empty", timeoutTicks = 900)
     public static void aShipsHullShadesABodyFromTheSun(GameTestHelper helper) {
