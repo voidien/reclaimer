@@ -201,4 +201,37 @@ public final class UtilityModuleGameTests {
             helper.succeed();
         });
     }
+
+    /** After a burn the second just gone is faster than the top speed now, and that is no reason to haul a body back. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "afterburner_check")
+    public static void aBurnThatIsFadingIsNotCorrected(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(187_072, 300, 8);
+        NaniteGameTests.inLoadedArea(helper, origin, 4, () -> {
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            Bodies.store(player, Bodies.preset(BuiltinBodies.MECH));
+            BodyView bare = Bodies.view(player);
+            BodyData.Mount mount = bare.mounts().stream().filter(found -> found.kind() == ModuleKind.UTILITY).findFirst().orElseThrow();
+            Bodies.store(player, bare.data().withModule(mount, new ItemStack(ModItems.AFTERBURNER.get())));
+            EnergyData energy = player.getData(ModAttachments.ENERGY);
+            Energy.update(player, new EnergyData(energy.capacity(), energy.capacity(), false), true);
+            FlightInput thrust = FlightInput.of(true, false, false, false, false, false);
+            double tolerance = com.voidreclaimer.Config.SPEED_CHECK_TOLERANCE.get();
+            // At the default a second of burn is inside the slack, so the check only shows at the strictest setting.
+            com.voidreclaimer.Config.SPEED_CHECK_TOLERANCE.set(1.0);
+            try {
+                double z = player.getZ();
+                for (int tick = 0; tick < 50; tick++) {
+                    player.setData(ModAttachments.FLIGHT_INPUT, tick < 25 ? thrust.withBoost(true) : thrust);
+                    z += FlightStats.of(player).maxSpeed();
+                    player.setPos(player.getX(), player.getY(), z);
+                    player.doTick();
+                    helper.assertTrue(Math.abs(player.getZ() - z) < 1e-6, "tick " + tick + ": hauled back from " + z + " to " + player.getZ());
+                }
+            } finally {
+                com.voidreclaimer.Config.SPEED_CHECK_TOLERANCE.set(tolerance);
+            }
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
 }
