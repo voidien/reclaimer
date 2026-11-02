@@ -21,7 +21,7 @@ The player is a nameless AI consciousness. There are no enemies and no combat. T
 - Namespace `void_reclaimer`. NeoForge 21.1.x, Java 21, **ModDevGradle** with Parchment mappings.
 - Dependencies: **Create** (required) for kinetics, machines and the art style; **Create Aeronautics** (required, bundles Simulated and Offroad) and **Sable** (required, its physics engine) for ships and sub-levels; **GeckoLib** for body, part, and helper-drone models/animations. **JEI** for recipe categories for the replicator and machines. Look up current compatible versions; don't guess.
 - Modern 1.21.1 APIs: **Data Attachments** for per-player body/part/dust data, **Data Components** for item data, **block entities**, `CustomPacketPayload` networking, datagen for recipes, loot tables, tags, lang, and models.
-- Body scale uses the vanilla `generic.scale` attribute — no custom hitbox hacks.
+- Body scale uses the vanilla `generic.scale` attribute. Big bodies also have several small hit boxes along their models (`docs/design/hit-boxes.md`); no other custom hit boxes.
 - Flight: player movement is client-side, so thrust and drag run on the client. A payload syncs input to the server, which validates speed against body stats and handles dust gain. Keep the logical client/server split correct even though the mod is singleplayer.
 - Helper drones use flying navigation or custom steering, not ground pathfinding.
 - Biome restoration rewrites chunk biome data and resends the chunks, like `/fillbiome`.

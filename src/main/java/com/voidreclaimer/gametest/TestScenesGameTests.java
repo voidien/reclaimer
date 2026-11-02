@@ -21,6 +21,35 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class TestScenesGameTests {
     private TestScenesGameTests() {}
 
+    /** A Titan's nose stops at a wall its vanilla box is nowhere near; the same flight is free for a Drone, and past a section that has gone. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aBigBodyStopsAtAWallItsVanillaBoxWouldMiss(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(94_400, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 3, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            // Yaw 0 looks along +Z, and a Titan's saucer reaches about 30 blocks that way.
+            player.setYRot(0f);
+            player.setXRot(0f);
+            BlockPos wall = origin.offset(0, 13, 31);
+            for (int x = -3; x <= 3; x++) {
+                for (int y = -3; y <= 3; y++) {
+                    space.setBlock(wall.offset(x, y, 0), Blocks.STONE.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+            net.minecraft.world.phys.Vec3 ahead = new net.minecraft.world.phys.Vec3(0.0, 0.0, 2.0);
+            double allowed = com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z;
+            helper.assertTrue(allowed >= 0.0 && allowed < 2.0, "the Titan's saucer moved " + allowed + " of 2 into a wall in front of it");
+            var sideways = new net.minecraft.world.phys.Vec3(2.0, 0.0, 0.0);
+            helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, sideways) == sideways, "a wall ahead stopped a move along it");
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE));
+            helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, ahead) == ahead, "a Drone has no boxes, so nothing should change for it");
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** The overlay reads the same boxes collision will, so a stone in the saucer has to show. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void theBoxOverlayShowsABigBodyAndWhatItTouches(GameTestHelper helper) {

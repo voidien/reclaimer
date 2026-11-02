@@ -72,7 +72,7 @@ public final class ThrusterFlight {
 
     /** Replaces vanilla travel for the local player: apply thrust, then move with collisions and no drag. */
     public static void travel(Player player) {
-        Vec3 velocity = step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT));
+        Vec3 velocity = com.voidreclaimer.body.BoxCollision.resolve(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
         player.setDeltaMovement(velocity);
         player.move(MoverType.SELF, velocity);
         player.calculateEntityAnimation(true);
