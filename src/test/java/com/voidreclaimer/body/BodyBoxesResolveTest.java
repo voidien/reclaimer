@@ -347,4 +347,25 @@ class BodyBoxesResolveTest {
     private static double gauss(Random random, double spread) {
         return random.nextGaussian() * spread;
     }
+
+    @Test
+    void oneHitLosesAllTheSpeedGoingIntoItEvenWithAGapLeft() {
+        BodyBoxes.Moved moved = BodyBoxes.move(List.of(box(0, 0.5, 0.5, 1)), wall(3), new Vec3(3, 0, 0));
+        assertVec(2, 0, 0, moved.move());
+        assertVec(0, 0, 0, moved.speed());
+    }
+
+    @Test
+    void aBodySlidingAlongAWallKeepsTheSpeedAlongIt() {
+        BodyBoxes.Moved moved = BodyBoxes.move(List.of(box(0, 0.5, 0.5, 1)), wall(3), new Vec3(3, 0, 1));
+        assertVec(0, 0, 1, moved.speed());
+    }
+
+    @Test
+    void nothingInTheWayKeepsItAll() {
+        Vec3 velocity = new Vec3(0.5, 0, 0);
+        BodyBoxes.Moved moved = BodyBoxes.move(List.of(box(0, 0.5, 0.5, 1)), wall(9), velocity);
+        assertSame(velocity, moved.move());
+        assertSame(velocity, moved.speed());
+    }
 }

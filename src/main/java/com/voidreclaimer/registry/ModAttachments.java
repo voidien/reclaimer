@@ -38,6 +38,10 @@ public final class ModAttachments {
                     .sync((holder, to) -> holder == to, EnergyData.STREAM_CODEC)
                     .build());
 
+    /** Where a big body points while it flies, on the client that flies it. Not saved: a body that lands points at its view again. */
+    public static final Supplier<AttachmentType<com.voidreclaimer.body.BodyTurning.State>> BODY_TURN = ATTACHMENT_TYPES.register("body_turn",
+            () -> AttachmentType.builder(() -> com.voidreclaimer.body.BodyTurning.State.NONE).build());
+
     /** Per-player flight toggles. Persisted, kept on death, synced to the owning player. */
     public static final Supplier<AttachmentType<FlightSettings>> FLIGHT_SETTINGS = ATTACHMENT_TYPES.register("flight_settings",
             () -> AttachmentType.builder(() -> FlightSettings.DEFAULT)

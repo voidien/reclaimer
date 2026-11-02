@@ -12,12 +12,15 @@ import net.minecraft.world.phys.Vec3;
  * view asks and the heading answers. A smaller body's heading is its view. Pure, so it can be unit tested.
  */
 public record BodyHeading(float yaw, float pitch) {
-    /** Degrees a second for each unit of turn rate per unit of mass. A basic Ship turns at 64, a basic Shuttle at 62, a basic Titan at 24. */
+    /**
+     * Degrees a second for each unit of turn rate per unit of mass. A basic Ship turns at 45, a basic Shuttle at 123 and a basic Titan at
+     * 15: half turns of 4, 1.5 and 12 seconds, the owner's numbers. Weight scales it, so a loaded body turns slower than an empty one.
+     */
     public static final double TURN_FACTOR = 2400.0;
     /** A body with nothing to help it turn still turns, or it could only ever face one way. Degrees a second. */
     public static final double SLOWEST_TURN = 6.0;
     /** Degrees a second, so a big body stripped of its weight still doesn't whip round. */
-    public static final double FASTEST_TURN = 120.0;
+    public static final double FASTEST_TURN = 240.0;
     /** The smallest size class that turns with weight, the Ship's. */
     private static final int HEAVY_RANK = 2;
     /** A turn eases in over its last few degrees, each tick going this share of what is left: the 3 a second the Helm's aim uses. */

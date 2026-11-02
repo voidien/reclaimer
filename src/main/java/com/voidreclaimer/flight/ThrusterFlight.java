@@ -72,9 +72,14 @@ public final class ThrusterFlight {
 
     /** Replaces vanilla travel for the local player: apply thrust, then move with collisions and no drag. */
     public static void travel(Player player) {
-        Vec3 velocity = com.voidreclaimer.body.BoxCollision.resolve(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
-        player.setDeltaMovement(velocity);
-        player.move(MoverType.SELF, velocity);
+        // A big body turns first, so thrust goes where it now points. A push off a wall is a move, not a speed: it stays out of the momentum.
+        Vec3 push = com.voidreclaimer.body.BodyTurning.turn(player);
+        if (push.lengthSqr() > 0.0) {
+            player.move(MoverType.SELF, push);
+        }
+        com.voidreclaimer.body.BodyBoxes.Moved moved = com.voidreclaimer.body.BoxCollision.move(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
+        player.setDeltaMovement(moved.speed());
+        player.move(MoverType.SELF, moved.move());
         player.calculateEntityAnimation(true);
         calmWalkBob(player);
     }
@@ -92,9 +97,10 @@ public final class ThrusterFlight {
     /** One tick of thruster physics for this player, plus the tether: returns the new velocity. */
     public static Vec3 step(Player player, Vec3 velocity, FlightInput input) {
         FlightStats stats = FlightStats.of(player);
+        com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.of(player);
         Vec3 next = FlightPhysics.step(
                 velocity,
-                FlightPhysics.thrustDirection(player.getXRot(), player.getYRot(), input),
+                FlightPhysics.thrustDirection(heading.pitch(), heading.yaw(), input),
                 Energy.canPowerSystems(player),
                 player.getData(ModAttachments.FLIGHT_SETTINGS).dampener(),
                 stats,

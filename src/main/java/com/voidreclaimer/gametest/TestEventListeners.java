@@ -62,6 +62,14 @@ public final class TestEventListeners {
     /** What each player's links have done, oldest first. */
     static final Map<UUID, List<String>> LINK_EVENTS = new ConcurrentHashMap<>();
 
+    /** The last collision a test player had: how far along the move it was stopped. */
+    static final java.util.Map<java.util.UUID, Double> COLLISIONS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    static void onCollision(com.voidreclaimer.api.event.BodyCollisionEvent event) {
+        COLLISIONS.put(event.getPlayer().getUUID(), event.lost().length());
+    }
+
     @SubscribeEvent
     static void onLinkPre(com.voidreclaimer.api.event.ShellLinkEvent.Pre event) {
         if (event.getPlayer().getTags().contains(THROW_BEFORE_LINK)) {

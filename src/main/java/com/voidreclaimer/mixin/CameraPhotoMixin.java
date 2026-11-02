@@ -50,6 +50,15 @@ abstract class CameraPhotoMixin {
                 Vector3f look = camera.getLookVector();
                 Vector3f up = camera.getUpVector();
                 Vector3f left = camera.getLeftVector();
+                // A big body lags the view, and the cockpit is where the body is: the eyes stay in it while the look moves on ahead.
+                float partial = net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+                com.voidreclaimer.body.BodyHeading heading = com.voidreclaimer.body.BodyTurning.at(player, partial);
+                if (heading != null) {
+                    var turn = com.voidreclaimer.body.BodyBoxes.turn(heading.yaw(), heading.pitch());
+                    var offset = turn.transform(new org.joml.Vector3d(cockpit.right(), cockpit.up(), -cockpit.forward())).mul(scale);
+                    setPosition(camera.getPosition().add(offset.x, offset.y, offset.z));
+                    return;
+                }
                 setPosition(camera.getPosition().add(
                         (look.x * cockpit.forward() + up.x * cockpit.up() - left.x * cockpit.right()) * scale,
                         (look.y * cockpit.forward() + up.y * cockpit.up() - left.y * cockpit.right()) * scale,

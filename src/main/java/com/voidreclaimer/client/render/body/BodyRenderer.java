@@ -52,6 +52,7 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     private boolean reRendering;
     /** How far sections are spread for the next draws, 0 to 1; only the assembly view sets it, round its own draw. */
     private static float explode;
+    private static boolean posed;
     private static boolean showWear;
     private static boolean mirrored;
     @Nullable
@@ -206,6 +207,11 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
     }
 
     /** Spreads the body's sections apart for the draws until this is set back to 0. */
+    /** Whether a screen is posing the body itself, so it is drawn as the screen says and not at its heading in the world. */
+    public static void setPosed(boolean on) {
+        posed = on;
+    }
+
     public static void setExplode(float amount) {
         explode = amount;
     }
@@ -401,11 +407,14 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         String rig = current == null ? BodyLook.DEFAULT_RIG : current.rig();
         BodyRigSpec spec = current == null ? null : current.spec();
         boolean pitches = spec != null ? spec.pitches() : BodyLook.pitches(rig);
-        float yaw = pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
-        poseStack.mulPose(BodyLook.turn(yaw, pitches ? entity.getViewXRot(partialTick) : 0f, spec == null ? 0f : spec.yaw()));
+        // A big body in flight points at its heading, which follows the view as its weight lets it.
+        com.voidreclaimer.body.BodyHeading heading = pitches && !posed && entity instanceof net.minecraft.world.entity.player.Player player ? com.voidreclaimer.body.BodyTurning.at(player, partialTick) : null;
+        float yaw = heading != null ? heading.yaw() : pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
+        float pitch = heading != null ? heading.pitch() : pitches ? entity.getViewXRot(partialTick) : 0f;
+        poseStack.mulPose(BodyLook.turn(yaw, pitch, spec == null ? 0f : spec.yaw()));
         BodyRigSpec.Lean lean = spec == null ? BodyRigSpec.Lean.NONE : spec.lean();
         if (!lean.isNone()) {
-            applyLean(poseStack, entity, lean, pitches ? entity.getViewYRot(partialTick) : Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot), partialTick, nativeScale);
+            applyLean(poseStack, entity, lean, yaw, partialTick, nativeScale);
         }
     }
 
@@ -444,13 +453,16 @@ public final class BodyRenderer extends GeoReplacedEntityRenderer<LivingEntity, 
         poseStack.translate(0.0, -pivot, 0.0);
     }
 
-    /** The way a body's model faces, in degrees of yaw: the view for bodies that pitch with it, the body's own turn for an upright one. */
+    /** The way a body's model faces, in degrees of yaw: its heading for bodies that pitch with the view, the body's own turn for an upright one. */
     public static float facing(LivingEntity entity) {
         BodyView view = Bodies.view(entity);
         SectionStats core = Parts.section(view.data().core());
         String rig = BodyLook.rig(core == null ? null : core.chassis().orElse(null));
         BodyRigSpec spec = BodyRigSpec.Loader.get(rig);
-        return (spec != null ? spec.pitches() : BodyLook.pitches(rig)) ? entity.getYRot() : entity.yBodyRot;
+        if (spec != null ? spec.pitches() : BodyLook.pitches(rig)) {
+            return entity instanceof net.minecraft.world.entity.player.Player player ? com.voidreclaimer.body.BodyTurning.of(player).yaw() : entity.getYRot();
+        }
+        return entity.yBodyRot;
     }
 
     /** Where the rig's origin sits above the player's feet: its middle for flyers, the pelvis height for the upright Mech. */
