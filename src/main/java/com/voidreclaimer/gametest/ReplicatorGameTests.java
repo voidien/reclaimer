@@ -287,8 +287,11 @@ public final class ReplicatorGameTests {
             player.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 3));
             player.getInventory().setItem(1, new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS, 1));
             helper.assertTrue(Replicator.queue(player, ITEMS_TOO) == ReplicatorLogic.QueueResult.QUEUED, "not queued");
+            // The world outlives a run, and an entity can be saved in it, so what an earlier run dropped can still be here.
+            var near = new net.minecraft.world.phys.AABB(origin).inflate(8);
+            player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, near).forEach(net.minecraft.world.entity.Entity::discard);
             player.hurt(player.serverLevel().damageSources().genericKill(), Float.MAX_VALUE);
-            var drops = player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(origin).inflate(8));
+            var drops = player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, near);
             int ingots = drops.stream().filter(drop -> drop.getItem().is(net.minecraft.world.item.Items.IRON_INGOT)).mapToInt(drop -> drop.getItem().getCount()).sum();
             helper.assertTrue(ingots == 3, ingots + " of 3 ingots dropped");
             helper.assertTrue(Replicator.data(player).jobs().isEmpty(), "the job outlived the items it took");
