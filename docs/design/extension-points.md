@@ -16,6 +16,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:section` | Data component (`api.body.SectionStats`) | On section items: `socket_type`, tier, stats, `mounts`; core sections name a `chassis` |
 | `void_reclaimer:module` | Data component (`api.body.ModuleStats`) | On module items: `kind` (fixed `ModuleKind`), tier, mass, `min_size`, core/thruster/storage specs |
 | `void_reclaimer:module` `collector` spec | Part of the module data component (`api.body.ModuleStats.Collector`) | On module items: `yield` (items per dust gathered), `energy_per_second`, `outputs` (dust kind id → item id). Run by `dust.Collectors` from `DustTicker` |
+| `void_reclaimer:module` `plating` spec | Part of the module data component (`api.body.ModuleStats.Plating`) | On module items: `health` adds to the body's health and fades with the wear of the section holding it |
 | `void_reclaimer:tool_module_type` | Code registry (`api.body.ToolModuleType`) | What a tool module does (`use`, `breakSpeed`); items name one with the `void_reclaimer:tool_module` component |
 | `void_reclaimer:holo_readout` | Code registry (`api.holo.HoloReadout`) | A readout a Holo Projector can show: a sampler (world to snapshot, server side) and a pure formatter. The lang key `holo_readout.<namespace>.<path>` names it; lines past 8 or 48 characters are cut |
 | `void_reclaimer:holo_projector` | Create registry entry (`create:display_target`) | `compat.create.HoloDisplayTarget`: a Display Link writes to a Holo Projector |
@@ -46,6 +47,7 @@ Every new extension point is added here in the same change.
 | `void_reclaimer:weather_effect_type` | Code registry | What weather does each second: `wear`, `damage`, `energy`, `rocks` built in |
 | `SpaceWeatherEvent` | Event | `Warning` (cancellable), `Started`, `Ended`, and `Exposed` (cancellable, with a share a part can reduce) |
 | `ShipCrashEvent` | Event | A ship's hit is about to break a block, on the server, once for each block. Cancel it to keep the block |
+| `RockFractureEvent` | Event | Too much drilling is about to split a rock, with the blocks that would come away. Cancel it to keep them |
 | `MainBodyWreckedEvent` | Event | A main body was destroyed and left as a wreck, with the wreck's id. The player already wears a new starter body |
 | `BodyCollisionEvent` | Event | A body hit something in flight: a big body by its hit boxes, or a smaller one against a big body. One crash is one event, with the speed it had, the speed it kept and the part lost. Fires on the client that flies the body |
 | `ShellLinkEvent.Pre` | Event, cancellable | Before a link changes anything; cancelled, the link ends `CANCELLED`. A listener that throws counts as a refusal |

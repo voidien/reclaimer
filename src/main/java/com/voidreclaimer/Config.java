@@ -160,6 +160,10 @@ public final class Config {
     public static final ModConfigSpec.IntValue SPINNER_THREADS;
     public static final ModConfigSpec.IntValue CASTING_AMOUNT;
 
+    public static final ModConfigSpec.BooleanValue ASTEROID_FRACTURES;
+    public static final ModConfigSpec.IntValue ASTEROID_FRACTURE_HOLES;
+    public static final ModConfigSpec.IntValue ASTEROID_PIECE_BLOCKS;
+    public static final ModConfigSpec.IntValue ASTEROID_MOST_PIECES;
     public static final ModConfigSpec.DoubleValue DRILL_ENERGY;
     public static final ModConfigSpec.DoubleValue DRILL_DUST_YIELD;
     public static final ModConfigSpec.BooleanValue COLLECTOR_ENABLED;
@@ -463,6 +467,10 @@ public final class Config {
         BUILDER.pop();
 
         BUILDER.comment("Mining asteroids with the Mechanical Drill and the Matter Harvester.").push("asteroids");
+        ASTEROID_FRACTURES = BUILDER.comment("Whether too much drilling in one place splits a rock.").define("fractures", true);
+        ASTEROID_FRACTURE_HOLES = BUILDER.comment("Blocks drilled within a 32-block cube before a piece breaks off.").defineInRange("fractureHoles", 48, 1, 100_000);
+        ASTEROID_PIECE_BLOCKS = BUILDER.comment("The most blocks in a piece that breaks off.").defineInRange("pieceBlocks", 48, 8, 4096);
+        ASTEROID_MOST_PIECES = BUILDER.comment("The most loose pieces in a level at once: past this rocks stop splitting, so ships stay few.").defineInRange("mostPieces", 12, 0, 1024);
         DRILL_ENERGY = BUILDER.comment("Energy per asteroid block broken by either tool.").defineInRange("drillEnergy", 0.5, 0.0, 100.0);
         DRILL_DUST_YIELD = BUILDER.comment("Dust refunded per block by the Mechanical Drill, of the block's own kind.")
                 .defineInRange("drillDustYield", 1.0, 0.0, 1000.0);

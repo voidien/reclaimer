@@ -45,6 +45,19 @@ class BodyStatsTest {
     }
 
     @Test
+    void platingAddsHealthAndMassAndFadesWithItsSection() {
+        ModuleStats plating = ModuleStats.utility(1, 0.5f, new ModuleStats.Plating(4f));
+        BodyStats plated = drone(List.of(CORE_MK1, THRUSTER_MK1, plating));
+        assertEquals(16f, plated.maxHealth());
+        assertEquals(1.5, plated.mass(), 1e-6);
+
+        List<BodyStats.Installed<SectionStats>> sections = DRONE_SECTIONS.stream().map(section -> new BodyStats.Installed<>(section, 1f)).toList();
+        BodyStats worn = BodyStats.computeWorn(BuiltinBodies.DRONE_SIZE, DRONE, sections, List.of(new BodyStats.Installed<>(plating, 0.5f)));
+        assertEquals(14f, worn.maxHealth());
+        assertEquals(1.0, worn.mass(), 1e-6, "only the plating's mass: no core or thruster here");
+    }
+
+    @Test
     void starterBodyKeepsThePhaseTwoHandling() {
         BodyStats stats = drone(List.of(CORE_MK1, THRUSTER_MK1));
         assertEquals(1.0, stats.mass(), 1e-6);

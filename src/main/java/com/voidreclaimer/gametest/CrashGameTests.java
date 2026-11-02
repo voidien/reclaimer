@@ -80,6 +80,22 @@ public final class CrashGameTests {
         });
     }
 
+    /** Plating soaks up a hit: harm goes by the health under it, so what would destroy the body leaves it the plating. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void platingSoaksUpAHit(GameTestHelper helper) {
+        inTheOpen(helper, new BlockPos(107_400, 300, 0), BuiltinBodies.SHIP, player -> {
+            var body = Bodies.data(player);
+            var mount = new com.voidreclaimer.body.BodyData.Mount(body.coreSocket(), com.voidreclaimer.api.body.ModuleKind.UTILITY, 0);
+            Bodies.store(player, body.withModule(mount, new net.minecraft.world.item.ItemStack(com.voidreclaimer.registry.ModItems.HULL_PLATING_MK3.get())));
+            float plated = Bodies.healthUnderPlating(player);
+            player.setHealth(player.getMaxHealth());
+            helper.assertTrue(plated < player.getMaxHealth(), "the plating added nothing: " + plated + " of " + player.getMaxHealth());
+            BodyCrash.heard(player, new Vec3(0.0, 0.0, top(player)));
+            helper.assertTrue(player.isAlive(), "the plating did not save it");
+            helper.assertTrue(Math.abs(player.getHealth() - (player.getMaxHealth() - plated)) < 0.01f, "it has " + player.getHealth() + " left");
+        });
+    }
+
     /** A client's word goes no further than the body could have been going. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aWildReportIsHeldToTheBodysSpeed(GameTestHelper helper) {

@@ -117,7 +117,8 @@ public final class BackupCoreGameTests {
             ServerPlayer respawned = null;
             try {
                 BlockPos pos = origin.offset(2, 0, 0);
-                place(player, pos);
+                Nanites.Result placed = place(player, pos);
+                helper.assertTrue(placed == Nanites.Result.BUILT, "the core was not placed: " + placed + ", at " + space.getBlockState(pos) + ", chunk ticking " + space.isPositionEntityTicking(pos));
                 core(space, pos).setCharges(1);
                 player.teleportTo(space, origin.getX() + 100.5, origin.getY(), origin.getZ() + 0.5, 0f, 0f);
                 player.hurt(space.damageSources().genericKill(), Float.MAX_VALUE);

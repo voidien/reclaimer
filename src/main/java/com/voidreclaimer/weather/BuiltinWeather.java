@@ -59,9 +59,9 @@ public final class BuiltinWeather {
         }
     }
 
-    /** {@code amount} is a share of the body's health each second. */
+    /** {@code amount} is a share of the body's health under its plating each second. */
     private static void damage(ServerPlayer player, float amount) {
-        player.hurt(player.serverLevel().damageSources().magic(), amount * player.getMaxHealth());
+        player.hurt(player.serverLevel().damageSources().magic(), amount * Bodies.healthUnderPlating(player));
     }
 
     /** {@code amount} rocks a second at this body, a fraction being a chance of one. */

@@ -41,7 +41,7 @@ public final class BodyCrash {
         if (speed <= safe) {
             return;
         }
-        float damage = (float) (CrashRules.healthShare(speed, top, safe, Config.CRASH_AT_TOP_SPEED.get()) * player.getMaxHealth());
+        float damage = (float) (CrashRules.healthShare(speed, top, safe, Config.CRASH_AT_TOP_SPEED.get()) * Bodies.healthUnderPlating(player));
         boolean big = Bodies.view(player).chassis().sockets().stream().anyMatch(socket -> !socket.boxes().isEmpty());
         BodyCrashEvent event = new BodyCrashEvent(player, speed, damage, big && Config.CRASH_BREAKS_BLOCKS.get());
         if (NeoForge.EVENT_BUS.post(event).isCanceled()) {

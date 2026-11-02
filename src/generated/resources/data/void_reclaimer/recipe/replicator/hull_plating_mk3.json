@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 60.0,
+    "void_reclaimer:ice": 80.0,
+    "void_reclaimer:metallic": 300.0,
+    "void_reclaimer:silicate": 160.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:hull_plating_mk3"
+  },
+  "ticks": 6000
+}
