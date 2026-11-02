@@ -81,6 +81,38 @@ public final class MainWreckGameTests {
         });
     }
 
+    /** The marker stays when the player arrives, follows the wreck as it drifts, and goes when the wreck has been emptied. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void aWreckDriftsAndItsMarkerStaysUntilItIsEmptied(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(98_400, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            destroy(player, space);
+            UUID id = TestEventListeners.WRECKS.remove(player.getUUID());
+            BodyHost wreck = (BodyHost) space.getEntity(id);
+            var start = wreck.position();
+            ServerPlayer back = space.getServer().getPlayerList().respawn(player, false, net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+            back.teleportTo(space, start.x, start.y, start.z, 0f, 0f);
+            helper.runAfterDelay(45, () -> {
+                back.tickCount += 20 - back.tickCount % 20;
+                back.doTick();
+                helper.assertTrue(wreck.position().distanceTo(start) > 0.3, "the wreck stayed at " + wreck.position());
+                helper.assertTrue(wreck.position().distanceTo(start) < 3.0, "the wreck flew off to " + wreck.position());
+                var marker = back.getData(ModAttachments.DEATH_MARKER);
+                helper.assertTrue(marker.wreck().filter(id::equals).isPresent(), "arriving cleared the marker of a full wreck");
+                while (!wreck.isRemoved()) {
+                    back.getInventory().clearContent();
+                    wreck.interact(back, net.minecraft.world.InteractionHand.MAIN_HAND);
+                }
+                helper.assertTrue(back.getData(ModAttachments.DEATH_MARKER).pos().isEmpty(), "an emptied wreck kept its marker");
+                back.setData(ModAttachments.LINK, LinkState.NONE);
+                TestPlayers.remove(back);
+                helper.succeed();
+            });
+        });
+    }
+
     /** With the game rule that keeps inventories, nothing is left behind. Its own batch: the rule is the whole server's. */
     @GameTest(template = "empty", timeoutTicks = 300, batch = "keep_inventory")
     public static void keepingInventoriesLeavesNoWreck(GameTestHelper helper) {

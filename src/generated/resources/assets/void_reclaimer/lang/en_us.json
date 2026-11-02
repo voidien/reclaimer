@@ -255,7 +255,7 @@
   "holo_readout.void_reclaimer.thruster": "Thruster",
   "hud.void_reclaimer.dampener_off": "Dampener OFF",
   "hud.void_reclaimer.dampener_on": "Dampener ON",
-  "hud.void_reclaimer.death_marker": "DROPS %sm",
+  "hud.void_reclaimer.death_marker": "WRECK %sm",
   "hud.void_reclaimer.falling": "FALLING: DAMPENER OFF",
   "hud.void_reclaimer.hover": "HOVER",
   "hud.void_reclaimer.link.losing": "SIGNAL LOST: RETURNING IN %s",

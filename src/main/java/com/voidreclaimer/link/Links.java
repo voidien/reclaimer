@@ -9,6 +9,9 @@ import com.voidreclaimer.body.Bodies;
 import com.voidreclaimer.core.BackupCores;
 import com.voidreclaimer.dust.DustData;
 import com.voidreclaimer.mixin.MinecraftServerStorageAccessor;
+import com.voidreclaimer.core.DeathMarker;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.BlockPos;
 import com.voidreclaimer.registry.ModAttachments;
 import com.voidreclaimer.tether.TetherData;
 import com.voidreclaimer.energy.EnergyData;
@@ -207,7 +210,9 @@ public final class Links {
         wreck.ifPresent(host -> {
             Outboxes.settled(id);
             Wrecks.make(host);
+            Wrecks.setDrifting(host);
         });
+        DeathMarker.point(player, id, GlobalPos.of(at.dimension(), BlockPos.containing(at.position())));
         Replicator.settle(player, queued);
         player.getInventory().clearContent();
         player.setData(ModAttachments.TETHER, TetherData.NONE);
@@ -464,6 +469,9 @@ public final class Links {
     /** A shell destroyed for good: nothing is to bring it back. An old copy is not the shell, so its end changes nothing. */
     static void destroyed(BodyHost shell) {
         ServerPlayer owner = owner(shell);
+        if (owner != null) {
+            DeathMarker.clear(owner, shell.getUUID());
+        }
         if (owner != null && !older(state(owner), shell)) {
             LinkState state = state(owner);
             LinkState.KnownShell known = state.known(shell.getUUID()).orElseGet(() -> seen(shell));

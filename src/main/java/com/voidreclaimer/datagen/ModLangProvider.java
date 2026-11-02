@@ -294,7 +294,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("screen.void_reclaimer.respawn.spawn.detail", "Always available");
         add("screen.void_reclaimer.respawn.distance", "%s m from here");
         add("screen.void_reclaimer.respawn.ai_line", "[Placeholder, lore text pending.] Signal lost. Restoring from the last backup.");
-        add("hud.void_reclaimer.death_marker", "DROPS %sm");
+        add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");
         add("commands.void_reclaimer.sky.era.set", "Ruined Earth sky era set to %s");
