@@ -41,6 +41,7 @@ Settled decisions, moved here from `CLAUDE.md`. Keep them current in the same PR
 - **Toxic air:** wears the body's parts, and a part worn to zero stops giving its stats until repaired. It never takes health.
 - **Storms:** come every 2 to 3 hours by default, set in the mods menu, and begin after the Expansion milestone.
 - **Landing without a module:** you may go through the portal, fall damage applies, and the portal or an AI log warns you first.
+- **Done, fracturing asteroids (`asteroid/Fracture`, config `asteroid`):** 48 blocks drilled within a 32-block cube break off a lump of up to 48 connected blocks as a real Sable body that drifts away at 1 to 3 blocks a second and spins. At most 12 loose pieces in a level. It can be chased and drilled like any rock.
 - **Hazards chosen:** debris storms (fast rock showers that chip bodies and stations), Earth's toxic air (hurts bodies until sectors heal), ion storms (scramble sensors and the HUD and weaken remote links), solar flares (a warning, then take cover behind rock or a station), fracturing asteroids (too much drilling splits a rock and sends pieces drifting), and a debris belt around Earth (a dangerous crossing that clears as the planet heals).
 - **Not chosen:** radiation near stars, running out of power, dust squalls, quakes and sinkholes.
 

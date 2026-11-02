@@ -1,0 +1,2 @@
+## Fracturing asteroids
+- 48 blocks drilled within a 32-block cube split the rock: up to 48 connected blocks come away as a real ship that drifts off at 1 to 3 blocks a second and spins, with a crack of sound. At most 12 loose pieces in a level, so ships stay few, and past that rocks stop splitting. The count is lost on a restart, which only means a rock holds out a little longer. Numbers are in config.

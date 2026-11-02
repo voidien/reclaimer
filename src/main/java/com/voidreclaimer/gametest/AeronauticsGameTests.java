@@ -1036,6 +1036,32 @@ public final class AeronauticsGameTests {
         });
     }
 
+    /** Enough holes in one place, and a lump of the rock around them comes away as a drifting ship. */
+    @GameTest(template = "empty", timeoutTicks = 300, batch = "fracture")
+    public static void tooMuchDrillingBreaksOffAPieceThatDrifts(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(92_000, 200, 3_000);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(ModDimensions.DEEP_SPACE);
+        space.setChunkForced(pos.getX() >> 4, pos.getZ() >> 4, true);
+        helper.runAfterDelay(5, () -> {
+            clearArea(server, space, pos);
+            command(server, space, pos, "fill " + (pos.getX() - 3) + " " + (pos.getY() - 3) + " " + (pos.getZ() - 3) + " " + (pos.getX() + 3) + " " + (pos.getY() + 3) + " "
+                    + (pos.getZ() + 3) + " void_reclaimer:asteroid_metallic");
+            int before = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().size();
+            for (int hole = 0; hole < com.voidreclaimer.Config.ASTEROID_FRACTURE_HOLES.get(); hole++) {
+                com.voidreclaimer.asteroid.Fracture.drilled(space, pos);
+            }
+            int after = dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(space).getAllSubLevels().size();
+            helper.assertTrue(after == before + 1, "ships went from " + before + " to " + after);
+            int left = 0;
+            for (BlockPos at : BlockPos.betweenClosed(pos.offset(-3, -3, -3), pos.offset(3, 3, 3))) {
+                left += space.getBlockState(at).is(com.voidreclaimer.registry.ModBlocks.ASTEROID_METALLIC.get()) ? 1 : 0;
+            }
+            helper.assertTrue(left == 343 - com.voidreclaimer.Config.ASTEROID_PIECE_BLOCKS.get(), left + " blocks of rock are left");
+            helper.succeed();
+        });
+    }
+
     /** A fuelled, turning, open thruster pushes its ship away from the nozzle, through vacuum. */
     @GameTest(template = "empty", timeoutTicks = 400)
     public static void aChemicalThrusterPushesItsShip(GameTestHelper helper) {
