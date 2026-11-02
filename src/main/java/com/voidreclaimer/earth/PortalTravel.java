@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.DimensionTransition;
@@ -29,6 +30,16 @@ public final class PortalTravel {
     public static final int GATE_Z = -10;
 
     private PortalTravel() {}
+
+    /** Whether {@code entity} is a body too big for the way down. Nothing stops a body coming back up, so nobody is stranded on Earth. */
+    public static boolean staysInOrbit(Level level, Entity entity) {
+        if (RuinedEarth.is(level) || !(entity instanceof net.minecraft.world.entity.player.Player player)) {
+            return false;
+        }
+        var view = com.voidreclaimer.body.Bodies.view(player);
+        var size = view.sizes().apply(view.stats().size());
+        return size != null && size.staysInOrbit();
+    }
 
     /** Null when the destination dimension is missing. */
     @Nullable

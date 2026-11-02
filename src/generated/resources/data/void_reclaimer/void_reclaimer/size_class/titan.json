@@ -2,5 +2,6 @@
   "rank": 3,
   "scale": 8.0,
   "speed_factor": 2.0,
+  "stays_in_orbit": true,
   "storage_factor": 4.0
 }
