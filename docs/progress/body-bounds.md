@@ -1,0 +1,3 @@
+## A body's size is what's drawn
+- `BodyBounds` measured a composed rig to each section's pivot plus a block, ignored turned cubes, and counted exhaust flames. It now follows `BodyPartsLayer`: each fitted section's model at its bone, cubes turned as GeckoLib turns them, and no `fx_` bones. A Ship reads 21.4 long instead of 15.4, and a Titan 61.6 instead of 67.1, which match the fit test. So lengths a second in `/vrphoto handling` change, and views that fit a body sit a little further back from a Ship. Test: `BodyBoundsTest`.
+- `docs/design/hit-boxes.md` and `plans.md` now hold the old PC's notes for later: merging the Ship's tiny boxes if collision costs too much, the Titan hull's boxes for separation, and the crash order for main-body wrecks.
