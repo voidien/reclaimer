@@ -1,0 +1,16 @@
+{
+  "type": "void_reclaimer:replicator",
+  "category": "void_reclaimer:parts",
+  "cost": {
+    "void_reclaimer:carbon": 200.0,
+    "void_reclaimer:ice": 200.0,
+    "void_reclaimer:metallic": 320.0,
+    "void_reclaimer:silicate": 320.0
+  },
+  "milestone": "void_reclaimer:dyson_tier_3",
+  "result": {
+    "count": 1,
+    "id": "void_reclaimer:dust_compressor_mk3"
+  },
+  "ticks": 6000
+}

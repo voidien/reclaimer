@@ -104,6 +104,24 @@ public final class WeatherGameTests {
             space.setData(ModAttachments.WEATHER, WeatherState.NONE);
         }
         helper.succeed();
+    /** A storm started over another ends that one first, and a kind with no warning still says it has started. */
+    @GameTest(template = "empty", timeoutTicks = 200, batch = "weather_restart")
+    public static void aStormStartedOverAnotherEndsIt(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(107_000, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 1, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            ServerPlayer player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            TestEventListeners.WEATHER_LOG.clear();
+            SpaceWeatherTicker.start(space, STORM);
+            seconds(space, 3);
+            SpaceWeatherTicker.start(space, COVER);
+            helper.assertTrue(TestEventListeners.WEATHER_LOG.equals(java.util.List.of("warning " + STORM, "started " + STORM, "ended " + STORM, "warning " + COVER, "started " + COVER)),
+                    "the events were " + TestEventListeners.WEATHER_LOG);
+            SpaceWeatherTicker.stop(space);
+            space.setData(ModAttachments.WEATHER, WeatherState.NONE);
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
     }
 
     /** A listener can spare a body, as a shielding part will. */
@@ -134,9 +152,9 @@ public final class WeatherGameTests {
             ServerLevel space = TestPlayers.deepSpace(helper);
             ServerPlayer open = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 40.5);
             ServerPlayer covered = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
-            var sun = com.voidreclaimer.weather.BuiltinWeather.toSun(space);
-            BlockPos shield = BlockPos.containing(covered.getEyePosition().add(sun.scale(6.0)));
-            BlockPos.betweenClosed(shield.offset(-3, -3, -3), shield.offset(3, 3, 3)).forEach(p -> space.setBlock(p, Blocks.STONE.defaultBlockState(), 3));
+            // Straight overhead, where the sky draws deep space's sun, and not worked out from the code under test.
+            BlockPos shield = BlockPos.containing(covered.getEyePosition()).above(6);
+            BlockPos.betweenClosed(shield.offset(-5, -1, -5), shield.offset(5, 1, 5)).forEach(p -> space.setBlock(p, Blocks.STONE.defaultBlockState(), 3));
             charged(open);
             charged(covered);
             float openFull = energy(open);
@@ -145,7 +163,7 @@ public final class WeatherGameTests {
             seconds(space, 2);
             helper.assertTrue(energy(open) < openFull, "the sun did not reach a body in the open");
             helper.assertTrue(energy(covered) == coveredFull, "the sun reached a body behind rock");
-            BlockPos.betweenClosed(shield.offset(-3, -3, -3), shield.offset(3, 3, 3)).forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
+            BlockPos.betweenClosed(shield.offset(-5, -1, -5), shield.offset(5, 1, 5)).forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
             SpaceWeatherTicker.stop(space);
             space.setData(ModAttachments.WEATHER, WeatherState.NONE);
             TestPlayers.remove(open);

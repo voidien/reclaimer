@@ -116,6 +116,9 @@ public final class ModRecipeProvider extends RecipeProvider {
         replicator(output, "core_mk2", ModItems.CORE_MK2.get(), 1, DustCost.of(40, 30, 10, 20), 90, parts, Milestones.EXPANSION);
         replicator(output, "thruster_mk2", ModItems.THRUSTER_MK2.get(), 1, DustCost.of(30, 10, 0, 10), 60, parts, Milestones.EXPANSION);
         replicator(output, "storage_mk2", ModItems.STORAGE_MK2.get(), 1, DustCost.of(20, 20, 10, 0), 60, parts, Milestones.EXPANSION);
+        replicator(output, "dust_compressor_mk1", ModItems.DUST_COMPRESSOR_MK1.get(), 1, DustCost.of(60, 60, 40, 40), 90, parts, Milestones.EXPANSION);
+        replicator(output, "dust_compressor_mk2", ModItems.DUST_COMPRESSOR_MK2.get(), 1, DustCost.of(140, 140, 90, 90), 180, parts, Milestones.STARSHIP);
+        replicator(output, "dust_compressor_mk3", ModItems.DUST_COMPRESSOR_MK3.get(), 1, DustCost.of(320, 320, 200, 200), 300, parts, TITAN_UNLOCK);
 
         // Drone sections: the hull costs what the Drone frame did; limbs are cheap spares.
         replicator(output, "drone_hull", ModItems.DRONE_HULL.get(), 1, DustCost.of(20, 10, 0, 0), 60, parts, Milestones.FIRST_DUST);

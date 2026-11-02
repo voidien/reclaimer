@@ -22,6 +22,19 @@ public final class CrashRules {
         return over * over * atTop;
     }
 
+    /**
+     * How much of a speed went into something: what was lost along the way it was going, in the same units. A body speeding up, or turning
+     * off to the side, has lost nothing to anything.
+     */
+    public static double speedLost(double beforeX, double beforeY, double beforeZ, double nowX, double nowY, double nowZ) {
+        double before = Math.sqrt(beforeX * beforeX + beforeY * beforeY + beforeZ * beforeZ);
+        if (before <= 0.0) {
+            return 0.0;
+        }
+        double kept = (nowX * beforeX + nowY * beforeY + nowZ * beforeZ) / before;
+        return Math.max(0.0, before - kept);
+    }
+
     /** The hardest block a hit breaks. Mass counts for less than speed: its square root. */
     public static double hardness(double speed, double mass, double safe) {
         if (speed <= safe) {

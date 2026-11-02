@@ -49,6 +49,15 @@ class CrashRulesTest {
     }
 
     @Test
+    void onlySpeedLostAlongTheWayCounts() {
+        assertEquals(18.0, CrashRules.speedLost(0, 0, -18, 0, 0, 0), 1e-9, "stopped dead");
+        assertEquals(24.0, CrashRules.speedLost(0, 0, -18, 0, 0, 6), 1e-9, "bounced");
+        assertEquals(0.0, CrashRules.speedLost(0, 0, -18, 0, 0, -30), 1e-9, "sped up");
+        assertEquals(18.0, CrashRules.speedLost(0, 0, -18, 18, 0, 0), 1e-9, "turned square");
+        assertEquals(0.0, CrashRules.speedLost(0, 0, 0, 5, 5, 5), 1e-9, "from rest");
+    }
+
+    @Test
     void aHitNeverBreaksMoreThanTheLimit() {
         assertEquals(32, CrashRules.blocks(500.0, 40.0, SAFE, 32));
     }
