@@ -96,6 +96,42 @@ public final class RelayGameTests {
         });
     }
 
+    /**
+     * A shell past a seat's reach and inside a relay's: the lit relay carries the signal, a dark one and a relay in another dimension do
+     * not, and a relay does nothing for a place past its own reach. The rows are written by hand: what makes a row lit has its own test.
+     */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aLitRelayCarriesTheSignal(GameTestHelper helper) {
+        ServerLevel space = TestPlayers.deepSpace(helper);
+        MinecraftServer server = space.getServer();
+        UUID id = new UUID(177_800L, 1L);
+        UUID elsewhereId = new UUID(177_800L, 2L);
+        var seat = new com.voidreclaimer.link.LinkState.Place(space.dimension(), new Vec3(177_800.5, 80.5, 0.5), 0f, 0f);
+        double seatRange = com.voidreclaimer.link.Signal.range(server, seat);
+        double relayRange = com.voidreclaimer.link.Signal.relayRange(server);
+        Vec3 relaySpot = seat.position().add(seatRange * 0.9, 0.0, 0.0);
+        var shell = new com.voidreclaimer.link.LinkState.Place(space.dimension(), relaySpot.add(relayRange * 0.5, 0.0, 0.0), 0f, 0f);
+        var tooFar = new com.voidreclaimer.link.LinkState.Place(space.dimension(), relaySpot.add(relayRange * 1.1, 0.0, 0.0), 0f, 0f);
+        BlockPos unloaded = new BlockPos(177_800, 80, 900_000);
+        helper.assertTrue(!com.voidreclaimer.link.Signal.read(server, seat, shell).reachable(), "the seat reaches the shell by itself");
+
+        Relays.note(space, new RelayList.Entry(id, unloaded, relaySpot, true, Optional.empty()));
+        var carried = com.voidreclaimer.link.Signal.read(server, seat, shell);
+        helper.assertTrue(carried.reachable() && carried.hops() == 1, "a lit relay did not carry the signal: " + carried);
+        helper.assertTrue(!com.voidreclaimer.link.Signal.read(server, seat, tooFar).reachable(), "a relay reached past its own range");
+
+        Relays.note(space, new RelayList.Entry(id, unloaded, relaySpot, false, Optional.empty()));
+        helper.assertTrue(!com.voidreclaimer.link.Signal.read(server, seat, shell).reachable(), "a dark relay carried the signal");
+
+        var earth = server.getLevel(com.voidreclaimer.earth.RuinedEarth.DIMENSION);
+        Relays.note(earth, new RelayList.Entry(elsewhereId, unloaded, relaySpot, true, Optional.empty()));
+        helper.assertTrue(!com.voidreclaimer.link.Signal.read(server, seat, shell).reachable(), "a relay in another dimension carried the signal");
+
+        space.setData(com.voidreclaimer.registry.ModAttachments.RELAYS, Relays.of(space).without(id));
+        earth.setData(com.voidreclaimer.registry.ModAttachments.RELAYS, Relays.of(earth).without(elsewhereId));
+        helper.succeed();
+    }
+
     /** A Relay is on the list as soon as it has ticked for a second, and off it a second after its block has gone. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void theListFollowsTheBlock(GameTestHelper helper) {
