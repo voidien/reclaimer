@@ -10,6 +10,32 @@
         "void_reclaimer:shuttle_hull"
       ],
       "area": "core",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            0.74375,
+            1.25
+          ],
+          "size": [
+            2.1,
+            1.95,
+            2.5
+          ]
+        },
+        {
+          "at": [
+            0.0,
+            0.74375,
+            -1.25
+          ],
+          "size": [
+            2.1,
+            1.95,
+            2.5
+          ]
+        }
+      ],
       "id": "body",
       "required": true
     },
@@ -19,6 +45,20 @@
         "void_reclaimer:shuttle_nose"
       ],
       "area": "hull",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            0.64375,
+            3.2
+          ],
+          "size": [
+            1.8,
+            1.0,
+            1.4
+          ]
+        }
+      ],
       "id": "nose",
       "pivot": [
         0.0,
@@ -45,6 +85,20 @@
         "void_reclaimer:shuttle_dome"
       ],
       "area": "sensors",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            1.86875,
+            1.2
+          ],
+          "size": [
+            1.0,
+            0.35,
+            1.0
+          ]
+        }
+      ],
       "id": "dome",
       "pivot": [
         0.0,
@@ -58,6 +112,20 @@
         "void_reclaimer:shuttle_ridge"
       ],
       "area": "hull",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            1.80375,
+            -0.9
+          ],
+          "size": [
+            0.75,
+            0.25,
+            2.5
+          ]
+        }
+      ],
       "id": "ridge",
       "pivot": [
         0.0,
@@ -71,6 +139,20 @@
         "void_reclaimer:shuttle_aft"
       ],
       "area": "cargo",
+      "boxes": [
+        {
+          "at": [
+            0.0,
+            0.99375,
+            -2.5
+          ],
+          "size": [
+            2.5,
+            1.7,
+            1.0
+          ]
+        }
+      ],
       "id": "aft",
       "pivot": [
         0.0,
@@ -84,6 +166,20 @@
         "void_reclaimer:shuttle_strut"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            -1.625,
+            0.61875,
+            -0.8
+          ],
+          "size": [
+            1.25,
+            0.25,
+            0.75
+          ]
+        }
+      ],
       "id": "strut_l",
       "pivot": [
         16.1,
@@ -97,6 +193,20 @@
         "void_reclaimer:shuttle_strut"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            -1.625,
+            0.61875,
+            -1.8
+          ],
+          "size": [
+            1.25,
+            0.25,
+            0.75
+          ]
+        }
+      ],
       "id": "strut_l2",
       "pivot": [
         16.1,
@@ -110,6 +220,20 @@
         "void_reclaimer:shuttle_strut"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            1.625,
+            0.61875,
+            -0.8
+          ],
+          "size": [
+            1.25,
+            0.25,
+            0.75
+          ]
+        }
+      ],
       "id": "strut_r",
       "pivot": [
         -16.1,
@@ -123,6 +247,20 @@
         "void_reclaimer:shuttle_strut"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            1.625,
+            0.61875,
+            -1.8
+          ],
+          "size": [
+            1.25,
+            0.25,
+            0.75
+          ]
+        }
+      ],
       "id": "strut_r2",
       "pivot": [
         -16.1,
@@ -136,6 +274,32 @@
         "void_reclaimer:shuttle_nacelle"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            -2.5,
+            0.36875,
+            -2.35
+          ],
+          "size": [
+            0.8,
+            0.75,
+            2.3
+          ]
+        },
+        {
+          "at": [
+            -2.5,
+            0.36875,
+            -0.1
+          ],
+          "size": [
+            0.8,
+            0.75,
+            2.3
+          ]
+        }
+      ],
       "id": "nacelle_l",
       "pivot": [
         40.0,
@@ -149,6 +313,32 @@
         "void_reclaimer:shuttle_nacelle"
       ],
       "area": "propulsion",
+      "boxes": [
+        {
+          "at": [
+            2.5,
+            0.36875,
+            -2.35
+          ],
+          "size": [
+            0.8,
+            0.75,
+            2.3
+          ]
+        },
+        {
+          "at": [
+            2.5,
+            0.36875,
+            -0.1
+          ],
+          "size": [
+            0.8,
+            0.75,
+            2.3
+          ]
+        }
+      ],
       "id": "nacelle_r",
       "pivot": [
         -40.0,

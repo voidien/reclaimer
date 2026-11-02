@@ -3,6 +3,7 @@ package com.voidreclaimer.body;
 import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.VoidReclaimerRegistries;
 import com.voidreclaimer.api.body.Chassis;
+import com.voidreclaimer.api.body.HitBox;
 import com.voidreclaimer.api.body.SizeClass;
 import com.voidreclaimer.api.body.Socket;
 import java.util.ArrayList;
@@ -96,6 +97,9 @@ public final class BuiltinBodies {
     /** A smaller, faster layout with its own size class: a shuttle, about 17 blocks long at scale 2. */
     public static final ResourceKey<Chassis> SHUTTLE = chassisKey("shuttle");
 
+    /** How far under the feet the Shuttle's model origin stands, in blocks: half its 3.6-block box, less its rig's {@code offset_y} of 18.5 px at scale 2. */
+    private static final double SHUTTLE_ORIGIN_BELOW_FEET = 0.5125;
+
     public static final Map<ResourceKey<Chassis>, Chassis> CHASSIS = chassis();
 
     private BuiltinBodies() {}
@@ -132,65 +136,102 @@ public final class BuiltinBodies {
         map.put(MECH, new Chassis(MECH_SIZE, "torso", List.copyOf(mech)).withWalks(true));
 
         List<Socket> ship = new ArrayList<>();
-        ship.add(root("keel", SHIP_KEEL, "core"));
-        ship.add(socket("bow", "keel", 0, 0, -24, "hull", BOW));
-        ship.add(socket("bridge", "keel", 0, 6, -12, "control", BRIDGE));
+        ship.add(root("keel", SHIP_KEEL, "core").withBoxes(shipBox(0, 2.815, -2.44, 3, 1.35, 10.88)));
+        ship.add(socket("bow", "keel", 0, 0, -24, "hull", BOW).withBoxes(shipBox(0, 2.915, 7.97, 3.56, 1.75, 9.94)));
+        ship.add(socket("bridge", "keel", 0, 6, -12, "control", BRIDGE).withBoxes(shipBox(0, 5.42, 1.66, 1.68, 3.94, 2.68)));
         for (int i = 1; i <= 6; i++) {
-            Socket hull = socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT);
+            Socket hull = socket("hull_" + i, "keel", i % 2 == 0 ? -6 : 6, 0, -12 + 8 * ((i - 1) / 2), "hull", HULL_SEGMENT)
+                    .withBoxes(shipBox(pilotSide(i) * 1.265, 2.69, 2.25 - 1.5 * ((i - 1) / 2), 1.41, 1.1, 1.5));
             // The hull segment, wing and hardpoint models are lopsided: the far side of each pair is drawn flipped.
             ship.add(i % 2 == 0 ? hull.mirrored() : hull);
         }
-        ship.add(socket("wing_port", "keel", 14, 0, 4, "control", WING));
-        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING).mirrored());
+        ship.add(socket("wing_port", "keel", 14, 0, 4, "control", WING).withBoxes(shipBox(-5.365, 2.69, -2.865, 6.89, 0.54, 7.39)));
+        ship.add(socket("wing_starboard", "keel", -14, 0, 4, "control", WING).withBoxes(shipBox(5.365, 2.69, -2.865, 6.89, 0.54, 7.39)).mirrored());
         for (int i = 1; i <= 4; i++) {
-            ship.add(socket("nacelle_" + i, "keel", i <= 2 ? 8 : -8, i % 2 == 0 ? -3 : 3, 20, "propulsion", ENGINE_NACELLE));
+            ship.add(socket("nacelle_" + i, "keel", i <= 2 ? 8 : -8, i % 2 == 0 ? -3 : 3, 20, "propulsion", ENGINE_NACELLE)
+                    .withBoxes(shipBox(i <= 2 ? -1.5 : 1.5, i % 2 == 0 ? 2.135 : 3.265, -5.065, 1.34, 1.05, 6.75)));
         }
         for (int i = 1; i <= 6; i++) {
             // Hardpoints also take a Mech hand.
-            Socket hardpoint = socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND);
+            Socket hardpoint = socket("hardpoint_" + i, "hull_" + i, i % 2 == 0 ? -3 : 3, -2, 0, "weapons", HARDPOINT, HAND)
+                    .withBoxes(shipBox(pilotSide(i) * 2.3, 2.325, 2.25 - 1.5 * ((i - 1) / 2), 1.22, 0.37, 0.38));
             ship.add(i % 2 == 0 ? hardpoint.mirrored() : hardpoint);
         }
         for (int i = 1; i <= 4; i++) {
-            ship.add(socket("cargo_" + i, "keel", i % 2 == 0 ? -4 : 4, -4, -4 + 6 * ((i - 1) / 2), "cargo", CARGO_BAY));
+            ship.add(socket("cargo_" + i, "keel", i % 2 == 0 ? -4 : 4, -4, -4 + 6 * ((i - 1) / 2), "cargo", CARGO_BAY)
+                    .withBoxes(shipBox(pilotSide(i) * 0.75, 1.555, i <= 2 ? 0.77 : -0.35, 1.12, 0.89, 1.08)));
         }
-        ship.add(socket("mast_port", "keel", 6, 10, 0, "sensors", SENSOR_MAST));
-        ship.add(socket("mast_starboard", "keel", -6, 10, 0, "sensors", SENSOR_MAST));
+        ship.add(socket("mast_port", "keel", 6, 10, 0, "sensors", SENSOR_MAST).withBoxes(shipBox(-1.125, 3.97, 0, 0.57, 1.78, 0.56)));
+        ship.add(socket("mast_starboard", "keel", -6, 10, 0, "sensors", SENSOR_MAST).withBoxes(shipBox(1.125, 3.97, 0, 0.57, 1.78, 0.56)));
         ship.add(socket("rcs_fore", "keel", 0, 2, -20, "control", RCS_CLUSTER));
         ship.add(socket("rcs_aft", "keel", 0, 2, 16, "control", RCS_CLUSTER));
-        ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE));
-        ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN));
+        ship.add(socket("dorsal_spine", "keel", 0, 8, 4, "hull", DORSAL_SPINE).withBoxes(shipBox(0, 4.53, -2.435, 0.56, 2.9, 5.63)));
+        ship.add(socket("ventral_fin", "keel", 0, -8, 8, "control", VENTRAL_FIN).withBoxes(shipBox(0, 0.97, -3.095, 0.56, 2.72, 3.57)));
         map.put(SHIP, new Chassis(SHIP_SIZE, "keel", List.copyOf(ship), new Chassis.Cockpit(0.9f, -0.3f, 0f)));
 
         // The Shuttle: a second Ship-class layout. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> shuttle = new ArrayList<>();
-        shuttle.add(root("body", SHUTTLE_HULL, "core"));
-        shuttle.add(socket("nose", "body", 0, 14.08, 40, "hull", SHUTTLE_NOSE));
+        shuttle.add(root("body", SHUTTLE_HULL, "core").withBoxes(shuttleBox(0, 2, 2.5, 4.2, 3.9, 5), shuttleBox(0, 2, -2.5, 4.2, 3.9, 5)));
+        shuttle.add(socket("nose", "body", 0, 14.08, 40, "hull", SHUTTLE_NOSE).withBoxes(shuttleBox(0, 1.8, 6.4, 3.6, 2, 2.8)));
         shuttle.add(socket("windshield", "body", 0, 28.8, 35.3, "control", SHUTTLE_WINDSHIELD));
-        shuttle.add(socket("dome", "body", 0, 33, 11.2, "sensors", SHUTTLE_DOME));
-        shuttle.add(socket("ridge", "body", 0, 31, -14.4, "hull", SHUTTLE_RIDGE));
-        shuttle.add(socket("aft", "body", 0, 17.9, -32, "cargo", SHUTTLE_AFT));
-        shuttle.add(socket("strut_l", "body", 16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT));
-        shuttle.add(socket("strut_l2", "body", 16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
-        shuttle.add(socket("strut_r", "body", -16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT));
-        shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT));
-        shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
-        shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE));
+        shuttle.add(socket("dome", "body", 0, 33, 11.2, "sensors", SHUTTLE_DOME).withBoxes(shuttleBox(0, 4.25, 2.4, 2, 0.7, 2)));
+        shuttle.add(socket("ridge", "body", 0, 31, -14.4, "hull", SHUTTLE_RIDGE).withBoxes(shuttleBox(0, 4.12, -1.8, 1.5, 0.5, 5)));
+        shuttle.add(socket("aft", "body", 0, 17.9, -32, "cargo", SHUTTLE_AFT).withBoxes(shuttleBox(0, 2.5, -5, 5, 3.4, 2)));
+        shuttle.add(socket("strut_l", "body", 16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(-3.25, 1.75, -1.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_l2", "body", 16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(-3.25, 1.75, -3.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_r", "body", -16.1, 14.1, -12.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(3.25, 1.75, -1.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("strut_r2", "body", -16.1, 14.1, -28.8, "propulsion", SHUTTLE_STRUT).withBoxes(shuttleBox(3.25, 1.75, -3.6, 2.5, 0.5, 1.5)));
+        shuttle.add(socket("nacelle_l", "body", 40, 10, -19.2, "propulsion", SHUTTLE_NACELLE)
+                .withBoxes(shuttleBox(-5, 1.25, -4.7, 1.6, 1.5, 4.6), shuttleBox(-5, 1.25, -0.2, 1.6, 1.5, 4.6)));
+        shuttle.add(socket("nacelle_r", "body", -40, 10, -19.2, "propulsion", SHUTTLE_NACELLE)
+                .withBoxes(shuttleBox(5, 1.25, -4.7, 1.6, 1.5, 4.6), shuttleBox(5, 1.25, -0.2, 1.6, 1.5, 4.6)));
         map.put(SHUTTLE, new Chassis(SHUTTLE_SIZE, "body", List.copyOf(shuttle), new Chassis.Cockpit(2.0f, 0.0f, 0f)));
 
         // The Titan: the saucer is the core. Socket ids are the bones of the art rig (pivots are its positions, in pixels).
         List<Socket> titan = new ArrayList<>();
-        titan.add(root("saucer", TITAN_SAUCER, "core"));
-        titan.add(socket("neck", "saucer", 0, 17.6, -6.4, "hull", TITAN_NECK));
-        titan.add(socket("bridge", "saucer", 0, 35.04, 28, "control", TITAN_BRIDGE));
+        titan.add(root("saucer", TITAN_SAUCER, "core").withBoxes(titanBox(0, 13.5, 14, 16, 8, 32),
+                titanBox(-12, 13.5, 14, 8, 8, 22), titanBox(12, 13.5, 14, 8, 8, 22)));
+        // The neck's section is also the drive hull, the rig's root bone.
+        titan.add(socket("neck", "saucer", 0, 17.6, -6.4, "hull", TITAN_NECK).withBoxes(titanBox(0, 11, 0.8, 3, 3, 10),
+                titanBox(0, 5.25, -17, 10, 10.5, 10), titanBox(0, 5.25, -7, 10, 10.5, 10), titanBox(0, 5.25, 1, 10, 10.5, 10)));
+        titan.add(socket("bridge", "saucer", 0, 35.04, 28, "control", TITAN_BRIDGE).withBoxes(titanBox(0, 18, 14, 4, 1.2, 4)));
         titan.add(socket("sensor", "saucer", 0, 18.5, 28, "sensors", TITAN_SENSOR_ARRAY));
         titan.add(socket("deflector", "neck", 0, 10, 9.6, "hull", TITAN_DEFLECTOR));
-        titan.add(socket("bay_door", "neck", 0, 6, -48, "cargo", TITAN_BAY_DOOR));
-        titan.add(socket("pylon_l", "neck", 6.4, 17.6, -32, "propulsion", TITAN_PYLON));
-        titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON));
-        titan.add(socket("nacelle_l", "pylon_l", 22, 38, -34, "propulsion", TITAN_NACELLE));
-        titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE));
+        titan.add(socket("bay_door", "neck", 0, 6, -48, "cargo", TITAN_BAY_DOOR).withBoxes(titanBox(0, 5.5, -23.5, 6, 5, 3)));
+        titan.add(socket("pylon_l", "neck", 6.4, 17.6, -32, "propulsion", TITAN_PYLON)
+                .withBoxes(titanBox(-4.75, 10.9, -16, 4.5, 5.7, 4), titanBox(-9.25, 16.6, -16, 4.5, 5.7, 4)));
+        titan.add(socket("pylon_r", "neck", -6.4, 17.6, -32, "propulsion", TITAN_PYLON)
+                .withBoxes(titanBox(4.75, 10.9, -16, 4.5, 5.7, 4), titanBox(9.25, 16.6, -16, 4.5, 5.7, 4)));
+        titan.add(socket("nacelle_l", "pylon_l", 22, 38, -34, "propulsion", TITAN_NACELLE).withBoxes(titanBox(-11, 19, -26.5, 5, 5, 10),
+                titanBox(-11, 19, -17, 5, 5, 10), titanBox(-11, 19, -7.5, 5, 5, 10)));
+        titan.add(socket("nacelle_r", "pylon_r", -22, 38, -34, "propulsion", TITAN_NACELLE).withBoxes(titanBox(11, 19, -26.5, 5, 5, 10),
+                titanBox(11, 19, -17, 5, 5, 10), titanBox(11, 19, -7.5, 5, 5, 10)));
         map.put(TITAN, new Chassis(TITAN_SIZE, "saucer", List.copyOf(titan), new Chassis.Cockpit(1.7f, 0.5f, 0f)));
         return Map.copyOf(map);
+    }
+
+    /** A Ship box, in blocks at the Ship's scale, from the feet. */
+    private static HitBox shipBox(double right, double up, double forward, double width, double height, double length) {
+        return box(SIZE_CLASSES.get(SHIP_SIZE).scale(), right, up, forward, width, height, length);
+    }
+
+    /** Which side of the pilot the {@code i}th of a pair of Ship sections is on: the first of each pair is the port, left side. */
+    private static int pilotSide(int i) {
+        return i % 2 == 0 ? 1 : -1;
+    }
+
+    /** A Titan box, in blocks at the Titan's scale: its feet are the model's origin. */
+    private static HitBox titanBox(double right, double up, double forward, double width, double height, double length) {
+        return box(SIZE_CLASSES.get(TITAN_SIZE).scale(), right, up, forward, width, height, length);
+    }
+
+    /** A Shuttle box, in blocks at the Shuttle's scale, measured from the model's origin, which stands below the feet. */
+    private static HitBox shuttleBox(double right, double up, double forward, double width, double height, double length) {
+        return box(SIZE_CLASSES.get(SHUTTLE_SIZE).scale(), right, up - SHUTTLE_ORIGIN_BELOW_FEET, forward, width, height, length);
+    }
+
+    private static HitBox box(double scale, double right, double up, double forward, double width, double height, double length) {
+        return new HitBox(new Vec3(right / scale, up / scale, forward / scale), new Vec3(width / scale, height / scale, length / scale));
     }
 
     private static Socket root(String id, ResourceLocation type, String area) {
