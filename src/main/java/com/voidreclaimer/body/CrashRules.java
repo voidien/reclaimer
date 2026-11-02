@@ -17,7 +17,8 @@ public final class CrashRules {
         if (speed <= safe) {
             return 0.0;
         }
-        double over = (speed - safe) / Math.max(topSpeed - safe, 1.0);
+        // A body that can barely move isn't made of glass: it goes by the safe speed.
+        double over = (speed - safe) / Math.max(topSpeed - safe, safe);
         return over * over * atTop;
     }
 

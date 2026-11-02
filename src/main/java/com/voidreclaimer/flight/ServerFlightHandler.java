@@ -130,10 +130,16 @@ public final class ServerFlightHandler {
      */
     @SubscribeEvent
     static void onFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof Player player && ThrusterFlight.isActive(player) && !Energy.isExempt(player)
-                && Energy.canPowerSystems(player) && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener()) {
+        if (event.getEntity() instanceof Player player && !fallHurts(player)) {
             event.setCanceled(true);
         }
+    }
+
+    /** Whether vanilla's fall damage reaches this body. */
+    public static boolean fallHurts(Player player) {
+        return !(ThrusterFlight.isActive(player) && !Energy.isExempt(player) && Energy.canPowerSystems(player)
+                && player.getData(ModAttachments.FLIGHT_SETTINGS).dampener())
+                && !com.voidreclaimer.space.ZeroGravity.isZeroG(player.level(), player.blockPosition());
     }
 
     /**

@@ -42,7 +42,7 @@ public final class VoidReclaimerClient {
         modBus.addListener(VoidReclaimerClient::onRegisterRenderers);
         modBus.addListener(VoidReclaimerClient::onRegisterItemColors);
         SensorEchoPayload.clientHandler = ClientSensorController::onEcho;
-        com.voidreclaimer.flight.ThrusterFlight.crashed = lost -> net.neoforged.neoforge.network.PacketDistributor.sendToServer(com.voidreclaimer.network.BodyCrashPayload.of(lost));
+        com.voidreclaimer.flight.ThrusterFlight.crashed = com.voidreclaimer.client.input.ClientFlightController::onCrash;
         com.voidreclaimer.network.HelmReadoutPayload.clientHandler = com.voidreclaimer.client.input.ClientPilotController::onReadout;
         com.voidreclaimer.network.LaunchStreakPayload.clientHandler = com.voidreclaimer.client.render.DeepSpaceEffects::onLaunchStreak;
         ReplicatorData.clientSyncListener = ClientReplicatorController::onSync;
