@@ -5,23 +5,21 @@ import com.voidreclaimer.VoidReclaimer;
 import com.voidreclaimer.api.event.ShipCrashEvent;
 import com.voidreclaimer.body.CrashRules;
 import com.voidreclaimer.registry.ModBlocks;
-import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
-import dev.ryanhcode.sable.physics.callback.FragileBlockCallback;
+import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
-import dev.ryanhcode.sable.sublevel.system.SubLevelPhysicsSystem;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
@@ -29,74 +27,85 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.joml.Vector3d;
 
 /**
- * Ships breaking things. Sable asks a block's callback about each contact while it steps the physics, and changing a block in there can
- * hang the server, so this only writes the hit down. The blocks go at the end of the tick, the weakest first, by the same rule as a body's
- * crash. Sable's own fragile blocks, which every block's callback would otherwise hide, go on working.
+ * Ships breaking things. Each tick the server compares a ship's speed with the last tick's: a ship that lost a lot of speed all at once has
+ * hit something. Only then does it look at what: the hull's blocks that ran into the world's, the weakest first, by the same rule as a
+ * body's crash. Nothing here touches Sable's collision callbacks: one on every block turns off its collider culling, and changing a block
+ * inside the physics step can hang the server.
  */
 @EventBusSubscriber(modid = VoidReclaimer.MOD_ID)
-public final class ShipCrash implements BlockSubLevelCollisionCallback {
-    public static final ShipCrash INSTANCE = new ShipCrash();
-    private static final Queue<Impact> IMPACTS = new ConcurrentLinkedQueue<>();
+public final class ShipCrash {
+    /** How far past its own blocks a ship reaches into what it hit, in blocks. */
+    private static final double REACH = 1.5;
     /** A ship with no mass on record counts as this. */
     private static final double NO_MASS = 10.0;
+    private static final Map<UUID, Vector3d> LAST_SPEED = new HashMap<>();
 
-    private record Impact(ResourceKey<Level> level, BlockPos hit, BlockPos other, double speed) {}
-
-    /** One block that a hit could break. */
-    private record Target(ServerLevel level, BlockPos pos, double speed, double hardest, float hardness) {}
+    /** One block a hit could break. */
+    private record Target(BlockPos pos, float hardness) {}
 
     private ShipCrash() {}
 
-    @Override
-    public CollisionResult sable$onCollision(BlockPos hit, BlockPos other, Vector3d at, double speed) {
-        CollisionResult fragile = FragileBlockCallback.INSTANCE.sable$onCollision(hit, other, at, speed);
-        double along = Math.abs(speed);
-        if (along > Config.CRASH_SAFE_SPEED.get() && Config.CRASH_BREAKS_BLOCKS.get()) {
-            IMPACTS.add(new Impact(SubLevelPhysicsSystem.getCurrentlySteppingSystem().getLevel().dimension(), hit.immutable(), other.immutable(), along));
-        }
-        return fragile;
-    }
-
     @SubscribeEvent
     static void onServerTick(ServerTickEvent.Post event) {
-        if (IMPACTS.isEmpty()) {
+        if (!Config.CRASH_BREAKS_BLOCKS.get()) {
             return;
         }
-        List<Target> targets = new ArrayList<>();
-        Set<BlockPos> seen = new HashSet<>();
-        double safe = Config.CRASH_SAFE_SPEED.get();
-        for (Impact impact = IMPACTS.poll(); impact != null; impact = IMPACTS.poll()) {
-            ServerLevel level = event.getServer().getLevel(impact.level());
-            if (level != null) {
-                double hardest = CrashRules.hardness(impact.speed(), Math.max(mass(level, impact.hit()), mass(level, impact.other())), safe);
-                add(targets, seen, level, impact.hit(), impact.speed(), hardest);
-                add(targets, seen, level, impact.other(), impact.speed(), hardest);
+        Set<UUID> here = new HashSet<>();
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            for (ServerSubLevel ship : SubLevelContainer.getContainer(level).getAllSubLevels()) {
+                here.add(ship.getUniqueId());
+                look(level, ship);
             }
         }
-        targets.stream().sorted(Comparator.comparingDouble(Target::hardness)).limit(Config.CRASH_MOST_BLOCKS.get()).forEach(ShipCrash::breakBlock);
+        LAST_SPEED.keySet().retainAll(here);
     }
 
-    private static void add(List<Target> targets, Set<BlockPos> seen, ServerLevel level, BlockPos pos, double speed, double hardest) {
+    private static void look(ServerLevel level, ServerSubLevel ship) {
+        RigidBodyHandle body = RigidBodyHandle.of(ship);
+        if (body == null || !body.isValid()) {
+            return;
+        }
+        Vector3d now = body.getLinearVelocity(new Vector3d());
+        Vector3d before = LAST_SPEED.put(ship.getUniqueId(), now);
+        if (before != null) {
+            double lost = CrashRules.speedLost(before.x, before.y, before.z, now.x, now.y, now.z);
+            if (lost > Config.CRASH_SAFE_SPEED.get()) {
+                hit(level, ship, new Vec3(before.x, before.y, before.z).normalize(), lost);
+            }
+        }
+    }
+
+    private static void hit(ServerLevel level, ServerSubLevel ship, Vec3 way, double speed) {
+        double mass = ship.getMassTracker() == null ? NO_MASS : ship.getMassTracker().getMass();
+        double hardest = CrashRules.hardness(speed, mass, Config.CRASH_SAFE_SPEED.get());
+        Set<BlockPos> seen = new HashSet<>();
+        List<Target> targets = new ArrayList<>();
+        for (BlockPos block : com.voidreclaimer.station.StationAssembly.blocksOf(level, ship)) {
+            Vec3 at = ship.logicalPose().transformPosition(Vec3.atCenterOf(block));
+            for (double ahead = 0.5; ahead <= REACH; ahead += 0.5) {
+                BlockPos met = BlockPos.containing(at.add(way.scale(ahead)));
+                if (!level.getBlockState(met).isAir() && !Ships.inPlots(level, met)) {
+                    add(targets, seen, level, met, hardest);
+                    add(targets, seen, level, block.immutable(), hardest);
+                    break;
+                }
+            }
+        }
+        targets.stream().sorted(Comparator.comparingDouble(Target::hardness)).limit(CrashRules.blocks(speed, mass, Config.CRASH_SAFE_SPEED.get(), Config.CRASH_MOST_BLOCKS.get()))
+                .forEach(target -> breakBlock(level, target.pos(), speed));
+    }
+
+    private static void add(List<Target> targets, Set<BlockPos> seen, ServerLevel level, BlockPos pos, double hardest) {
         BlockState state = level.getBlockState(pos);
         float hardness = state.getDestroySpeed(level, pos);
         if (!state.isAir() && hardness >= 0f && hardness <= hardest && !state.is(ModBlocks.CRASH_PROOF) && seen.add(pos)) {
-            targets.add(new Target(level, pos, speed, hardest, hardness));
+            targets.add(new Target(pos, hardness));
         }
     }
 
-    private static void breakBlock(Target target) {
-        if (!NeoForge.EVENT_BUS.post(new ShipCrashEvent(target.level(), target.pos(), target.speed())).isCanceled()) {
-            target.level().destroyBlock(target.pos(), true);
+    private static void breakBlock(ServerLevel level, BlockPos pos, double speed) {
+        if (!NeoForge.EVENT_BUS.post(new ShipCrashEvent(level, pos, speed)).isCanceled()) {
+            level.destroyBlock(pos, true);
         }
-    }
-
-    private static double mass(ServerLevel level, BlockPos pos) {
-        ServerSubLevel ship = Ships.shipAt(level, pos);
-        return ship == null || ship.getMassTracker() == null ? NO_MASS : ship.getMassTracker().getMass();
-    }
-
-    /** What a tick's impacts are waiting for: for a test that wants to know the queue has been read. */
-    public static boolean idle(MinecraftServer server) {
-        return IMPACTS.isEmpty();
     }
 }

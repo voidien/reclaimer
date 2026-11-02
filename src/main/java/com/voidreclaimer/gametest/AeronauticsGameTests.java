@@ -1085,6 +1085,19 @@ public final class AeronauticsGameTests {
         });
     }
 
+    /** However hard it hits, a ship stops at a wall: its blocks and the wall's stay solid to each other. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
+    public static void aCrashingShipStopsAtTheObsidianBehindTheGlass(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(91_800, 200, 3_000);
+        ServerLevel space = helper.getLevel().getServer().getLevel(ModDimensions.DEEP_SPACE);
+        crashShip(helper, pos, 18.0, () -> {
+            var ship = shipNamed(space, pos);
+            double reached = ship.logicalPose().position().z();
+            helper.assertTrue(reached > pos.getZ() - 13.0, "the ship went through the wall, to " + reached + " from " + pos.getZ());
+            helper.succeed();
+        });
+    }
+
     /** Under the safe speed a ship bumps and everything stays. */
     @GameTest(template = "empty", timeoutTicks = 400, batch = "ship_crash")
     public static void aGentleShipBumpBreaksNothing(GameTestHelper helper) {
