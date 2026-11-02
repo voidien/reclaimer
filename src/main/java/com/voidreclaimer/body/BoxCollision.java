@@ -79,6 +79,13 @@ public final class BoxCollision {
         return moved;
     }
 
+    /** How deep {@code player}'s boxes are in the blocks and ships around them where the server thinks it is. A body with no boxes is never in anything here. */
+    public static double overlap(Player player) {
+        BodyView view = Bodies.view(player);
+        List<BodyBoxes.Box> body = BodyTurning.place(player, view, BodyTurning.of(player));
+        return body.isEmpty() ? 0.0 : BodyBoxes.deepest(body, blocksNear(player.level(), body, Vec3.ZERO, 0.0));
+    }
+
     /** All a body can hit this tick: blocks, ships and other bodies. */
     static List<BodyBoxes.Box> solidsNear(Player player, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
         List<BodyBoxes.Box> solids = blocksNear(player.level(), body, velocity, margin);
@@ -103,7 +110,8 @@ public final class BoxCollision {
                 entity -> entity != player && entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost))) {
             BodyView view = Bodies.view(other);
             BodyData data = view.data();
-            List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), other.position(), other.getYRot(), other.getXRot(), view.stats().scale());
+            BodyHeading heading = BodyTurning.of(other);
+            List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), other.position(), heading.yaw(), heading.pitch(), view.stats().scale());
             if (boxes.isEmpty() && small && other.getBoundingBox().intersects(near)) {
                 solids.add(BodyBoxes.Box.of(other.getBoundingBox()));
             }

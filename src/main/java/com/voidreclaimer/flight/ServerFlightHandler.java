@@ -31,6 +31,10 @@ public final class ServerFlightHandler {
     private static final double TELEPORT_JUMP = 8.0;
     /** Slack for collision push-out and rounding. */
     private static final double SLACK_BLOCKS = 1.0;
+    private static final int OVERLAP_CHECK_TICKS = 10;
+    /** Deeper than rounding or a push being worked out, in blocks. */
+    private static final double DEEP_OVERLAP = 0.5;
+    private static final int DEEP_OVERLAP_TICKS = 40;
 
     private ServerFlightHandler() {}
 
@@ -58,7 +62,7 @@ public final class ServerFlightHandler {
         if (Tether.isRecalling(player)) {
             // The server itself started the winch, which is faster than top speed: restart the window after it.
             tracker.clear();
-        } else if (!Energy.isExempt(player) && checkSpeed(player, tracker, position)) {
+        } else if (!Energy.isExempt(player) && (checkSpeed(player, tracker, position) || checkOverlap(player, tracker, position))) {
             return;
         }
         tracker.record(position, WINDOW_TICKS);
@@ -127,6 +131,36 @@ public final class ServerFlightHandler {
         }
     }
 
+    /**
+     * A big body's boxes are flown on the client, so the server looks now and then. A body held deep in something for two seconds goes
+     * back to where it was last clear; a hair of overlap, or a body that has never been clear here, is left alone. Returns true if the
+     * player was corrected.
+     */
+    private static boolean checkOverlap(ServerPlayer player, FlightTracker tracker, Vec3 position) {
+        var chassis = com.voidreclaimer.body.Bodies.view(player).chassis();
+        if (player.tickCount % OVERLAP_CHECK_TICKS != 0 || chassis.sockets().stream().allMatch(socket -> socket.boxes().isEmpty())) {
+            return false;
+        }
+        if (com.voidreclaimer.body.BoxCollision.overlap(player) < DEEP_OVERLAP) {
+            tracker.clearOfBlocks(position, chassis);
+            return false;
+        }
+        Vec3 clear = tracker.lastClear(chassis);
+        if (clear == null || tracker.deepFor(OVERLAP_CHECK_TICKS) < DEEP_OVERLAP_TICKS) {
+            return false;
+        }
+        VoidReclaimer.LOGGER.warn("{} stayed inside something for {} ticks; correcting", player.getName().getString(), DEEP_OVERLAP_TICKS);
+        tracker.clear();
+        pullBack(player, clear);
+        return true;
+    }
+
+    private static void pullBack(ServerPlayer player, Vec3 to) {
+        player.connection.teleport(to.x, to.y, to.z, player.getYRot(), player.getXRot());
+        player.setDeltaMovement(Vec3.ZERO);
+        player.connection.send(new ClientboundSetEntityMotionPacket(player));
+    }
+
     /** Returns true if the player was corrected. */
     private static boolean checkSpeed(ServerPlayer player, FlightTracker tracker, Vec3 position) {
         int ticks = tracker.size();
@@ -137,7 +171,9 @@ public final class ServerFlightHandler {
         Vec3 start = tracker.oldest();
         // The wind over ruined Earth can carry the body faster than its own top speed.
         double maxSpeed = FlightStats.of(player).maxSpeed()
-                + (player.level().dimension() == com.voidreclaimer.earth.RuinedEarth.DIMENSION ? Config.EARTH_WIND_SPEED.get() / 20.0 : 0.0);
+                + (player.level().dimension() == com.voidreclaimer.earth.RuinedEarth.DIMENSION ? Config.EARTH_WIND_SPEED.get() / 20.0 : 0.0)
+                // A turn pushes a body off what it swings into, on top of its own speed.
+                + (player.getData(ModAttachments.BODY_HEARD).lagging() ? com.voidreclaimer.body.BodyBoxes.MOST_PUSH : 0.0);
         double tolerance = Config.SPEED_CHECK_TOLERANCE.get();
         if (!FlightPhysics.exceedsSpeedLimit(start, position, ticks, maxSpeed, tolerance, SLACK_BLOCKS)) {
             return false;
@@ -147,9 +183,7 @@ public final class ServerFlightHandler {
         VoidReclaimer.LOGGER.warn("{} moved {} blocks in {} ticks under thruster flight (allowed {}); correcting",
                 player.getName().getString(), String.format("%.2f", moved), ticks, String.format("%.2f", allowed));
         tracker.clear();
-        player.connection.teleport(start.x, start.y, start.z, player.getYRot(), player.getXRot());
-        player.setDeltaMovement(Vec3.ZERO);
-        player.connection.send(new ClientboundSetEntityMotionPacket(player));
+        pullBack(player, start);
         return true;
     }
 }

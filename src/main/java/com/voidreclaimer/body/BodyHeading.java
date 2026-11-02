@@ -57,6 +57,14 @@ public record BodyHeading(float yaw, float pitch) {
         return partWay(turnYaw, turnPitch, Math.min(degreesPerTick, left * EASE) / left);
     }
 
+    /** {@code to}, or as far toward it as {@code degrees} goes, the short way round. */
+    public BodyHeading atMost(BodyHeading to, double degrees) {
+        float turnYaw = Mth.wrapDegrees(to.yaw - yaw);
+        float turnPitch = to.pitch - pitch;
+        double left = Math.hypot(turnYaw, turnPitch);
+        return left <= degrees ? to : partWay(turnYaw, turnPitch, degrees / left);
+    }
+
     private BodyHeading partWay(float turnYaw, float turnPitch, double share) {
         return new BodyHeading((float) (yaw + turnYaw * share), (float) (pitch + turnPitch * share));
     }

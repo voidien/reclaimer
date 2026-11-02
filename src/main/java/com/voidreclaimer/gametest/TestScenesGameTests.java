@@ -133,6 +133,75 @@ public final class TestScenesGameTests {
         helper.succeed();
     }
 
+    /** The flying client says where the body points. The server believes it only as far as the body could turn, and anyone else stops at where it says. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theServerHoldsAHeardHeadingToTheBodysRate(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(96_400, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            var titan = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(titan, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN));
+            titan.setYRot(0f);
+            titan.setXRot(0f);
+            com.voidreclaimer.body.BodyTurning.heard(titan, true, 90f, 0f);
+            float believed = com.voidreclaimer.body.BodyTurning.of(titan).yaw();
+            helper.assertTrue(believed > 0f && believed < 2f, "a Titan was believed to have turned " + believed + " degrees in a tick");
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of((net.minecraft.world.entity.LivingEntity) titan).yaw() == believed, "the two lookups differ");
+            com.voidreclaimer.body.BodyTurning.heard(titan, true, Float.NaN, 0f);
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of(titan).yaw() == believed, "a heading of NaN got through");
+            com.voidreclaimer.body.BodyTurning.heard(titan, false, 0f, 0f);
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of(titan).yaw() == titan.getYRot(), "a body that caught up still lags");
+            var drone = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(drone, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE));
+            com.voidreclaimer.body.BodyTurning.heard(drone, true, 90f, 0f);
+            helper.assertTrue(com.voidreclaimer.body.BodyTurning.of(drone).yaw() == drone.getYRot(), "a Drone has no heading of its own");
+            TestPlayers.remove(titan);
+            TestPlayers.remove(drone);
+            helper.succeed();
+        });
+    }
+
+    /** The server sees a Ship parked deep in a wall it was clear of, and after two seconds sends it back. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aBodyHeldDeepInAWallGoesBack(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(96_800, 300, 0);
+        NaniteGameTests.inLoadedArea(helper, origin, 3, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.SHIP));
+            player.setYRot(0f);
+            player.setXRot(0f);
+            var start = player.position();
+            for (int tick = 0; tick < 12; tick++) {
+                player.tickCount++;
+                player.doTick();
+            }
+            helper.assertTrue(player.position().distanceTo(start) < 0.1, "a body in the open moved");
+            BlockPos wall = origin.offset(0, 0, 40);
+            for (int x = -8; x <= 8; x++) {
+                for (int y = -8; y <= 16; y++) {
+                    for (int z = -4; z <= 0; z++) {
+                        space.setBlock(wall.offset(x, y, z), Blocks.STONE.defaultBlockState(), 3);
+                    }
+                }
+            }
+            player.setPos(wall.getX() + 0.5, wall.getY() + 1.0, wall.getZ() - 2.5);
+            player.getData(com.voidreclaimer.registry.ModAttachments.FLIGHT_TRACKER).record(player.position(), 1);
+            var deep = player.position();
+            int ticks = 0;
+            while (ticks < 80 && player.position().distanceTo(start) > 1.0) {
+                player.setPos(deep);
+                player.tickCount++;
+                player.doTick();
+                ticks++;
+            }
+            helper.assertTrue(player.position().distanceTo(start) <= 1.0, "after " + ticks + " ticks in a wall the body is still at " + player.position());
+            helper.assertTrue(ticks >= 30, "it went back after only " + ticks + " ticks");
+            BlockPos.betweenClosed(wall.offset(-8, -8, -4), wall.offset(8, 16, 0)).forEach(p -> space.setBlock(p, Blocks.AIR.defaultBlockState(), 3));
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** A body moved in one step is pointing at its view, not swinging round from where it was. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aTeleportedBigBodyPointsAtItsView(GameTestHelper helper) {
