@@ -304,7 +304,7 @@ public final class ModLangProvider extends LanguageProvider {
         add("weather.void_reclaimer.solar_flare", "Solar flare");
         add("weather.void_reclaimer.ion_storm", "Ion storm");
         add("weather.void_reclaimer.debris_storm", "Debris storm");
-        add("message.void_reclaimer.portal.descent", "Through the portal, above the debris belt. Keep the thrusters powered on the way down.");
+        add("message.void_reclaimer.portal.descent", "Through the portal, over the far side of Earth, above the debris belt. Keep the thrusters powered on the way down. The way back is the gate at the planet's centre.");
         add("hud.void_reclaimer.death_marker", "WRECK %sm");
 
         add("commands.void_reclaimer.sky.era.get", "Ruined Earth sky era: %s");

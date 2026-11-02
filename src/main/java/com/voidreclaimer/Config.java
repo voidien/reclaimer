@@ -181,6 +181,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue HOLO_MAP_REFRESH_TICKS;
     public static final ModConfigSpec.BooleanValue EARTH_ACID_DRIZZLE;
     public static final ModConfigSpec.IntValue EARTH_ARRIVAL_HEIGHT;
+    public static final ModConfigSpec.IntValue EARTH_ARRIVAL_EDGE;
     public static final ModConfigSpec.IntValue EARTH_BELT_FLOOR;
     public static final ModConfigSpec.DoubleValue EARTH_BELT_ROCKS;
     public static final ModConfigSpec.DoubleValue EARTH_ACID_WEAR;
@@ -351,7 +352,8 @@ public final class Config {
         EARTH_WIND_SPEED = BUILDER
                 .comment("Top speed of the wind over ruined Earth, in blocks per second; it drifts ships and the flying body (the dampener holds). 0 switches it off.")
                 .defineInRange("windSpeed", 1.5, 0.0, 20.0);
-        EARTH_ARRIVAL_HEIGHT = BUILDER.comment("How high over the return gate a body comes out of the portal, above the debris belt.").defineInRange("arrivalHeight", 300, -64, 319);
+        EARTH_ARRIVAL_HEIGHT = BUILDER.comment("How high a body comes out of the portal, above the debris belt.").defineInRange("arrivalHeight", 300, -64, 319);
+        EARTH_ARRIVAL_EDGE = BUILDER.comment("How far in from the far edge of the planet a body comes out of the portal, the gate being in the middle.").defineInRange("arrivalEdge", 48, 0, 512);
         EARTH_BELT_FLOOR = BUILDER.comment("The bottom of the debris belt around Earth.").defineInRange("beltFloor", 180, -64, 320);
         EARTH_BELT_ROCKS = BUILDER.comment("Rocks a second at a body in the belt over a ruined planet. It thins as sectors are restored.").defineInRange("beltRocks", 0.5, 0.0, 20.0);
         EARTH_ACID_DRIZZLE = BUILDER.comment("Acid Drizzle falls on ruined Earth outside restored sectors, and slowly wears body sections under the open sky.")

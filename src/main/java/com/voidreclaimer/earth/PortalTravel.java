@@ -69,8 +69,8 @@ public final class PortalTravel {
         if (!(entity instanceof net.minecraft.world.entity.player.Player)) {
             return new DimensionTransition(earth, position, Vec3.ZERO, Direction.SOUTH.toYRot(), 0f, DimensionTransition.PLAY_PORTAL_SOUND);
         }
-        // A body comes out over the gate, above the debris belt, and has to fly down through it. Keep the power on, or the fall hurts.
-        Vec3 high = new Vec3(position.x, Math.max(position.y, Config.EARTH_ARRIVAL_HEIGHT.get()), position.z);
+        // A body comes out on the far side of the planet from the gate, above the debris belt, and fights its way down.
+        Vec3 high = new Vec3(position.x, Math.max(position.y, Config.EARTH_ARRIVAL_HEIGHT.get()), RuinedTerrain.HALF - Config.EARTH_ARRIVAL_EDGE.get());
         return new DimensionTransition(earth, high, Vec3.ZERO, Direction.SOUTH.toYRot(), 0f, DimensionTransition.PLAY_PORTAL_SOUND.then(PortalTravel::warnOfTheDescent));
     }
 
