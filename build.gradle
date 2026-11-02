@@ -95,7 +95,7 @@ neoForge {
             type = 'gameTestServer'
             // An explicit heap: the default (a quarter of the machine's RAM) differs between CI runners and laptops.
             // ./gradlew runGameTestServer -PgametestHeap=1200m runs the suite in a small heap to catch memory growth.
-            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
+            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '8G'}"
             // Out of memory, a server thrashes for hours holding the world and the CPU: end it, and the run fails where it can be seen.
             jvmArgument '-XX:+ExitOnOutOfMemoryError'
             // No chunk is written and the run ends after its summary, for twice the speed. -PgametestChunkSaves runs real saves and a
@@ -113,7 +113,7 @@ neoForge {
             type = 'gameTestServer'
             // Its own directory: Gradle runs tasks in parallel and the two GameTest worlds must not collide.
             gameDirectory = file('run-aero')
-            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '6G'}"
+            jvmArgument "-Xmx${project.findProperty('gametestHeap') ?: '8G'}"
             // Out of memory, a server thrashes for hours holding the world and the CPU: end it, and the run fails where it can be seen.
             jvmArgument '-XX:+ExitOnOutOfMemoryError'
             systemProperty 'void_reclaimer.gametestSkipChunkSaves', (!project.hasProperty('gametestChunkSaves')).toString()
