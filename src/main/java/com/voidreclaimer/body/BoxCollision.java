@@ -1,5 +1,7 @@
 package com.voidreclaimer.body;
 
+import com.voidreclaimer.api.event.BodyCollisionEvent;
+import com.voidreclaimer.link.BodyHost;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,6 +22,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector3d;
 
 /**
@@ -49,11 +53,44 @@ public final class BoxCollision {
         }
         long start = System.nanoTime();
         List<BodyBoxes.Box> body = BodyTurning.place(player, view, BodyTurning.of(player));
-        List<BodyBoxes.Box> blocks = blocksNear(player.level(), body, velocity, MARGIN);
+        List<BodyBoxes.Box> blocks = solidsNear(player, body, velocity, MARGIN);
         Vec3 allowed = BodyBoxes.resolve(body, blocks, velocity);
+        if (allowed != velocity) {
+            NeoForge.EVENT_BUS.post(new BodyCollisionEvent(player, velocity, allowed));
+        }
         lastBlocks = blocks.size();
         lastMicros = (System.nanoTime() - start) / 1000L;
         return allowed;
+    }
+
+    /** All a body can hit this tick: blocks, ships and other bodies. */
+    static List<BodyBoxes.Box> solidsNear(Player player, List<BodyBoxes.Box> body, Vec3 velocity, double margin) {
+        List<BodyBoxes.Box> solids = blocksNear(player.level(), body, velocity, margin);
+        bodies(player, body, velocity, margin, solids);
+        return solids;
+    }
+
+    /** Other bodies near this one: a big one by its own boxes, and anything smaller by its vanilla box. */
+    private static void bodies(Player player, List<BodyBoxes.Box> body, Vec3 velocity, double margin, List<BodyBoxes.Box> solids) {
+        AABB all = null;
+        for (BodyBoxes.Box box : body) {
+            AABB reach = around(box).expandTowards(velocity).inflate(margin);
+            all = all == null ? reach : all.minmax(reach);
+        }
+        if (all == null) {
+            return;
+        }
+        for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, all,
+                entity -> entity != player && entity.isAlive() && !entity.isSpectator() && (entity instanceof Player || entity instanceof BodyHost))) {
+            BodyView view = Bodies.view(other);
+            BodyData data = view.data();
+            List<BodyBoxes.Box> boxes = BodyBoxes.place(view.chassis(), socket -> !data.section(socket).isEmpty(), other.position(), other.getYRot(), other.getXRot(), view.stats().scale());
+            if (boxes.isEmpty()) {
+                solids.add(BodyBoxes.Box.of(other.getBoundingBox()));
+            } else {
+                solids.addAll(boxes);
+            }
+        }
     }
 
     /** Every solid block any box could reach this tick, in the world and on any ship near it. */

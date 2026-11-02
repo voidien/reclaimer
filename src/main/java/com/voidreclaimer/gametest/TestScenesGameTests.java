@@ -21,6 +21,32 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class TestScenesGameTests {
     private TestScenesGameTests() {}
 
+    /** A parked shell and another player's body are in the way like any block, and the extension point hears about the hit. */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aBigBodyStopsAtOtherBodies(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(95_200, 300, 0);
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.SHUTTLE));
+            player.setYRot(0f);
+            player.setXRot(0f);
+            var ahead = new net.minecraft.world.phys.Vec3(0.0, 0.0, 2.0);
+            helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, ahead) == ahead, "something is in the way already");
+            // A Drone shell ahead of the nose, whose own vanilla box is all that is in the way.
+            var shell = com.voidreclaimer.link.BodyHost.spawn(space, player.position().add(0.0, 1.5, 9.0), com.voidreclaimer.link.HostRole.SHELL,
+                    com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.DRONE), player.getUUID());
+            TestEventListeners.COLLISIONS.remove(player.getUUID());
+            double allowed = com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z;
+            helper.assertTrue(allowed < 2.0, "the Shuttle went through a shell");
+            Double hit = TestEventListeners.COLLISIONS.get(player.getUUID());
+            helper.assertTrue(hit != null && Math.abs(hit - (2.0 - allowed)) < 1e-6, "the event said " + hit + " of the move was lost, not " + (2.0 - allowed));
+            shell.discard();
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
     /** The view jumps a quarter turn: a Titan's nose follows slowly and thrust goes with it, and a Mech is there at once. */
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void aBigBodyTurnsWithWeightAndThrustFollowsTheNose(GameTestHelper helper) {

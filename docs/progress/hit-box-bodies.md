@@ -1,0 +1,2 @@
+## Big bodies stop at other bodies
+- Step 5 of `docs/design/hit-boxes.md`. A big body now hits other players' bodies and shells, a big one by its own boxes and anything smaller by its vanilla box. `BodyCollisionEvent` fires when a body's move is cut short, which crash damage will use. Bodies pushing ships and helper drones steering round big bodies are still to come. Test: `aBigBodyStopsAtOtherBodies`.
