@@ -40,11 +40,48 @@ public final class TestScenesGameTests {
             double allowed = com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z;
             helper.assertTrue(allowed < 2.0, "the Shuttle went through a shell");
             Double hit = TestEventListeners.COLLISIONS.get(player.getUUID());
-            helper.assertTrue(hit != null && Math.abs(hit - (2.0 - allowed)) < 1e-6, "the event said " + hit + " of the move was lost, not " + (2.0 - allowed));
+            helper.assertTrue(hit != null && Math.abs(hit - 2.0) < 1e-6, "a head-on hit at 2.0 a tick lost " + hit);
             shell.discard();
             TestPlayers.remove(player);
             helper.succeed();
         });
+    }
+
+    /** A Titan shell, and a body ahead of its nose looking back at it, further from the shell's feet than its vanilla box reaches. */
+    private static void flyAtATitansNose(GameTestHelper helper, BlockPos origin, net.minecraft.resources.ResourceKey<com.voidreclaimer.api.body.Chassis> flyer) {
+        NaniteGameTests.inEntityTickingArea(helper, origin, 2, () -> {
+            ServerLevel space = TestPlayers.deepSpace(helper);
+            var player = TestPlayers.survivalInDeepSpace(helper, origin.getX() + 0.5, origin.getY() + 13.0, origin.getZ() + 44.5);
+            com.voidreclaimer.body.Bodies.store(player, com.voidreclaimer.body.Bodies.preset(flyer));
+            player.setYRot(180f);
+            player.setXRot(0f);
+            var ahead = new net.minecraft.world.phys.Vec3(0.0, 0.0, -2.0);
+            var shell = com.voidreclaimer.link.BodyHost.spawn(space, origin.getBottomCenter(), com.voidreclaimer.link.HostRole.SHELL,
+                    com.voidreclaimer.body.Bodies.preset(com.voidreclaimer.body.BuiltinBodies.TITAN), player.getUUID());
+            shell.setYRot(0f);
+            shell.setXRot(0f);
+            double start = player.getZ();
+            for (int tick = 0; tick < 12 && com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z <= -1.9; tick++) {
+                player.setPos(player.position().add(ahead));
+            }
+            double stopped = player.getZ();
+            helper.assertTrue(start - stopped < 22.0, "it flew " + (start - stopped) + " blocks, into the saucer");
+            helper.assertTrue(com.voidreclaimer.body.BoxCollision.resolve(player, ahead).z > -1.9, "nothing stopped it");
+            helper.assertTrue(stopped - origin.getZ() > 20.0, "it stopped at " + (stopped - origin.getZ()) + " blocks from the Titan's feet, not at its nose");
+            shell.discard();
+            TestPlayers.remove(player);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aShuttleStopsAtATitansNoseFarFromItsVanillaBox(GameTestHelper helper) {
+        flyAtATitansNose(helper, new BlockPos(95_600, 300, 0), com.voidreclaimer.body.BuiltinBodies.SHUTTLE);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void aDroneStopsAtATitansNose(GameTestHelper helper) {
+        flyAtATitansNose(helper, new BlockPos(96_000, 300, 0), com.voidreclaimer.body.BuiltinBodies.DRONE);
     }
 
     /** The view jumps a quarter turn: a Titan's nose follows slowly and thrust goes with it, and a Mech is there at once. */

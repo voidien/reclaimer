@@ -77,9 +77,9 @@ public final class ThrusterFlight {
         if (push.lengthSqr() > 0.0) {
             player.move(MoverType.SELF, push);
         }
-        Vec3 velocity = com.voidreclaimer.body.BoxCollision.resolve(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
-        player.setDeltaMovement(velocity);
-        player.move(MoverType.SELF, velocity);
+        com.voidreclaimer.body.BodyBoxes.Moved moved = com.voidreclaimer.body.BoxCollision.move(player, step(player, player.getDeltaMovement(), player.getData(ModAttachments.FLIGHT_INPUT)));
+        player.setDeltaMovement(moved.speed());
+        player.move(MoverType.SELF, moved.move());
         player.calculateEntityAnimation(true);
         calmWalkBob(player);
     }

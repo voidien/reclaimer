@@ -5,36 +5,36 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.Event;
 
 /**
- * A big body's hit boxes stopped some of its move this tick, on the game bus. Flight runs on the client that flies the body, so this
- * fires there. For reacting to a crash, the size of {@link #lost()} is how hard it was.
+ * A body hit something in flight, on the game bus: a big body with its hit boxes, or a smaller one against a big body. Flight runs on the
+ * client that flies the body, so this fires there. One crash is one event, and the size of {@link #lost()} is how hard it was.
  */
 public final class BodyCollisionEvent extends Event {
     private final Player player;
     private final Vec3 wanted;
-    private final Vec3 allowed;
+    private final Vec3 kept;
 
-    public BodyCollisionEvent(Player player, Vec3 wanted, Vec3 allowed) {
+    public BodyCollisionEvent(Player player, Vec3 wanted, Vec3 kept) {
         this.player = player;
         this.wanted = wanted;
-        this.allowed = allowed;
+        this.kept = kept;
     }
 
     public Player getPlayer() {
         return player;
     }
 
-    /** The move the body tried to make, in blocks a tick. */
+    /** The speed it hit at, in blocks a tick. */
     public Vec3 wanted() {
         return wanted;
     }
 
-    /** The move its boxes let it make. */
-    public Vec3 allowed() {
-        return allowed;
+    /** The speed it has left, along whatever it hit. */
+    public Vec3 kept() {
+        return kept;
     }
 
-    /** The part of the move that hit something: its direction is the contact's, and its length the speed of the hit. */
+    /** The part of its speed that went into what it hit: its direction is the contact's, and its length the speed of the hit. */
     public Vec3 lost() {
-        return wanted.subtract(allowed);
+        return wanted.subtract(kept);
     }
 }
